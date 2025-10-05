@@ -464,6 +464,7 @@ namespace Orts.Simulation.RollingStocks
         float MSTSSteamGaugeGlassHeightM;
         float WaterGlassLengthM;
         float waterGlassFractionLevel;            // Water glass level as a fraction
+        float CurrentWaterGaugeFraction;
 
         float MEPFactor = 0.7f;             // Factor to determine the MEP
         float GrateAreaDesignFactor = 500.0f;   // Design factor for determining Grate Area
@@ -7202,6 +7203,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             GradientBoilerLevelFraction = MathHelper.Clamp(GradientBoilerLevelFraction, 0.0f, 1.0f);
 
+            CurrentWaterGaugeFraction = ((BoilerWaterFractionAbs - waterVariationLevelM / BoilerDiameterM) - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // Calculate water glass grade fraction
+
+            CurrentWaterGaugeFraction = MathHelper.Clamp(CurrentWaterGaugeFraction, 0.0f, 1.0f);
+
+       //     Trace.TraceInformation("CurrentWaterGaugeFraction {0} BoilerWaterFract {1} waterVariation {2} GradientBoilerFraction {3}", CurrentWaterGaugeFraction, BoilerWaterFractionAbs, waterVariationLevelM, GradientBoilerLevelFraction);
+
+
             if (BoilerWaterFractionAbs < WaterMinLevel)  // Blow fusible plugs if absolute boiler water drops below minimum level
             {
                 if (!FusiblePlugIsBlown)
@@ -7478,9 +7486,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             #region AI Fireman
             {
 
-               var CurrentWaterGaugeFraction = waterGlassFractionLevel;
+          //    CurrentWaterGaugeFraction = waterGlassFractionLevel;
 
-              //  var CurrentWaterGaugeFraction = GradientBoilerLevelFraction;
+             // var CurrentWaterGaugeFraction = 1.0f - GradientBoilerLevelFraction;
+
+         //       Trace.TraceInformation("CurrentWaterGaugeFraction {0} WaterGaugeFraction {1}", CurrentWaterGaugeFraction, waterGlassFractionLevel);
 
                 if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump && !WaterIsExhausted)
                 {
@@ -7905,6 +7915,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Simulator.Catalog.GetString("Boiler water glass"), 100 * waterGlassFractionLevel, boilerWaterSafety, FiringIsManual ? Simulator.Catalog.GetString("(safe range)") : "");
 
             status.AppendFormat("{0} = {1:F0}%\n", Simulator.Catalog.GetString("Boiler water grad"), GradientBoilerLevelFraction * 100);
+            status.AppendFormat("{0} = {1:F0}%\n", Simulator.Catalog.GetString("Boiler water trig"), CurrentWaterGaugeFraction * 100);
 
             if (FiringIsManual)
             {
