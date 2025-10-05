@@ -428,7 +428,7 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var drawer in Stack)
             {
                 Color_Value = car.SmokeColor.SmoothedValue;
-                drawer.SetOutputVolumetric(car.StackSteamVolumeM3pS, car.StackParticleDurationS, new Color(Color_Value, Color_Value, Color_Value));
+                drawer.SetOutputVolumetric(car.StackSteamVolumeM3pS / car.StackCount, car.StackParticleDurationS, new Color(Color_Value, Color_Value, Color_Value));
             }
 
             foreach (var drawer in Whistle)

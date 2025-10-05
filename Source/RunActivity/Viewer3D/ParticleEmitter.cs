@@ -136,14 +136,6 @@ namespace Orts.Viewer3D
         /// <param name="volumeM3pS">The cubic meter volume of particles to emit every second.</param>
         public void SetOutputVolumetric(float volumeM3pS)
         {
-            // Volumetric flow rate is assumed to be at atmospheric pressure, but this can give unrealistically fast-moving exhaust
-            // Limit exhaust speed to the 'speed limit' and calculate how 'compressed' the exhaust still is when emitter
-            // This calculation gradually increases the 'compression' as calculated speed increases
-            float factor = (volumeM3pS / EmissionHoleM2 + Emitter.EmitterData.SpeedLimitMpS) / Emitter.EmitterData.SpeedLimitMpS;
-
-            Emitter.CompressionFactor = factor;
-            volumeM3pS /= factor;
-
             Emitter.XNAInitialVelocity = Emitter.EmitterData.InitialVelocityFactor * volumeM3pS / EmissionHoleM2;
             Emitter.ParticlesPerSecond = EmitterData.RateFactor * volumeM3pS / ParticleVolumeM3;
 
@@ -376,8 +368,6 @@ namespace Orts.Viewer3D
         internal Color ParticleColor;
 
         internal int SpriteCount;
-
-        internal float CompressionFactor = 1.0f;
 
         internal WorldPosition WorldPosition;
 
@@ -666,11 +656,11 @@ namespace Orts.Viewer3D
                         finalVelocity.X += ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS * ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousDirection.X * EmitterData.WindEffect;
                         finalVelocity.Z += ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS * ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousDirection.Y * EmitterData.WindEffect;
 
-                        // Amount by which particles initially expand depends on change in particle speed; faster particles expand more due to 'high pressure' at exhaust
-                        float speedDeltaRatio = (float)Math.Sqrt(initialSpeed * CompressionFactor);
-                        float initialExpansion = speedDeltaRatio * EmitterData.InitialExpansionFactor;
+                        // Amount by which particles initially expand depends on particle speed; faster particles expand more due to 'high pressure' at exhaust
+                        float speedIntensity = (float)Math.Sqrt(initialSpeed);
+                        float initialExpansion = speedIntensity * EmitterData.InitialExpansionFactor;
                         // Speed at which particles slow down depends on change in particle speed; faster particles slow down faster due to 'drag' from speed difference
-                        settling /= speedDeltaRatio / 5.0f + 1.0f; // Note: The / 5 is largely arbitrary, chosen to give results that look good
+                        settling /= speedIntensity / 5.0f + 1.0f; // Note: The / 5 is largely arbitrary, chosen to give results that look good
 
                         for (var j = 0; j < VerticesPerParticle; j++)
                         {

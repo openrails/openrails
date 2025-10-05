@@ -4608,8 +4608,6 @@ public void SetTensionStiffness(float a, float b)
         public Vector3 FinalVelocityMpS = Vector3.Up; // Default final velocity is 1 m/s upward
         public Vector3 FinalVelocityVariationMpS = new Vector3(0.75f);
 
-        public float SpeedLimitMpS = 150.0f;
-
         public float NozzleDiameterM = 0.1f;
         public float NozzleAreaM2 = -1; // If left at -1, will be initialized later
 
@@ -4704,7 +4702,6 @@ public void SetTensionStiffness(float a, float b)
                         FinalVelocityVariationMpS.Z = FinalVelocityVariationMpS.Y = FinalVelocityVariationMpS.X;
                     }
                 }),
-                new STFReader.TokenProcessor("ortsemissionspeedlimit", ()=>{ SpeedLimitMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
                 new STFReader.TokenProcessor("ortsparticlediameter", ()=>{ NozzleDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("ortslifespanmultiplier", ()=>{ LifetimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("ortslifespanvariation", ()=>{ LifetimeVariationFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
