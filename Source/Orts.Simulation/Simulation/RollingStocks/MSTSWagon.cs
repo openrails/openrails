@@ -710,7 +710,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (ortsFreightAnim.ShapeFileName != null && !File.Exists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
                     {
-                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", file, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
+                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", shortPath, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
                         ortsFreightAnim.ShapeFileName = null;
                     }
 

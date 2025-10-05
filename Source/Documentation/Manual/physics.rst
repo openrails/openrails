@@ -40,8 +40,8 @@ Resistive Forces
 ----------------
 
 Open Rails physics calculates resistance based on real world principles:
-gravity, mass, rolling resistance, and curve resistance. This is calculated
-individually for each car in the train.
+gravity, mass, wind, rolling resistance, and curve resistance. This is
+calculated individually for each car in the train.
 
 The program supports a few methods for determining rolling resistance.
 The oldest method, intended only to support legacy content, uses the
