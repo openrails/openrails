@@ -22,7 +22,7 @@ In most cases, you can get started immediately with making the changes and creat
 
 **Note:** You must fork the Open Rails repository before you start working on it. We do not allow you to push branches to the official repository.
 
-**Note:** You should do your work on separate branches; they must be created from the "master" branch and pull requests must merge back into the "master" branch, unless we direct you otherwise.
+**Note:** You should do your work on separate branches; they must be created from the default branch and pull requests must merge back into the default branch, unless we direct you otherwise.
 
 ### Documentation and translations
 
@@ -168,7 +168,7 @@ When we start preparing for a new Stable Version, all code in the Testing Versio
 
 ### Submitting your code
 
-When you're done writing code, you should make a pull request on GitHub from your fork's branch back to the official repository's "master" branch. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
+When you're done writing code, you should make a pull request on GitHub from your fork's branch back to the official repository's default branch. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
 
 - Bug report
 - Road-map card
