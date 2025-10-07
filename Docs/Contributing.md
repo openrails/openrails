@@ -104,6 +104,8 @@ If multiple things are interesting to you, we would prefer that you choose the i
 
 If you're unsure what you could contribute to in the code, and nothing looks interesting in the _confirmed bugs_ and _accepted feature requests_, please get in touch using [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/), giving us some idea of your experience and interests, and we'll do our best to find something for you.
 
+## Requirements for changes
+
 ### General requirements
 
 All of the main Open Rails code is C# and your contribution is expected to also be in C#. We're currently using [version 7.3 of C#](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-7-3), so please take advantage of these features.
@@ -138,7 +140,7 @@ Open Rails is a multi-threaded application, which presents some additional compl
 - Render
 - Sound
 
-Data that is operated only on one thread for its lifetime does not need special attention. However, any data that is operated on by multiple threads - even if only one thread is writing - needs special care and attention.
+Data that is operated on by only one thread for its lifetime does not need additional care and attention. However, any data that is operated on by multiple threads - even if only one thread is making changes - needs additional care and attention.
 
 For each object stored in a field or property that is accessed from multiple threads, the root, you must:
 
@@ -149,30 +151,23 @@ For each object stored in a field or property that is accessed from multiple thr
 
 If you are in any doubt about the use of data by multiple threads, or your implementation of the above rules, please ask for help in [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/).
 
-### Getting your code accepted
+## Submitting changes
 
-Your code should be fixing exactly one bug or adding a single new feature; mixing multiple bug fixes or new features makes it harder to review your changes and risks them not being accepted.
-
-### Different versions of code
-
-When your pull request is draft or ready for review, it will not be included in any version of Open Rails unless:
-
-- You are a member of the core team
-- A member of the core team adds a particular label
-
-If your pull request satisfies the above criteria, it will be automatically included in the Unstable Version (unless there are merge conflicts).
-
-After your pull request is merged, it will be included in the Testing Version and Unstable Version.
-
-When we start preparing for a new Stable Version, all code in the Testing Version is used, but no further changes are included during the preparation time (typically 1 month).
-
-### Submitting your code
+**Note:** Your code should be fixing exactly one bug or adding a single new feature; mixing multiple bug fixes or new features makes it harder to review your changes and risks them not being accepted.
 
 When you're done writing code, you should make a pull request on GitHub from your fork's branch back to the official repository's default branch. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
 
 - Bug report
 - Road-map card
 - Blueprint
+
+### When changes are published
+
+Your changes will not be included in any version of Open Rails immediately:
+
+- To be included in the _Unstable Version_, your pull request needs a particular label, which we encourage [our developer team](https://launchpad.net/~ordevs/+members) to add.
+- To be included in the _Testing Version_, your pull request needs to be [reviewed, approved, and merged](#how-to-review-pull-requests).
+- To be included in the _Stable Version_, your pull request needs to be merged before the branch point (typically a month before release).
 
 ## How bugs and features are accepted
 
@@ -192,7 +187,7 @@ We require that a [forum thread is created](http://www.elvastower.com/forums/ind
 
 A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, and approve its direction if appropriate.
 
-## Reviewing pull requests
+## How to review pull requests
 
 If you are reviewing someone else's code for Open Rails, you will need to ensure that they have met the above "Making changes" guidelines as best as possible. This will necessitate, at minimum:
 
@@ -203,10 +198,10 @@ If you are reviewing someone else's code for Open Rails, you will need to ensure
   - For a blueprint, it should have direction "Approved"
 - Read through all of the changes to the code
 - Check that all new code follows the requirements:
-  - General (including naming)
-  - Architecture
-  - Physics
-  - Multi-threading
+  - [General](#general-requirements) (including naming)
+  - [Architecture](#architecture-requirements)
+  - [Physics](#physics-requirements)
+  - [Multi-threading](#multi-threading-requirements)
 - Be sure that all of the changes are necessary
 - Be sure that no changes are missing
 - Be on the lookout for data being access across threads
