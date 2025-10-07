@@ -4,7 +4,7 @@ This document will introduce you to a number of ways you can contribute to Open 
 
 ## Discussion
 
-Please see the [Community](http://openrails.org/share/community/) page on our website for details of the forums where Open Rails discussion happens.
+If you'd like to discuss anything Open Rails, please visit [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/).
 
 ## Reporting a bug
 
@@ -38,7 +38,7 @@ There are no additional requirements for the pull request.
 
 ### Refactoring process
 
-If you'd like to refactor the existing code you can get started immediately, but please have a look at our [architecture requirements](#architecture-requirements). We welcome architectural discussions on our [forum](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/).
+If you'd like to refactor the existing code you can get started immediately, but please have a look at our [architecture requirements](#architecture-requirements). We welcome architectural discussions in [our Developing Features forum on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/256-developing-features/).
 
 There are no additional requirements for the pull request.
 
@@ -74,7 +74,7 @@ flowchart
 All new features must result in the following three things existing:
 
 1. A road-map card in [Trello](https://trello.com/b/DS2h3Pxc/open-rails-roadmap)
-2. A forum discussion in [Elvas Tower](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/) more than one week old with all issues resolved
+2. A forum discussion in [Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/256-developing-features/) more than one week old with all issues resolved
 3. A pull request
 
 These things must be done in the required order:
@@ -102,7 +102,7 @@ If you do not know what to work on, you can find bugs and features we are intere
 
 If multiple things are interesting to you, we would prefer that you choose the item with the highest priority to us - a higher importance or heat in Launchpad bugs and lowest version number in Trello cards.
 
-If you're unsure what you could contribute to in the code, and nothing looks interesting in the _confirmed bugs_ and _accepted feature requests_, please get in touch on the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/), giving us some idea of your experience and interests, and we'll do our best to find something for you.
+If you're unsure what you could contribute to in the code, and nothing looks interesting in the _confirmed bugs_ and _accepted feature requests_, please get in touch using [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/), giving us some idea of your experience and interests, and we'll do our best to find something for you.
 
 ### General requirements
 
@@ -147,7 +147,7 @@ For each object stored in a field or property that is accessed from multiple thr
 - Update the root object by (as above) copying into a local, cloning/making a new version from the old version, and finally storing into the root
 - If multiple threads can update the root, the final store into root must be done using an interlocked compare-and-exchange with a loop in case of failure
 
-If you are in any doubt about the use of data by multiple threads, or your implementation of the above rules, please ask in the [Elvas Tower](http://www.elvastower.com/) forums.
+If you are in any doubt about the use of data by multiple threads, or your implementation of the above rules, please ask for help in [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/).
 
 ### Getting your code accepted
 
