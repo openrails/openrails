@@ -1,6 +1,6 @@
 # Contributing to Open Rails
 
-This document will introduce you to a number of ways you can contribute to Open Rails, and how we expect the process to go - both from your side and our side.
+This document will introduce you to a number of ways you can contribute to Open Rails and how we expect the process to go - from your side and our side.
 
 ## Discussion
 
@@ -44,7 +44,7 @@ There are no additional requirements for the pull request.
 
 ### Bug process
 
-If you'd like to fix a bug, you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our bug tracker on Launchpad](https://bugs.launchpad.net/or). If it has not, you can report the bug *and* fix it!
+If you'd like to fix a bug you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our bug tracker on Launchpad](https://bugs.launchpad.net/or). If it has not, you can report the bug _and_ fix it!
 
 There are no additional requirements for _creating_ the pull request.
 
@@ -54,7 +54,7 @@ These things must be done in the required order:
 
 ### Feature process
 
-If you'd like to add a feature, you can get started immediately. However, we would prefer you to to do some things first. These will ensure that people are aware you are working on a particular feature and give the community some time to resolve any potential issues.
+If you'd like to add a feature you can get started immediately. However, we would prefer you to to do some things first. These will ensure that people are aware you are working on a particular feature and give the community some time to resolve any potential issues.
 
 The following diagram shows the required order (solid lines) and recommended order (dashed lines):
 
