@@ -117,6 +117,8 @@ Code is expected to follow the [Microsoft .NET Framework Design Guidelines](http
 
 Code style (placement of braces, etc.) is expected to follow the default Visual Studio rules; the [Microsoft .NET C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions) provides a good basis for many aspects of this.
 
+Code should be consistent with the [Open Rails Code Guidelines](Code%20Guidelines.md).
+
 ### Architecture requirements
 
 Code should be well structured, with small methods performing a single key task (indicated by their name), and larger complex operations formed through calls to multiple smaller methods.
