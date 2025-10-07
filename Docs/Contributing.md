@@ -97,8 +97,8 @@ Our recommended order is:
 
 If you do not know what to work on, you can find bugs and features we are interested in fixed/adding here:
 
-* [Confirmed bugs](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED)
-* [Accepted feature requests (anything in an N.M or N.x list)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap)
+- [Confirmed bugs](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED)
+- [Accepted feature requests (anything in an N.M or N.x list)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap)
 
 If multiple things are interesting to you, we would prefer that you choose the item with the highest priority to us - a higher importance or heat in Launchpad bugs and lowest version number in Trello cards.
 
@@ -110,8 +110,8 @@ All of the main Open Rails code is C# and your contribution is expected to also 
 
 Code is expected to follow the [Framework Design Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/) throughout, especially the [Naming Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/naming-guidelines), with few exceptions:
 
-* Structures, fields, and enums defining file format components may be named exactly as in the file format
-* Public and protected fields are allowed, although care must be taken with public fields
+- Structures, fields, and enums defining file format components may be named exactly as in the file format
+- Public and protected fields are allowed, although care must be taken with public fields
 
 Code style (placement of braces, etc.) is expected to follow the default Visual Studio rules; the [C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions) provides a good basis for many aspects of this.
 
@@ -133,19 +133,19 @@ All fixed values used in formula must be placed in a constant, with a name and u
 
 Open Rails is a multi-threaded application, which presents some additional complexity. There are four key threads to be aware of:
 
-* Loader
-* Updater
-* Render
-* Sound
+- Loader
+- Updater
+- Render
+- Sound
 
 Data that is operated only on one thread for its lifetime does not need special attention. However, any data that is operated on by multiple threads - even if only one thread is writing - needs special care and attention.
 
 For each object stored in a field or property that is accessed from multiple threads, the root, you must:
 
-* Never modify the contents of the objects within the root (such as adding or removing items from a List<T>)
-* Always copy the root object into a local variable before doing anything else with it
-* Update the root object by (as above) copying into a local, cloning/making a new version from the old version, and finally storing into the root
-* If multiple threads can update the root, the final store into root must be done using an interlocked compare-and-exchange with a loop in case of failure
+- Never modify the contents of the objects within the root (such as adding or removing items from a List<T>)
+- Always copy the root object into a local variable before doing anything else with it
+- Update the root object by (as above) copying into a local, cloning/making a new version from the old version, and finally storing into the root
+- If multiple threads can update the root, the final store into root must be done using an interlocked compare-and-exchange with a loop in case of failure
 
 If you are in any doubt about the use of data by multiple threads, or your implementation of the above rules, please ask in the [Elvas Tower](http://www.elvastower.com/) forums.
 
@@ -157,8 +157,8 @@ Your code should be fixing exactly one bug or adding a single new feature; mixin
 
 When your pull request is draft or ready for review, it will not be included in any version of Open Rails unless:
 
-* You are a member of the core team
-* A member of the core team adds a particular label
+- You are a member of the core team
+- A member of the core team adds a particular label
 
 If your pull request satisfies the above criteria, it will be automatically included in the Unstable Version (unless there are merge conflicts).
 
@@ -170,9 +170,9 @@ When we start preparing for a new Stable Version, all code in the Testing Versio
 
 When you're done writing code, you should make a pull request on GitHub from your fork's branch back to the official repository's "master" branch. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
 
-* Bug report
-* Road-map card
-* Blueprint
+- Bug report
+- Road-map card
+- Blueprint
 
 ## How bugs and features are accepted
 
@@ -196,20 +196,20 @@ A member of [our management team](https://launchpad.net/~orsupervisors/+members)
 
 If you are reviewing someone else's code for Open Rails, you will need to ensure that they have met the above "Making changes" guidelines as best as possible. This will necessitate, at minimum:
 
-* Check for linked bug report or feature request
-* Check bug report is triaged, and feature request is approved
-  * For a bug report, it should have status "Triaged"
-  * For a road-map card, it should be in an N.M or N.x list
-  * For a blueprint, it should have direction "Approved"
-* Read through all of the changes to the code
-* Check that all new code follows the requirements:
-  * General (including naming)
-  * Architecture
-  * Physics
-  * Multi-threading
-* Be sure that all of the changes are necessary
-* Be sure that no changes are missing
-* Be on the lookout for data being access across threads
+- Check for linked bug report or feature request
+- Check bug report is triaged, and feature request is approved
+  - For a bug report, it should have status "Triaged"
+  - For a road-map card, it should be in an N.M or N.x list
+  - For a blueprint, it should have direction "Approved"
+- Read through all of the changes to the code
+- Check that all new code follows the requirements:
+  - General (including naming)
+  - Architecture
+  - Physics
+  - Multi-threading
+- Be sure that all of the changes are necessary
+- Be sure that no changes are missing
+- Be on the lookout for data being access across threads
 
 ### Leeway when reviewing
 
@@ -219,8 +219,8 @@ You should take extra care when reviewing first-time and new contributors, to en
 
 For all contributions that deviate from the guidelines, there are a few approaches you can take:
 
-* Politely and constructively suggest changes on the pull request (if possible, include the desired code)
-* Make the changes yourself (GitHub provides instructions to push changes to other people's pull requests)
-* Accept the code as-is, leaving a note for how to improve for the next pull request
+- Politely and constructively suggest changes on the pull request (if possible, include the desired code)
+- Make the changes yourself (GitHub provides instructions to push changes to other people's pull requests)
+- Accept the code as-is, leaving a note for how to improve for the next pull request
 
 It is expected that most contributors will quickly correct their code based on feedback, either in the same pull request or subsequent ones, depending on the path taken above. However, if a contributor continues to not meet the same part of the guidelines, you are free to become more strict with them - it's still helpful to suggest the corrected code, but do not feel obliged to spend time helping the same person with the same part of the guidelines repeatedly.
