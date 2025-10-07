@@ -108,12 +108,12 @@ If you're unsure what you could contribute to in the code, and nothing looks int
 
 All of the main Open Rails code is C# and your contribution is expected to also be in C#. We're currently using [version 7.3 of C#](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-7-3), so please take advantage of these features.
 
-Code is expected to follow the [Framework Design Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/) throughout, especially the [Naming Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/naming-guidelines), with few exceptions:
+Code is expected to follow the [Microsoft .NET Framework Design Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/) throughout, especially the [Microsoft .NET Naming Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/naming-guidelines), with few exceptions:
 
 - Structures, fields, and enums defining file format components may be named exactly as in the file format
 - Public and protected fields are allowed, although care must be taken with public fields
 
-Code style (placement of braces, etc.) is expected to follow the default Visual Studio rules; the [C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions) provides a good basis for many aspects of this.
+Code style (placement of braces, etc.) is expected to follow the default Visual Studio rules; the [Microsoft .NET C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions) provides a good basis for many aspects of this.
 
 ### Architecture requirements
 
