@@ -54,7 +54,7 @@ msgstr "Nome dell'add-on"
 
 #: ../../Menu/ContentForm.cs:337
 msgid "Content Directory"
-msgstr ""
+msgstr "Cartella Contenuto"
 
 #: ../../Menu/ContentForm.cs:340
 msgid "Start options"
@@ -360,7 +360,7 @@ msgstr ""
 
 #: ../../Menu/ContentForm.Designer.cs:355
 msgid "Add..."
-msgstr ""
+msgstr "Aggiungi..."
 
 #: ../../Menu/ContentForm.Designer.cs:405 ../../Menu/Options.Designer.cs:347
 #: ../../Menu/TestingForm.Designer.cs:87
@@ -594,7 +594,7 @@ msgstr "Convoglio: {0}"
 
 #: ../../Menu/MainForm.Designer.cs:125
 msgid "Start"
-msgstr ""
+msgstr "Avvia"
 
 #: ../../Menu/MainForm.Designer.cs:137 ../../Menu/MainForm.Designer.cs:957
 msgid "Open Rails"
@@ -618,7 +618,7 @@ msgstr "Strumenti ▼"
 
 #: ../../Menu/MainForm.Designer.cs:237
 msgid "Host/port:"
-msgstr ""
+msgstr "Host/porta:"
 
 #: ../../Menu/MainForm.Designer.cs:248
 msgid "User name:"
@@ -1013,7 +1013,7 @@ msgstr "Altre unità"
 
 #: ../../Menu/Options.Designer.cs:554
 msgid "Pressure unit                     "
-msgstr ""
+msgstr "Unità Pressione                "
 
 #: ../../Menu/Options.Designer.cs:584
 msgid "Also in external views                                    "
@@ -1265,7 +1265,7 @@ msgstr "Registra velocità del treno"
 
 #: ../../Menu/Options.Designer.cs:1902
 msgid "System"
-msgstr ""
+msgstr "Sistema"
 
 #: ../../Menu/Options.Designer.cs:1924
 msgid "Target frame rate"
@@ -1277,7 +1277,7 @@ msgstr "Setta automaticamente i parametri per le prestazioni"
 
 #: ../../Menu/Options.Designer.cs:1987
 msgid "Web server port"
-msgstr ""
+msgstr "Porta web server"
 
 #: ../../Menu/Options.Designer.cs:2043
 msgid "Messages suppressed       "
@@ -1314,7 +1314,7 @@ msgstr "Livello"
 
 #: ../../Menu/Options.Designer.cs:2254
 msgid "Full Range Throttle"
-msgstr ""
+msgstr "Acceleratore al massimo"
 
 #: ../../Menu/Options.Designer.cs:2264
 msgid "Legend"
@@ -1559,7 +1559,7 @@ msgstr "Cancella i salvataggi non validi"
 
 #: ../../Menu/ResumeForm.Designer.cs:195
 msgid "Import/ export"
-msgstr ""
+msgstr "Importa / esporta"
 
 #: ../../Menu/ResumeForm.Designer.cs:211
 msgid "Invalid saves"
