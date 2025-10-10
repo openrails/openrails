@@ -451,7 +451,7 @@ Track Based Sounds for Routes
 
 As track based sounds (such as track joints, curve squeal, etc) are common to all rolling stock these types of sounds can be added at a route level, rather then 
 at an individual rolling stock level. This has the advantage of ensuring a level of consistency for all individual stock rather then requiring each piece of stock 
-to have appropriate sounds associated with it. It means that all rolling stock will be "automaticvally" have track sounds given to it.
+to have appropriate sounds associated with it. It means that all rolling stock will be "automatically" have track sounds given to it.
 
 This approach relies on use of the Track Region sounds configured in the TType.dat file. A base SMS file is created for the first track region sound which is played 
 continuously and contains all track related sounds that need to be played despite the region that the train is in. Further track region SMS files can be created for 
