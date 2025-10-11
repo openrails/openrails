@@ -452,36 +452,36 @@ Improved wagon alignment tools
 Many MSTS and OR creators have encountered rolling stock shapes that were not correctly aligned,
 resulting in couplers/buffers clipping at one end of the wagon and separating at the other end.
 Normally, this would require inspecting the 3D model to determine exactly how off-center it was
-and carefully setting the Z value of ``CentreOfGravity ( x, y, z )`` to re-center the model.
+and carefully setting the Z value of ``CentreOfGravity ( x, y, z )`` to "nudge" the wagon shape
+until it is centered.
 
 .. index::
-   single: ORTSCentreOfGravity_X
-   single: ORTSCentreOfGravity_Y
-   single: ORTSCentreOfGravity_Z
+   single: ORTSShapeNudge
 
 In some cases, this approach could still be insufficient as the Z offset is limited to 2 meters in
 order to prevent unusual behaviors with some MSTS models that used unreasonably large Z offsets.
-To facilitate models that need large offsets without introducing errors, OR now has parameters
-to define the CoG dimensions individually without any artifical limits added afterward.
-To set the horizontal, vertical, and lengthwise CoG offset ``ORTSCentreOfGravity_X``, ``ORTSCentreOfGravity_Y``,
-and ``ORTSCentreOfGravity_Z`` respectively can be entered in the Wagon section of an engine or wagon.
+To facilitate models that need large offsets without introducing errors, OR now accepts this offset
+with the parameter ``ORTSShapeNudge ( z )``, which can be set to *any length offset without limit*.
 
-If placed later in the file than the original ``CentreOfGravity`` parameter, the data entered in the X/Y/Z
-parameters will overwrite the original data, but only for the specific X/Y/Z component provided. For
-example, if ``ORTSCentreOfGravity_Z ( -1m )`` is placed after ``CentreOfGravity ( 0m 2.5m 0.5m )`` the
-resulting CoG offset will actually be 0m, 2.5m, -1m, overwriting the original 0.5m Z offset while
-leaving the X and Y components unchanged.
+.. index::
+   single: CentreOfGravity
+
+However, this does not entirely replace ``CentreOfGravity``. The Y (height) value of the CoG is
+still used by the physics system and should still be defined. In this case, simply use
+``CentreOfGravity ( y )`` where y is the CoG height in meters (or other units, as desired).
+Unlike entering all 3 values for the CoG, entering only the Y value will NOT affect the alignment
+of the 3D model, allowing the "physical" CoG to be entered separately from the "visual" CoG.
 
 .. index::
    single: ORTSAutoCenter
 
-However, in many cases it is desireable to simply center the 3D model lengthwise such that the
-couplers/buffers are equidistant from the centerpoint of the model. To make this specific case
-easier, OR now includes the ``ORTSAutoCenter`` parameter. When ``ORTSAutoCenter ( 1 )``
+And, for the sake of simplicity, it may be desired to just center the 3D model lengthwise
+such that the couplers/buffers are equidistant from the centerpoint of the model. To make this
+specific case easier, OR now includes the ``ORTSAutoCenter`` parameter. When ``ORTSAutoCenter ( 1 )``
 is included in the Wagon section of an engine or wagon, OR will inspect the main shape file used by
 the wagon to determine the exact Z value of CentreOfGravity required to re-center the shape in the
-simulation. This will overwrite the manually entered Z component of ``CentreOfGravity`` but will
-not change the X or Y components. Should no re-centering be required, none will be applied.
+simulation. This will overwrite the manually entered Z component of ``CentreOfGravity ( x y z )`` but
+will not change the X or Y components. Should no re-centering be required, none will be applied.
 
 Some rolling stock will not align correctly when auto-centered. As with ``ORTSAutoSize``, this
 feature should be employed on rolling stock with standard buffers or couplers, and will

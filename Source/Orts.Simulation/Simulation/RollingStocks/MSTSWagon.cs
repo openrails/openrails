@@ -1425,19 +1425,28 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(centerofgravity":
                 case "wagon(centreofgravity":
-                    InitialCentreOfGravityM = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
+                    stf.MustMatch("(");
+                    float initialValue = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                    if (!stf.EndOfBlock()) // User has entered a 3-d vector
                     {
-                        STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
-                        InitialCentreOfGravityM.Z = 0;
+                        InitialCentreOfGravityM.X = initialValue;
+                        InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                        InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+
+                        if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
+                        {
+                            STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
+                            InitialCentreOfGravityM.Z = 0;
+                        }
+
+                        stf.SkipRestOfBlock();
+                    }
+                    else // User has entered a single value, only set the Y component to this value, leave other components unchanged
+                    {
+                        InitialCentreOfGravityM.Y = initialValue;
                     }
                     break;
-                case "wagon(ortscenterofgravity_x":
-                case "wagon(ortscentreofgravity_x": InitialCentreOfGravityM.X = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(ortscenterofgravity_y":
-                case "wagon(ortscentreofgravity_y": InitialCentreOfGravityM.Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(ortscenterofgravity_z":
-                case "wagon(ortscentreofgravity_z": InitialCentreOfGravityM.Z = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsshapenudge": InitialCentreOfGravityM.Z = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsautocentre":
                 case "wagon(ortsautocenter": AutoCenter = stf.ReadBoolBlock(true); break;
                 case "wagon(ortsunbalancedsuperelevation": MaxUnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
