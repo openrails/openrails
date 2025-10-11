@@ -444,6 +444,126 @@ namespace Orts.Simulation.RollingStocks
                 RearAirHose.Connected.ShapeFileName = null;
             }
 
+            // If requested, use the shape file to determine the size of the wagon
+            if ((AutoSize || AutoCenter) && !string.IsNullOrEmpty(MainShapeFileName))
+            {
+                try // Shape file discrepancies might cause errors, we don't want to cause a crash here
+                {
+                    // This might be a bad idea, usually we wait to deal with shape files until within viewing range
+                    // But my hubris has decided we can use for the shape for things other than graphics - Phillip
+                    ShapeFile wagShape = new ShapeFile(wagonFolderSlash + MainShapeFileName, true);
+
+                    (Vector3 mainMins, Vector3 mainMaxes) = wagShape.GetBoundingLimits();
+
+                    bool mstsFreightAnim = true;
+
+                    // And also repeat for ORTS freight animations
+                    if (FreightAnimations != null)
+                    {
+                        if (!FreightAnimations.MSTSFreightAnimEnabled)
+                            mstsFreightAnim = false;
+
+                        foreach (var freightAnim in FreightAnimations.Animations)
+                        {
+                            // We will ignore freight animations not attached to the main shape object for simplicity
+                            if (!string.IsNullOrEmpty(freightAnim.ShapeFileName) && freightAnim.ShapeIndex <= 0 && string.IsNullOrEmpty(freightAnim.ShapeHierarchy))
+                            {
+                                ShapeFile ortsFreightShape = new ShapeFile(wagonFolderSlash + freightAnim.ShapeFileName, true);
+
+                                (Vector3 ortsFreightMins, Vector3 ortsFreightMaxes) = ortsFreightShape.GetBoundingLimits();
+
+                                // Account for flipped freight animation by inverting x and z components
+                                if (freightAnim.Flipped)
+                                {
+                                    Vector3 temp = ortsFreightMins;
+                                    temp.X *= -1;
+                                    temp.Y = ortsFreightMaxes.Y;
+                                    temp.Z *= -1;
+
+                                    ortsFreightMaxes.X *= -1;
+                                    ortsFreightMaxes.Y = ortsFreightMins.Y;
+                                    ortsFreightMaxes.Z *= -1;
+
+                                    ortsFreightMins = ortsFreightMaxes;
+                                    ortsFreightMaxes = temp;
+                                }
+
+                                // Account for offsets
+                                // Z-axis offset is inverted to match MSTS coordinate system
+                                Vector3 modOffset = new Vector3(freightAnim.Offset.X, freightAnim.Offset.Y, -freightAnim.Offset.Z);
+                                ortsFreightMins += modOffset;
+                                ortsFreightMaxes += modOffset;
+
+                                mainMins = Vector3.Min(mainMins, ortsFreightMins);
+                                mainMaxes = Vector3.Max(mainMaxes, ortsFreightMaxes);
+                            }
+                        }
+                    }
+
+                    // And also repeat for MSTS freight animation bounds (if enabled)
+                    if (mstsFreightAnim && !string.IsNullOrEmpty(FreightShapeFileName))
+                    {
+                        ShapeFile freightShape = new ShapeFile(wagonFolderSlash + FreightShapeFileName, true);
+
+                        (Vector3 freightMins, Vector3 freightMaxes) = freightShape.GetBoundingLimits();
+
+                        // MSTS freight animations don't have offsets, so can be simply compared
+                        mainMins = Vector3.Min(mainMins, freightMins);
+                        mainMaxes = Vector3.Max(mainMaxes, freightMaxes);
+                    }
+
+                    // Set dimensions of wagon if configured as such
+                    if (AutoSize)
+                    {
+                        CarWidthM = Math.Max((mainMaxes.X - mainMins.X) + AutoWidthOffsetM, 0.1f);
+                        CarHeightM = Math.Max((mainMaxes.Y - mainMins.Y) + AutoHeightOffsetM, 0.1f);
+                        CarLengthM = Math.Max((mainMaxes.Z - mainMins.Z) + AutoLengthOffsetM, 0.1f);
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rolling stock {0} size automatically calculated using ORTSAutoSize ( {1}, {2}, {3} ).", shortPath,
+                                FormatStrings.FormatVeryShortDistanceDisplay(AutoWidthOffsetM, IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay(AutoHeightOffsetM, IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay(AutoLengthOffsetM, IsMetric));
+                            Trace.TraceInformation("Main shape file {0} calculated to be {1} wide, {2} tall, and {3} long. " +
+                                "Resulting Size ( ) is {4} wide, {5} tall, and {6} long.\n", MainShapeFileName,
+                                FormatStrings.FormatVeryShortDistanceDisplay((mainMaxes.X - mainMins.X), IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay((mainMaxes.Y - mainMins.Y), IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay((mainMaxes.Z - mainMins.Z), IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay(CarWidthM, IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay(CarHeightM, IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay(CarLengthM, IsMetric));
+                        }
+                    }
+
+                    // Automatically determine the center of gravity offset required to perfectly center the shape (lengthwise)
+                    if (AutoCenter)
+                    {
+                        InitialCentreOfGravityM.Z = (mainMaxes.Z + mainMins.Z) / 2.0f;
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rolling stock {0} CoG z-value automatically calculated using ORTSAutoCenter.", shortPath);
+                            if (Math.Abs(InitialCentreOfGravityM.Z) < 0.0001f)
+                                Trace.TraceInformation("Main shape file {0} bounds calculated to be {1} to {2}. Shape is already centered, CoG offset reset to zero.\n",
+                                    MainShapeFileName,
+                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMins.Z, IsMetric),
+                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMaxes.Z, IsMetric));
+                            else
+                                Trace.TraceInformation("Main shape file {0} bounds calculated to be {1} to {2}. CoG offset used to center shape is {3}.\n",
+                                    MainShapeFileName,
+                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMins.Z, IsMetric),
+                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMaxes.Z, IsMetric),
+                                    FormatStrings.FormatVeryShortDistanceDisplay(InitialCentreOfGravityM.Z, IsMetric));
+                        }
+                    }
+                }
+                catch
+                {
+                    Trace.TraceWarning("Could not automatically determine size of shape {0} in wagon {1}, there may be an error in the shape.", MainShapeFileName, shortPath);
+                }
+            }
+
             // If trailing loco resistance constant has not been  defined in WAG/ENG file then assign default value based upon orig Davis values
             if (TrailLocoResistanceFactor == 0)
             {
@@ -1269,8 +1389,14 @@ namespace Orts.Simulation.RollingStocks
                     CarLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(ortsfrontarticulation": FrontArticulation = stf.ReadIntBlock(null); break;
-                case "wagon(ortsreararticulation": RearArticulation = stf.ReadIntBlock(null); break;
+                case "wagon(ortsautosize":
+                    AutoSize = true;
+                    stf.MustMatch("(");
+                    AutoWidthOffsetM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    AutoHeightOffsetM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    AutoLengthOffsetM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
                 case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1288,18 +1414,32 @@ namespace Orts.Simulation.RollingStocks
                         stf.SkipRestOfBlock();
                     }
                     break;
+                case "wagon(centerofgravity":
                 case "wagon(centreofgravity":
                     stf.MustMatch("(");
-                    InitialCentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
+                    float initialValue = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                    if (!stf.EndOfBlock()) // User has entered a 3-d vector
                     {
-                        STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
-                        InitialCentreOfGravityM.Z = 0;
+                        InitialCentreOfGravityM.X = initialValue;
+                        InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                        InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+
+                        if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
+                        {
+                            STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
+                            InitialCentreOfGravityM.Z = 0;
+                        }
+
+                        stf.SkipRestOfBlock();
                     }
-                    stf.SkipRestOfBlock();
+                    else // User has entered a single value, only set the Y component to this value, leave other components unchanged
+                    {
+                        InitialCentreOfGravityM.Y = initialValue;
+                    }
                     break;
+                case "wagon(ortsshapenudge": InitialCentreOfGravityM.Z = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsautocentre":
+                case "wagon(ortsautocenter": AutoCenter = stf.ReadBoolBlock(true); break;
                 case "wagon(ortsunbalancedsuperelevation": MaxUnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsrigidwheelbase":
                     stf.MustMatch("(");
@@ -1686,7 +1826,6 @@ namespace Orts.Simulation.RollingStocks
             CarLengthM = copy.CarLengthM;
             TrackGaugeM = copy.TrackGaugeM;
             CentreOfGravityM = copy.CentreOfGravityM;
-            InitialCentreOfGravityM = copy.InitialCentreOfGravityM;
             MaxUnbalancedSuperElevationM = copy.MaxUnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
             CarBogieCentreLengthM = copy.CarBogieCentreLengthM;
