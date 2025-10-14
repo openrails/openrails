@@ -311,13 +311,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOn);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
                     SignalEventToDieselEngines(PowerSupplyEvent.StartEngine);
-                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOnElectricTrainSupply);
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.QuickPowerOn);
                     break;
 
                 case PowerSupplyEvent.QuickPowerOff:
                     QuickPowerOn = false;
-                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOffElectricTrainSupply);
-                    SignalEventToTractionCutOffRelay(PowerSupplyEvent.OpenTractionCutOffRelay);
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.QuickPowerOff);
+                    SignalEventToTractionCutOffRelay(PowerSupplyEvent.QuickPowerOff);
                     SignalEventToDieselEngines(PowerSupplyEvent.StopEngine);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOffMasterKey);
                     SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOff);

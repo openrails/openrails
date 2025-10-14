@@ -786,9 +786,9 @@ and the state of these parameters when the wagon or locomotive is full.
    single: FullBrakeRelayValveInshot
 
 To configure the stock correctly the following empty and full parameters need to be 
-included in the ORTSFreightAnims file. Empty values are included in the first block, 
-and full values are included in the second code block. A sample code block is shown 
-below::
+included in the ``ORTSFreightAnims`` block. Empty values are included in the first block, 
+and full values are included in the ``FreightAnimContinuous`` or ``FreightAnimStatic``
+sub-block. A sample code block is shown below::
 
     ORTSFreightAnims
     (
@@ -823,6 +823,12 @@ below::
       FullCentreOfGravity_Y ( 1.8 ) 
      )
   )
+
+Any parameters not included will use the equivalent value specified outside
+the ORTSFreightAnims block. If the Davis A, B, and C values are not given
+they will be determined automatically using other properties of the rolling
+stock and either the 1926 Davis formula or 1992 CN formula, depending on the
+ORTSBearingType specified in the Wagon section.
 
 For some rolling stock, it may be more realistic to handle variations in load/empty
 brake force by changing the brake cylinder pressure developed, rather than changing
