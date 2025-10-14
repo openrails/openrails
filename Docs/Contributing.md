@@ -4,7 +4,7 @@ This document will introduce you to a number of ways you can contribute to Open 
 
 ## Discussion
 
-If you'd like to discuss anything Open Rails, please visit [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/).
+If you'd like to discuss anything about Open Rails, please visit [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/).
 
 ## Reporting a bug
 
