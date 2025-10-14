@@ -816,10 +816,10 @@ namespace Orts.Simulation.RollingStocks
 
                 if (maxBrakeShoeForcekN > 20 && Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Maximum force per brakeshoe is {0} and has exceeded {1}, check MaxBrakeShoeForceN {2} or NumberCarBrakeShoes {3}",  FormatStrings.FormatForce(maxBrakeShoeForcekN * 1000, IsMetric), FormatStrings.FormatForce(20 * 1000, IsMetric), FormatStrings.FormatForce(MaxBrakeShoeForceN, IsMetric), NumberCarBrakeShoes);
+                    Trace.TraceInformation("Maximum force per brakeshoe is {0} and has exceeded {1}, check MaxBrakeShoeForceN {2} or NumberCarBrakeShoes {3}", FormatStrings.FormatForce(maxBrakeShoeForcekN * 1000, IsMetric), FormatStrings.FormatForce(20 * 1000, IsMetric), FormatStrings.FormatForce(MaxBrakeShoeForceN, IsMetric), NumberCarBrakeShoes);
                 }
-            } 
-            
+            }
+
             //CurveForceFilter.Initialize();
 
             // Initialize tunnel resistance values
@@ -1029,7 +1029,7 @@ namespace Orts.Simulation.RollingStocks
                 InitializeCarTemperatures();
                 AmbientTemperatureInitialised = true;
             }
-            
+
             // Update temperature variation for height of car above sea level
             // Typically in clear conditions there is a 9.8 DegC variation for every 1000m (1km) rise, in snow/rain there is approx 5.5 DegC variation for every 1000m (1km) rise
             float TemperatureHeightVariationDegC = 0;
@@ -1044,9 +1044,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 TemperatureHeightVariationDegC = Me.ToKiloM(CarHeightAboveSeaLevelM) * DryLapseTemperatureC;
             }
-            
+
             TemperatureHeightVariationDegC = MathHelper.Clamp(TemperatureHeightVariationDegC, 0.00f, 30.0f);
-            
+
             CarOutsideTempC = InitialCarOutsideTempC - TemperatureHeightVariationDegC;
 
             AbsSpeedMpS = Math.Abs(_SpeedMpS);
