@@ -437,8 +437,10 @@ should use the articulation behavior.
 To forcibly enable the articulation behavior at the front of the rail vehicle, use
 ``ORTSFrontArticulation ( 1 )`` and at the rear use ``ORTSRearArticulation ( 1 )``.
 Conversely, use ``ORTSFrontArticulation ( 0 )`` or ``ORTSRearArticulation ( 0 )`` to
-force disable articulation behavior. Entering a value of -1 provides the default
-automatic behavior.
+force disable articulation behavior. Articulation should generally be enabled on the
+'floating' end(s) of a vehicle, where a bogie or wheels are not present in the 3D
+model, and disabled on the end(s) that have wheels. Entering a value of -1 provides
+the default (automatic) behavior.
 
 Freight animations and pickups
 ==============================

@@ -2735,7 +2735,7 @@ namespace Orts.Simulation.RollingStocks
             // and the rest left out.
 
             // Force articulation if stock is configured as such
-            // Otherwise, use default behavior which gives articulation if there are no axles forward/reareward on the mode,
+            // Otherwise, use default behavior which gives articulation if there are no axles forward/reareward on the model,
             // disables articulation on engines, and only allows articulation with 3 or fewer axles, but not 1 axle
             bool articulatedFront = (FrontArticulation == 1 ||
                 (FrontArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z < 0) && WagonType != WagonTypes.Engine && WheelAxles.Count != 1 && WheelAxles.Count <= 3));
