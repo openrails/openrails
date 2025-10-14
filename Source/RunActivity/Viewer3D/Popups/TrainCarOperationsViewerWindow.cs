@@ -254,59 +254,59 @@ namespace Orts.Viewer3D.Popups
                 var TrainOperationsPath = System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperations\\TrainOperationsMap32.png");
 
                 // TODO: This should happen on the loader thread.
-                BattAlwaysOn32 = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BattAlwaysOnRect);
-                BattOn32 = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BattOnRect);
-                BattOff32 = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BattOffRect);
+                BattAlwaysOn32 = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BattAlwaysOnRect);
+                BattOn32 = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BattOnRect);
+                BattOff32 = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BattOffRect);
 
-                BleedOffValveClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BleedOffValveClosedRect);
-                BleedOffValveOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BleedOffValveOpenedRect);
-                BleedOffValveNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BleedOffValveNotAvailableRect);
+                BleedOffValveClosed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BleedOffValveClosedRect);
+                BleedOffValveOpened = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BleedOffValveOpenedRect);
+                BleedOffValveNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BleedOffValveNotAvailableRect);
 
-                BrakeHoseCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseConRect);
-                BrakeHoseDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseDisRect);
-                BrakeHoseFirstDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseFirstDisRect);
-                BrakeHoseRearDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseRearDisRect);
-                BrakeHoseFirstCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseFirstConRect);
-                BrakeHoseRearCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseRearConRect);
+                BrakeHoseCon = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseConRect);
+                BrakeHoseDis = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseDisRect);
+                BrakeHoseFirstDis = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseFirstDisRect);
+                BrakeHoseRearDis = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseRearDisRect);
+                BrakeHoseFirstCon = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseFirstConRect);
+                BrakeHoseRearCon = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseRearConRect);
 
-                Coupler = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, CouplerRect);
-                CouplerFront = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, CouplerFrontRect);
-                CouplerRear = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, CouplerRearRect);
-                CouplerNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, CouplerNotAvailableRect);
+                Coupler = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, CouplerRect);
+                CouplerFront = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, CouplerFrontRect);
+                CouplerRear = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, CouplerRearRect);
+                CouplerNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, CouplerNotAvailableRect);
 
-                Empty = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, EmptyRect);
+                Empty = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, EmptyRect);
 
-                FrontAngleCockClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockClosedRect);
-                FrontAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockOpenedRect);
-                FrontAngleCockPartial = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockPartialRect);
-                FrontAngleCockNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockNotAvailableRect);
+                FrontAngleCockClosed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockClosedRect);
+                FrontAngleCockOpened = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockOpenedRect);
+                FrontAngleCockPartial = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockPartialRect);
+                FrontAngleCockNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockNotAvailableRect);
 
-                HandBrakeNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, HandBrakeNotAvailableRect);
-                HandBrakeNotSet = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, HandBrakeNotSetRect);
-                HandBrakeSet = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, HandBrakeSetRect);
+                HandBrakeNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, HandBrakeNotAvailableRect);
+                HandBrakeNotSet = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, HandBrakeNotSetRect);
+                HandBrakeSet = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, HandBrakeSetRect);
 
-                LocoSymbol = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, LocoSymbolRect);
-                LocoSymbolGreen = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, LocoSymbolGreenRect);
-                LocoSymbolRed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, LocoSymbolRedRect);
+                LocoSymbol = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, LocoSymbolRect);
+                LocoSymbolGreen = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, LocoSymbolGreenRect);
+                LocoSymbolRed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, LocoSymbolRedRect);
 
-                MUconnected = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, MUconnectedRect);
-                MUdisconnected = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, MUdisconnectedRect);
+                MUconnected = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, MUconnectedRect);
+                MUdisconnected = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, MUdisconnectedRect);
 
-                ETSconnected32 = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, ETSconnected32Rect);
-                ETSdisconnected32 = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, ETSdisconnected32Rect);
+                ETSconnected32 = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, ETSconnected32Rect);
+                ETSdisconnected32 = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, ETSdisconnected32Rect);
 
-                RearAngleCockClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockClosedRect);
-                RearAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockOpenedRect);
-                RearAngleCockPartial = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockPartialRect);
-                RearAngleCockNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockNotAvailableRect);
+                RearAngleCockClosed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockClosedRect);
+                RearAngleCockOpened = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockOpenedRect);
+                RearAngleCockPartial = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockPartialRect);
+                RearAngleCockNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockNotAvailableRect);
 
-                ResetBrakesOff = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesOffRect);
-                ResetBrakesOn = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesOnRect);
-                ResetBrakesWarning = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesWarningRect);
+                ResetBrakesOff = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesOffRect);
+                ResetBrakesOn = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesOnRect);
+                ResetBrakesWarning = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesWarningRect);
 
-                PowerOn = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, PowerOnRect);
-                PowerOff = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, PowerOffRect);
-                PowerChanging = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, PowerChangingRect);
+                PowerOn = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, PowerOnRect);
+                PowerOff = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, PowerOffRect);
+                PowerChanging = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, PowerChangingRect);
             }
             UpdateWindowSize();
         }

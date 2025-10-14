@@ -309,10 +309,10 @@ namespace Orts.Viewer3D.Popups
         {
             if (SignalAspects == null)
                 // TODO: This should happen on the loader thread.
-                SignalAspects = SharedTextureManager.Get(owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(owner.Viewer.ContentPath, "SignalAspects.png"));
+                SignalAspects = SharedTextureManager.LoadInternal(owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(owner.Viewer.ContentPath, "SignalAspects.png"));
             if (TrackMonitorImages == null)
                 // TODO: This should happen on the loader thread.
-                TrackMonitorImages = SharedTextureManager.Get(owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(owner.Viewer.ContentPath, "TrackMonitorImages.png"));
+                TrackMonitorImages = SharedTextureManager.LoadInternal(owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(owner.Viewer.ContentPath, "TrackMonitorImages.png"));
 
             Viewer = owner.Viewer;
             StateProperty = Viewer.Settings.GetSavingProperty<int>("TrackMonitorDisplayMode");

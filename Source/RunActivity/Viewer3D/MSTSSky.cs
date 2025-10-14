@@ -533,8 +533,8 @@ namespace Orts.Viewer3D
             }
             else
             {
-                MSTSSkyTexture.Add(SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png")));
-                MSTSSkyStarTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_N.png"));
+                MSTSSkyTexture.Add(SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png")));
+                MSTSSkyStarTexture = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_N.png"));
             }
             if (viewer.ENVFile.SkySatellites != null)
             {
@@ -547,9 +547,9 @@ namespace Orts.Viewer3D
                 MSTSSkyMoonTexture = Viewer.TextureManager.Get(mstsSkyMoonTexture);
             }
             else
-                MSTSSkyMoonTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.png"));
+                MSTSSkyMoonTexture = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.png"));
 
-            MSTSSkyMoonMask = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMask.png")); //ToDo:  No MSTS equivalent - will need to be fixed in MSTSSky.cs
+            MSTSSkyMoonMask = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMask.png")); //ToDo:  No MSTS equivalent - will need to be fixed in MSTSSky.cs
             //MSTSSkyCloudTexture[0] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Clouds01.png"));
 
             ShaderPassesSky = MSTSSkyShader.Techniques["Sky"].Passes.GetEnumerator();
