@@ -17,7 +17,7 @@ If you have content suitable for Open Rails or Microsoft Train Simulator already
 Use the Content button for some auto-install routes or visit the catalogue at www.openrails.org/download/explore-content
 
 SUPPORT
-Please send bug reports and feature requests to our Bug Tracker at https://launchpad.net/or
+Please send bug reports and feature requests to our Issue Tracker at https://github.com/openrails/openrails/issues/
 
 UPDATES
 Open Rails checks once a day for new versions and, if found, adds a red marker to the notification icon in the top right of the menu form. Click on the notification to find the details of an update and install it.
