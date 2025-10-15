@@ -137,6 +137,7 @@ namespace Orts.Formats.Msts
 
                     // How deep are we in the hierarchy? Set a limit to prevent infinite loops
                     int depth = 0;
+                    int maxDepth = shape.lod_controls[0].distance_levels[0].distance_level_header.hierarchy.Max();
 
                     // Determine the overall transformation matrix from the root to the current matrix by following the hierarchy
                     do
@@ -172,9 +173,9 @@ namespace Orts.Formats.Msts
 
                         depth++;
                     } // Keep calculating until we have calculated the root, or until a loop is encountered
-                    while (mIndex > -1 && mIndex != vState.imatrix && mIndex < shape.matrices.Count && depth < 32);
+                    while (mIndex > -1 && mIndex != vState.imatrix && mIndex < shape.matrices.Count && depth <= maxDepth);
 
-                    // Determine position of every vertex in this set from point position and tranformed by the matrix
+                    // Determine position of every vertex in this set from point position and transformed by the matrix
                     for (int i = vSet.StartVtxIdx; i < vSet.StartVtxIdx + vSet.VtxCount; i++)
                     {
                         // Determine vertex position from vertex index and point index

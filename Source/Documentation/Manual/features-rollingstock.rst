@@ -422,29 +422,43 @@ give correct coupler alignement.
 
 .. index::
    single: ORTSAutoSize
+   single: ORTSShapeBounds
 
 To simplify this process, and produce more reasonable dimensions for rolling stock, OR can now
 automatically calculate the dimensions of rolling stock based on the shape file used. Enter
 ``ORTSAutoSize`` in the Wagon section of an engine or wagon to allow OR to determine
-the width, height, and length of the rolling stock based on the dimensions of the main shape file,
+the width, height, and length of the rolling stock based on the bounding info of the shape file,
 ignoring any values entered manually in the MSTS Size parameter.
 
-``ORTSAutoSize`` accepts 3 (optional) arguments, default units in meters, corresponding to offsets from the
-shape's width, height, and length respectively. For example, ``ORTSAutoSize ( 0.1m, -0.2m, -0.18m )``
-would tell OR to automatically determine the wagon's dimensions from the shape file, then subsequently
-add 0.1 meters to the width, subtract 0.2 meters from the height, and subtract 0.18 meters from the length,
-using the resulting values to set the simulated size of the wagon. In most cases, the width and height
-arguments can be set to 0, and the length argument adjusted to produce the desired coupler spacing. If
-no arguments are specified (ie: ``ORTSAutoSize ()`` was entered in the Wagon section) then all three
-offsets are assumed to be 0 meters.
+Additionally, ``ORTSAutoSize`` accepts 3 (optional) arguments, default units in meters, corresponding to
+offsets from the shape's width, height, and length respectively. For example,
+``ORTSAutoSize ( 0.1m, -0.2m, -0.18m )`` would tell OR to automatically determine the wagon's dimensions
+from the shape file or ``ORTSShapeBounds`` (see next paragraph), then subsequently add 0.1 meters to the
+width, subtract 0.2 meters from the height, and subtract 0.18 meters from the length, using the resulting
+values to set the simulated size of the wagon. In most cases, the width and height arguments can be set to
+0, and the length argument adjusted to produce the desired coupler spacing. If no arguments are specified
+(ie: ``ORTSAutoSize ()`` was entered in the Wagon section) then all three offsets are assumed to be 0 meters.
 
-Note that automatic sizing uses the nearest LOD of the main shape file and attached freight animations. LODs for further
-distances have no effect on the automatic sizing. Freight animations using the ``ShapeHierarchy`` feature are also
-skipped due to potential unintended behaviors. :ref:`Shape descriptor overrides <features-shape-manipulation>`
-are also not considered at this phase, so if any changes are made in the .sd file, this feature may not provide
-good results. This method also works best for rolling stock with standard buffers/couplers on each end.
-Automatic sizing generally can't produce reasonable results for articulated rolling stock. And should something go
-wrong with the shape file causing automatic sizing to fail, OR will revert to the values entered in the ``Size`` parameter.
+Inspecting the shape file to determine its size requires additional processing time, but this
+step can be skipped by providing the data directly with the ``ORTSShapeBounds`` parameter.
+Enter the minimum and maximum bounds of the shape in the format ``ORTSShapeBounds ( minX minY minZ
+maxX maxY maxZ )``, where the first 3 values give the minimum bounds (leftmost, rearmost, and lowest
+points) and the second 3 values give the maximum bounds (rightmost, frontmost, highest points) of the
+vertices in the shape, in meters by default. These 6 values can be determined automatically by shape
+viewing programs, saving time by only running the calculation once, at the disadvantage of not
+updating if the shape changes. If verbose eng/wag configuration messages are enabled, OR will also
+log the settings it calculated for ``ORTSShapeBounds`` when ``ORTSAutoSize`` is used.
+
+Note that the automatic bounding method has further limitations that may require use of ``ORTSShapeBounds``
+or prevent use of auto sizing entirely. Automatic bounding calculation uses the nearest LOD of
+the main shape file and attached freight animations. LODs for further distances have no effect
+on the automatic sizing. Freight animations using the ``ShapeHierarchy`` feature are also skipped
+due to potential unintended behaviors. :ref:`Shape descriptor overrides <features-shape-manipulation>`
+are also not considered at this phase, so if any changes are made in the .sd file, this feature may not
+provide good results. This method also works best for rolling stock with standard buffers/couplers on
+each end. Automatic sizing generally can't produce reasonable results for articulated rolling stock.
+And should something go wrong with the shape file causing automatic sizing to fail, OR will revert to
+the values entered in the ``Size`` parameter.
 
 Improved wagon alignment tools
 ------------------------------
@@ -478,10 +492,11 @@ of the 3D model, allowing the "physical" CoG to be entered separately from the "
 And, for the sake of simplicity, it may be desired to just center the 3D model lengthwise
 such that the couplers/buffers are equidistant from the centerpoint of the model. To make this
 specific case easier, OR now includes the ``ORTSAutoCenter`` parameter. When ``ORTSAutoCenter ( 1 )``
-is included in the Wagon section of an engine or wagon, OR will inspect the main shape file used by
-the wagon to determine the exact Z value of CentreOfGravity required to re-center the shape in the
-simulation. This will overwrite the manually entered Z component of ``CentreOfGravity ( x y z )`` but
-will not change the X or Y components. Should no re-centering be required, none will be applied.
+is included in the Wagon section of an engine or wagon, OR will use the shape bounding box given
+by ``ORTSShapeBounds`` or calculated automatically from the shape file to determine the exact
+Z value of CentreOfGravity required to re-center the shape in the simulation. This will overwrite
+the manually entered Z component of ``CentreOfGravity ( x y z )`` but will not change the X or Y
+components. Should no re-centering be required, none will be applied.
 
 Some rolling stock will not align correctly when auto-centered. As with ``ORTSAutoSize``, this
 feature should be employed on rolling stock with standard buffers or couplers, and will
