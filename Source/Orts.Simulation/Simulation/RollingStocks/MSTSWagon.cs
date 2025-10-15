@@ -1436,6 +1436,8 @@ namespace Orts.Simulation.RollingStocks
                     if (ShapeBoundingLimits.Maxes.Z < ShapeBoundingLimits.Mins.Z)
                         (ShapeBoundingLimits.Maxes.Z, ShapeBoundingLimits.Mins.Z) = (ShapeBoundingLimits.Mins.Z, ShapeBoundingLimits.Maxes.Z);
                     break;
+                case "wagon(ortsfrontarticulation": FrontArticulation = stf.ReadIntBlock(null); break;
+                case "wagon(ortsreararticulation": RearArticulation = stf.ReadIntBlock(null); break;
                 case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -2137,7 +2139,7 @@ namespace Orts.Simulation.RollingStocks
 
             outf.Write(WheelBrakeSlideProtectionActive);
             outf.Write(WheelBrakeSlideProtectionTimerS);
-            outf.Write(AngleOfAttackRad);
+            outf.Write(AngleOfAttackmRad);
             outf.Write(DerailClimbDistanceM);
             outf.Write(DerailPossible);
             outf.Write(DerailExpected);
@@ -2194,7 +2196,7 @@ namespace Orts.Simulation.RollingStocks
 
             WheelBrakeSlideProtectionActive = inf.ReadBoolean();
             WheelBrakeSlideProtectionTimerS = inf.ReadInt32();
-            AngleOfAttackRad = inf.ReadSingle();
+            AngleOfAttackmRad = inf.ReadSingle();
             DerailClimbDistanceM = inf.ReadSingle();
             DerailPossible = inf.ReadBoolean();
             DerailExpected = inf.ReadBoolean();
