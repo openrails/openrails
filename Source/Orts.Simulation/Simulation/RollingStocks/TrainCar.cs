@@ -189,6 +189,8 @@ namespace Orts.Simulation.RollingStocks
         public (Vector3 Mins, Vector3 Maxes) ShapeBoundingLimits;
         public bool AutoSize = false;       // Are the dimensions of this wagon to be calculated automatically from the shape file?
         public Vector3 AutoSizeOffsetM;
+        public int FrontArticulation = -1;  // -1: Determine front articulation automatically, 0: Force no front articulation, 1: Force front articulation
+        public int RearArticulation = -1;   // -1: Determine rear articulation automatically, 0: Force no rear articulation, 1: Force rear articulation
         public float MassKG = 10000;        // Mass in KG at runtime; coincides with InitialMassKG if there is no load and no ORTS freight anim
         public float InitialMassKG = 10000;
         public bool IsDriveable;
@@ -2927,34 +2929,36 @@ public string GetCurveDirection()
             // Decided to control what is sent to SetUpWheelsArticulation()by using
             // WheelAxlesLoaded as a flag.  This way, wagons that have to be processed are included
             // and the rest left out.
-            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM.Z < 0);
-            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM.Z > 0);
-            var carIndex = Train.Cars.IndexOf(this);
-            //Certain locomotives are testing as articulated wagons for some reason.
-            if (WagonType != WagonTypes.Engine)
-                if (WheelAxles.Count != 1 && (articulatedFront || articulatedRear))
-                {
-                    WheelAxlesLoaded = true;
-                    SetUpWheelsArticulation(carIndex);
-                }
+
+            // Force articulation if stock is configured as such
+            // Otherwise, use default behavior which gives articulation if there are no axles forward/reareward on the model,
+            // disables articulation on engines, and only allows articulation with 3 or fewer axles, but not 1 axle
+            bool articulatedFront = (FrontArticulation == 1 ||
+                (FrontArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z < 0) && WagonType != WagonTypes.Engine && WheelAxles.Count != 1 && WheelAxles.Count <= 3));
+            bool articulatedRear = (RearArticulation == 1 ||
+                (RearArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z > 0) && WagonType != WagonTypes.Engine && WheelAxles.Count != 1 && WheelAxles.Count <= 3));
+
+            if (articulatedFront || articulatedRear)
+            {
+                WheelAxlesLoaded = true;
+                SetUpWheelsArticulation(articulatedFront, articulatedRear);
+            }
         } // end SetUpWheels()
 
-        protected void SetUpWheelsArticulation(int carIndex)
+        protected void SetUpWheelsArticulation(bool front, bool rear)
         {
             // If there are no forward wheels, this car is articulated (joined
             // to the car in front) at the front. Likewise for the rear.
-            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM.Z < 0);
-            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM.Z > 0);
             // Original process originally used caused too many issues.
             // The original process did include the below process of just using WheelAxles.Add
             //  if the initial test did not work.  Since the below process is working without issues the
             //  original process was stripped down to what is below
-            if (articulatedFront || articulatedRear)
+            if (front || rear)
             {
-                if (articulatedFront && WheelAxles.Count <= 3)
+                if (front)
                     WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, -CarLengthM / 2.0f), 0, 0) { Part = Parts[0] });
 
-                if (articulatedRear && WheelAxles.Count <= 3)
+                if (rear)
                     WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, CarLengthM / 2.0f), 0, 0) { Part = Parts[0] });
 
                 WheelAxles.Sort(WheelAxles[0]);

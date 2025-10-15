@@ -1427,6 +1427,8 @@ namespace Orts.Simulation.RollingStocks
                     if (ShapeBoundingLimits.Maxes.Z < ShapeBoundingLimits.Mins.Z)
                         (ShapeBoundingLimits.Maxes.Z, ShapeBoundingLimits.Mins.Z) = (ShapeBoundingLimits.Mins.Z, ShapeBoundingLimits.Maxes.Z);
                     break;
+                case "wagon(ortsfrontarticulation": FrontArticulation = stf.ReadIntBlock(null); break;
+                case "wagon(ortsreararticulation": RearArticulation = stf.ReadIntBlock(null); break;
                 case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1454,13 +1456,13 @@ namespace Orts.Simulation.RollingStocks
                         InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0);
                         InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0);
 
-                    if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
-                    {
-                        STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
-                        InitialCentreOfGravityM.Z = 0;
-                    }
+                        if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
+                        {
+                            STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
+                            InitialCentreOfGravityM.Z = 0;
+                        }
 
-                    stf.SkipRestOfBlock();
+                        stf.SkipRestOfBlock();
                     }
                     else // User has entered a single value, only set the Y component to this value, leave other components unchanged
                     {
