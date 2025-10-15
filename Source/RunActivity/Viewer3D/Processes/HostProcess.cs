@@ -1,4 +1,4 @@
-// COPYRIGHT 2022 by the Open Rails project.
+﻿// COPYRIGHT 2022 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -62,7 +62,9 @@ namespace Orts.Viewer3D.Processes
         readonly Game Game;
         readonly Thread Thread;
 
-        private const int SleepTime = 10000;
+        private const int DoHostTime = 10000;
+        private const int SleepTime = 100;  // must be short enough for timely termination
+        private const uint DoHostIntervall = DoHostTime / SleepTime;
 
         public HostProcess(Game game)
         {
@@ -91,13 +93,18 @@ namespace Orts.Viewer3D.Processes
             GlobalMemoryStatusEx(memoryStatus);
             CPUMemoryVirtualLimit = Math.Min(memoryStatus.TotalVirtual, memoryStatus.TotalPhysical);
 
+            uint sleepCount = 0;
             while (true)
             {
                 Thread.Sleep(SleepTime);
                 if (State.Terminated)
                     break;
-                if (!DoHost())
-                    return;
+                if (sleepCount % DoHostIntervall == 0)
+                {
+                    if (!DoHost())
+                        return;
+                }
+                sleepCount++;
             }
         }
 
