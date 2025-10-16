@@ -64,7 +64,7 @@ namespace Orts.Viewer3D.Processes
 
         private const int DoHostTime = 10000;
         private const int SleepTime = 100;  // must be short enough for timely termination
-        private const uint DoHostIntervall = DoHostTime / SleepTime;
+        private const uint DoHostInterval = DoHostTime / SleepTime;
 
         public HostProcess(Game game)
         {
@@ -99,7 +99,7 @@ namespace Orts.Viewer3D.Processes
                 Thread.Sleep(SleepTime);
                 if (State.Terminated)
                     break;
-                if (sleepCount % DoHostIntervall == 0)
+                if (sleepCount % DoHostInterval == 0)
                 {
                     if (!DoHost())
                         return;
