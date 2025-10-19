@@ -651,7 +651,7 @@ namespace Orts.Viewer3D.Popups
                 }
 
                 // Restore LastCarIDSelected (F9) after returning from different camera views
-                if (CarIdClicked && Owner.Viewer.Camera.AttachedCar.CarID != LastCarIDSelected)
+                if (CarIdClicked && Owner.Viewer.Camera.AttachedCar != null && Owner.Viewer.Camera.AttachedCar.CarID != LastCarIDSelected)
                 {
                     trainCarViewer.CurrentCarID = LastCarIDSelected;
                     trainCarViewer.CarPosition = CarPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != LastCarIDSelected).Count();
@@ -795,7 +795,7 @@ namespace Orts.Viewer3D.Popups
             Viewer = viewer;
             TrainCar = Viewer.TrainCarOperationsWindow;
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
-            var currentCameraCarID = Viewer.Camera.AttachedCar.CarID;
+            var currentCameraCarID = Viewer.Camera.AttachedCar != null ? Viewer.Camera.AttachedCar.CarID : TrainCar.LastCarIDSelected;
 
             TrainCarViewer.CurrentCarID = TrainCar.LastCarIDSelected;
             TrainCarViewer.CarPosition = TrainCar.CarPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != TrainCar.LastCarIDSelected).Count();
