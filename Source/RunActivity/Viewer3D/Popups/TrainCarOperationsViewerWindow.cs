@@ -438,8 +438,8 @@ namespace Orts.Viewer3D.Popups
                     }
                     if (isElectricDieselLocomotive)
                     {
-                        line.Add(new buttonToggleMU(0, 0, textHeight, Owner.Viewer, CarPosition));
-                        AddSpace(false);
+                            line.Add(new buttonToggleMU(0, 0, textHeight, Owner.Viewer, CarPosition));
+                            AddSpace(false);
 
                         line.Add(new buttonTogglePower(0, 0, textHeight, Owner.Viewer, CarPosition));
                         AddSpace(false);
@@ -908,8 +908,8 @@ namespace Orts.Viewer3D.Popups
                         : carAngleCockAOpen ? FrontAngleCockOpened
                         : FrontAngleCockClosed;
 
-                    Click += new Action<Control, Point>(buttonFrontAngleCock_Click);
-                }
+                        Click += new Action<Control, Point>(buttonFrontAngleCock_Click);
+                    }
                 Source = new Rectangle(0, 0, size, size);
             }
             void buttonFrontAngleCock_Click(Control arg1, Point arg2)
@@ -954,8 +954,8 @@ namespace Orts.Viewer3D.Popups
                         : carAngleCockBOpen ? RearAngleCockOpened
                         : RearAngleCockClosed;
 
-                    Click += new Action<Control, Point>(buttonRearAngleCock_Click);
-                }
+                        Click += new Action<Control, Point>(buttonRearAngleCock_Click);
+                    }
                 Source = new Rectangle(0, 0, size, size);
             }
 

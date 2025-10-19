@@ -481,8 +481,8 @@ namespace Orts.Viewer3D.Popups
                                 }
                                 if (isElectricDieselLocomotive)
                                 {
-                                    line.Add(new buttonToggleMU(0, 0, SymbolSize, Owner.Viewer, carPosition));
-                                    AddSpace();
+                                        line.Add(new buttonToggleMU(0, 0, SymbolSize, Owner.Viewer, carPosition));
+                                        AddSpace();
 
                                     line.Add(new buttonTogglePower(0, 0, SymbolSize, Owner.Viewer, carPosition));
                                     AddSpace();
@@ -691,7 +691,7 @@ namespace Orts.Viewer3D.Popups
                         var batteyStatusChanged = wagon.PowerSupply.BatterySwitch.On != BatterySwitchOn;
 
                         if (powerSupplyStatusChanged || batteyStatusChanged)
-                        {
+                    {
                             if (wagon is MSTSLocomotive) PowerSupplyStatus = (wagon as MSTSLocomotive).LocomotivePowerSupply.GetPowerStatus();
                             BatterySwitchOn = wagon.PowerSupply.BatterySwitch.On;
                             Layout();
