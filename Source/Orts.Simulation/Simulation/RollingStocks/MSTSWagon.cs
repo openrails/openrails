@@ -1856,6 +1856,8 @@ namespace Orts.Simulation.RollingStocks
             CarWidthM = copy.CarWidthM;
             CarHeightM = copy.CarHeightM;
             CarLengthM = copy.CarLengthM;
+            FrontArticulation = copy.FrontArticulation;
+            RearArticulation = copy.RearArticulation;
             TrackGaugeM = copy.TrackGaugeM;
             CentreOfGravityM = copy.CentreOfGravityM;
             MaxUnbalancedSuperElevationM = copy.MaxUnbalancedSuperElevationM;

@@ -2931,7 +2931,7 @@ public string GetCurveDirection()
             // and the rest left out.
 
             // Force articulation if stock is configured as such
-            // Otherwise, use default behavior which gives articulation if there are no axles forward/reareward on the model,
+            // Otherwise, use default behavior which gives articulation if there are no axles forward/rearward on the model,
             // disables articulation on engines, and only allows articulation with 3 or fewer axles, but not 1 axle
             bool articulatedFront = (FrontArticulation == 1 ||
                 (FrontArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z < 0) && WagonType != WagonTypes.Engine && WheelAxles.Count != 1 && WheelAxles.Count <= 3));
@@ -3039,8 +3039,17 @@ public string GetCurveDirection()
                 if (p.SumWgt > 1.5f)
                     p0.AddPartLocation(1, p);
             }
+            if (Parts.Count == 2)
+            {
+                // Train car lacks sufficient parts to locate using linear regression
+                p0.Dir = Parts[1].Dir;
+                p0.Pos = Parts[1].Pos;
+            }
+            else
+            {
             // Determine facing direction and position of train car
             p0.FindCenterLine();
+            }
             Vector3 fwd = new Vector3(p0.Dir[0], p0.Dir[1], -p0.Dir[2]);
             // Check if null (0-length) vector
             if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
@@ -3758,7 +3767,7 @@ public string GetCurveDirection()
         public double[] SumPos = new double[3]; // Sum of component locations [x, y, z]
         public double[] SumPosZOffset = new double[3]; // Sum of component locations [x, y, z] times Z-offsets
         public float[] Pos = new float[3]; // Position [x, y, z] of this part, calculated with y-intercept of linear regression
-        public float[] Dir = new float[3]; // Oritentation [x, y, z] of this part, calculated with slope of linear regression
+        public float[] Dir = new float[3]; // Orientation [x, y, z] of this part, calculated with slope of linear regression
         public float SumRoll; // Sum of all roll angles of components
         public float Roll; // Roll angle of this part
         public bool Bogie; // True if this is a bogie
@@ -3823,7 +3832,7 @@ public string GetCurveDirection()
             // 2D Least regression between the offsets (along longitudinal axis of rail vehicle)
             // and actual positions in 3D space, repeated 3 times for each dimension in 3D.
 
-            // Follows format of y = M * x + B where x is the foward/backward position along the train car axis
+            // Follows format of y = M * x + B where x is the forward/backward position along the train car axis
             // and y is the actual (x, y, or z) position in 3D space. We need to determine vectors B (the 3D
             // position of this part) and M (the 3D orientation of this part) using the offsets and positions added previously.
 
@@ -3838,18 +3847,15 @@ public string GetCurveDirection()
                     Dir[i] = (float)((SumWgt * SumPosZOffset[i] - SumZOffset * SumPos[i]) / denominator);
                     // The position (B) is defined as 'B = [sum(y) - M * sum(x)] / N', where N is the total
                     // weight, x is the offset, y is the 3D position, and M is the direction value from earlier.
-                    // This uses an equivalent form that doesn't use the result of the above calulcation to avoid
+                    // This uses an equivalent form that doesn't use the result of the above calculation to avoid
                     // precision errors from the value being converted to a float.
                     Pos[i] = (float)((SumZOffsetSq * SumPos[i] - SumZOffset * SumPosZOffset[i]) / denominator);
                 }
             }
-            else
+            else // Improperly defined wagon, fallback to basic calculation
             {
                 for (int i = 0; i < 3; i++)
-                {
                     Pos[i] = (float)(SumPos[i] / SumWgt);
-                    Dir[i] = 0;
-                }
             }
 
             Roll = SumRoll / (float)SumWgt;
