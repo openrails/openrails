@@ -915,8 +915,12 @@ namespace Orts.Viewer3D.Popups
             First = car == Viewer.PlayerTrain.Cars.First();
             var CurrentCar = Viewer.PlayerTrain.Cars[carPosition]; ;
 
-            var isSteamAndHasTender = (CurrentCar is MSTSSteamLocomotive) &&
-                (carPosition + (CurrentCar.Flipped ? -1 : 1) < Viewer.PlayerTrain.Cars.Count) && (Viewer.PlayerTrain.Cars[carPosition + (CurrentCar.Flipped ? -1 : 1)].WagonType == MSTSWagon.WagonTypes.Tender);
+            var isSteamAndHasTender = false;
+            if (CurrentCar is MSTSSteamLocomotive)
+            {
+                var validTenderPosition = CurrentCar.Flipped ? carPosition - 1 > -1 : carPosition + 1 < Viewer.PlayerTrain.Cars.Count;
+                isSteamAndHasTender = validTenderPosition && (Viewer.PlayerTrain.Cars[carPosition + (CurrentCar.Flipped ? -1 : 1)].WagonType == MSTSWagon.WagonTypes.Tender);
+            }
             var isTender = CurrentCar.WagonType == MSTSWagon.WagonTypes.Tender;
 
             if (isSteamAndHasTender || isTender)
