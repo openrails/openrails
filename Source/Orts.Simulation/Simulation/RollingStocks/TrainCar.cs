@@ -3044,6 +3044,7 @@ public string GetCurveDirection()
                 // Train car lacks sufficient parts to locate using linear regression
                 p0.Dir = Parts[1].Dir;
                 p0.Pos = Parts[1].Pos;
+                p0.Roll = Parts[1].Roll;
             }
             else
             {
