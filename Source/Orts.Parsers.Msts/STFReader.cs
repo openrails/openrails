@@ -647,7 +647,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         // Additional entries because MSTS has multiple default units, e.g. some speeds in metres/sec and others in miles/hr
         [Flags]
-        public enum UNITS
+        public enum UNITS : ulong
         {
             /// <summary>No unit parsing is done on the {constant_item} - which is obviously fastest
             /// </summary>
@@ -820,6 +820,16 @@ namespace Orts.Parsers.Msts
             /// <para>Scaled to J.</para>
             /// </summary>            
             Energy = 1 << 29,
+
+            /// <summary>Valid Units: n/s, kn/s, lbf/s
+            /// <para>Scaled to newtons per second.</para>
+            /// </summary>
+            ForceRate = 1 << 30,
+
+            /// <summary>Valid Units: w/s, kw/s, hp/s
+            /// <para>Scaled to watts per second.</para>
+            /// </summary>
+            PowerRate = 1ul << 31,
 
             // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values.
             // or interpreting locomotive cab attributes from the ORTSExtendedCVF experimental mechanism.
@@ -1066,7 +1076,7 @@ namespace Orts.Parsers.Msts
                     case "": return 1.0;
                     case "n/m/s": return 1;
                     case "ns/m": return 1;
-                    case "lbf/mph": return 10.0264321;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps => 4.4822162 / 0.44704 = 10.0264321
+                    case "lbf/mph": return 9.9503884;  // 1 lbf = 4.4482216, 1 mph = 0.44704 mps => 4.4482216 / 0.44704 = 9.9503884
                 }
             if ((validUnits & UNITS.PressureDefaultPSI) > 0)
                 switch (suffix)
@@ -1136,7 +1146,7 @@ namespace Orts.Parsers.Msts
                 {
                     case "": return 1.0;
                     case "Nm/s^2": return 1;
-                    case "lbf/mph^2": return 22.42849;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps +> 4.4822162 / (0.44704 * 0.44704) = 22.42849
+                    case "lbf/mph^2": return 22.2583849;  // 1 lbf = 4.4482216, 1 mph = 0.44704 mps +> 4.4482216 / (0.44704 * 0.44704) = 22.2583849
                 }
             if ((validUnits & UNITS.Temperature) > 0)
             {
@@ -1169,6 +1179,23 @@ namespace Orts.Parsers.Msts
                     case "mj": return 1e6f;
                     case "wh": return 3.6e3f;
                     case "kwh": return 3.6e6f;
+                }
+            if ((validUnits & UNITS.ForceRate) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                    case "n/s": return 1;
+                    case "kn/s": return 1e3;
+                    case "lbf/s": return 4.44822162;
+                    case "lb/s": return 4.44822162;
+                }
+            if ((validUnits & UNITS.PowerRate) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                    case "w/s": return 1;
+                    case "kw/s": return 1e3;
+                    case "hp/s": return 745.699872;
                 }
             STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + validUnits.ToString() + " unit");
             return 1;
@@ -3364,10 +3391,10 @@ namespace Orts.Parsers.Msts
             if ((validUnits & UNITS.Resistance) > 0)
                 switch (suffix)
                 {
-                    case "": return 1.0f;
+                    case "": return 1.0;
                     case "n/m/s": return 1;
                     case "ns/m": return 1;
-                    case "lbf/mph": return 10.0264321f;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps => 4.4822162 / 0.44704 = 10.0264321
+                    case "lbf/mph": return 9.9503884;  // 1 lbf = 4.4482216, 1 mph = 0.44704 mps => 4.4482216 / 0.44704 = 9.9503884
                 }
             if ((validUnits & UNITS.PressureDefaultPSI) > 0)
                 switch (suffix)
@@ -3432,9 +3459,9 @@ namespace Orts.Parsers.Msts
             if ((validUnits & UNITS.ResistanceDavisC) > 0)
                 switch (suffix)
                 {
-                    case "": return 1.0f;
+                    case "": return 1.0;
                     case "Nm/s^2": return 1;
-                    case "lbf/mph^2": return 22.42849f;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps +> 4.4822162 / (0.44704 * 0.44704) = 22.42849
+                    case "lbf/mph^2": return 22.2583849;  // 1 lbf = 4.4482216, 1 mph = 0.44704 mps +> 4.4482216 / (0.44704 * 0.44704) = 22.2583849
                 }
 
             STFException.TraceWarning(tokenForWarnings, "Found a suffix '" + suffix + "' which could not be parsed as a " + validUnits.ToString() + " unit");

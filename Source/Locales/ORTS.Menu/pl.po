@@ -1,0 +1,70 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Open Rails po polsku\n"
+"POT-Creation-Date: 2025-02-09 12:41:52+0100\n"
+"PO-Revision-Date: 2025-02-25 21:28+0000\n"
+"Last-Translator: \n"
+"Language-Team: Robert Otremba\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+"X-Poedit-Basepath: .\n"
+
+#: ../../ORTS.Menu/Activities.cs:74
+msgid "- Explore Route -"
+msgstr "- Zwiedzaj Trasę -"
+
+#: ../../ORTS.Menu/Activities.cs:78
+msgid "+ Explore in Activity Mode +"
+msgstr "+ Zwiedzaj w trybie zadania +"
+
+#: ../../ORTS.Menu/Activities.cs:108
+msgid "Not same route:"
+msgstr "Not same route:"
+
+#: ../../ORTS.Menu/Activities.cs:112 ../../ORTS.Menu/Consists.cs:54
+#: ../../ORTS.Menu/Consists.cs:78 ../../ORTS.Menu/Consists.cs:262
+#: ../../ORTS.Menu/ORTimetables.cs:73 ../../ORTS.Menu/ORTimetables.cs:97
+#: ../../ORTS.Menu/Paths.cs:63 ../../ORTS.Menu/Routes.cs:59
+msgid "load error:"
+msgstr "błąd odczytu:"
+
+#: ../../ORTS.Menu/Activities.cs:115 ../../ORTS.Menu/Consists.cs:57
+#: ../../ORTS.Menu/Consists.cs:81 ../../ORTS.Menu/Consists.cs:272
+#: ../../ORTS.Menu/Paths.cs:65 ../../ORTS.Menu/Paths.cs:66
+#: ../../ORTS.Menu/Paths.cs:67 ../../ORTS.Menu/Routes.cs:61
+msgid "unnamed:"
+msgstr "bez nazwy:"
+
+#: ../../ORTS.Menu/Activities.cs:121 ../../ORTS.Menu/Consists.cs:61
+#: ../../ORTS.Menu/Consists.cs:85 ../../ORTS.Menu/Consists.cs:281
+#: ../../ORTS.Menu/ORTimetables.cs:78 ../../ORTS.Menu/ORTimetables.cs:102
+#: ../../ORTS.Menu/Paths.cs:71 ../../ORTS.Menu/Routes.cs:66
+msgid "missing:"
+msgstr "brakujący:"
+
+#: ../../ORTS.Menu/Activities.cs:114
+#, csharp-format
+msgid "Activity '{0}' is excluded."
+msgstr "Zadanie '{0}' jest wykluczone."
+
+#: ../../ORTS.Menu/Consists.cs:251
+msgid "- Any Locomotive -"
+msgstr "- Lokomotywa -"
+
+#: ../../ORTS.Menu/Consists.cs:269
+#, csharp-format
+msgid "Locomotive '{0}' is excluded."
+msgstr "Lokomotywa '{0}' jest wykluczona."
+
+#: ../../ORTS.Menu/Paths.cs:169
+#, csharp-format
+msgid "Start at: {0}"
+msgstr "Rozpoczęcie o: {0}"
+
+#: ../../ORTS.Menu/Paths.cs:170
+#, csharp-format
+msgid "Heading to: {0}"
+msgstr "Jedzie do: {0}"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Common\n"
 "POT-Creation-Date: 2025-01-20 15:27:30+0100\n"
-"PO-Revision-Date: 2025-01-21 13:00+0100\n"
+"PO-Revision-Date: 2025-05-22 18:56+0200\n"
 "Last-Translator: Peter-BBBB <peter.brosowski@gmx.net>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -138,7 +138,7 @@ msgstr "gal-us"
 
 #: ../../ORTS.Common/Conversions.cs:566
 msgid "rpm"
-msgstr "U/min"
+msgstr "UpM"
 
 #: ../../ORTS.Common/Conversions.cs:567
 msgid "kW"
@@ -190,7 +190,7 @@ msgstr "klbf"
 
 #: ../../ORTS.Common/Conversions.cs:579
 msgid "°"
-msgstr "°C"
+msgstr "°"
 
 #. Context: Reverser
 #: ../../ORTS.Common/enums.cs:27

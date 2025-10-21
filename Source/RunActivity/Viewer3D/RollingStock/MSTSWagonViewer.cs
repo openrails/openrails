@@ -59,10 +59,10 @@ namespace Orts.Viewer3D.RollingStock
 
         // Wheels are rotated by hand instead of in the shape file.
         float WheelRotationR;
-        Dictionary<int,List<int>> WheelPartIndexes = new Dictionary<int,List<int>>(); // List of wheels attached to each axle
+        Dictionary<int, List<int>> WheelPartIndexes = new Dictionary<int, List<int>>(); // List of wheels attached to each axle
 
         // Everything else is animated through the shape file.
-        Dictionary<int,AnimatedPart> RunningGears; // List of animated parts linked to every axle
+        Dictionary<int, AnimatedPart> RunningGears; // List of animated parts linked to every axle
         AnimatedPart Pantograph1;
         AnimatedPart Pantograph2;
         AnimatedPart Pantograph3;
@@ -114,7 +114,7 @@ namespace Orts.Viewer3D.RollingStock
         public MSTSWagonViewer(Viewer viewer, MSTSWagon car)
             : base(viewer, car)
         {
-            
+
             string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
             string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
 
@@ -149,7 +149,7 @@ namespace Orts.Viewer3D.RollingStock
                 // Exhaust for HEP/Power Generator
                 if (emitter.Key.ToLowerInvariant() == "wagongeneratorfx")
                     WagonGenerator.AddRange(emitter.Value);
-                
+
                 foreach (var drawer in WagonGenerator)
                 {
                     drawer.Initialize(dieselTexture);
@@ -252,7 +252,7 @@ namespace Orts.Viewer3D.RollingStock
             // This insection initialises the MSTS style freight animation - can either be for a coal load, which will adjust with usage, or a static animation, such as additional shape.
             if (car.FreightShapeFileName != null)
             {
-                
+
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
 
@@ -320,8 +320,8 @@ namespace Orts.Viewer3D.RollingStock
             if (car.InteriorShapeFileName != null)
                 InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.Interior, 30.0f);
 
-            RunningGears = new Dictionary<int,AnimatedPart>();
-            for (int i=-1; i<car.LocomotiveAxles.Count; i++)
+            RunningGears = new Dictionary<int, AnimatedPart>();
+            for (int i = -1; i < car.LocomotiveAxles.Count; i++)
             {
                 RunningGears[i] = new AnimatedPart(TrainCarShape);
                 WheelPartIndexes[i] = new List<int>();
@@ -475,13 +475,19 @@ namespace Orts.Viewer3D.RollingStock
             // Gate all RunningGearPartIndexes on this!
             var matrixAnimated = !TrainCarShape.SharedShape.IsAnimationArticulation(matrix);
             int? LinkedAxleIndex = null;
-            for (int i=0; i<car.LocomotiveAxles.Count; i++)
+            int? notDrivenAxleIndex = null;
+            int? drivenAxleIndex = null;
+            for (int i = 0; i < car.LocomotiveAxles.Count; i++)
             {
                 if (car.LocomotiveAxles[i].AnimatedParts.Contains(matrixName))
                 {
                     LinkedAxleIndex = i;
                     break;
                 }
+                // Do not attach parts to this axle by default if it contains a list of animated parts
+                if (car.LocomotiveAxles[i].AnimatedParts.Count > 0) continue;
+                if (notDrivenAxleIndex == null && car.LocomotiveAxles[i].DriveType == Simulation.RollingStocks.SubSystems.PowerTransmissions.AxleDriveType.NotDriven) notDrivenAxleIndex = i;
+                if (drivenAxleIndex == null && car.LocomotiveAxles[i].DriveType != Simulation.RollingStocks.SubSystems.PowerTransmissions.AxleDriveType.NotDriven) drivenAxleIndex = i;
             }
             if (matrixName.StartsWith("WHEELS") && (matrixName.Length == 7 || matrixName.Length == 8 || matrixName.Length == 9))
             {
@@ -497,9 +503,9 @@ namespace Orts.Viewer3D.RollingStock
                     if (matrixName.Length == 8 && bogieMatrix == 0 && tmatrix == 0) // In this test, both tmatrix and bogieMatrix are 0 since these wheels are not part of a bogie.
                         matrixName = matrixName.Substring(0, 7); // Changing wheel name so that it reflects its actual use since it is not p
                     if (matrixName.Length == 8 || matrixName.Length == 9 || !matrixAnimated)
-                        WheelPartIndexes[LinkedAxleIndex ?? -1].Add(targetNode);
+                        WheelPartIndexes[LinkedAxleIndex ?? notDrivenAxleIndex ?? drivenAxleIndex ?? -1].Add(targetNode);
                     else
-                        RunningGears[LinkedAxleIndex ?? (car.LocomotiveAxles.Count > 0 ? 0 : -1)].AddMatrix(matrix); // TODO: test this in the gltf case
+                        RunningGears[LinkedAxleIndex ?? drivenAxleIndex ?? -1].AddMatrix(matrix); // TODO: test this in the gltf case
                     var id = 0;
                     if (matrixName.Length == 8 || matrixName.Length == 9)
                         Int32.TryParse(matrixName.Substring(6, 1), out id);
@@ -654,7 +660,7 @@ namespace Orts.Viewer3D.RollingStock
             else
             {
                 if (matrixAnimated && matrix != 0 && !ConsistGenerator.GltfVisualTestRun)
-                    RunningGears[LinkedAxleIndex ?? (car.LocomotiveAxles.Count > 0 ? 0 : -1)].AddMatrix(matrix);
+                    RunningGears[LinkedAxleIndex ?? drivenAxleIndex ?? -1].AddMatrix(matrix);
 
                 for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
                     if (TrainCarShape.SharedShape.GetAnimationParent(i) == targetNode)
@@ -793,80 +799,77 @@ namespace Orts.Viewer3D.RollingStock
                     car.SoundHeardInternallyCorrection[MSTSWagon.LeftWindowFrontIndex] = LeftWindowFront.AnimationKeyFraction();
                 if (RightWindowFront.MaxFrame > 0)
                     car.SoundHeardInternallyCorrection[MSTSWagon.RightWindowFrontIndex] = RightWindowFront.AnimationKeyFraction();
-        }
+            }
         }
 
 
         private void UpdateAnimation(RenderFrame frame, ElapsedTime elapsedTime)
         {
-                        
-            float distanceTravelledM = 0.0f; // Distance travelled by non-driven wheels
+            float distanceTravelledM; // Distance travelled by non-driven wheels
             float AnimationWheelRadiusM = MSTSWagon.WheelRadiusM; // Radius of non driven wheels
             float AnimationDriveWheelRadiusM = MSTSWagon.DriverWheelRadiusM; // Radius of driven wheels
 
-            if (MSTSWagon is MSTSLocomotive loco && loco.AdvancedAdhesionModel)
+            if (MSTSWagon is MSTSLocomotive loco)
             {
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
-                //                                distanceTravelledM = MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
-                distanceTravelledM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
-                if (Car.BrakeSkid && !loco.DriveWheelOnlyBrakes) distanceTravelledM = 0;
+                //                                distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
+                distanceTravelledM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
                 foreach (var kvp in RunningGears)
                 {
                     if (!kvp.Value.Empty())
-                {
+                    {
                         var axle = kvp.Key >= 0 && kvp.Key < loco.LocomotiveAxles.Count ? loco.LocomotiveAxles[kvp.Key] : null;
                         if (axle != null)
                             //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                             kvp.Value.UpdateLoop(((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * (float)axle.AxleSpeedMpS * elapsedTime.ClockSeconds / MathHelper.TwoPi / axle.WheelRadiusM);
                         else if (AnimationDriveWheelRadiusM > 0.001)
                             kvp.Value.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
+                    }
+
                 }
-                        
-            }
                 foreach (var kvp in WheelPartIndexes)
-            {
-                    var axle = kvp.Key < loco.LocomotiveAxles.Count && kvp.Key >= 0 ? loco.LocomotiveAxles[kvp.Key] : (Car.EngineType == TrainCar.EngineTypes.Steam ? null : loco.LocomotiveAxles[0]);
-                    Matrix wheelRotationMatrix;
+                {
+                    var axle = kvp.Key < loco.LocomotiveAxles.Count && kvp.Key >= 0 ? loco.LocomotiveAxles[kvp.Key] : null;
                     if (axle != null)
                     {
                         //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
-                        wheelRotationMatrix = Matrix.CreateRotationX(((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * -(float)axle.AxlePositionRad);
+                        WheelRotationR = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * -(float)axle.AxlePositionRad;
                     }
                     else
                     {
                         var rotationalDistanceR = distanceTravelledM / AnimationWheelRadiusM;  // in radians
                         WheelRotationR = MathHelper.WrapAngle(WheelRotationR - rotationalDistanceR);
-                        wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
                     }
+                    Matrix wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
                     foreach (var iMatrix in kvp.Value)
-                {
+                    {
                         TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
-                }
+                    }
                 }
             }
-            else // set values for simple adhesion
-                {
-                distanceTravelledM = ((MSTSWagon.IsDriveable && MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
+            else // set values for wagons (not handled by Axle class)
+            {
+                distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
                 if (Car.BrakeSkid) distanceTravelledM = 0;
                 foreach (var kvp in RunningGears)
                 {
                     if (!kvp.Value.Empty() && AnimationDriveWheelRadiusM > 0.001)
                         kvp.Value.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
                 }
-            // Wheel rotation (animation) - for non-drive wheels in steam locomotives and all wheels in other stock
-            if (WheelPartIndexes.Count > 0)
-             {
+                // Wheel rotation (animation) - for non-drive wheels in steam locomotives and all wheels in other stock
+                if (WheelPartIndexes.Count > 0)
+                {
                     var rotationalDistanceR = distanceTravelledM / AnimationWheelRadiusM;  // in radians
-                WheelRotationR = MathHelper.WrapAngle(WheelRotationR - rotationalDistanceR);
-                var wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
+                    WheelRotationR = MathHelper.WrapAngle(WheelRotationR - rotationalDistanceR);
+                    var wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
                     foreach (var kvp in WheelPartIndexes)
-                 {
+                    {
                         foreach (var iMatrix in kvp.Value)
                         {
-                    TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
-                 }
-              }
+                            TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
+                        }
+                    }
                 }
             }
 
@@ -879,7 +882,7 @@ namespace Orts.Viewer3D.RollingStock
 
 #endif
 
-            // truck angle animation
+            // Bogie angle animation
             Matrix inverseLocation = Matrix.Invert(Car.WorldPosition.XNAMatrix);
 
             foreach (var p in Car.Parts)
@@ -887,25 +890,30 @@ namespace Orts.Viewer3D.RollingStock
                 if (p.iMatrix <= 0)
                     continue;
 
-                // Determine orientation of bogie in absolute space
                 Matrix m = Matrix.Identity;
-                Vector3 fwd = new Vector3(p.Dir[0], p.Dir[1], -p.Dir[2]);
-                // Only do this calculation if the bogie position has been calculated
-                if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
+
+                // Bogie rotation calculation doesn't work on turntables
+                // Assume bogies aren't rotated when on a turntable
+                if (Car.Train?.ControlMode != Train.TRAIN_CONTROL.TURNTABLE)
                 {
-                    fwd.Normalize();
-                    Vector3 side = Vector3.Cross(Vector3.Up, fwd);
-                    if (!(side.X == 0 && side.Y == 0 && side.Z == 0))
-                        side.Normalize();
-                    Vector3 up = Vector3.Cross(fwd, side);
-                    m.Right = side;
-                    m.Up = up;
-                    m.Backward = fwd;
+                    // Determine orientation of bogie in absolute space
+                    Vector3 fwd = new Vector3(p.Dir[0], p.Dir[1], -p.Dir[2]);
+                    // Only do this calculation if the bogie position has been calculated
+                    if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
+                    {
+                        fwd.Normalize();
+                        Vector3 side = Vector3.Cross(Vector3.Up, fwd);
+                        if (!(side.X == 0 && side.Y == 0 && side.Z == 0))
+                            side.Normalize();
+                        Vector3 up = Vector3.Cross(fwd, side);
+                        m.Right = side;
+                        m.Up = up;
+                        m.Backward = fwd;
 
-                    // Convert absolute rotation into rotation relative to train car
-                    m = Matrix.CreateRotationZ(p.Roll) * m * inverseLocation;
+                        // Convert absolute rotation into rotation relative to train car
+                        m = Matrix.CreateRotationZ(p.Roll) * m * inverseLocation;
+                    }
                 }
-
                 // Insert correct translation (previous step likely introduced garbage data)
                 m.Translation = TrainCarShape.SharedShape.Matrices[p.iMatrix].Translation;
 
@@ -931,8 +939,8 @@ namespace Orts.Viewer3D.RollingStock
                 FreightShape.Location.TileX = Car.WorldPosition.TileX;
                 FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
 
-                    bool SteamAnimShape = false;
-                    float FuelControllerLevel = 0.0f;
+                bool SteamAnimShape = false;
+                float FuelControllerLevel = 0.0f;
 
                 // For coal load variation on locomotives determine the current fuel level - and whether locomotive is a tender or tank type locomotive.
                 if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon is MSTSSteamLocomotive)
@@ -955,24 +963,24 @@ namespace Orts.Viewer3D.RollingStock
                         {
                             FuelControllerLevel = NonTenderSteamLocomotive.FuelController.CurrentValue;
                             SteamAnimShape = true;
-                        } 
+                        }
                     }
                 }
 
-                    // Set height of FAs - if relevant conditions met, use default position co-ords defined above
-                    if (FreightShape.XNAMatrices.Length > 0)
+                // Set height of FAs - if relevant conditions met, use default position co-ords defined above
+                if (FreightShape.XNAMatrices.Length > 0)
+                {
+                    // For tender coal load animation 
+                    if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM && SteamAnimShape)
                     {
-                        // For tender coal load animation 
-                        if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM && SteamAnimShape)
-                        {
-                            FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimMinLevelM + FuelControllerLevel * (MSTSWagon.FreightAnimMaxLevelM - MSTSWagon.FreightAnimMinLevelM);
-                        }
-                        // reproducing MSTS strange behavior; used to display loco crew when attached to tender
-                        else if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender) 
-                        {
-                            FreightShape.Location.XNAMatrix.M42 += MSTSWagon.FreightAnimMaxLevelM;
-                        }
+                        FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimMinLevelM + FuelControllerLevel * (MSTSWagon.FreightAnimMaxLevelM - MSTSWagon.FreightAnimMinLevelM);
                     }
+                    // reproducing MSTS strange behavior; used to display loco crew when attached to tender
+                    else if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender)
+                    {
+                        FreightShape.Location.XNAMatrix.M42 += MSTSWagon.FreightAnimMaxLevelM;
+                    }
+                }
                 // Display Animation Shape                    
                 FreightShape.PrepareFrame(frame, elapsedTime);
             }
@@ -1057,7 +1065,7 @@ namespace Orts.Viewer3D.RollingStock
             if (FrontCouplerShape != null && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
             {
                 // Get the movement that would be needed to locate the coupler on the car if they were pointing in the default direction.
-                var displacement =  Car.FrontCoupler.Size;
+                var displacement = Car.FrontCoupler.Size;
                 displacement.Z += (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM - Car.WagonFrontCouplerCurveExtM;
 
                 if (Car.CarAhead != null) // Display animated coupler if there is a car infront of this car
@@ -1308,7 +1316,7 @@ namespace Orts.Viewer3D.RollingStock
             // ToDO - For some reason aligning the coupler with a flipped car introduces a small error in the coupler position such that the couplers between a normal and flipped 
             // car will not align correctly.
             // To correct this "somewhat" a test has been introduced to align coupler location with the previous car. See code above in front coupler.
-            
+
             // Place the coupler in the centre of the car
             var p = new WorldPosition(car.WorldPosition);
             couplerShape.Location.Location = new Vector3(p.Location.X, p.Location.Y, p.Location.Z);
@@ -1353,7 +1361,7 @@ namespace Orts.Viewer3D.RollingStock
             var mRotation = Matrix.CreateRotationY(angle);
 
             // Rotate the coupler to align with the calculated angle direction
-            couplerShape.Location.XNAMatrix = mRotation* couplerShape.Location.XNAMatrix;
+            couplerShape.Location.XNAMatrix = mRotation * couplerShape.Location.XNAMatrix;
 
         }
 
@@ -1377,12 +1385,12 @@ namespace Orts.Viewer3D.RollingStock
 
         }
 
-    /// <summary>
-    /// Rotate the coupler to align with the direction (attitude) of the car.
-    /// </summary>
-    /// <param name="car"></param>
-    /// <param name="couplerShape"></param>
-    private void AlignCouplerWithCar(TrainCar car, AnimatedShape couplerShape)
+        /// <summary>
+        /// Rotate the coupler to align with the direction (attitude) of the car.
+        /// </summary>
+        /// <param name="car"></param>
+        /// <param name="couplerShape"></param>
+        private void AlignCouplerWithCar(TrainCar car, AnimatedShape couplerShape)
         {
 
             var p = new WorldPosition(car.WorldPosition);
@@ -1457,6 +1465,19 @@ namespace Orts.Viewer3D.RollingStock
             try
             {
                 Viewer.SoundProcess.AddSoundSource(this, new SoundSource(Viewer, MSTSWagon, smsFilePath));
+                if (MSTSWagon is MSTSLocomotive && MSTSWagon.Train != null && MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI)
+                {
+                    if (MSTSWagon.CarID == MSTSWagon.Train.Cars[0].CarID)
+                        // Lead loco, enable AI train trigger
+                        MSTSWagon.SignalEvent(Event.AITrainLeadLoco);
+                    // AI train helper loco
+                    else MSTSWagon.SignalEvent(Event.AITrainHelperLoco);
+                }
+                else if (MSTSWagon == Viewer.PlayerLocomotive)
+                    MSTSWagon.SignalEvent(Event.PlayerTrainLeadLoco);
+                else if (MSTSWagon is MSTSLocomotive && MSTSWagon.Train != null && (MSTSWagon.Train.TrainType == Train.TRAINTYPE.PLAYER ||
+                    MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING))
+                    MSTSWagon.SignalEvent(Event.PlayerTrainHelperLoco);
             }
             catch (Exception error)
             {

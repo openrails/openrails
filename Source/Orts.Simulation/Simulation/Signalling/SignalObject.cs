@@ -87,6 +87,9 @@ namespace Orts.Simulation.Signalling
 
         public List<int> JunctionsPassed = new List<int>();  // Junctions which are passed checking next signal //
 
+        public int? platformRef = null;         // platform reference, used for request stop
+        public float? visDistance = null;       // visibility distance for request stop
+
         public int thisRef;                     // This signal's reference.
         public int direction;                   // Direction facing on track
 
@@ -364,6 +367,30 @@ namespace Orts.Simulation.Signalling
                     if (thisSection.CircuitState.TrainReserved != null && thisSection.CircuitState.TrainReserved.Train.Number == number)
                     {
                         enabledTrain = thisSection.CircuitState.TrainReserved;
+                    }
+                    else if (thisSection.CircuitState.HasTrainsOccupying())
+                    {
+                        List<Train.TrainRouted> trainList = thisSection.CircuitState.TrainsOccupying();
+                        float? offsetInSection = null;
+
+                        foreach (var thisRouted in trainList)
+                        {
+                            var thisTrain = thisRouted.Train;
+                            var thisOffset = thisTrain.PresentPosition[0].TCOffset;
+                            if (!offsetInSection.HasValue || thisOffset > offsetInSection)
+                            {
+                                offsetInSection = thisOffset;
+                                if (thisTrain.Number == number)
+                                {
+                                    enabledTrain = thisRouted;
+                                    thisTrain.NextSignalObject[0] = this;
+                                }
+                                else
+                                {
+                                    enabledTrain = null;
+                                }
+                            }
+                        }
                     }
                     else
                     {
@@ -1006,6 +1033,15 @@ namespace Orts.Simulation.Signalling
         }
 
         /// <summary>
+        /// opp_sig_id : returns ident of next opposite signal of required type
+        /// search using trainpath of enabled train
+        /// </summary>
+        public int opp_sig_id_trainpath(SignalFunction function)
+        {
+            return SONextSignalOppTrainpath(function);
+        }
+
+        /// <summary>
         /// this_sig_noSpeedReduction : Returns the setting if speed must be reduced on RESTRICTED or STOP_AND_PROCEED
         /// returns TRUE if speed reduction must be suppressed
         /// </summary>
@@ -1241,6 +1277,67 @@ namespace Orts.Simulation.Signalling
             return aspect1;
         }
 
+
+        /// <summary>
+        /// trainhasrequeststop : link signal with platform and set state according to request stop pickup requirements
+        /// </summary>
+        public int trainRequestStop(int aspect1, int aspect2, string dumpfile)
+        {
+            int aspect = 0;
+
+            // set platform link if not yet set
+            if (!platformRef.HasValue)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
+                foreach (int pfIndex in thisSection.PlatformIndex)
+                {
+                    PlatformDetails thisPlatform = signalRef.PlatformDetailsList[pfIndex];
+                    if (thisPlatform.TCOffset[0, TCDirection] < TCOffset && TCOffset < thisPlatform.TCOffset[1, TCDirection])
+                    {
+                        platformRef = pfIndex;
+                        continue;
+                    }
+                    else if (thisPlatform.TCOffset[1, TCDirection] < TCOffset && TCOffset < thisPlatform.TCOffset[0, TCDirection])
+                    {
+                        platformRef = pfIndex;
+                        continue;
+                    }
+                }
+            }
+
+            // if enabled, check if related station is next station for train
+
+            if (enabled && platformRef.HasValue)
+            {
+                if (enabledTrain.Train.StationStops != null && enabledTrain.Train.StationStops.Count > 0)
+                {
+                    if (enabledTrain.Train.StationStops[0].PlatformItem.Name == signalRef.PlatformDetailsList[platformRef.Value].Name)
+                    {
+                        if (enabledTrain.Train.StationStops[0].ReqStopDetails != null)
+                        {
+                            foreach (var sighead in SignalHeads)
+                            {
+                                if (sighead.ReqStopVisDistance.HasValue)
+                                {
+                                    enabledTrain.Train.StationStops[0].ReqStopDetails.visDistance = sighead.ReqStopVisDistance.Value;
+                                }
+                                if (sighead.ReqStopAnnDistance.HasValue)
+                                {
+                                    enabledTrain.Train.StationStops[0].ReqStopDetails.annDistance = sighead.ReqStopAnnDistance.Value;
+                                }
+                            }
+
+                            if (enabledTrain.Train.StationStops[0].ReqStopDetails.pickupSet)
+                            {
+                                aspect = 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return aspect;
+        }
 
         /// <summary>
         /// route_set : check if required route is set
@@ -1657,6 +1754,51 @@ namespace Orts.Simulation.Signalling
                             thisTC = thisSection.ActivePins[pinIndex, 1].Link;
                             direction = thisSection.ActivePins[pinIndex, 1].Direction;
                         }
+                    }
+                }
+            }
+
+            return signalFound;
+        }
+
+        /// <summary>
+        /// Find next signal in opp direction using path of enabled train
+        /// </summary>
+        public int SONextSignalOppTrainpath(SignalFunction function)
+        {
+            int signalFound = -1;
+
+            // if enabled train is set
+            if (enabledTrain != null)
+            {
+                var pathposindex = enabledTrain.Train.PresentPosition[1].RouteListIndex;
+
+                // get route index of signal
+                var signalindex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCReference, pathposindex);
+
+                while (signalFound < 0 && signalindex >= 0)
+                {
+                    int tcindex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex][signalindex].TCSectionIndex;
+                    int direction = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex][signalindex].Direction;
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[tcindex];
+
+                    // check if required type of signal is along this section
+                    if (function == SignalFunction.NORMAL)
+                    {
+                        signalFound = thisSection.EndSignals[direction == 0 ? 1 : 0] != null ? thisSection.EndSignals[direction].thisRef : -1;
+                    }
+                    else
+                    {
+                        TrackCircuitSignalList thisListrev = thisSection.CircuitItems.TrackCircuitSignals[direction == 0 ? 1 : 0][function];
+                        if (thisListrev.TrackCircuitItem.Count > 0)
+                        {
+                            signalFound = thisListrev.TrackCircuitItem[0].SignalRef.thisRef;
+                        }
+                    }
+
+                    if (signalFound < 0)
+                    {
+                        signalindex -= 1;
                     }
                 }
             }

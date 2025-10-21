@@ -270,13 +270,13 @@ namespace ORTS.Scripting.Api
         /// Sets the current state of the main power supply (power from the pantograph or the generator)
         /// Main power comes from the pantograph or the diesel generator
         /// </summary>
-        protected void SetCurrentMainPowerSupplyState(PowerSupplyState state) => LpsHost.MainPowerSupplyState = state;
+        protected virtual void SetCurrentMainPowerSupplyState(PowerSupplyState state) => LpsHost.MainPowerSupplyState = state;
 
         /// <summary>
         /// Sets the current state of the auxiliary power supply
         /// Auxiliary power is used by auxiliary systems of a locomotive (such as ventilation or air compressor) and by systems of the cars (such as air conditionning)
         /// </summary>
-        protected void SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState state) => LpsHost.AuxiliaryPowerSupplyState = state;
+        protected virtual void SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState state) => LpsHost.AuxiliaryPowerSupplyState = state;
 
         /// <summary>
         /// Sets the current state of the cab power supply
@@ -287,11 +287,11 @@ namespace ORTS.Scripting.Api
         /// Sets the current state of the electric train supply
         /// ETS is used by the systems of the cars (such as air conditionning)
         /// </summary>
-        protected void SetCurrentElectricTrainSupplyState(PowerSupplyState state) => LpsHost.ElectricTrainSupplyState = state;
+        protected virtual void SetCurrentElectricTrainSupplyState(PowerSupplyState state) => LpsHost.ElectricTrainSupplyState = state;
         /// <summary>
         /// Sets the current availability of the dynamic brake
         /// </summary>
-        protected void SetCurrentDynamicBrakeAvailability(bool avail) => LpsHost.DynamicBrakeAvailable = avail;
+        protected virtual void SetCurrentDynamicBrakeAvailability(bool avail) => LpsHost.DynamicBrakeAvailable = avail;
 
         /// <summary>
         /// Sends an event to the master switch
@@ -376,7 +376,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected void SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent evt, int id)
         {
-            if (Locomotive == Train.LeadLocomotive)
+            if (Locomotive == Train.LeadLocomotive || (Train.LeadLocomotive == null && IndexOfLocomotive() == 0))
             {
                 foreach (TrainCar car in Train.Cars)
                 {
@@ -606,7 +606,7 @@ namespace ORTS.Scripting.Api
 
                 if (length > 0)
                 {
-                    buffer.Trim();
+                    buffer = buffer.Trim('\0').Trim();
                     return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
                 }
             }

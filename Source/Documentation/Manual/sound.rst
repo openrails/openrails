@@ -430,6 +430,78 @@ Trigger       Function
 322           BoosterCylinderCocksClose
 =========     =====================================
 
+Following triggers referring to locomotive and train type are available:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+330           AITrainLeadLoco
+331           AITrainHelperLoco
+332           PlayerTrainLeadLoco
+333           PlayerTrainHelperLoco
+334           AITrainApproachingStation
+335           AITrainLeavingStation
+336           StaticTrainLoco
+337           EndAITrainLeadLoco
+=========     =====================================
+
+
+Track Based Sounds for Routes
+-----------------------------
+
+As track based sounds (such as track joints, curve squeal, etc) are common to all rolling stock these types of sounds can be added at a route level, rather then 
+at an individual rolling stock level. This has the advantage of ensuring a level of consistency for all individual stock rather then requiring each piece of stock 
+to have appropriate sounds associated with it. It means that all rolling stock will be "automatically" have track sounds given to it.
+
+This approach relies on use of the Track Region sounds configured in the TType.dat file. A base SMS file is created for the first track region sound which is played 
+continuously and contains all track related sounds that need to be played despite the region that the train is in. Further track region SMS files can be created for 
+different track type regions, such as different bridge types (such as wood, concrete or steel).
+
+To enable this approach in OR, the following parameters need to be set accordingly in the route TRK file.
+
+``ORTSPlayTrackSoundsBaseContinuous`` - this causes the first SMS file in the TType file to be played continuously. Set to 1 for continuous play or 0 for legacy operation.
+
+``ORTSDistanceBetweenTrackJoints`` - this defines the distance between the track joints, and the value is any valid distance.
+
+``ORTSConcreteSleepers`` - Allows sounds to be adjusted according to whether track is wood or concrete supported. Set to 1 if concrete sleepers are used throughout the route.
+
+The following control parameters can be used in the relevant track region SMS files to vary a frequency or volume curve for the sound being played:
+
+``AngleofAttackControlled`` - Varies as the Angle of Attack of a car on a curve varies, in Milliradian (mRad).
+
+``CarFrictionControlled`` - Varies as friction of car changes, typically between 0 and 1.
+
+``WheelRPMControlled`` - Varies as RPM of wheel changes, in RPM.
+
+``CarDistanceTrackControlled`` - Distance that the car is from the camera in metres.
+
+``CarTunnelDistanceControlled`` - Varies based upon the distance as a car travels into and out of a tunnel. Typically this value is between 0 and 25 metres.
+
+The following control parameters can be used to trigger, enable or disable different WAV sound files within a SMS file:
+
+``Joint_2Axle_Trigger``, ``Joint_3Axle_Trigger``, ``Joint_4Axle_Trigger``, ``Joint_6Axle_Trigger``, ``Joint_8Axle_Trigger`` - these triggers are operated when the car passes 
+over a joint, and can be varied in accordance with the number of axles defined in the WAG file.
+
+``Switch_2Axle_Trigger``, ``Switch_3Axle_Trigger``, ``Switch_4Axle_Trigger``, ``Switch_6Axle_Trigger``, ``Switch_8Axle_Trigger`` - these triggers are operated when the car 
+passes over a switch, and can be varied in accordance with the number of axles defined in the WAG file.
+
+``Xover_2Axle_Trigger``, ``Xover_3Axle_Trigger``, ``Xover_4Axle_Trigger``, ``Xover_6Axle_Trigger``, ``Xover_8Axle_Trigger`` - these triggers are operated when the car passes 
+over a Cross over, and can be varied in accordance with the number of axles defined in the WAG file. Note that the cross over needs to have been defined within the route editor.
+
+``AngleofAttack_inc_past``, ``Angleofattack_dec_past`` - Varies as the Angle of Attack of a car on a curve varies, in Milliradian (mRad).
+
+``WheelRPM_inc_past``, ``WheelRPM_dec_past`` - Varies as RPM of wheel changes, in RPM.
+
+``ConcreteSleepers_inc_past``, ``ConcreteSleepers_dec_past`` - 0 = wood sleepers, 1 = concrete sleepers
+
+``CarInTunnel_inc_past``, ``CarInTunnel_dec_past`` - 0 = car not in tunnel, 1 = car in tunnel.
+
+``CarCameraDistance_inc_past``, ``CarCameraDistance_dec_past`` - Distance that the car is from the camera, in metres.
+
+Note: If rolling stock already has track sounds set up in tyhe wagon SMS file, then these will be played at the same time as the route based sounds. For best sound outcomes, 
+the number of axles for each wagon should be correctly set in the WAG file.
+
+
 Variable Triggers
 -----------------
 

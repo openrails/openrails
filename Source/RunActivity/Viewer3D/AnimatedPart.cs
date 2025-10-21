@@ -150,9 +150,16 @@ namespace Orts.Viewer3D
         public void SetFrameWrap(float frame)
         {
             // Wrap the frame around 0-MaxFrame without hanging when MaxFrame=0.
-            while (MaxFrame > 0 && frame < 0) frame += MaxFrame;
-            if (frame < 0) frame = 0;
-            frame %= MaxFrame;
+            if (MaxFrame > 0)
+            {
+                frame %= MaxFrame;
+                // If frame was negative (eg: animation run in reverse), it will still be negative
+                // and needs one additional offset by MaxFrame to be in the correct range
+                if (frame < 0)
+                    frame += MaxFrame;
+            }
+            else if (frame < 0)
+                frame = 0;
             SetFrame(frame);
         }
 

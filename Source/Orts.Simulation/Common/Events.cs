@@ -27,6 +27,14 @@ namespace Orts.Common
     public enum Event
     {
         None,
+        AITrainApproachingStation,
+        AITrainHelperLoco,
+        AITrainLeadLoco,
+        AITrainLeavingStation,
+        PlayerTrainHelperLoco,
+        PlayerTrainLeadLoco,
+        StaticTrainLoco,
+        EndAITrainLeadLoco,
         BatterySwitchOff,
         BatterySwitchOn,
         BatterySwitchCommandOff,
@@ -279,6 +287,9 @@ namespace Orts.Common
         CruiseControlMaxForce,
         CruiseControlAlert,
         CruiseControlAlert1,
+
+        // request stop
+        RequestStopAnnounce,
 
         MPCChangePosition,
 
@@ -558,6 +569,8 @@ namespace Orts.Common
                         case 262: return Event.WindowsClosed;
                         case 263: return Event.WindowsOpen;
 
+                        case 270: return Event.RequestStopAnnounce;
+
                         // Cruise Control
                         case 298: return Event.LeverFromZero;
                         case 299: return Event.LeverToZero;
@@ -572,6 +585,16 @@ namespace Orts.Common
                         case 321: return Event.BoosterCylinderCocksOpen;
                         case 322: return Event.BoosterCylinderCocksClose;
 
+                        // AI train related events
+                        case 330: return Event.AITrainLeadLoco;
+                        case 331: return Event.AITrainHelperLoco;
+                        case 332: return Event.PlayerTrainLeadLoco;
+                        case 333: return Event.PlayerTrainHelperLoco;
+                        case 334: return Event.AITrainApproachingStation;
+                        case 335: return Event.AITrainLeavingStation;
+                        case 336: return Event.StaticTrainLoco;
+                        case 337: return Event.EndAITrainLeadLoco;
+						
                         default: return 0;
                     }
                 case Source.MSTSCrossing:

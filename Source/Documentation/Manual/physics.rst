@@ -39,50 +39,75 @@ the WAG / ENG file is discussed.
 Resistive Forces
 ----------------
 
-Open Rails physics calculates resistance based on real world physics:
-gravity, mass, rolling resistance and optionally curve resistance. This is
-calculated individually for each car in the train. The program calculates
-rolling resistance, or friction, based on the Friction parameters in the
-Wagon section of .wag/.eng file. Open Rails identifies whether the .wag
-file uses the *FCalc* utility or other friction data. If *FCalc* was used to
-determine the Friction variables within the .wag file, Open Rails compares
-that data to the Open Rails Davis equations to identify the closest match
-with the Open Rails Davis equation. If no-FCalc Friction parameters are
-used in the .wag file, Open Rails ignores those values, substituting its
-actual Davis equation values for the train car.
+Open Rails physics calculates resistance based on real world principles:
+gravity, mass, wind, rolling resistance, and curve resistance. This is
+calculated individually for each car in the train.
+
+The program supports a few methods for determining rolling resistance.
+The oldest method, intended only to support legacy content, uses the
+``Friction`` parameters in the Wagon section of .wag/.eng file.
+Open Rails identifies whether the .wag file used the *FCalc* utility or
+other friction data. If *FCalc* was used to determine the Friction variables
+within the .wag file, Open Rails attempts to determine the Davis coefficients
+originally used to derive the Friction parameters. If no FCalc Friction
+parameters are used in the .wag file, Open Rails ignores those values,
+substituting resistance calculated by the original 1923 Davis equation.
 
 .. index::
    single: ORTSDavis_A
    single: ORTSDavis_B
    single: ORTSDavis_C
+   single: ORTSBearingType
    
-A basic (simplified) Davis formula is used in the following form:
+For new content, it is preferred to not use the ``Friction`` parameters,
+and instead enter the Davis coefficients directly as this is more
+prototypical. In the Wagon section, the parameters ``ORTSDavis_A``,
+``ORTSDavis_B``, and ``ORTSDavis_C`` can be used to provide these values.
+When using this method, the wagon section should also specify the type of
+wheel bearings used with the ``ORTSBearingType`` parameter.
+These values are then used in a generic form of the Davis formula:
 
 F\ :sub:`res` = ORTSDavis_A + speedMpS * (ORTSDavis_B + ORTSDavis_C * speedMpS\ :sup:`2`\ )
 
-Where F\ :sub:`res` is the friction force of the car. The rolling resistance
-can be defined either by *FCalc* or ORTSDavis_A, _B and _C components. If
-one of the *ORTSDavis* components is zero, *FCalc* is used. Therefore, e.g.
-if the data doesn't contain the B part of the Davis formula, a very small
-number should be used instead of zero.
+Where F\ :sub:`res` is the friction force of the car when travelling at a
+speed of *speedMpS*. Note that in this formula, unlike the empirical Davis
+formula, the weight of the rolling stock and the number of axles are not
+considered by this equation; the ORTSDavis values must be set already
+accounting for the weight and number of axles. Accepted units of measure
+for ORTSDavis parameters and the list of bearing types can be found in the
+:ref:`required parameters table <required-params>`.
+
+In the case that ORTSDavis coefficients are not known or prove awkward to calculate,
+Open Rails can automatically calculate rolling resistance using other data
+in combination with the 1926 Davis equation (for grease and friction bearings)
+or the 1992 CN equation (for roller and low bearings). If given a supported
+``ORTSBearingType``, missing A and B coefficients will be found from the rail
+vehicle weight and number of axles. Likewise, if the C coefficient is missing it
+is automatically calculated from the ``ORTSWagonFrontalArea`` and
+``ORTSDavisDragConstant`` values (or defaults, if those are missing).
+While the auto-calculated results will be reasonable for standard rolling stock,
+manual entry of ORTSDavis coefficients is still preferred for more complicated
+rolling stock such as steam locomotives, multiple units, high speed trains,
+articulated units, and anything studied in experiments other than Davis.
 
 .. index::
    single: ORTSMergeSpeed
    single: ORTSStandstillFriction
 
-When a train is initially started, additional force is needed to overcome
-the initial higher bearing torque (forces) and track resistance.  Starting resistance is calculated 
-automatically by Open Rails based upon empirical prototypical data at low speeds. 
-By selecting different values for ``ORTSBearingType`` different values of starting 
-resistance will be applied. The Open Rails calculation for starting resistance takes 
-into account different conditions, such as weather (for example, snowing or clear), 
-wagon (axle) load, wheel bearing temperature and wheel diameter. Hence when using the OR calculation 
-the correct values should be inserted in ``ORTSNumberAxles`` parameter in the wagon section, and 
-``ORTSNumberDriveAxles`` in the engine section. The ``WheelRadius`` value should also be 
-inserted in both sections as appropriate.
+The various forms of Davis equation are only accurate above 5 mph or so. They
+prove inaccurate at low speeds as additional force is needed to overcome
+the initial higher bearing torque (forces) and track resistance. Starting resistance
+is calculated automatically by Open Rails based upon environmental conditions
+and the setting of ``ORTSBearingType``. Each bearing type has a different starting
+resistance profile based on empirical prototypical data, including consideration
+for the temperature of the bearing, wagon (axle) load, and wheel diameter. Hence
+when using the OR calculation  the correct values should be inserted in ``ORTSNumberAxles``
+parameter in the wagon section, and ``ORTSNumberDriveAxles`` in the engine section. The
+``WheelRadius`` value should also be inserted in both sections as appropriate.
 
-Alternatively the low-speed friction force can be manually specified by the user by setting 
-``ORTSStandstillFriction`` and ``ORTSMergeSpeed``.
+Alternatively the low-speed friction force can be manually specified by the user by
+setting the zero-speed force in ``ORTSStandstillFriction`` and the speed at which the
+regular Davis equation takes over with ``ORTSMergeSpeed``.
 
 .. index::
    single: ORTSTrackGauge
@@ -425,6 +450,7 @@ locomotive (regardless of transmission type) are as follows:
    single: MaxPower
    single: MaxForce
    single: MaxContinuousForce
+   single: ORTSTractiveForceIsPowerLimited
 
 ``ORTSDieselEngineMaxPower`` ==> sets the maximum power output at the 
 shaft of the diesel engine (or prime mover).
@@ -437,6 +463,9 @@ wheels when starting.
 ``MaxContinuousForce`` ==> is the maximum force that the locomotive can 
 continuously supply to the wheels without exceeding the design specifications. 
 Typically this is linked to a particular speed (see next parameter).
+
+``ORTSTractiveForceIsPowerLimited`` ==> determines if tractive force curves
+shall be limited to the available output power from the diesel engine.
 
 .. index::
    single: ORTSSpeedOfMaxContinuousForce
@@ -1141,6 +1170,67 @@ with the ``ORTSTractionMotorType ( AC ) `` parameter, to be inserted in the Engi
 section of the ENG file. The use of this motor will have an impact on wheel slip,
 because the wheel speed never exceeds the frequency of the rotating magnetic field.
 
+Traction force retardation
+''''''''''''''''''''''''''
+
+.. index::
+    single: ORTSTractiveForceRampUpRate
+    single: ORTSTractiveForceRampDownRate
+    single: ORTSTractiveForceRampDownToZeroRate
+    single: ORTSTractivePowerRampUpRate
+    single: ORTSTractivePowerRampDownRate
+    single: ORTSTractivePowerRampDownToZeroRate
+    single: ORTSDynamicBrakeForceRampUpRate
+    single: ORTSDynamicBrakeForceRampDownRate
+    single: ORTSDynamicBrakeForceRampDownToZeroRate
+    single: ORTSDynamicBrakePowerRampUpRate
+    single: ORTSDynamicBrakePowerRampDownRate
+    single: ORTSDynamicBrakePowerRampDownToZeroRate
+    single: ORTSDelayTimeBeforeUpdating
+
+When the driver sets full throttle, the control electronics may not apply the full
+tractive force instantly, but it will instead linearly apply force until reaching
+the target demand. This can be tuned both for traction and dynamic braking by inserting
+``ORTSTractiveForceRampUpRate``, ``ORTSTractiveForceRampDownRate``,
+``ORTSTractiveForceRampDownToZeroRate``, ``ORTSDynamicBrakeForceRampUpRate``,
+``ORTSDynamicBrakeForceRampDownRate`` and ``ORTSDynamicBrakeForceRampDownToZeroRate``
+in the .eng file. The value of each parameter determines the force increase/decrease
+rate. To include ramp up/down times also for power, use the equivalent
+``ORTSTractivePowerRampUpRate``, ``ORTSTractivePowerRampDownRate``,
+``ORTSTractivePowerRampDownToZeroRate``, ``ORTSDynamicBrakePowerRampUpRate``,
+``ORTSDynamicBrakePowerRampDownRate`` and ``ORTSDynamicBrakePowerRampDownToZeroRate``
+parameters.
+
+Example::
+
+  Engine (
+    ORTSTractiveForceRampUpRate ( 50kN/s )
+    ORTSTractiveForceRampDownRate ( 50kN/s )
+    ORTSTractiveForceRampDownToZeroRate ( 100kN/s )
+    ORTSDynamicBrakePowerRampUpRate ( 1000kW/s )
+    ORTSDynamicBrakeForceRampDownRate ( 50kN/s )
+  )
+
+Another possibility to avoid sudden variations in tractive force while the driver
+is moving the throttle, is to only update the throttle/brake demand when the lever
+has not been moved for a defined amount of time. This can be implemented using the
+``ORTSDelayTimeBeforeUpdating``, which has to be inserted for the desired
+controller in the ``EngineControllers`` block.
+
+Example::
+
+  Engine (
+    EngineControllers (
+      Throttle ( 0 1 0.1 0
+        NumNotches ( 0 )
+        ORTSDelayTimeBeforeUpdating ( 0.5s )
+      )
+      Brake_Dynamic ( 0 1 0.1 0
+        NumNotches ( 0 )
+        ORTSDelayTimeBeforeUpdating ( 1s )
+      )
+    )
+  )
 
 Steam Locomotives
 -----------------
@@ -2096,6 +2186,8 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 .. |-| unicode:: U+00AD .. soft hyphen
   :trim:
 
+.. _required-params:
+
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
 |Parameter                                                  |Description        |Recommended Units  |Typical Examples   |
 +===========================================================+===================+===================+===================+
@@ -2208,9 +2300,10 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 |                                                           |friction           |lbf/mph^2          |(1.43lbf/mph^2)    |
 |                                                           |                   |Use FCalc          |                   |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
-|ORTS |-| Bearing |-| Type ( x )                            |Bearing type,      || Roller,          |( Roller )         |
-|                                                           |defaults to        || Friction,        |                   |
-|                                                           |Friction           || Low              |                   |
+|ORTS |-| Bearing |-| Type ( x )                            |Bearing type used  || Grease,          |( Roller )         |
+|                                                           |to determine       || Friction,        |                   |
+|                                                           |rolling resistance || Roller           |                   |
+|                                                           |                   || Low              |                   |
 |                                                           |                   |                   |                   |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
 |**Friction (Engine section)**                                                                                          |
@@ -2419,7 +2512,7 @@ To allow the auxiliary tender to be filled at a water fuelling point, a water fr
 Unpowered Control Car
 ---------------------
 
-This module simulates the control cab of a DMU set of cars. The cab typically would be located in an unpowered 
+This module simulates the control cab of a MU set of cars. The cab typically would be located in an unpowered 
 trailer car which is attached to a powered car for the provision of its motive force to drive the train forward.
 
 Apart from producing motive force the car (and cabin controls) should behave exactly the same as a locomotive.
@@ -3081,7 +3174,7 @@ Brake Shoe Force - This is the current change being implemented. The following c
 
 ``ORTSBrakeShoeType`` - this defines a number of different brake shoe types and curves. To provide a more realistic representation of the braking force the default CoF curves are 2D, ie 
 they are impacted by both the speed and Brake Shoe Force.  Typically ``ORTSBrakeShoeType`` will have one of the following keywords included - 
-``Cast_Iron_P6`` - older cast iron brake shoes, 2D as above, ``Cast_Iron_P10`` - newer cast iron brake shoes with increased phosphorous, 2D as above, ``Hi_Friction_Composite`` 
+``Cast_Iron_P6`` - older cast iron brake shoes, 2D as above, ``Cast_Iron_P10`` - newer cast iron brake shoes with increased phosphorous, 2D as above, ``High_Friction_Composite`` 
 - high friction composite shoe, 2D as above, ``Disc_Pads`` - brakes with disc pads, 2D as above, ``User_Defined`` - is a user defined curve 
 using the ORTSBrakeShoeFriction parameter, 1D (ie, speed only, see above section for the parameter format).
 
@@ -3278,6 +3371,8 @@ the following parameters will adjust the behaviour of air brakes:
 .. index::
    single: DynamicBrakeHasAutoBailOff
    single: ORTSDynamicBrakesHasPartialBailOff
+   single: ORTSDynamicBlendingRetainedPressure
+   single: ORTSDynamicBlendingMinimumSpeed
    single: ORTSTrainDynamicBlendingTable
    single: ORTSDynamicBrakeReplacementWithEngineBrake 
    single: ORTSDynamicBrakeReplacementWithEngineBrakeAtSpeed
@@ -3288,6 +3383,13 @@ the following parameters will adjust the behaviour of air brakes:
   air brakes are released while dynamic brakes satisfy the train brake demand.
   If dynamic braking is not sufficient, air brakes will be partially applied
   so the combination air+dynamic provides the required brake demand.
+- ``Engine(ORTSDynamicBlendingRetainedPressure`` -- Sets the brake cylinder
+  pressure which, when used in combination with ORTSDynamicBrakesHasPartialBailOff,
+  will remain applied regardless of the blended dynamic brake force. This
+  pressure is also the minimum pressure at which the blended braking system will activate.
+- ``Engine(ORTSDynamicBlendingMinimumSpeed`` -- Below the specified speed
+  (default units mph, default value 5 mph / 8 kph), local dynamic brake blending
+  will be disabled, allowing locomotive brakes to hold the train while stopped.
   
 Sometimes the train brake controller is capable to apply the dynamic
 brakes for the whole consist, usually as a first step before air brakes
@@ -4695,10 +4797,7 @@ impact due to the wind will be zero.
 
 **Wind Lateral Force Resistance**  - When the wind blows from the side of the
 train, the train will be pushed against the outside track rail, thus increasing
-the amount of resistance experienced by the train.
-
-To activate calculation of wind resistance, select the tickbox for "Wind dependent
-resistance" in the Simulation TAB of the options menu. As wind only becomes
+the amount of resistance experienced by the train. As wind only becomes
 significant at higher train speeds, the wind resistance calculation only commences
 once the train speed exceeds 5 mph.
 
@@ -4734,9 +4833,9 @@ parameters can be inputted via the WAG file or section.
 ``ORTSWagonFrontalArea`` -- The frontal cross sectional area of the wagon. The default units
 are in ft^2, so if entering metres, include the Units of Measure.
 
-``ORTSDavisDragConstant`` -- OR by default uses the standard Davis Drag constants. If alternate
-drag constants are used in calculating the still air resistance, then it might be worthwhile
-inputting these values.
+``ORTSDavisDragConstant`` -- OR assigns a default drag constant based on the type of
+rolling stock. For more specifity or for less typical types of rolling stock, the drag
+coefficient can be entered manually. Typical values are unitless in the range of 0.0002 - 0.0024.
 
 
 .. _physics-track-sanding:
@@ -4831,7 +4930,7 @@ However for those who like to customise, the following parameter can be inputted
    single: ORTSTrailLocomotiveResistanceFactor
 
 ``ORTSTrailLocomotiveResistanceFactor`` -- The constant value by which the leading locomotive resistance
-needs to be decreased for trailing operation.
+needs to be multiplied for trailing operation (eg: 0.5 halves resistance, default 0.2083).
 
 For steam locomotive tenders it may be necessary to enter this value depending upon the Drag constant used
 to calculate the tender resistance.
