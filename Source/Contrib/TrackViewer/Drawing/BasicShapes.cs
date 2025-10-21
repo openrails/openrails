@@ -113,7 +113,7 @@ namespace ORTS.TrackViewer.Drawing
             Texture2D tempTexture;
             try
             {
-                tempTexture = SharedTextureManager.LoadInternal(graphicsDevice, fullFileName);
+                tempTexture = SharedTextureManager.Get(graphicsDevice, fullFileName);
             }
             catch
             {

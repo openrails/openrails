@@ -762,7 +762,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Exhaust color at steady state (no RPM change)
         /// </summary>
-        public Color ExhaustSteadyColor = new Color(Color.Gray, 127);
+        public Color ExhaustSteadyColor = Color.Gray;
         /// <summary>
         /// Exhaust color when accelerating the engine
         /// </summary>
@@ -770,7 +770,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Exhaust color when decelerating the engine
         /// </summary>
-        public Color ExhaustDecelColor = new Color(Color.WhiteSmoke, 63);
+        public Color ExhaustDecelColor = Color.WhiteSmoke;
 
         public Color ExhaustCompressorBlownColor = Color.Gray;
 
@@ -1006,6 +1006,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             RPMRange = MaxRPM - IdleRPM;
             MagnitudeRange = MaxMagnitude - InitialMagnitude;
             ExhaustRange = MaxExhaust - InitialExhaust;
+            ExhaustSteadyColor.A = 10;
+            ExhaustDecelColor.A = 10;
 
             if (GearBoxParams.IsInitialized)
             {
