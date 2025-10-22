@@ -2826,9 +2826,9 @@ public string GetCurveDirection()
             // No axles but we have bogies.
             if (WheelAxles.Count == 0 && Parts.Count > 1)
             {
-                // Fake the axles by pretending each has 1 axle.
-                foreach (var part in Parts)
-                    WheelAxles.Add(new WheelAxle(part.OffsetM, part.iMatrix, 0));
+                // Fake the axles by pretending each bogie has 1 axle.
+                for (int i = 1; i < Parts.Count; i++)
+                    WheelAxles.Add(new WheelAxle(Parts[i].OffsetM, i, Parts[i].iMatrix));
                 Trace.TraceInformation("Wheel axle data faked based on {1} bogies for {0}", WagFilePath, Parts.Count - 1);
             }
             bool articFront = !WheelAxles.Any(a => a.OffsetM.Z < 0);
