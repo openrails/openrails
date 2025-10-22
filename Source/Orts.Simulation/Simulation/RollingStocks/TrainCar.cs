@@ -3039,7 +3039,7 @@ public string GetCurveDirection()
                 if (p.SumWgt > 1.5f)
                     p0.AddPartLocation(1, p);
             }
-            if (Parts.Count == 2)
+            if (Parts.Count == 2 && p0.SumWgt < 1.5f)
             {
                 // Train car lacks sufficient parts to locate using linear regression
                 p0.Dir = Parts[1].Dir;
@@ -3856,7 +3856,10 @@ public string GetCurveDirection()
             else // Improperly defined wagon, fallback to basic calculation
             {
                 for (int i = 0; i < 3; i++)
+                {
                     Pos[i] = (float)(SumPos[i] / SumWgt);
+                    Dir[i] = 0;
+                }
             }
 
             Roll = SumRoll / (float)SumWgt;
