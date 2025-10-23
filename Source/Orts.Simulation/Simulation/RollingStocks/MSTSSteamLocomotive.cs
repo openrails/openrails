@@ -155,6 +155,10 @@ namespace Orts.Simulation.RollingStocks
 
         float ActualInjector1NozzleSizeMM;
         float ActualInjector2NozzleSizeMM;
+        float ActualInjectorTemperatureCorrectionFactor;
+        float ActualInjector1SteamUsedLBpS;
+        float ActualInjector2SteamUsedLBpS;
+        float InjectorHFGkJPkg; // Enthalpy of steam used by injector - kJ/kg
 
         // Feedwater Pump
         float WaterMotionPump1FlowRateLBpS;
@@ -235,6 +239,7 @@ namespace Orts.Simulation.RollingStocks
         public bool AuxTenderMoveFlag = false; // Flag to indicate whether train has moved
         bool SteamIsAuxTenderCoupled = false;
         float TenderWaterPercent;       // Percentage of water in tender
+        float TenderWaterTemperatureC;
         public float WaterConsumptionLbpS;
         public float CurrentAuxTenderWaterMassKG;
         public float CurrentAuxTenderWaterVolumeUKG;
@@ -4074,6 +4079,15 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 CoalIsExhausted = false;
             }
 
+            // Calculate water temperature in tender based upon ambient temperature and water level
+            // Twt = Tat + 3 + 0.3 * (Tat - 10) - where wt = water temperature, at = ambient temperature, has to be capped at 50 deg C
+            // Check for more accurate solution later
+
+            TenderWaterTemperatureC = CarOutsideTempC + 3.0f + 0.3f * (CarOutsideTempC - 10.0f);
+            TenderWaterTemperatureC = MathHelper.Clamp(TenderWaterTemperatureC, 0, 50);
+
+
+
             #region Auxiliary Water Tender Operation
 
             // If aux tender is coupled then assume that both tender and aux tender will equalise at same % water level
@@ -7439,12 +7453,15 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             {
                 #region Calculate Injector flow rates
 
+                ActualInjector1SteamUsedLBpS = 0;
+                ActualInjector2SteamUsedLBpS = 0;
+
                 // Calculate the flow rates for injector #1 based upon boiler pressure and injector nozzle size
                 var ActualInjector1NozzleAreaMM2 = (float)(Math.PI * Math.Pow((ActualInjector1NozzleSizeMM) / 2.0f, 2));
                 
-                MaxInjectorFlowRateLBpS = pS.FrompH(RefKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(MaxBoilerPressurePSI)) * WaterLBpUKG;
+                MaxInjectorFlowRateLBpS = ActualInjectorTemperatureCorrectionFactor * pS.FrompH(RefKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(MaxBoilerPressurePSI)) * WaterLBpUKG;
 
-                ActualInjector1FlowRateLBpS = pS.FrompH(RefKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
+                ActualInjector1FlowRateLBpS = ActualInjectorTemperatureCorrectionFactor * pS.FrompH(RefKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
 
                 // Calculate the flow rates for injector #2 based upon boiler pressure and injector nozzle size
                 var ActualInjector2NozzleAreaMM2 = (float)(Math.PI * Math.Pow((ActualInjector1NozzleSizeMM) / 2.0f, 2));
@@ -7452,6 +7469,19 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 MaxInjectorFlowRateLBpS = pS.FrompH(RefKInjector2Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(MaxBoilerPressurePSI)) * WaterLBpUKG;
 
                 ActualInjector2FlowRateLBpS = pS.FrompH(RefKInjector2Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
+
+                // Calculate the temperature correction factor as the feedwater temperature will affect the flow rate and the hence the steam used
+                // Actual Delivery Capacity = Base Delivery * Temperature Correction Factor
+                // Actual Steam used = Base Steam used * Temperature Correction Factor
+                // Temperature Correction Factor = (Tsat - Tfeedwater) / (Tsat - Tref), Assume ref = 20C
+
+                var ReferenceTemperature = 20.0f; // Reference temperature for injector performance
+                ActualInjectorTemperatureCorrectionFactor = ( C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC) / (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - ReferenceTemperature);
+
+                // Calculate enthalpy of injector feed water based on boiler water temperature
+                // hfg kJ/kg) = 2500 - 2.4 * Tsat (C) - 4% accurate, to be explored later for better accuracy
+
+                InjectorHFGkJPkg = 2500.0f - (2.4f * C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
 
                 #endregion
 
@@ -7469,7 +7499,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
                 else
                 {
-                    // Injectors to fill boiler   
+                    // Injectors to fill boiler
+                    // // Injector #1
                     if (Injector1IsOn)
                     {
                         // Calculate Injector 1 delivery water temp
@@ -7490,6 +7521,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         MaxInject1SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at actual boiler pressure
                         ActInject1SteamUsedLbpS = (Injector1Fraction * ActualInjector1FlowRateLBpS) / MaxInject1SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
 
+                        // Actual steam used by the injector is calculated by following formula
+                        // Steam Mass (kg/hr) = Water Mass (kg/h) * (Cp*(Tsat-Ttenderwater))/(hfg+(Cp*(Tsat-Ttenderwater))
+                        // where Cp = specific heat of water (4.18kJ/kgK), hfg = latent heat of vaporisation at boiler pressure
+
+                        ActualInjector1SteamUsedLBpS = (Injector1Fraction * ActualInjector1FlowRateLBpS) * (4.18f * (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC)) / (InjectorHFGkJPkg + (4.18f * (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC)));
+
                         // Calculate heat loss for steam injection
                         Inject1SteamHeatLossBTU = ActInject1SteamUsedLbpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
 
@@ -7503,6 +7540,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         BoilerWaterInputLB += (elapsedClockSeconds * Injector1Fraction * ActualInjector1FlowRateLBpS); // Keep track of water flow into boilers from Injector 1
                         BoilerHeatOutBTUpS += (Inject1WaterHeatLossBTU + Inject1SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat
                     }
+
+                    // Injector #2
                     if (Injector2IsOn)
                     {
                         // Calculate Injector 2 delivery water temp
@@ -7521,6 +7560,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         // Calculate amount of steam used to inject water
                         MaxInject2SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at boiler pressure
                         ActInject2SteamUsedLbpS = (Injector2Fraction * ActualInjector2FlowRateLBpS) / MaxInject2SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
+
+                        // Actual steam used by the injector is calculated by following formula
+                        // Steam Mass (kg/hr) = Water Mass (kg/h) * (Cp*(Tsat-Ttenderwater))/(hfg+(Cp*(Tsat-Ttenderwater))
+                        // where Cp = specific heat of water (4.18kJ/kgK), hfg = latent heat of vaporisation at boiler pressure
+
+                        ActualInjector2SteamUsedLBpS = (Injector1Fraction * ActualInjector2FlowRateLBpS) * (4.18f * (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC)) / (InjectorHFGkJPkg + (4.18f * (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC)));
 
                         // Calculate heat loss for steam injection
                         Inject2SteamHeatLossBTU = ActInject2SteamUsedLbpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector2WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
@@ -8577,7 +8622,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
             else
             {
-                status.AppendFormat("{0}\t{1}\t{2}/{13}\t\t{3}\t({4:N0} {14})\t{5}/{13}\t\t{6}\t{7}\t{8}\t({9:N0} {14})\t{10}/{13}\t\t{11}\t{12}\n",
+                status.AppendFormat("{0}\t{1}\t{2}/{17}\t\t{3}\t({4:N0} {18})\t{5}/{17}\t\t{6}\t{7}\t{8}\t{9}/{17}\t\t{10}\t({11:N0} {18})\t{12}/{17}\t\t{13}\t{14}\t{15}\t{16:N0}/{17}\n",
                 Simulator.Catalog.GetString("Injector:"),
                 Simulator.Catalog.GetString("Max"),
                 FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(MaxInjectorFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
@@ -8586,11 +8631,15 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 FormatStrings.FormatFuelVolume(Injector1Fraction * pS.TopH(L.FromGUK(ActualInjector1FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                 Simulator.Catalog.GetString("Temp1"),
                 FormatStrings.FormatTemperature(C.FromF(Injector1WaterDelTempF), IsMetric, false),
+                Simulator.Catalog.GetString("Steam1"),
+                FormatStrings.FormatMass(pS.TopH(ActualInjector1SteamUsedLBpS), IsMetric),
                 Simulator.Catalog.GetString("Inj2"),
                 ActualInjector2NozzleSizeMM,
                 FormatStrings.FormatFuelVolume(Injector2Fraction * pS.TopH(L.FromGUK(ActualInjector2FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                 Simulator.Catalog.GetString("Temp2"),
                 FormatStrings.FormatTemperature(C.FromF(Injector2WaterDelTempF), IsMetric, false),
+                Simulator.Catalog.GetString("Steam2"),
+                FormatStrings.FormatMass(pS.TopH(ActualInjector2SteamUsedLBpS), IsMetric),
                 FormatStrings.h,
                 FormatStrings.mm);
             }
@@ -8651,7 +8700,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
                 else // default to coal
                 {
-                    status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t{10:N0}\t{11}\t\t{12:N0}\n",
                         Simulator.Catalog.GetString("Tender:"),
                         Simulator.Catalog.GetString("Coal"),
                         FormatStrings.FormatMass(TenderFuelMassKG, IsMetric),
@@ -8659,6 +8708,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         Simulator.Catalog.GetString("Water"),
                         FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
                         CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
+                        Simulator.Catalog.GetString("Tempw"),
+                        FormatStrings.FormatTemperature(TenderWaterTemperatureC, IsMetric, false),
                         Simulator.Catalog.GetString("Steam"),
                         FormatStrings.FormatMass(Kg.FromLb(CumulativeCylinderSteamConsumptionLbs), IsMetric),
                         Simulator.Catalog.GetString("TotSteam"),
