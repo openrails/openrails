@@ -62,9 +62,7 @@ namespace Orts.Viewer3D.Processes
         readonly Game Game;
         readonly Thread Thread;
 
-        private const int DoHostTime = 10000;
-        private const int SleepTime = 100;  // must be short enough for timely termination
-        private const uint DoHostInterval = DoHostTime / SleepTime;
+        private const int SleepTime = 10000;
 
         public HostProcess(Game game)
         {
@@ -93,18 +91,13 @@ namespace Orts.Viewer3D.Processes
             GlobalMemoryStatusEx(memoryStatus);
             CPUMemoryVirtualLimit = Math.Min(memoryStatus.TotalVirtual, memoryStatus.TotalPhysical);
 
-            uint sleepCount = 0;
             while (true)
             {
-                Thread.Sleep(SleepTime);
+                State.Sleep(SleepTime);
                 if (State.Terminated)
                     break;
-                if (sleepCount % DoHostInterval == 0)
-                {
-                    if (!DoHost())
-                        return;
-                }
-                sleepCount++;
+                if (!DoHost())
+                    return;
             }
         }
 
