@@ -90,7 +90,7 @@ namespace Menu
             Settings.Content.ContentRouteSettings.LoadContent(ref errorMsg);
             if (!string.IsNullOrEmpty(errorMsg))
             {
-                string message = Catalog.GetStringFmt("Not connected to internet, automatic download not available. Error: {0}", errorMsg);
+                string message = Catalog.GetStringFmt("Failed to access the content repository (check Internet connection); automatic download not available. Error: {0}", errorMsg);
                 MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 NoInternet = true;
             }
