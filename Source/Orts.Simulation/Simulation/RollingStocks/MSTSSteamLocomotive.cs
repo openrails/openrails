@@ -7476,7 +7476,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 // Temperature Correction Factor = (Tsat - Tfeedwater) / (Tsat - Tref), Assume ref = 20C
 
                 var ReferenceTemperature = 20.0f; // Reference temperature for injector performance
-                ActualInjectorTemperatureCorrectionFactor = ( C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC) / (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - ReferenceTemperature);
+                ActualInjectorTemperatureCorrectionFactor = (float)Math.Sqrt(( C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC) / (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - ReferenceTemperature));
 
                 // Calculate enthalpy of injector feed water based on boiler water temperature
                 // hfg kJ/kg) = 2500 - 2.4 * Tsat (C) - 4% accurate, to be explored later for better accuracy
