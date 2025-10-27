@@ -153,6 +153,17 @@ namespace Orts.Simulation.RollingStocks
         float RefKInjector1Factor;
         float RefKInjector2Factor;
 
+        float MaxRefInjector1PressurePSI;
+        float MaxRefInjector2PressurePSI;
+        float MaxRefInjector1FlowRateUKGpH;
+        float MaxRefInjector2FlowRateUKGpH;
+        float UpperWaterDeliveryInjector1EfficiencyFactor;
+        float UpperWaterDeliveryInjector2EfficiencyFactor;
+        float UpperAlphaInjector1Factor;
+        float UpperAlphaInjector2Factor;
+        float UpperBetaInjector1Factor;
+        float UpperBetaInjector2Factor;
+
         float ActualInjector1NozzleSizeMM;
         float ActualInjector2NozzleSizeMM;
         float ActualInjectorTemperatureCorrectionFactor;
@@ -2080,7 +2091,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // Set up Injectors
             // To calculate the maximum combined water delivery rate from the injectors at maximum boiler pressure, the formula is used:
-            // WaterFlowRateUKGpM = K * A * P^0.5, k is calculated using known flow rates from manuafacturers manuals.
+            // WaterFlowRateUKGpM = K * A * P^0.5, k is calculated using known flow rates from manuafacturers manuals, and rearranging the formula.
             // If user does not enter any values then the D&M 11mm injector is assumed to be operating at 200 psi   . 
             // http://users.fini.net/~bersano/english-anglais/english-anglais/NZ-accessories/D&M_Type_J_Exhaust_steam_injector.pdf
             //
@@ -2126,13 +2137,61 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Trace.TraceInformation("RefInjector2FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", RefInjector2FlowRateUKGpH);
             }
 
-            // Calculate K values for injector flow rate calculations
+            if (MaxRefInjector1FlowRateUKGpH == 0)
+            {
+                MaxRefInjector1FlowRateUKGpH = 2600;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("MaxInjector1FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", MaxRefInjector1FlowRateUKGpH);
+            }
+
+            if (MaxRefInjector2FlowRateUKGpH == 0)
+            {
+                MaxRefInjector2FlowRateUKGpH = 2600;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("MaxInjector2FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", MaxRefInjector2FlowRateUKGpH);
+            }
+
+            if(MaxRefInjector1PressurePSI == 0)
+                {
+                MaxRefInjector1PressurePSI = 300.0f; // Default to D&M 11mm injector operating pressure
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("MaxRefInjector1SteamPressurePSI not specified in ENG file. Defaulting to {0} psi", MaxRefInjector1PressurePSI);
+            }
+
+            if (MaxRefInjector2PressurePSI == 0)
+            {
+                MaxRefInjector2PressurePSI = 300.0f; // Default to D&M 11mm injector operating pressure
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("MaxRefInjector2SteamPressurePSI not specified in ENG file. Defaulting to {0} psi", MaxRefInjector2PressurePSI);
+            }
+
+            // Calculate K values for injector delivery flow rate calculations - up to to optimum (maximum delivery rate)
 
             var RefInjectorNozzle1AreaMM2 = (float)(Math.PI * Math.Pow((RefInjector1NozzleSizeMM) / 2.0f, 2));
             RefKInjector1Factor = RefInjector1FlowRateUKGpH / (float)(RefInjectorNozzle1AreaMM2 * Math.Sqrt(RefInjector1PressurePSI));
 
             var RefInjectorNozzle2AreaMM2 = (float)(Math.PI * Math.Pow((RefInjector2NozzleSizeMM) / 2.0f, 2));
             RefKInjector2Factor = RefInjector2FlowRateUKGpH / (float)(RefInjectorNozzle2AreaMM2 * Math.Sqrt(RefInjector2PressurePSI));
+
+            // calculate relevant factors for delivery flow rates above optimum delivery rate
+            // Calculation based upon a quadratic equation to fit the known data points, with the user setting a known point above the optimum delivery rate.
+            // Effective delivery @ P pressure - Qeff(P)=  Qbase(P)* η(P) at current Boiler Pressure
+            // Delivery @ P - Qbase(P) = Qopt √(P/Popt)
+            // Efficiency factor is calculated by η(P)=1-β(P-Popt)-α(P-Popt)^2
+            // Following section calculates the constants required to model the efficiency curve above optimum delivery rate
+            // β=1/(2 Popt )
+            // η(Pmax)=  (Qeff(Popt))/(Qbase(Pmax))
+            // α= [1 - β(Pmax - Popt) - η(Pmax)] / (Pmax - Popt)^2
+
+            UpperBetaInjector1Factor = 1 / (2 * RefInjector1PressurePSI);
+            var DeliveryBaseInjector1Pmax = RefInjector1FlowRateUKGpH * Math.Sqrt(MaxRefInjector1PressurePSI / RefInjector1PressurePSI);
+            var EfficiencyBaseInjector1atMax = MaxRefInjector1FlowRateUKGpH / DeliveryBaseInjector1Pmax;
+            UpperAlphaInjector1Factor = (float)(1.0 - UpperBetaInjector1Factor * (MaxRefInjector1PressurePSI - RefInjector1PressurePSI) - EfficiencyBaseInjector1atMax) / (float)Math.Pow((MaxRefInjector1PressurePSI - RefInjector1PressurePSI), 2);
+
+            UpperBetaInjector2Factor = 1 / (2 * RefInjector2PressurePSI);
+            var DeliveryBaseInjector2Pmax = RefInjector2FlowRateUKGpH * Math.Sqrt(MaxRefInjector2PressurePSI / RefInjector2PressurePSI);
+            var EfficiencyBaseInjector2atMax = MaxRefInjector2FlowRateUKGpH / DeliveryBaseInjector2Pmax;
+            UpperAlphaInjector2Factor = (float)(1.0 - UpperBetaInjector2Factor * (MaxRefInjector2PressurePSI - RefInjector2PressurePSI) - EfficiencyBaseInjector2atMax) / (float)Math.Pow((MaxRefInjector2PressurePSI - RefInjector2PressurePSI), 2);                
 
             // Calculate Injector sizing, a single injector should be able to cope with 75% of the maximum water delivery rate required at full steam usage.
 
@@ -7409,17 +7468,37 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 // Calculate the flow rates for injector #1 based upon boiler pressure and injector nozzle size
                 var ActualInjector1NozzleAreaMM2 = (float)(Math.PI * Math.Pow((ActualInjector1NozzleSizeMM) / 2.0f, 2));
-                
+
                 MaxInjectorFlowRateLBpS = ActualInjectorTemperatureCorrectionFactor * pS.FrompH(RefKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(MaxBoilerPressurePSI)) * WaterLBpUKG;
 
-                ActualInjector1FlowRateLBpS = ActualInjectorTemperatureCorrectionFactor * pS.FrompH(RefKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
+                // Injector #1 - calculate flow rate depending upon whether pressure is above or below optimum pressure
+                if (BoilerPressurePSI <= RefInjector1PressurePSI)
+                {
+                    ActualInjector1FlowRateLBpS = ActualInjectorTemperatureCorrectionFactor * pS.FrompH(RefKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
+                }
+                else
+                {
+                    float InjectorDeliveryEfficincyatP = (float)(1 - UpperBetaInjector1Factor * (BoilerPressurePSI - RefInjector1PressurePSI) - UpperAlphaInjector1Factor * Math.Pow(BoilerPressurePSI - RefInjector1PressurePSI, 2));
+                    float DeliveryBaseFlowRateatP = (float)(RefInjector1FlowRateUKGpH * Math.Sqrt(BoilerPressurePSI / RefInjector1PressurePSI));
+                    ActualInjector1FlowRateLBpS = pS.FrompH(DeliveryBaseFlowRateatP * InjectorDeliveryEfficincyatP) * WaterLBpUKG;
+                }
 
                 // Calculate the flow rates for injector #2 based upon boiler pressure and injector nozzle size
                 var ActualInjector2NozzleAreaMM2 = (float)(Math.PI * Math.Pow((ActualInjector1NozzleSizeMM) / 2.0f, 2));
 
                 MaxInjectorFlowRateLBpS = pS.FrompH(RefKInjector2Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(MaxBoilerPressurePSI)) * WaterLBpUKG;
 
-                ActualInjector2FlowRateLBpS = pS.FrompH(RefKInjector2Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
+                // Injector #2 - calculate flow rate depending upon whether pressure is above or below optimum pressure
+                if (BoilerPressurePSI <= RefInjector2PressurePSI)
+                {
+                    ActualInjector2FlowRateLBpS = pS.FrompH(RefKInjector2Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
+                }
+                else
+                {
+                    float InjectorDeliveryEfficincyatP = (float)(1 - UpperBetaInjector2Factor * (BoilerPressurePSI - RefInjector2PressurePSI) - UpperAlphaInjector2Factor * Math.Pow(BoilerPressurePSI - RefInjector2PressurePSI, 2));
+                    float DeliveryBaseFlowRateatP = (float)(RefInjector2FlowRateUKGpH * Math.Sqrt(BoilerPressurePSI / RefInjector2PressurePSI));
+                    ActualInjector2FlowRateLBpS = pS.FrompH(DeliveryBaseFlowRateatP * InjectorDeliveryEfficincyatP) * WaterLBpUKG;
+                }
 
                 // Calculate the temperature correction factor as the feedwater temperature will affect the flow rate and the hence the steam used
                 // Actual Delivery Capacity = Base Delivery * Temperature Correction Factor
@@ -7427,7 +7506,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 // Temperature Correction Factor = (Tsat - Tfeedwater) / (Tsat - Tref), Assume ref = 20C
 
                 var ReferenceTemperature = 20.0f; // Reference temperature for injector performance
-                ActualInjectorTemperatureCorrectionFactor = (float)Math.Sqrt(( C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC) / (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - ReferenceTemperature));
+                ActualInjectorTemperatureCorrectionFactor = (float)Math.Sqrt((C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC) / (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - ReferenceTemperature));
 
                 // Calculate enthalpy of injector feed water based on boiler water temperature
                 // hfg kJ/kg) = 2500 - 2.4 * Tsat (C) - 4% accurate, to be explored later for better accuracy
@@ -7645,16 +7724,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         StopInjector1Sound();
                         StopInjector2Sound();
                     }
-                    else if (CurrentWaterGaugeFraction <= 0.55 && CurrentWaterGaugeFraction > 0.525 && !InjectorLockedOut)  
-                    {
-                        Injector1IsOn = true;
-                        Injector1Fraction = 0.25f;
-                        Injector2IsOn = false;
-                        Injector2Fraction = 0.0f;
-                        InjectorLockedOut = true;
-                        PlayInjector1SoundIfStarting();
-                    }
-                    else if (CurrentWaterGaugeFraction <= 0.525 && CurrentWaterGaugeFraction > 0.5 && !InjectorLockedOut)  
+                    else if (CurrentWaterGaugeFraction <= 0.55 && CurrentWaterGaugeFraction > 0.50 && !InjectorLockedOut)  
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.5f;
@@ -7663,7 +7733,16 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (CurrentWaterGaugeFraction <= 0.5 && CurrentWaterGaugeFraction > 0.475 && !InjectorLockedOut)  
+                    else if (CurrentWaterGaugeFraction <= 0.50 && CurrentWaterGaugeFraction > 0.45 && !InjectorLockedOut)  
+                    {
+                        Injector1IsOn = true;
+                        Injector1Fraction = 0.75f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
+                        InjectorLockedOut = true;
+                        PlayInjector1SoundIfStarting();
+                    }
+                    else if (CurrentWaterGaugeFraction <= 0.45 && CurrentWaterGaugeFraction > 0.40 && !InjectorLockedOut)  
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 1.0f;
@@ -7674,26 +7753,26 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     }
                     else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2 as well
                     {
-                        if (CurrentWaterGaugeFraction <= 0.475 && CurrentWaterGaugeFraction > 0.45 && !InjectorLockedOut)
+                        if (CurrentWaterGaugeFraction <= 0.40 && CurrentWaterGaugeFraction > 0.35 && !InjectorLockedOut)
                         {
 
                             Injector1IsOn = true;
                             Injector1Fraction = 1.0f; 
                             Injector2IsOn = true;
-                            Injector2Fraction = 0.25f;
-                            InjectorLockedOut = true;
-                            PlayInjector2SoundIfStarting();
-                        }
-                        else if (CurrentWaterGaugeFraction <= 0.45 && CurrentWaterGaugeFraction > 0.425 && !InjectorLockedOut)
-                        {
-                            Injector1IsOn = true;
-                            Injector1Fraction = 1.0f;
-                            Injector2IsOn = true;
                             Injector2Fraction = 0.5f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (CurrentWaterGaugeFraction <= 0.425 && !InjectorLockedOut)
+                        else if (CurrentWaterGaugeFraction <= 0.35 && CurrentWaterGaugeFraction > 0.3 && !InjectorLockedOut)
+                        {
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f;
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.75f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
+                        else if (CurrentWaterGaugeFraction <= 0.3 && !InjectorLockedOut)
                         {
                             Injector1IsOn = true;
                             Injector1Fraction = 1.0f;
