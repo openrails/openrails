@@ -47,7 +47,6 @@ namespace Orts.Viewer3D
         {
             Viewer = viewer;
             Logger = new DataLogger(Path.Combine(Viewer.Settings.LoggingPath, "OpenRailsDump.csv"));
-            NextLogTime = Viewer.RealTime;
 
             if (Viewer.Settings.DataLogger)
                 DataLoggerStart();
