@@ -65,9 +65,15 @@ namespace Orts.Viewer3D
             {
                 Viewer.Settings.DataLogger = !Viewer.Settings.DataLogger;
                 if (Viewer.Settings.DataLogger)
+                {
                     DataLoggerStart();
+                    Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Data Logger started"));
+                }
                 else
+                {
                     DataLoggerStop();
+                    Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Data Logger stopped"));
+                }
             }
         }
 
