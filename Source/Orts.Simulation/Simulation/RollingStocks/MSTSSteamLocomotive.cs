@@ -124,8 +124,13 @@ namespace Orts.Simulation.RollingStocks
         float InjectorLockOutTimeS = 0.0f; // Current lock out time - reset after Reset Time exceeded 
         float ActualInjector1FlowRateLBpS;    // Current injector 1 flow rate - based upon current boiler pressure
         float ActualInjector2FlowRateLBpS;    // Current injector 2 flow rate - based upon current boiler pressure
+        float MaximaInjector1FlowRateLBpS;    // Current injector 1 flow rate - based upon current boiler pressure
+        float MaximaInjector2FlowRateLBpS;    // Current injector 2 flow rate - based upon current boiler pressure
+        float MinimaInjector1FlowRateLBpS;    // Current injector 1 flow rate - based upon current boiler pressure
+        float MinimaInjector2FlowRateLBpS;    // Current injector 2 flow rate - based upon current boiler pressure
 
-        float MaxInjectorFlowRateLBpS = 0.0f;      // Maximum possible injector flow rate - based upon maximum boiler pressure
+        float MaxInjector1FlowRateLBpS = 0.0f;      // Maximum possible injector flow rate - based upon optimal injector boiler pressure
+        float MaxInjector2FlowRateLBpS = 0.0f;      // Maximum possible injector flow rate - based upon optimal injector boiler pressure
         float Injector1Fraction = 0.0f;     // Fraction (0-1) of injector 1 flow from Fireman controller or AI
         float Injector2Fraction = 0.0f;     // Fraction (0-1) of injector  of injector 2 flow from Fireman controller or AI
         float Injector1WaterDelTempF = 65f;   // Injector 1 water delivery temperature - F
@@ -142,34 +147,45 @@ namespace Orts.Simulation.RollingStocks
         float Inject2SteamHeatLossBTU;  // heat loss due to steam usage from boiler for injector operation - Injector 2
         float Inject1WaterHeatLossBTU;  // heat loss due to water injected into the boiler for injector operation - Injector 1   
         float Inject2WaterHeatLossBTU;  // heat loss due to water injected into the boiler for injector operation - Injector 1 
-        float InjCylEquivSizeIN;        // Calculate the equivalent cylinder size for purpose of sizing the injector.
 
         float RefInjector1NozzleSizeMM;
         float RefInjector2NozzleSizeMM;
         float RefInjector1PressurePSI;
         float RefInjector2PressurePSI;
-        float RefInjector1FlowRateUKGpH;
-        float RefInjector2FlowRateUKGpH;
-        float RefKInjector1Factor;
-        float RefKInjector2Factor;
+        float RefInjector1MaximaFlowRateUKGpH;
+        float RefInjector2MaximaFlowRateUKGpH;
+        float MaximaKInjector1Factor;
+        float MaximaKInjector2Factor;
+        float MinimaKInjector1Factor;
+        float MinimaKInjector2Factor;
+        float RefInjector1MinimaFlowRateUKGpH;
+        float RefInjector2MinimaFlowRateUKGpH;
 
-        float MaxRefInjector1PressurePSI;
-        float MaxRefInjector2PressurePSI;
-        float MaxRefInjector1FlowRateUKGpH;
-        float MaxRefInjector2FlowRateUKGpH;
-        float UpperWaterDeliveryInjector1EfficiencyFactor;
-        float UpperWaterDeliveryInjector2EfficiencyFactor;
-        float UpperAlphaInjector1Factor;
-        float UpperAlphaInjector2Factor;
-        float UpperBetaInjector1Factor;
-        float UpperBetaInjector2Factor;
+        float UpperMaximaRefInjector1PressurePSI;
+        float UpperMaximaRefInjector2PressurePSI;
+        float UpperRefInjector1FlowRateUKGpH;
+        float UpperRefInjector2FlowRateUKGpH;
+
+        float UpperMaximaAlphaInjector1Factor;
+        float UpperMaximaAlphaInjector2Factor;
+        float UpperMaximaBetaInjector1Factor;
+        float UpperMaximaBetaInjector2Factor;
+
+        float UpperMinimaAlphaInjector1Factor;
+        float UpperMinimaAlphaInjector2Factor;
+        float UpperMinimaBetaInjector1Factor;
+        float UpperMinimaBetaInjector2Factor;
 
         float ActualInjector1NozzleSizeMM;
         float ActualInjector2NozzleSizeMM;
-        float ActualInjectorTemperatureCorrectionFactor;
+        float ActualInjector1TemperatureCorrectionFactor;
+        float ActualInjector2TemperatureCorrectionFactor;
         float ActualInjector1SteamUsedLBpS;
         float ActualInjector2SteamUsedLBpS;
         float InjectorHFGkJPkg; // Enthalpy of steam used by injector - kJ/kg
+
+        float ReferenceInjector1TenderWaterTemperatureC; // Reference temperature for injector performance
+        float ReferenceInjector2TenderWaterTemperatureC; // Reference temperature for injector performance
 
         // Feedwater Pump
         float WaterMotionPump1FlowRateLBpS;
@@ -1094,6 +1110,28 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     ActualInjector2NozzleSizeMM = stf.ReadFloat(STFReader.UNITS.Distance, null) * 1000; // convert from meters to mm
                     stf.SkipRestOfBlock();
                     break;
+                case "engine(ortsinjector1capacity":
+                    stf.MustMatch("(");
+                    RefInjector1NozzleSizeMM = stf.ReadFloat(STFReader.UNITS.Distance, null)* 1000; // convert from meters to mm
+                    RefInjector1PressurePSI = stf.ReadFloat(STFReader.UNITS.PressureDefaultPSI, null);
+                    RefInjector1MaximaFlowRateUKGpH = stf.ReadFloat(STFReader.UNITS.Volume, null) * 0.2199692483f; // convert to gal-UK per hour
+                    RefInjector1MinimaFlowRateUKGpH = stf.ReadFloat(STFReader.UNITS.Volume, null) * 0.2199692483f; // convert to gal-UK per hour;
+                    UpperMaximaRefInjector1PressurePSI = stf.ReadFloat(STFReader.UNITS.PressureDefaultPSI, null);
+                    UpperRefInjector1FlowRateUKGpH = stf.ReadFloat(STFReader.UNITS.Volume, null) * 0.2199692483f; // convert to gal-UK per hour;
+                    ReferenceInjector1TenderWaterTemperatureC = stf.ReadFloat(STFReader.UNITS.Temperature, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                case "engine(ortsinjector2capacity":
+                    stf.MustMatch("(");
+                    RefInjector2NozzleSizeMM = stf.ReadFloat(STFReader.UNITS.Distance, null) * 1000; // convert from meters to mm
+                    RefInjector2PressurePSI = stf.ReadFloat(STFReader.UNITS.PressureDefaultPSI, null);
+                    RefInjector2MaximaFlowRateUKGpH = stf.ReadFloat(STFReader.UNITS.Volume, null) * 0.2199692483f; // convert to gal-UK per hour;
+                    RefInjector2MinimaFlowRateUKGpH = stf.ReadFloat(STFReader.UNITS.Volume, null) * 0.2199692483f; // convert to gal-UK per hour;
+                    UpperMaximaRefInjector2PressurePSI = stf.ReadFloat(STFReader.UNITS.PressureDefaultPSI, null);
+                    UpperRefInjector2FlowRateUKGpH = stf.ReadFloat(STFReader.UNITS.Volume, null) * 0.2199692483f; // convert to gal-UK per hour;
+                    ReferenceInjector2TenderWaterTemperatureC = stf.ReadFloat(STFReader.UNITS.Temperature, null);
+                    stf.SkipRestOfBlock();
+                    break;
                 case "engine(ortssteamboilertype":
                     stf.MustMatch("(");
                     string typeString1 = stf.ReadString();
@@ -1205,8 +1243,22 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             CylinderAdmissiontoCutoff = locoCopy.CylinderAdmissiontoCutoff;
             OilSpecificGravity = locoCopy.OilSpecificGravity;
             MaxTenderOilMassL = locoCopy.MaxTenderOilMassL;
+            RefInjector1NozzleSizeMM = locoCopy.RefInjector1NozzleSizeMM;
+            RefInjector2NozzleSizeMM = locoCopy.RefInjector2NozzleSizeMM;
             ActualInjector1NozzleSizeMM = locoCopy.ActualInjector1NozzleSizeMM;
             ActualInjector2NozzleSizeMM = locoCopy.ActualInjector2NozzleSizeMM;
+            RefInjector1PressurePSI = locoCopy.RefInjector1PressurePSI;
+            RefInjector1MaximaFlowRateUKGpH = locoCopy.RefInjector1MaximaFlowRateUKGpH;
+            RefInjector1MinimaFlowRateUKGpH = locoCopy.RefInjector1MinimaFlowRateUKGpH;
+            UpperMaximaRefInjector1PressurePSI = locoCopy.UpperMaximaRefInjector1PressurePSI;
+            UpperRefInjector1FlowRateUKGpH = locoCopy.UpperRefInjector1FlowRateUKGpH;
+            RefInjector2PressurePSI = locoCopy.RefInjector2PressurePSI;
+            RefInjector2MaximaFlowRateUKGpH = locoCopy.RefInjector2MaximaFlowRateUKGpH;
+            RefInjector2MinimaFlowRateUKGpH = locoCopy.RefInjector2MinimaFlowRateUKGpH;
+            UpperMaximaRefInjector2PressurePSI = locoCopy.UpperMaximaRefInjector2PressurePSI;
+            UpperRefInjector2FlowRateUKGpH = locoCopy.UpperRefInjector2FlowRateUKGpH;
+            ReferenceInjector1TenderWaterTemperatureC = locoCopy.ReferenceInjector1TenderWaterTemperatureC;
+            ReferenceInjector2TenderWaterTemperatureC = locoCopy.ReferenceInjector2TenderWaterTemperatureC;
 
             SteamEngines.Copy(locoCopy.SteamEngines);
         }
@@ -2095,57 +2147,84 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Trace.TraceInformation("RefInjector2SteamPressurePSI not specified in ENG file. Defaulting to {0} psi", RefInjector2PressurePSI);
             }
 
-            if (RefInjector1FlowRateUKGpH == 0)
+            if (RefInjector1MaximaFlowRateUKGpH == 0)
             {
-                RefInjector1FlowRateUKGpH = 3000;
+                RefInjector1MaximaFlowRateUKGpH = 3000;
                 if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("RefInjector1FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", RefInjector1FlowRateUKGpH);
+                    Trace.TraceInformation("MaximaRefInjector1FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", RefInjector1MaximaFlowRateUKGpH);
             }
 
-            if (RefInjector2FlowRateUKGpH == 0)
+            if (RefInjector2MaximaFlowRateUKGpH == 0)
             {
-                RefInjector2FlowRateUKGpH = 3000;
+                RefInjector2MaximaFlowRateUKGpH = 3000;
                 if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("RefInjector2FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", RefInjector2FlowRateUKGpH);
+                    Trace.TraceInformation("RefInjector2FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", RefInjector2MaximaFlowRateUKGpH);
             }
 
-            if (MaxRefInjector1FlowRateUKGpH == 0)
+            if (UpperRefInjector1FlowRateUKGpH == 0)
             {
-                MaxRefInjector1FlowRateUKGpH = 2600;
+                UpperRefInjector1FlowRateUKGpH = 2600;
                 if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("MaxInjector1FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", MaxRefInjector1FlowRateUKGpH);
+                    Trace.TraceInformation("UpperRefInjector1FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", UpperRefInjector1FlowRateUKGpH);
             }
 
-            if (MaxRefInjector2FlowRateUKGpH == 0)
+            if (UpperRefInjector2FlowRateUKGpH == 0)
             {
-                MaxRefInjector2FlowRateUKGpH = 2600;
+                UpperRefInjector2FlowRateUKGpH = 2600;
                 if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("MaxInjector2FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", MaxRefInjector2FlowRateUKGpH);
+                    Trace.TraceInformation("UpperRefInjector2FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", UpperRefInjector2FlowRateUKGpH);
             }
 
-            if(MaxRefInjector1PressurePSI == 0)
+            if(UpperMaximaRefInjector1PressurePSI == 0)
                 {
-                MaxRefInjector1PressurePSI = 300.0f; // Default to D&M 11mm injector operating pressure
+                UpperMaximaRefInjector1PressurePSI = 300.0f; // Default to D&M 11mm injector operating pressure
                 if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("MaxRefInjector1SteamPressurePSI not specified in ENG file. Defaulting to {0} psi", MaxRefInjector1PressurePSI);
+                    Trace.TraceInformation("UpperMaximaRefInjector1SteamPressurePSI not specified in ENG file. Defaulting to {0} psi", UpperMaximaRefInjector1PressurePSI);
             }
 
-            if (MaxRefInjector2PressurePSI == 0)
+            if (UpperMaximaRefInjector2PressurePSI == 0)
             {
-                MaxRefInjector2PressurePSI = 300.0f; // Default to D&M 11mm injector operating pressure
+                UpperMaximaRefInjector2PressurePSI = 300.0f; // Default to D&M 11mm injector operating pressure
                 if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("MaxRefInjector2SteamPressurePSI not specified in ENG file. Defaulting to {0} psi", MaxRefInjector2PressurePSI);
+                    Trace.TraceInformation("UpperMaximaRefInjector2SteamPressurePSI not specified in ENG file. Defaulting to {0} psi", UpperMaximaRefInjector2PressurePSI);
             }
 
-            // Calculate K values for injector delivery flow rate calculations - up to to optimum (maximum delivery rate)
+            if (RefInjector1MinimaFlowRateUKGpH == 0)
+            {
+                RefInjector1MinimaFlowRateUKGpH = 1600;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("RefMinimaInjector1FlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", RefInjector1MinimaFlowRateUKGpH);
+            }
 
+            if (RefInjector2MinimaFlowRateUKGpH == 0)
+            {
+                RefInjector2MinimaFlowRateUKGpH = 1600;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("RefInjector2MinimaFlowRateUKGpH not specified in ENG file. Defaulting to {0} UKG/h", RefInjector2MinimaFlowRateUKGpH);
+            }
+
+            if ( ReferenceInjector1TenderWaterTemperatureC == 0)
+            {
+                 ReferenceInjector1TenderWaterTemperatureC = C.FromF(60.0f); // Default to 60 degF
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("ReferenceInjector1TenderWaterTemperatureF not specified in ENG file. Defaulting to {0} degF", ReferenceInjector1TenderWaterTemperatureC);
+            }
+
+            if ( ReferenceInjector2TenderWaterTemperatureC == 0)
+            {
+                 ReferenceInjector2TenderWaterTemperatureC = C.FromF(60.0f); // Default to 60 degF
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("ReferenceInjector2TenderWaterTemperatureF not specified in ENG file. Defaulting to {0} degF", ReferenceInjector2TenderWaterTemperatureC);
+            }
+
+            // Calculate Maxima curve K values for injector delivery flow rate calculations - up to to optimum (maximum delivery rate)
             var RefInjectorNozzle1AreaMM2 = (float)(Math.PI * Math.Pow((RefInjector1NozzleSizeMM) / 2.0f, 2));
-            RefKInjector1Factor = RefInjector1FlowRateUKGpH / (float)(RefInjectorNozzle1AreaMM2 * Math.Sqrt(RefInjector1PressurePSI));
+            MaximaKInjector1Factor = RefInjector1MaximaFlowRateUKGpH / (float)(RefInjectorNozzle1AreaMM2 * Math.Sqrt(RefInjector1PressurePSI));
 
             var RefInjectorNozzle2AreaMM2 = (float)(Math.PI * Math.Pow((RefInjector2NozzleSizeMM) / 2.0f, 2));
-            RefKInjector2Factor = RefInjector2FlowRateUKGpH / (float)(RefInjectorNozzle2AreaMM2 * Math.Sqrt(RefInjector2PressurePSI));
+            MaximaKInjector2Factor = RefInjector2MaximaFlowRateUKGpH / (float)(RefInjectorNozzle2AreaMM2 * Math.Sqrt(RefInjector2PressurePSI));
 
-            // calculate relevant factors for delivery flow rates above optimum delivery rate
+            // Calculate relevant factors for Maxima delivery flow rates above optimum delivery rate
             // Calculation based upon a quadratic equation to fit the known data points, with the user setting a known point above the optimum delivery rate.
             // Effective delivery @ P pressure - Qeff(P)=  Qbase(P)* η(P) at current Boiler Pressure
             // Delivery @ P - Qbase(P) = Qopt √(P/Popt)
@@ -2155,25 +2234,42 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // η(Pmax)=  (Qeff(Popt))/(Qbase(Pmax))
             // α= [1 - β(Pmax - Popt) - η(Pmax)] / (Pmax - Popt)^2
 
-            UpperBetaInjector1Factor = 1 / (2 * RefInjector1PressurePSI);
-            var DeliveryBaseInjector1Pmax = RefInjector1FlowRateUKGpH * Math.Sqrt(MaxRefInjector1PressurePSI / RefInjector1PressurePSI);
-            var EfficiencyBaseInjector1atMax = MaxRefInjector1FlowRateUKGpH / DeliveryBaseInjector1Pmax;
-            UpperAlphaInjector1Factor = (float)(1.0 - UpperBetaInjector1Factor * (MaxRefInjector1PressurePSI - RefInjector1PressurePSI) - EfficiencyBaseInjector1atMax) / (float)Math.Pow((MaxRefInjector1PressurePSI - RefInjector1PressurePSI), 2);
+            UpperMaximaBetaInjector1Factor = 1 / (2 * RefInjector1PressurePSI);
+            var MaximaDeliveryBaseInjector1Pmax = RefInjector1MaximaFlowRateUKGpH * Math.Sqrt(UpperMaximaRefInjector1PressurePSI / RefInjector1PressurePSI);
+            var MaximaEfficiencyBaseInjector1atMax = UpperRefInjector1FlowRateUKGpH / MaximaDeliveryBaseInjector1Pmax;
+            UpperMaximaAlphaInjector1Factor = (float)(1.0 - UpperMaximaBetaInjector1Factor * (UpperMaximaRefInjector1PressurePSI - RefInjector1PressurePSI) - MaximaEfficiencyBaseInjector1atMax) / (float)Math.Pow((UpperMaximaRefInjector1PressurePSI - RefInjector1PressurePSI), 2);
 
-            UpperBetaInjector2Factor = 1 / (2 * RefInjector2PressurePSI);
-            var DeliveryBaseInjector2Pmax = RefInjector2FlowRateUKGpH * Math.Sqrt(MaxRefInjector2PressurePSI / RefInjector2PressurePSI);
-            var EfficiencyBaseInjector2atMax = MaxRefInjector2FlowRateUKGpH / DeliveryBaseInjector2Pmax;
-            UpperAlphaInjector2Factor = (float)(1.0 - UpperBetaInjector2Factor * (MaxRefInjector2PressurePSI - RefInjector2PressurePSI) - EfficiencyBaseInjector2atMax) / (float)Math.Pow((MaxRefInjector2PressurePSI - RefInjector2PressurePSI), 2);                
+            UpperMaximaBetaInjector2Factor = 1 / (2 * RefInjector2PressurePSI);
+            var MaximaDeliveryBaseInjector2Pmax = RefInjector2MaximaFlowRateUKGpH * Math.Sqrt(UpperMaximaRefInjector2PressurePSI / RefInjector2PressurePSI);
+            var MaximaEfficiencyBaseInjector2atMax = UpperRefInjector2FlowRateUKGpH / MaximaDeliveryBaseInjector2Pmax;
+            UpperMaximaAlphaInjector2Factor = (float)(1.0 - UpperMaximaBetaInjector2Factor * (UpperMaximaRefInjector2PressurePSI - RefInjector2PressurePSI) - MaximaEfficiencyBaseInjector2atMax) / (float)Math.Pow((UpperMaximaRefInjector2PressurePSI - RefInjector2PressurePSI), 2);
+
+            // Calculate Minima Curves for injectors
+            // Calculate Minima curve K values for injector delivery flow rate calculations - down to to minimum delivery rate
+            MinimaKInjector1Factor = RefInjector1MaximaFlowRateUKGpH / (float)(RefInjectorNozzle1AreaMM2 * Math.Sqrt(RefInjector1PressurePSI));
+            MinimaKInjector2Factor = RefInjector2MaximaFlowRateUKGpH / (float)(RefInjectorNozzle2AreaMM2 * Math.Sqrt(RefInjector2PressurePSI));
+
+            // Calculate relevant factors for Minima delivery flow rates above optimum delivery rate
+
+            UpperMinimaBetaInjector1Factor = 1 / (2 * RefInjector1PressurePSI);
+            var MinimaDeliveryBaseInjector1Pmax = RefInjector1MinimaFlowRateUKGpH * Math.Sqrt(UpperMaximaRefInjector1PressurePSI / RefInjector1PressurePSI);
+            var MinimaEfficiencyBaseInjector1atMax = UpperRefInjector1FlowRateUKGpH / MaximaDeliveryBaseInjector1Pmax;
+            UpperMinimaAlphaInjector1Factor = (float)(1.0 - UpperMaximaBetaInjector1Factor * (UpperMaximaRefInjector1PressurePSI - RefInjector1PressurePSI) - MaximaEfficiencyBaseInjector1atMax) / (float)Math.Pow((UpperMaximaRefInjector1PressurePSI - RefInjector1PressurePSI), 2);
+
+            UpperMinimaBetaInjector2Factor = 1 / (2 * RefInjector2PressurePSI);
+            var MinimaDeliveryBaseInjector2Pmax = RefInjector2MinimaFlowRateUKGpH * Math.Sqrt(UpperMaximaRefInjector2PressurePSI / RefInjector2PressurePSI);
+            var MinimaEfficiencyBaseInjector2atMax = UpperRefInjector2FlowRateUKGpH / MaximaDeliveryBaseInjector2Pmax;
+            UpperMinimaAlphaInjector2Factor = (float)(1.0 - UpperMaximaBetaInjector2Factor * (UpperMaximaRefInjector2PressurePSI - RefInjector2PressurePSI) - MaximaEfficiencyBaseInjector2atMax) / (float)Math.Pow((UpperMaximaRefInjector2PressurePSI - RefInjector2PressurePSI), 2);
 
             // Calculate Injector sizing, a single injector should be able to cope with 75% of the maximum water delivery rate required at full steam usage.
 
             if (ActualInjector1NozzleSizeMM == 0)
             {
 
-                for (int i = 3; i < 17; i++) // check sizes from 3mm to 16mm
+                for (int i = 3; i < 20; i++) // check sizes from 3mm to 19mm
                 {
                     var TestInjectorNozzleAreaMM2 = (float)(Math.PI * Math.Pow((i) / 2.0f, 2));
-                    float TestInjectorFlowRateUKGpH = RefKInjector1Factor * TestInjectorNozzleAreaMM2 * (float)Math.Sqrt(RefInjector1PressurePSI);
+                    float TestInjectorFlowRateUKGpH = MaximaKInjector1Factor * TestInjectorNozzleAreaMM2 * (float)Math.Sqrt(RefInjector1PressurePSI);
                     if (TestInjectorFlowRateUKGpH >= 0.75f * MaxBoilerOutputLBpH / WaterLBpUKG)
                     {
                         ActualInjector1NozzleSizeMM = i;
@@ -2181,9 +2277,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                             Trace.TraceInformation("Calculated Injector1NozzleSizeMM as {0} mm to meet water delivery requirements", ActualInjector1NozzleSizeMM);
                         break;
                     }
-                    else if (i == 16)
+                    else if (i == 19)
                     {
-                        ActualInjector1NozzleSizeMM = 16; // set to maximum size
+                        ActualInjector1NozzleSizeMM = 19; // set to maximum size
                         if (Simulator.Settings.VerboseConfigurationMessages)
                             Trace.TraceInformation("Calculated Injector1NozzleSizeMM exceeds maximum size of 16 mm, and has been set to this value");
                     }
@@ -2192,10 +2288,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             if (ActualInjector2NozzleSizeMM == 0)
             {
-                for (int i = 3; i < 17; i++) // check sizes from 3mm to 16mm
+                for (int i = 3; i < 20; i++) // check sizes from 3mm to 19mm
                 {
                     var TestInjectorNozzleAreaMM2 = (float)(Math.PI * Math.Pow((i) / 2.0f, 2));
-                    float TestInjectorFlowRateUKGpH = RefKInjector2Factor * TestInjectorNozzleAreaMM2 * (float)Math.Sqrt(RefInjector2PressurePSI);
+                    float TestInjectorFlowRateUKGpH = MaximaKInjector2Factor * TestInjectorNozzleAreaMM2 * (float)Math.Sqrt(RefInjector2PressurePSI);
                     if (TestInjectorFlowRateUKGpH >= 0.75f * MaxBoilerOutputLBpH / WaterLBpUKG)
                     {
                         ActualInjector2NozzleSizeMM = i;
@@ -2203,24 +2299,14 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                             Trace.TraceInformation("Calculated Injector2NozzleSizeMM as {0} mm to meet water delivery requirements",  ActualInjector2NozzleSizeMM);
                         break;
                     }
-                    else if (i == 16)
+                    else if (i == 19)
                     {
-                        ActualInjector2NozzleSizeMM = 16; // set to maximum size
+                        ActualInjector2NozzleSizeMM = 19; // set to maximum size
                         if (Simulator.Settings.VerboseConfigurationMessages)
                             Trace.TraceInformation("Calculated Injector2NozzleSizeMM exceeds maximum size of 16 mm, and has been set to this value");
                     }
                 }
             }
-
-
-
-
-
-
-
-
-
-
 
             // Determine if Superheater in use
             if (HasSuperheater)
@@ -7518,35 +7604,64 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 // Calculate the flow rates for injector #1 based upon boiler pressure and injector nozzle size
                 var ActualInjector1NozzleAreaMM2 = (float)(Math.PI * Math.Pow((ActualInjector1NozzleSizeMM) / 2.0f, 2));
 
-                MaxInjectorFlowRateLBpS = ActualInjectorTemperatureCorrectionFactor * pS.FrompH(RefKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(MaxBoilerPressurePSI)) * WaterLBpUKG;
+                MaxInjector1FlowRateLBpS = pS.FrompH(MaximaKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(RefInjector1PressurePSI)) * WaterLBpUKG;
 
-                // Injector #1 - calculate flow rate depending upon whether pressure is above or below optimum pressure
+                // Injector #1 - calculate maxima and minima flow rates depending upon whether pressure is above or below optimum pressure
                 if (BoilerPressurePSI <= RefInjector1PressurePSI)
                 {
-                    ActualInjector1FlowRateLBpS = ActualInjectorTemperatureCorrectionFactor * pS.FrompH(RefKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
+                    MaximaInjector1FlowRateLBpS = pS.FrompH(MaximaKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
+
+                    MinimaInjector1FlowRateLBpS = pS.FrompH(MinimaKInjector1Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
                 }
                 else
                 {
-                    float InjectorDeliveryEfficincyatP = (float)(1 - UpperBetaInjector1Factor * (BoilerPressurePSI - RefInjector1PressurePSI) - UpperAlphaInjector1Factor * Math.Pow(BoilerPressurePSI - RefInjector1PressurePSI, 2));
-                    float DeliveryBaseFlowRateatP = (float)(RefInjector1FlowRateUKGpH * Math.Sqrt(BoilerPressurePSI / RefInjector1PressurePSI));
-                    ActualInjector1FlowRateLBpS = pS.FrompH(DeliveryBaseFlowRateatP * InjectorDeliveryEfficincyatP) * WaterLBpUKG;
+                    float MaximaInjector1DeliveryEfficiencyatP = (float)(1 - UpperMaximaBetaInjector1Factor * (BoilerPressurePSI - RefInjector1PressurePSI) - UpperMaximaAlphaInjector1Factor * Math.Pow(BoilerPressurePSI - RefInjector1PressurePSI, 2));
+                    float MaximaDeliveryInjector1BaseFlowRateatP = (float)(RefInjector1MaximaFlowRateUKGpH * Math.Sqrt(BoilerPressurePSI / RefInjector1PressurePSI));
+                    MaximaInjector1FlowRateLBpS = pS.FrompH(MaximaDeliveryInjector1BaseFlowRateatP * MaximaInjector1DeliveryEfficiencyatP) * WaterLBpUKG;
+
+                    float MinimaInjectorDeliveryEfficincyatP = (float)(1 + UpperMinimaBetaInjector1Factor * (BoilerPressurePSI - RefInjector1PressurePSI) + UpperMinimaAlphaInjector1Factor * Math.Pow(BoilerPressurePSI - RefInjector1PressurePSI, 2));
+                    float MinimaDeliveryBaseFlowRateatP = (float)(RefInjector1MinimaFlowRateUKGpH * Math.Sqrt(BoilerPressurePSI / RefInjector1PressurePSI));
+                    MinimaInjector1FlowRateLBpS = pS.FrompH(MinimaDeliveryBaseFlowRateatP * MinimaInjectorDeliveryEfficincyatP) * WaterLBpUKG;
+
                 }
 
                 // Calculate the flow rates for injector #2 based upon boiler pressure and injector nozzle size
                 var ActualInjector2NozzleAreaMM2 = (float)(Math.PI * Math.Pow((ActualInjector1NozzleSizeMM) / 2.0f, 2));
 
-                MaxInjectorFlowRateLBpS = pS.FrompH(RefKInjector2Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(MaxBoilerPressurePSI)) * WaterLBpUKG;
+                MaxInjector2FlowRateLBpS = pS.FrompH(MaximaKInjector2Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(RefInjector2PressurePSI)) * WaterLBpUKG;
 
                 // Injector #2 - calculate flow rate depending upon whether pressure is above or below optimum pressure
                 if (BoilerPressurePSI <= RefInjector2PressurePSI)
                 {
-                    ActualInjector2FlowRateLBpS = pS.FrompH(RefKInjector2Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
+                    MaximaInjector2FlowRateLBpS = pS.FrompH(MaximaKInjector2Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
+
+                    MinimaInjector2FlowRateLBpS = pS.FrompH(MinimaKInjector2Factor * ActualInjector1NozzleAreaMM2 * (float)Math.Sqrt(BoilerPressurePSI)) * WaterLBpUKG;
                 }
                 else
                 {
-                    float InjectorDeliveryEfficincyatP = (float)(1 - UpperBetaInjector2Factor * (BoilerPressurePSI - RefInjector2PressurePSI) - UpperAlphaInjector2Factor * Math.Pow(BoilerPressurePSI - RefInjector2PressurePSI, 2));
-                    float DeliveryBaseFlowRateatP = (float)(RefInjector2FlowRateUKGpH * Math.Sqrt(BoilerPressurePSI / RefInjector2PressurePSI));
-                    ActualInjector2FlowRateLBpS = pS.FrompH(DeliveryBaseFlowRateatP * InjectorDeliveryEfficincyatP) * WaterLBpUKG;
+                    float MaximaInjector2DeliveryEfficiencyatP = (float)(1 - UpperMaximaBetaInjector2Factor * (BoilerPressurePSI - RefInjector2PressurePSI) - UpperMaximaAlphaInjector2Factor * Math.Pow(BoilerPressurePSI - RefInjector2PressurePSI, 2));
+                    float MaximaDeliveryInjector2BaseFlowRateatP = (float)(RefInjector2MaximaFlowRateUKGpH * Math.Sqrt(BoilerPressurePSI / RefInjector2PressurePSI));
+                    MaximaInjector2FlowRateLBpS = pS.FrompH(MaximaDeliveryInjector2BaseFlowRateatP * MaximaInjector2DeliveryEfficiencyatP) * WaterLBpUKG;
+
+                    float MinimaInjectorDeliveryEfficincyatP = (float)(1 + UpperMinimaBetaInjector2Factor * (BoilerPressurePSI - RefInjector2PressurePSI) + UpperMinimaAlphaInjector2Factor * Math.Pow(BoilerPressurePSI - RefInjector2PressurePSI, 2));
+                    float MinimaDeliveryBaseFlowRateatP = (float)(RefInjector2MinimaFlowRateUKGpH * Math.Sqrt(BoilerPressurePSI / RefInjector2PressurePSI));
+                    MinimaInjector2FlowRateLBpS = pS.FrompH(MinimaDeliveryBaseFlowRateatP * MinimaInjectorDeliveryEfficincyatP) * WaterLBpUKG;
+                }
+
+                // calculate actual injector flow rates based upon lever settings
+                ActualInjector1FlowRateLBpS = Injector1Fraction * MaximaInjector1FlowRateLBpS;
+                ActualInjector2FlowRateLBpS = Injector2Fraction * MaximaInjector2FlowRateLBpS;
+
+                
+
+                // If injector flow rate has not reached minimum value, set flow rate to zero
+                if (ActualInjector1FlowRateLBpS < MinimaInjector1FlowRateLBpS)
+                {
+                    ActualInjector1FlowRateLBpS = 0.0f;
+                }
+                if (ActualInjector2FlowRateLBpS < MinimaInjector2FlowRateLBpS)
+                {
+                    ActualInjector2FlowRateLBpS = 0.0f;
                 }
 
                 // Calculate the temperature correction factor as the feedwater temperature will affect the flow rate and the hence the steam used
@@ -7554,8 +7669,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 // Actual Steam used = Base Steam used * Temperature Correction Factor
                 // Temperature Correction Factor = (Tsat - Tfeedwater) / (Tsat - Tref), Assume ref = 20C
 
-                var ReferenceTemperature = 20.0f; // Reference temperature for injector performance
-                ActualInjectorTemperatureCorrectionFactor = (float)Math.Sqrt((C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC) / (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - ReferenceTemperature));
+                ActualInjector1TemperatureCorrectionFactor = (float)Math.Sqrt((C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC) / (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - ReferenceInjector1TenderWaterTemperatureC));
+
+                ActualInjector2TemperatureCorrectionFactor = (float)Math.Sqrt((C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC) / (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - ReferenceInjector2TenderWaterTemperatureC));
+
+                // Adjust actual flow rates based on temperature correction factor
+                ActualInjector1FlowRateLBpS = ActualInjector1FlowRateLBpS * ActualInjector1TemperatureCorrectionFactor;
+                ActualInjector2FlowRateLBpS = ActualInjector2FlowRateLBpS * ActualInjector2TemperatureCorrectionFactor;
 
                 // Calculate enthalpy of injector feed water based on boiler water temperature
                 // hfg kJ/kg) = 2500 - 2.4 * Tsat (C) - 4% accurate, to be explored later for better accuracy
@@ -7582,6 +7702,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // // Injector #1
                     if (Injector1IsOn)
                     {
+                        
+                        
+                        
                         // Calculate Injector 1 delivery water temp
                         if (Injector1Fraction < InjCapMinFactorX[BoilerPressurePSI])
                         {
@@ -7619,6 +7742,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         BoilerWaterInputLB += (elapsedClockSeconds * Injector1Fraction * ActualInjector1FlowRateLBpS); // Keep track of water flow into boilers from Injector 1
                         BoilerHeatOutBTUpS += (Inject1WaterHeatLossBTU + Inject1SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat
                     }
+                    else
+                    {
+                        Injector1WaterDelTempF = 65.0f;
+
+                    }
 
                     // Injector #2
                     if (Injector2IsOn)
@@ -7638,25 +7766,29 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                         // Calculate amount of steam used to inject water
                         MaxInject2SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at boiler pressure
-                        ActInject2SteamUsedLbpS = (Injector2Fraction * ActualInjector2FlowRateLBpS) / MaxInject2SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
+                        ActInject2SteamUsedLbpS = (ActualInjector2FlowRateLBpS) / MaxInject2SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
 
                         // Actual steam used by the injector is calculated by following formula
                         // Steam Mass (kg/hr) = Water Mass (kg/h) * (Cp*(Tsat-Ttenderwater))/(hfg+(Cp*(Tsat-Ttenderwater))
                         // where Cp = specific heat of water (4.18kJ/kgK), hfg = latent heat of vaporisation at boiler pressure
 
-                        ActualInjector2SteamUsedLBpS = (Injector1Fraction * ActualInjector2FlowRateLBpS) * (4.18f * (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC)) / (InjectorHFGkJPkg + (4.18f * (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC)));
+                        ActualInjector2SteamUsedLBpS = (ActualInjector2FlowRateLBpS) * (4.18f * (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC)) / (InjectorHFGkJPkg + (4.18f * (C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]) - TenderWaterTemperatureC)));
 
                         // Calculate heat loss for steam injection
                         Inject2SteamHeatLossBTU = ActInject2SteamUsedLbpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector2WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
 
                         // Calculate heat loss for water injected
-                        Inject2WaterHeatLossBTU = Injector2Fraction * ActualInjector2FlowRateLBpS * (BoilerWaterHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector2WaterTempPressurePSI]); // Loss of boiler heat due to water injection - loss is the diff between steam and water Heat
+                        Inject2WaterHeatLossBTU = ActualInjector2FlowRateLBpS * (BoilerWaterHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector2WaterTempPressurePSI]); // Loss of boiler heat due to water injection - loss is the diff between steam and water Heat
 
                         // calculate Water steam heat based on injector water delivery temp
-                        BoilerMassLB += elapsedClockSeconds * Injector2Fraction * ActualInjector2FlowRateLBpS;   // Boiler Mass increase by Injector 1
+                        BoilerMassLB += elapsedClockSeconds * ActualInjector2FlowRateLBpS;   // Boiler Mass increase by Injector 1
                         BoilerHeatBTU -= elapsedClockSeconds * (Inject2WaterHeatLossBTU + Inject2SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat   
-                        BoilerWaterInputLB += (elapsedClockSeconds * Injector2Fraction * ActualInjector2FlowRateLBpS); // Keep track of water flow into boilers from Injector 1
+                        BoilerWaterInputLB += (elapsedClockSeconds * ActualInjector2FlowRateLBpS); // Keep track of water flow into boilers from Injector 1
                         BoilerHeatOutBTUpS += (Inject2WaterHeatLossBTU + Inject2SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat
+                    }
+                    else
+                    {
+                        Injector2WaterDelTempF = 65.0f;
                     }
                 }
 
@@ -8701,20 +8833,22 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
             else
             {
-                status.AppendFormat("{0}\t{1}\t{2}/{17}\t\t{3}\t({4:N0} {18})\t{5}/{17}\t\t{6}\t{7}\t{8}\t{9}/{17}\t\t{10}\t({11:N0} {18})\t{12}/{17}\t\t{13}\t{14}\t{15}\t{16:N0}/{17}\n",
+                status.AppendFormat("{0}\t{1}\t{2}/{19}\t\t{3}\t({4:N0} {20})\t{5}/{19}\t\t{6}\t{7}\t{8}\t{9}/{19}\t\t{10}\t{11}/{19}\t\t{12}\t({13:N0} {20})\t{14}/{19}\t\t{15}\t{16}\t{17}\t{18:N0}/{19}\n",
                 Simulator.Catalog.GetString("Injector:"),
-                Simulator.Catalog.GetString("Max"),
-                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(MaxInjectorFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                Simulator.Catalog.GetString("Max1"),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(MaxInjector1FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                 Simulator.Catalog.GetString("Inj1"),
                 ActualInjector1NozzleSizeMM,
-                FormatStrings.FormatFuelVolume(Injector1Fraction * pS.TopH(L.FromGUK(ActualInjector1FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(ActualInjector1FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                 Simulator.Catalog.GetString("Temp1"),
                 FormatStrings.FormatTemperature(C.FromF(Injector1WaterDelTempF), IsMetric, false),
                 Simulator.Catalog.GetString("Steam1"),
                 FormatStrings.FormatMass(pS.TopH(ActualInjector1SteamUsedLBpS), IsMetric),
+                Simulator.Catalog.GetString("Max2"),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(MaxInjector2FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                 Simulator.Catalog.GetString("Inj2"),
                 ActualInjector2NozzleSizeMM,
-                FormatStrings.FormatFuelVolume(Injector2Fraction * pS.TopH(L.FromGUK(ActualInjector2FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(ActualInjector2FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                 Simulator.Catalog.GetString("Temp2"),
                 FormatStrings.FormatTemperature(C.FromF(Injector2WaterDelTempF), IsMetric, false),
                 Simulator.Catalog.GetString("Steam2"),
