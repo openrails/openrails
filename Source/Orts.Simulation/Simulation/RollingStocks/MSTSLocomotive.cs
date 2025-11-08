@@ -3796,9 +3796,17 @@ namespace Orts.Simulation.RollingStocks
             }
 
             if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeController.CurrentValue > 0)
+            {
                 StartDynamicBrakeDecrease(null);
+                if (DynamicBrakeController != null)
+                    DynamicBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
+            }
             else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
+            {
                 StartTrainBrakeDecrease(null);
+                if (TrainBrakeController != null)
+                    TrainBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
+            }
             else
                 StartThrottleIncrease(ThrottleController.SmoothMax());
         }
@@ -3866,6 +3874,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
         protected bool speedSelectorModeDecreasing = false;
+
         public void StartThrottleDecrease()
         {
             if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
@@ -3914,9 +3923,17 @@ namespace Orts.Simulation.RollingStocks
                 ThrottleController.CurrentValue = 1;
             }
             if (CombinedControlType == CombinedControl.ThrottleDynamic && ThrottleController.CurrentValue <= 0)
+            {
                 StartDynamicBrakeIncrease(null);
+                if (DynamicBrakeController != null)
+                    DynamicBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
+            }
             else if (CombinedControlType == CombinedControl.ThrottleAir && ThrottleController.CurrentValue <= 0)
+            {
                 StartTrainBrakeIncrease(null);
+                if (TrainBrakeController != null)
+                    TrainBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
+            }
             else
                 StartThrottleDecrease(ThrottleController.SmoothMin());
         }
@@ -3961,9 +3978,19 @@ namespace Orts.Simulation.RollingStocks
             ThrottleController.StopDecrease();
 
             if (CombinedControlType == CombinedControl.ThrottleDynamic)
+            {
+                // sometimes called without a corresponding start
+                if (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime < CommandStartTime)
+                    DynamicBrakeController.CommandStartTime = CommandStartTime;
                 StopDynamicBrakeIncrease();
+            }
             else if (CombinedControlType == CombinedControl.ThrottleAir)
+            {
+                // sometimes called without a corresponding start
+                if (TrainBrakeController != null && TrainBrakeController.CommandStartTime < CommandStartTime)
+                    TrainBrakeController.CommandStartTime = CommandStartTime;
                 StopTrainBrakeIncrease();
+            }
             if (ThrottleController.SmoothMin() != null)
                 new ContinuousThrottleCommand(Simulator.Log, false, ThrottleController.CurrentValue, CommandStartTime);
         }
@@ -4660,6 +4687,7 @@ namespace Orts.Simulation.RollingStocks
 
             //if (CruiseControl != null) CruiseControl.EngineBrakePriority = true;
             EngineBrakeController.StartIncrease(target);
+            EngineBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
             Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
             SignalEvent(Event.EngineBrakeChange);
         }
@@ -4791,6 +4819,7 @@ namespace Orts.Simulation.RollingStocks
                 return;
 
             BrakemanBrakeController.StartIncrease(target);
+            BrakemanBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
             Simulator.Confirmer.Confirm(CabControl.BrakemanBrake, CabSetting.Increase, GetBrakemanBrakeStatus());
 //            SignalEvent(Event.EngineBrakeChange);
         }
@@ -4905,6 +4934,7 @@ namespace Orts.Simulation.RollingStocks
                 float prevValue = DynamicBrakeController.CurrentValue;
 
                 DynamicBrakeController.StartIncrease(target);
+                DynamicBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
 
                 AlerterReset(TCSEvent.DynamicBrakeChanged);
                 SignalEvent(Event.DynamicBrakeChange);
@@ -4939,6 +4969,7 @@ namespace Orts.Simulation.RollingStocks
             if (DynamicBrakeController?.CurrentValue > 0)
             {
                 DynamicBrakeController.StartDecrease(target);
+                DynamicBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
 
                 AlerterReset(TCSEvent.DynamicBrakeChanged);
                 SignalEvent(Event.DynamicBrakeChange);
