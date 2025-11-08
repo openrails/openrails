@@ -32,9 +32,13 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Common.Input;
-using Color = Microsoft.Xna.Framework.Color;
-using Point = Microsoft.Xna.Framework.Point;
-using Rectangle = Microsoft.Xna.Framework.Rectangle;
+
+using ORTS.Scripting.Api;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -88,10 +92,9 @@ namespace Orts.Viewer3D.Popups
 
         public List<bool> AngleCockAPartiallyOpened = new List<bool>();
         public List<bool> AngleCockBPartiallyOpened = new List<bool>();
-        public string BatteryStatus;
-        string CircuitBreakerState;
+        public bool BatterySwitchOn;
+        public PowerSupplyState PowerSupplyStatus;
         public int LocoRowCount;
-        public string PowerSupplyStatus;
         public int RowsCount;
         public int SpacerRowCount;
         public int SymbolsRowCount;
@@ -403,11 +406,9 @@ namespace Orts.Viewer3D.Popups
                     }
                     if (isElectricDieselLocomotive)
                     {
-                        if (locomotive.GetMultipleUnitsConfiguration() != null)
-                        {
-                            line.Add(new buttonToggleMU(0, 0, textHeight, Owner.Viewer, CarPosition));
-                            AddSpace(false);
-                        }
+                        line.Add(new buttonToggleMU(0, 0, textHeight, Owner.Viewer, CarPosition));
+                        AddSpace(false);
+
                         line.Add(new buttonTogglePower(0, 0, textHeight, Owner.Viewer, CarPosition));
                         AddSpace(false);
                         if ((wagon != null) && (wagon.PowerSupply is IPowerSupply))
@@ -511,10 +512,8 @@ namespace Orts.Viewer3D.Popups
                     carOperations.CarOperationChanged = carOperations.Visible && carOperations.CarOperationChanged;
                 }
                 // Updates power supply status
-                else if (isElectricDieselLocomotive &&
-                      (PowerSupplyStatus != null && PowerSupplyStatus != Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus()
-                      || (BatteryStatus != null && BatteryStatus != Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus())
-                      || (CircuitBreakerState != null && (trainCar is MSTSElectricLocomotive) && CircuitBreakerState != (trainCar as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.State.ToString())))
+                else if ((trainCar is MSTSWagon wagon && wagon.PowerSupply != null && BatterySwitchOn != wagon.PowerSupply.BatterySwitch.On)
+                    || (isElectricDieselLocomotive && PowerSupplyStatus != (trainCar as MSTSLocomotive).LocomotivePowerSupply.GetPowerStatus()))
                 {
                     Layout();
                     UpdateWindowSize();
@@ -579,8 +578,12 @@ namespace Orts.Viewer3D.Popups
                 bool first = car == Viewer.PlayerTrain.Cars.First();
                 var CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
 
-                var isSteamAndHasTender = (CurrentCar is MSTSSteamLocomotive) &&
-                    (carPosition + (CurrentCar.Flipped ? -1 : 1) < Viewer.PlayerTrain.Cars.Count) && (Viewer.PlayerTrain.Cars[carPosition + (CurrentCar.Flipped ? -1 : 1)].WagonType == MSTSWagon.WagonTypes.Tender);
+                var isSteamAndHasTender = false;
+                if (CurrentCar is MSTSSteamLocomotive)
+                {
+                    var validTenderPosition = CurrentCar.Flipped ? carPosition - 1 > -1 : carPosition + 1 < Viewer.PlayerTrain.Cars.Count;
+                    isSteamAndHasTender = validTenderPosition && (Viewer.PlayerTrain.Cars[carPosition + (CurrentCar.Flipped ? -1 : 1)].WagonType == MSTSWagon.WagonTypes.Tender);
+                }
                 var isTender = CurrentCar.WagonType == MSTSWagon.WagonTypes.Tender;
                 if (isSteamAndHasTender || isTender)
                 {
@@ -895,7 +898,6 @@ class buttonHandBrake : Image
                 Viewer = viewer;
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
-                var first = car == Viewer.PlayerTrain.Cars.First();
 
                 if (CurrentCar.BrakeSystem is VacuumSinglePipe)
                 {
@@ -905,15 +907,11 @@ class buttonHandBrake : Image
                 {
                     var carAngleCockAOpenAmount = CurrentCar.BrakeSystem.AngleCockAOpenAmount;
                     var carAngleCockAOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpen;
-                    Texture = first ? FrontAngleCockClosed
-                        : carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
+                    Texture = carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
                         : carAngleCockAOpen ? FrontAngleCockOpened
                         : FrontAngleCockClosed;
 
-                    if (!first)
-                    {
-                        Click += new Action<Control, Point>(buttonFrontAngleCock_Click);
-                    }
+                    Click += new Action<Control, Point>(buttonFrontAngleCock_Click);
                 }
                 Source = new Rectangle(0, 0, size, size);
             }
@@ -946,7 +944,6 @@ class buttonHandBrake : Image
                 Viewer = viewer;
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
-                var last = car == Viewer.PlayerTrain.Cars.Last();
 
                 if (CurrentCar.BrakeSystem is VacuumSinglePipe)
                 {
@@ -956,15 +953,11 @@ class buttonHandBrake : Image
                 {
                     var carAngleCockBOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
                     var carAngleCockBOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpen;
-                    Texture = last ? RearAngleCockClosed
-                        : carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
+                    Texture = carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
                         : carAngleCockBOpen ? RearAngleCockOpened
                         : RearAngleCockClosed;
 
-                    if (!last)
-                    {
-                        Click += new Action<Control, Point>(buttonRearAngleCock_Click);
-                    }
+                    Click += new Action<Control, Point>(buttonRearAngleCock_Click);
                 }
                 Source = new Rectangle(0, 0, size, size);
             }
@@ -1091,7 +1084,6 @@ class buttonHandBrake : Image
             readonly Viewer Viewer;
             readonly TrainCarOperationsViewerWindow TrainCarViewer;
             readonly TrainCar CurrentCar;
-            readonly string MultipleUnitsConfiguration;
             public buttonToggleMU(int x, int y, int size, Viewer viewer, int carPosition)
                 : base(x, y, size, size)
             {
@@ -1099,10 +1091,9 @@ class buttonHandBrake : Image
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
 
-                MultipleUnitsConfiguration = Viewer.PlayerLocomotive.GetMultipleUnitsConfiguration();
-                if (CurrentCar is MSTSDieselLocomotive && MultipleUnitsConfiguration != null)
+                if (CurrentCar is MSTSLocomotive)
                 {
-                    Texture = Viewer.TrainCarOperationsWindow.ModifiedSetting || ((CurrentCar as MSTSLocomotive).RemoteControlGroup == 0 && MultipleUnitsConfiguration != "1") ? MUconnected : MUdisconnected;
+                    Texture = Viewer.TrainCarOperationsWindow.ModifiedSetting || ((CurrentCar as MSTSLocomotive).RemoteControlGroup == 0) ? MUconnected : MUdisconnected;
                 }
                 else
                 {
@@ -1113,12 +1104,12 @@ class buttonHandBrake : Image
             }
             void buttonToggleMU_Click(Control arg1, Point arg2)
             {
-                if (CurrentCar is MSTSDieselLocomotive)
+                if (CurrentCar is MSTSLocomotive)
                 {
                     MSTSLocomotive locomotive = CurrentCar as MSTSLocomotive;
 
                     new ToggleMUCommand(Viewer.Log, locomotive, locomotive.RemoteControlGroup < 0);
-                    if (locomotive.RemoteControlGroup == 0 && MultipleUnitsConfiguration != "1")
+                    if (locomotive.RemoteControlGroup == 0)
                     {
                         Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("MU signal connected"));
                         Texture = MUconnected;
@@ -1164,10 +1155,10 @@ class buttonHandBrake : Image
                 if ((CurrentCar is MSTSElectricLocomotive) || (CurrentCar is MSTSDieselLocomotive))
                 {
                     MSTSLocomotive locomotive = CurrentCar as MSTSLocomotive;
+                    bool powerOn = locomotive.LocomotivePowerSupply.GetPowerStatus() == PowerSupplyState.PowerOff;
 
-                    new PowerCommand(Viewer.Log, locomotive, !locomotive.LocomotivePowerSupply.MainPowerSupplyOn);
-                    var mainPowerSupplyOn = locomotive.LocomotivePowerSupply.MainPowerSupplyOn;
-                    if (mainPowerSupplyOn)
+                    new PowerCommand(Viewer.Log, locomotive, powerOn);
+                    if (!powerOn)
                         Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power OFF command sent"));
                     else
                         Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power ON command sent"));
@@ -1180,36 +1171,9 @@ class buttonHandBrake : Image
             }
             public Texture2D locomotiveStatusPower(int CarPosition)
             {
-                string locomotiveStatus = CurrentCar.GetStatus();
-                foreach (string data in locomotiveStatus.Split('\n').Where((string d) => !string.IsNullOrWhiteSpace(d)))
-                {
-                    string[] parts = data.Split(new string[] { " = " }, 2, StringSplitOptions.None);
-                    string keyPart = parts[0];
-                    string valuePart = parts?[1];
-                    if (keyPart.Contains(Viewer.Catalog.GetParticularString("DieselEngine","Engine")))
-                    {
-                        TrainCarViewer.PowerSupplyStatus = locomotiveStatus;
-                        Texture = valuePart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Running")) ? PowerOn
-                           : valuePart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Stopped")) ? PowerOff
-                           : PowerChanging;
-                        break;
-                    }
-
-                    MSTSElectricLocomotive locomotive = CurrentCar as MSTSElectricLocomotive;
-                    switch (locomotive.ElectricPowerSupply.CircuitBreaker.State)
-                    {
-                        case ORTS.Scripting.Api.CircuitBreakerState.Closed:
-                            Texture = PowerOn;
-                            break;
-                        case ORTS.Scripting.Api.CircuitBreakerState.Closing:
-                            Texture = PowerChanging;
-                            break;
-                        case ORTS.Scripting.Api.CircuitBreakerState.Open:
-                            Texture = PowerOff;
-                            break;
-                    }
-                    TrainCarViewer.CircuitBreakerState = locomotive.ElectricPowerSupply.CircuitBreaker.State.ToString();
-                }
+                var powerStatus = (CurrentCar as MSTSLocomotive).LocomotivePowerSupply.GetPowerStatus();
+                TrainCarViewer.PowerSupplyStatus = powerStatus;
+                Texture = powerStatus == PowerSupplyState.PowerOn ? PowerOn : powerStatus == PowerSupplyState.PowerOff ? PowerOff : PowerChanging;
                 return Texture;
             }
         }
@@ -1232,6 +1196,7 @@ class buttonHandBrake : Image
                     if (wagon.PowerSupply.BatterySwitch.Mode == BatterySwitch.ModeType.AlwaysOn)
                     {
                         Texture = BattAlwaysOn32;
+                        TrainCarViewer.BatterySwitchOn = wagon.PowerSupply.BatterySwitch.On;
                     }
                     else
                     {
@@ -1269,18 +1234,11 @@ class buttonHandBrake : Image
             }
             public Texture2D locomotiveStatusBattery(int CarPosition)
             {
-                string locomotiveStatus = CurrentCar.GetStatus();
-                foreach (string data in locomotiveStatus.Split('\n').Where((string d) => !string.IsNullOrWhiteSpace(d)))
+                if (CurrentCar is MSTSWagon wagon && wagon.PowerSupply != null)
                 {
-                    string[] parts = data.Split(new string[] { " = " }, 2, StringSplitOptions.None);
-                    string keyPart = parts[0];
-                    string valuePart = parts?[1];
-                    if (keyPart.Contains(Viewer.Catalog.GetString("Battery")))
-                    {
-                        TrainCarViewer.BatteryStatus = locomotiveStatus;
-                        Texture = valuePart.Contains(Viewer.Catalog.GetString("On")) ? BattOn32 : BattOff32;
-                        break;
-                    }
+                    bool on = wagon.PowerSupply.BatterySwitch.On;
+                    TrainCarViewer.BatterySwitchOn = on;
+                    Texture = on ? BattOn32 : BattOff32;
                 }
                 return Texture;
             }
