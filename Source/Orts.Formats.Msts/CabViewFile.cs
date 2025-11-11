@@ -144,6 +144,7 @@ namespace Orts.Formats.Msts
         STEAMCHEST_PR,
         TENDER_WATER,
         BOILER_WATER,
+        BOILER_WATER_GRADE,
         REVERSER_PLATE,
         STEAMHEAT_PRESSURE,
         FIREBOX,

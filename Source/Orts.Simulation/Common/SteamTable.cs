@@ -64,50 +64,6 @@ namespace Orts.Common
             0.2782f, 0.2994f, 0.3205f, 0.3416f, 0.3627f, 0.3838f, 0.4048f, 0.4259f, 0.4469f, 0.4680f,
             0.4890f, 0.5101f, 0.5312f, 0.5522f, 0.5733f, 0.5944f, 0.6155f, 0.6367f, 0.6578f, 0.6790f
         };
-        // injector 9mm flowrates (gallons (uk) per minute) - data extrapolated from info in 1928 Sellers Injector Manual
-        static float[] Injector09FlowTableUKGpM = new float[]
-        {
-            7.30f, 9.95f, 12.61f, 15.26f, 17.91f, 20.56f, 23.22f, 25.87f, 28.52f, 31.18f, 33.83f,
-            36.48f, 39.14f, 39.90f, 40.66f, 41.43f, 42.19f, 42.95f, 43.72f, 43.97f, 44.23f,
-            44.49f, 44.74f, 45.00f, 45.26f, 45.51f, 45.77f, 46.03f, 46.28f, 46.28f, 46.80f
-        };
-        // injector 10mm flowrates (gallons (uk) per minute) - data extrapolated from info in 1928 Sellers Injector Manual
-        static float[] Injector10FlowTableUKGpM = new float[]
-        {
-            7.3f, 10.68f, 14.06f, 17.44f, 20.83f, 24.21f, 27.59f, 30.97f, 34.35f, 37.73f, 41.12f,
-            44.50f, 47.88f, 48.92f, 49.96f, 51.00f, 52.04f, 53.08f, 54.12f, 54.48f, 54.85f,
-            55.21f, 55.57f, 55.93f, 56.29f, 56.65f, 57.01f, 57.37f, 57.73f, 58.09f, 58.45f
-        };
-        // injector 11mm flowrates (gallons (uk) per minute) - data extrapolated from info in 1928 Sellers Injector Manual
-        static float[] Injector11FlowTableUKGpM = new float[]
-        {
-            9.3f, 13.30f, 17.31f, 21.31f, 25.31f, 29.32f, 33.32f, 37.33f, 41.33f, 45.33f, 49.34f,
-            53.34f, 57.34f, 58.59f, 59.84f, 61.09f, 62.34f, 63.59f, 64.84f, 65.21f, 65.57f,
-            65.94f, 66.31f, 66.68f, 67.04f, 67.41f, 67.78f, 68.15f, 68.52f, 68.88f, 69.25f
-        };
-        // injector 13mm flowrates (gallons (uk) per minute) - data extrapolated below from info in 1928 Sellers Injector Manual
-        static float[] Injector13FlowTableUKGpM = new float[]
-        {
-            9.3f, 15.35f, 21.40f, 27.44f, 33.49f, 39.54f, 45.59f, 51.64f, 57.69f, 63.73f, 69.78f,
-            75.83f, 81.88f, 83.75f, 85.63f, 87.50f, 89.37f, 91.25f, 93.12f, 93.75f, 94.37f,
-            94.99f, 95.62f, 96.24f, 96.87f, 97.49f, 98.12f, 98.74f, 99.37f, 99.99f, 100.61f
-        };
-        
-      // injector 14mm flowrates (gallons (uk) per minute) - data extrapolated below from info in 1928 Sellers Injector Manual
-        static float[] Injector14FlowTableUKGpM = new float[]
-        {
-            9.30f, 16.79f, 24.28f, 31.77f, 39.26f, 46.75f, 54.24f, 61.73f, 69.21f, 76.70f, 84.19f,
-            91.68f, 99.17f, 100.81f, 102.45f, 104.09f, 105.72f, 107.36f, 109.00f, 111.65f, 114.30f,
-            115.94f, 117.58f, 119.21f, 120.85f, 122.49f, 124.13f, 125.77f, 127.40f, 129.04f, 130.68f
-        };
-        
-      // injector 15mm flowrates (gallons (uk) per minute) - data extrapolated below from info in 1928 Sellers Injector Manual
-        static float[] Injector15FlowTableUKGpM = new float[]
-        {
-            9.30f, 17.82f, 26.33f, 34.85f, 43.36f, 51.88f, 60.40f, 68.91f, 77.43f, 85.94f, 94.46f,
-            102.98f, 111.49f, 113.33f, 115.16f, 117.0f, 118.83f, 120.67f, 122.50f, 125.50f, 128.50f,
-            130.14f, 131.78f, 133.41f, 135.05f, 136.69f, 138.33f, 139.97f, 141.60f, 143.24f, 144.88f
-        };        
 
         // Specific heat table for water - volume heat capacity?? - 
         static float[] SpecificHeatTableKJpKGpK = new float[]
@@ -440,42 +396,6 @@ namespace Orts.Common
         {
             return new Interpolator(WaterTemperatureTableK, SpecificHeatTableKJpKGpK);
         }
-
-        // Flowrate table vs Boiler Pressure for 9mm Injector
-        public static Interpolator Injector09FlowrateInterpolatorPSItoUKGpM()
-        {
-            return new Interpolator(PressureTableGaugePSI, Injector09FlowTableUKGpM);
-        }
-
-        // Flowrate table vs Boiler Pressure for 10mm Injector
-        public static Interpolator Injector10FlowrateInterpolatorPSItoUKGpM()
-        {
-            return new Interpolator(PressureTableGaugePSI, Injector10FlowTableUKGpM);
-        }
-
-        // Flowrate table vs Boiler Pressure for 11mm Injector
-        public static Interpolator Injector11FlowrateInterpolatorPSItoUKGpM()
-        {
-            return new Interpolator(PressureTableGaugePSI, Injector11FlowTableUKGpM);
-        } 
- 
-        // Flowrate table vs Boiler Pressure for 13mm Injector
-        public static Interpolator Injector13FlowrateInterpolatorPSItoUKGpM()
-        {
-            return new Interpolator(PressureTableGaugePSI, Injector13FlowTableUKGpM);
-        } 
-        
-        // Flowrate table vs Boiler Pressure for 14mm Injector
-        public static Interpolator Injector14FlowrateInterpolatorPSItoUKGpM()
-        {
-            return new Interpolator(PressureTableGaugePSI, Injector14FlowTableUKGpM);
-        } 
-        
-        // Flowrate table vs Boiler Pressure for 15mm Injector
-        public static Interpolator Injector15FlowrateInterpolatorPSItoUKGpM()
-        {
-            return new Interpolator(PressureTableGaugePSI, Injector15FlowTableUKGpM);
-        }       
 
         public static Interpolator WaterHeatInterpolatorPSItoBTUpLB()
         {
