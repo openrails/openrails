@@ -2915,7 +2915,8 @@ public string GetCurveDirection()
                 SetUpWheelsArticulation(articFront, articRear);
 
             // Other calculations require axles to be sorted based on their Z-offset
-            WheelAxles.Sort(WheelAxles[0]);
+            if (WheelAxles.Count > 0)
+                WheelAxles.Sort(WheelAxles[0]);
 
             // After all processing is complete, check if the car can have its position calculated
             // using the position of the axles, which is indicated by the 'WheelAxlesLoaded' flag.
