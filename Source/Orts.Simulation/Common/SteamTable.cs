@@ -69,23 +69,23 @@ namespace Orts.Common
         static float[] SpecificHeatTableKJpKGpK = new float[]
         {
             4.2170f, 4.2049f, 4.2165f, 4.2223f, 4.2287f, 4.2355f, 4.2427f, 4.2505f, 4.2587f, 4.2675f, 4.2769f,
-            4.2926f, 4.3035f, 4.3151f, 4.3274f, 4.3405f, 4.3543f, 4.3690f, 4.3846f, 4.4012f, 4.4187f, 
-            4.4374f, 4.4573f, 4.4784f, 4.5009f, 4.5248f, 4.5503f, 4.5774f, 4.6064f, 4.6373f, 4.6703f 
+            4.2926f, 4.3035f, 4.3151f, 4.3274f, 4.3405f, 4.3543f, 4.3690f, 4.3846f, 4.4012f, 4.4187f,
+            4.4374f, 4.4573f, 4.4784f, 4.5009f, 4.5248f, 4.5503f, 4.5774f, 4.6064f, 4.6373f, 4.6703f
         };
 
         // Water temp in deg Kelvin
         static float[] WaterTemperatureTableK = new float[]
         {
             274.00f, 281.40f, 288.80f, 296.20f, 303.60f, 311.00f, 318.40f, 325.80f, 333.20f, 340.60f, 348.00f,
-            355.40f, 362.80f, 370.20f, 377.60f, 385.00f, 392.40f, 399.80f, 407.20f, 414.60f, 422.00f, 
-            429.40f, 436.80f, 444.20f, 451.60f, 459.00f, 466.40f, 473.80f, 481.20f, 488.60f, 496.00f 
+            355.40f, 362.80f, 370.20f, 377.60f, 385.00f, 392.40f, 399.80f, 407.20f, 414.60f, 422.00f,
+            429.40f, 436.80f, 444.20f, 451.60f, 459.00f, 466.40f, 473.80f, 481.20f, 488.60f, 496.00f
         };
-       
+
         static float[] SaturationPressureTablePSI = new float[]
         {
             0.00f, 10.00f, 20.00f, 30.00f, 40.00f, 50.00f, 60.00f, 70.00f, 80.00f, 90.00f, 100.00f,
-            110.00f, 120.00f, 130.00f, 140.00f, 150.00f, 160.00f, 170.00f, 180.00f, 190.00f, 200.00f, 
-            210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f 
+            110.00f, 120.00f, 130.00f, 140.00f, 150.00f, 160.00f, 170.00f, 180.00f, 190.00f, 200.00f,
+            210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f
         };
 
         // Temperature of water in deg Kelvin
@@ -101,7 +101,7 @@ namespace Orts.Common
         {
             0.0f, 20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f, 180.0f, 200.0f, 220.0f
         };
-        
+
         // Boiler Efficiency - based upon average results from test papers
         static float[] SatBoilerEfficiencyTableX = new float[]
         {
@@ -113,38 +113,275 @@ namespace Orts.Common
         {
             0.903f, 0.8484f, 0.7936f, 0.7390f, 0.6843f, 0.6296f, 0.5749f, 0.5202f, 0.4655f, 0.4108f, 0.3561f, 0.3014f
         };
-        
-        // pressure tables for Injectors temperature and steam usage
-        static float[] InjectorUsePressureTablePSI = new float[]
+
+        // Definition of Default Injector - Based upon actual tests on a live steam 10.5mm injector described in 1928 Sellers Injector Manual
+
+        // Injector pressure for Sellers Injectors for water delivery
+        static float[] InjectorBoilerPressureTable2PSI = new float[]
         {
-            75.0f, 150.00f, 175.00f, 200.00f, 225.00f
+            25.0f, 50.0f, 75.0f, 100.0f, 125.0f, 150.00f, 175.00f, 200.00f, 225.00f, 250.0f, 275.0f, 300.0f, 325.0f, 350.0f
         };
 
-        // Temperature tables for water delivered into the boiler (Fahrenheit) - Minimum Injector Capacity - Ref Sellers Injector
-        static float[] WaterTemPDeliveryMinTableF = new float[]
+        // Injector feedwater temperature (F) for Sellers Injectors
+        static float[] InjectorFeedwaterTemperatureTableF = new float[]
         {
-            217.0f, 255.00f, 257.00f, 260.00f, 269.00f
+            50f, 65f, 80f, 95f, 110f, 125f, 140f
         };
 
-        // Temperature tables for water delivered into the boiler (Fahrenheit) - Maximum Injector Capacity - Ref Sellers Injector
-        static float[] WaterTemPDeliveryMaxTableF = new float[]
+        // Tables for water delivered into the boiler (lbs) - Maximum Injector Capacity @ 50F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMaxFeedwater50FTable = new float[]
         {
-            128.0f, 149.00f, 156.00f, 164.00f, 174.00f
+            15189f, 19612f, 23284f, 26371f, 29209f, 31295f, 33382f, 34550f, 34967f, 34717f, 33882f, 32380f, 30210f, 0f
         };
 
-        // Water per fed through injector per pound of steam used - Ref Sellers Injector
-        static float[] WaterDelFedSteamTableLbs = new float[]
+        // Tables for water delivered into the boiler (lbs) - Maximum Injector Capacity @ 65F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMaxFeedwater65FTable = new float[]
         {
-            17.20f, 12.80f, 11.80f, 10.70f, 9.70f
+            14771f, 19361f, 22950f, 25954f, 28708f, 30878f, 32547f, 33715f, 33799f, 32881f, 31713f, 29459f, 0f, 0f
         };
 
-        // Water per fed through injector factor to determine min capacity ie min/max - Ref Sellers Injector
-        static float[] InjMinCapFactorTableX = new float[]
+        // Tables for water delivered into the boiler (lbs) - Maximum Injector Capacity @ 80F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMaxFeedwater80FTable = new float[]
         {
-            0.366f, 0.395f, 0.419f, 0.454f, 0.509f
+            14521f, 18944f, 22366f, 25370f, 28124f, 30924f, 31713f, 31796f, 30878f, 29376f, 26622f, 0f, 0f, 0f
         };
- 
-// Cylinder Indicator Card Events
+
+        // Tables for water delivered into the boiler (lbs) - Maximum Injector Capacity @ 95F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMaxFeedwater95FTable = new float[]
+        {
+            13937f, 18527f, 21782f, 25036f, 27289f, 28625f, 28708f, 27707f, 25287f, 0f, 0f, 0f, 0f, 0f
+        };
+
+        // Tables for water delivered into the boiler (lbs) - Maximum Injector Capacity @ 110F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMaxFeedwater110FTable = new float[]
+        {
+            13353f, 17943f, 21030f, 23617f, 25203f, 25543f, 23200f, 0f, 0f, 0f, 0f, 0f, 0f, 0f
+        };
+
+        // Tables for water delivered into the boiler (lbs) - Maximum Injector Capacity @ 125F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMaxFeedwater125FTable = new float[]
+        {
+            13102f, 17358f, 19528f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f
+        };
+
+        // Tables for water delivered into the boiler (lbs) - Maximum Injector Capacity @ 140F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMaxFeedwater140FTable = new float[]
+        {
+            12518f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f
+        };
+
+        // Tables for water delivered into the boiler (lbs) - Minimum Injector Capacity @ 50F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMinFeedwater50FTable = new float[]
+        {
+            5341f, 6593f, 7594f, 85961f, 9764f, 10849f, 12184f, 13603f, 15356f, 17275f, 19528f, 22783f, 27289f, 0f
+        };
+
+        // Tables for water delivered into the boiler (lbs) - Minimum Injector Capacity @ 65F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMinFeedwater65FTable = new float[]
+        {
+            5925f, 7344f, 8512f, 9681f, 10766f, 12101f, 13603f, 15272f, 17192f, 19528f, 22533f, 26371f, 0f, 0f
+        };
+
+        // Tables for water delivered into the boiler (lbs) - Minimum Injector Capacity @ 80F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMinFeedwater80FTable = new float[]
+        {
+            6593f, 8345f, 9597f, 10766f, 12017f, 13520f, 15189f, 17192f, 19361f, 22533f, 26622f, 0f, 0f, 0f
+        };
+
+        // Tables for water delivered into the boiler (lbs) - Minimum Injector Capacity @ 95F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMinFeedwater95FTable = new float[]
+        {
+            7344f, 8930f, 10348f, 11684f, 13269f, 15105f, 17108f, 19612f, 23951f, 0f, 0f, 0f, 0f, 0f
+        };
+
+        // Tables for water delivered into the boiler (lbs) - Minimum Injector Capacity @ 110F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMinFeedwater110FTable = new float[]
+        {
+            8345f, 9848f, 11600f, 13436f, 15522f, 18193f, 23200f, 0f, 0f, 0f, 0f, 0f, 0f, 0f
+        };
+
+        // Tables for water delivered into the boiler (lbs) - Minimum Injector Capacity @ 125F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMinFeedwater125FTable = new float[]
+        {
+            9764f, 11767f, 15689f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f
+        };
+
+        // Tables for water delivered into the boiler (lbs) - Minimum Injector Capacity @ 140F - Ref 1928 Sellers Injector Manual - pg 87
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] WaterDeliveryMinFeedwater140FTable = new float[]
+        {
+            11350f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f
+        };
+
+        // Pounds (lbs) of steam used per pound (lb) of water feed into boiler - Ref 1928 Sellers Injector Manual - pg 92
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        static float[] SteamLbsPerWaterLbs = new float[]
+        {
+            25.9f, 20.0f, 17.2f, 15.2f, 14.0f, 12.8f, 11.8f, 10.7f, 9.7f, 8.6f, 7.6f, 6.6f, 5.5f, 4.6f
+        };
+
+        // Injector delivery Temperature (F) varies with steam pressure (PSI) and water delivery (lbs) 
+        // Ref 1928 Sellers Injector Manual - pg 92
+        // https://babel.hathitrust.org/cgi/pt?id=coo.31924004617340&seq=91
+        // and a level of extrapolation using Strickland Kneass formula - 
+
+
+        // 25.0f, 50.0f, 75.0f, 100.0f, 125.0f, 150.00f, 175.00f, 200.00f, 225.00f, 250.0f, 275.0f, 300.0f, 325.0f, 350.0f
+
+        static float[] WaterDelivery25PSITable = new float[]
+        {
+            5893f, 14691f
+        };
+
+        static float[] WaterDeliveryTemperatureF25PSITable = new float[]
+       {
+            154f, 103f
+       };
+
+        static float[] WaterDelivery50PSITable = new float[]
+        {
+            7304f, 19256f
+        };
+
+        static float[] WaterDeliveryTemperatureF50PSITable = new float[]
+       {
+            193f, 119f
+       };
+
+        static float[] WaterDelivery75PSITable = new float[]
+        {
+            8374f, 22883f
+        };
+
+        static float[] WaterDeliveryTemperatureF75PSITable = new float[]
+       {
+            215f, 128f
+       };
+
+        static float[] WaterDelivery100PSITable = new float[]
+        {
+            9628f, 25813f
+        };
+
+        static float[] WaterDeliveryTemperatureF100PSITable = new float[]
+       {
+            229f, 136f
+       };
+
+        static float[] WaterDelivery125PSITable = new float[]
+        {
+            10707f, 28552f
+        };
+
+        static float[] WaterDeliveryTemperatureF125PSITable = new float[]
+       {
+            242f, 143f
+       };
+
+        static float[] WaterDelivery150PSITable = new float[]
+        {
+            12201f, 30867f
+        };
+
+        static float[] WaterDeliveryTemperatureF150PSITable = new float[]
+       {
+            245f, 149f
+       };
+
+        static float[] WaterDelivery175PSITable = new float[]
+        {
+            13695f, 32702f
+};
+
+        static float[] WaterDeliveryTemperatureF175PSITable = new float[]
+       {
+            248f, 155.5f
+       };
+
+        static float[] WaterDelivery200PSITable = new float[]
+        {
+            15321f, 33764f
+        };
+
+        static float[] WaterDeliveryTemperatureF200PSITable = new float[]
+       {
+            249f, 164f
+       };
+
+        static float[] WaterDelivery225PSITable = new float[]
+        {
+            17197f, 33764f
+        };
+
+        static float[] WaterDeliveryTemperatureF225PSITable = new float[]
+       {
+            245f, 174f
+       };
+
+        static float[] WaterDelivery250PSITable = new float[]
+        {
+            19422f, 32702f
+        };
+
+        static float[] WaterDeliveryTemperatureF250PSITable = new float[]
+       {
+            239f, 186f
+       };
+
+        static float[] WaterDelivery275PSITable = new float[]
+        {
+            22410f, 31540f
+        };
+
+        static float[] WaterDeliveryTemperatureF275PSITable = new float[]
+       {
+           229f, 200f
+       };
+
+        static float[] WaterDelivery300PSITable = new float[]
+        {
+            26228f, 29299f
+        };
+
+        static float[] WaterDeliveryTemperatureF300PSITable = new float[]
+       {
+            214f, 218f
+       };
+
+        static float[] WaterDelivery325PSITable = new float[] // These values need to be confirmed
+        {
+            29389f, 26602f
+        };
+
+        static float[] WaterDeliveryTemperatureF325PSITable = new float[]
+       {
+            208f, 245f
+       };
+
+        static float[] WaterDelivery350PSITable = new float[]
+        {
+            33285f, 23199f
+        };
+
+        static float[] WaterDeliveryTemperatureF350PSITable = new float[]
+       {
+            198f, 281f
+       };
+
+        // Cylinder Indicator Card Events
 
         // cutoff fraction
         static float[] CutOffFractionEventTableX = new float[]
@@ -172,7 +409,7 @@ namespace Orts.Common
         };
 
 
-// Cylinder condensation and superheat
+        // Cylinder condensation and superheat
 
         // cutoff fraction
         static float[] CutOffFractionTableX = new float[]
@@ -198,7 +435,7 @@ namespace Orts.Common
             0.0f, 2000.0f, 4000.0f, 6000.0f, 8000.0f, 10000.0f, 12000.0f, 14000.0f, 16000.0f, 18000.0f, 20000.0f, 22000.0f, 24000.0f, 26000.0f, 28000.0f, 30000.0f,
             32000.0f, 34000.0f, 36000.0f
         };
-        
+
         // Superheat Temp - deg F - from BTC Test Results for Std 8
         static float[] SuperheatTempTableDegF = new float[]
         {
@@ -215,64 +452,64 @@ namespace Orts.Common
         // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources - Saturated
         static float[] SatInitialPressureDropRatio = new float[]
         {
-            0.98f, 0.965f, 0.95f, 0.935f, 0.92f, 0.905f, 0.89f, 0.875f, 0.87f, 0.8650f, 0.8625f, 0.86f, 0.8575f, 0.855f, 0.8525f, 0.85f 
-            
+            0.98f, 0.965f, 0.95f, 0.935f, 0.92f, 0.905f, 0.89f, 0.875f, 0.87f, 0.8650f, 0.8625f, 0.86f, 0.8575f, 0.855f, 0.8525f, 0.85f
+
         };
-        
-       // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - (To be confirmed) - Superheated
+
+        // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - (To be confirmed) - Superheated
         static float[] SuperInitialPressureDropRatio = new float[]
         {
             0.99f, 0.98f, 0.97f, 0.96f, 0.95f, 0.94f, 0.93f, 0.92f, 0.915f, 0.910f, 0.905f, 0.90f, 0.8975f, 0.8950f, 0.8925f, 0.8900f
         };
-        
-// piston speed (feet per minute) - American Locomotive Company
+
+        // piston speed (feet per minute) - American Locomotive Company
         static float[] PistonSpeedFtpMin = new float[]
         {
               0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100
         };
-        
-// Speed factor - Saturated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - Based upon dat from American Locomotive Company
+
+        // Speed factor - Saturated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - Based upon dat from American Locomotive Company
         static float[] SpeedFactorSat = new float[]
         {
              1.0f, 1.0f, 1.0f, 0.954f, 0.863f, 0.772f, 0.680f, 0.590f, 0.517f, 0.460f, 0.412f, 0.372f, 0.337f, 0.307f, 0.283f, 0.261f, 0.241f, 0.225f, 0.213f, 0.202f, 0.190f, 0.185f
         };
-        
-// Speed factor - Superheated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - American Locomotive Company
+
+        // Speed factor - Superheated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - American Locomotive Company
         static float[] SpeedFactorSuper = new float[]
         {
               1.0f, 1.0f, 1.0f, 0.988f, 0.965f, 0.912f, 0.859f, 0.800f, 0.753f, 0.706f, 0.659f, 0.612f, 0.571f, 0.535f, 0.500f, 0.471f, 0.447f, 0.433f, 0.424f, 0.420f, 0.410f, 0.410f
         };
 
-// Indicated HorsePower - 
+        // Indicated HorsePower - 
         static float[] IndicatedHorsepowerIHP = new float[]
         {
               0.0f, 200.0f, 400.0f, 600.0f, 800.0f, 1000.0f, 1200.0f, 1400.0f, 1600.0f,
               1800.0f, 2000.0f, 2200.0f, 2400.0f, 2600.0f, 2800.0f, 3000.0f
         };
 
-// BackPressure - Saturated locomotive -  Ref Principles of Locomotive Operation - Assume atmospheric - extrapolated beyond 1800IHP
+        // BackPressure - Saturated locomotive -  Ref Principles of Locomotive Operation - Assume atmospheric - extrapolated beyond 1800IHP
         static float[] BackPressureSatPSI = new float[]
         {
               0.0f, 1.0f, 2.0f, 2.33f, 3.0f, 5.3f, 5.6f, 8.0f, 11.2f,
               14.25f, 16.0f, 20.0f, 24.0f, 26.0f, 28.0f, 30.0f
         };
 
-// BackPressure - Superheated locomotive -  Ref Principles of Locomotive Operation - Assume atmospheric - extrapolated beyond 1800IHP
+        // BackPressure - Superheated locomotive -  Ref Principles of Locomotive Operation - Assume atmospheric - extrapolated beyond 1800IHP
         static float[] BackPressureSuperPSI = new float[]
         {
               0.0f, 0.25f, 0.5f, 0.75f, 1.25f, 1.75f, 2.5f, 3.5f, 4.8f,
               7.2f, 11.25f, 16.0f, 20.0f, 22.0f, 24.0f, 26.0f
         };
 
-  // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources
+        // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources
         static float[] CondensationWheelRotationRpM = new float[]
         {
             0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
         };
 
-// Steam Tables
+        // Steam Tables
 
-// Indicator Diagram - Cylinder Events
+        // Indicator Diagram - Cylinder Events
 
         // Indicator Diagram Event - Exhaust Open - Perwall program - http://5at.co.uk/index.php/references-and-links/software.html
         public static Interpolator CylinderEventExhausttoCutoff()
@@ -290,88 +527,278 @@ namespace Orts.Common
         public static Interpolator CylinderEventAdmissiontoCutoff()
         {
             return new Interpolator(CutOffFractionEventTableX, CylinderAdmissionTableX);
-        }   
-          
-// cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
+        }
+
+        // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
         public static Interpolator CylinderCondensationFractionInterpolatorX()
         {
             return new Interpolator(CutOffFractionTableX, CylinderCondensationFractionTableX);
         }
 
-// Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
+        // Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
         public static Interpolator SuperheatTempLimitInterpolatorXtoDegF()
         {
             return new Interpolator(CutOffFractionTableX, SuperheatCondenstationLimitTableDegF);
-        }           
+        }
 
-// Saturated Backpressure - Ref Principles of Locomotive Operation
+        // Saturated Backpressure - Ref Principles of Locomotive Operation
         public static Interpolator BackpressureSatIHPtoPSI()
         {
             return new Interpolator(IndicatedHorsepowerIHP, BackPressureSatPSI);
         }
 
-// Superheated Backpressure - Ref Principles of Locomotive Operation
+        // Superheated Backpressure - Ref Principles of Locomotive Operation
         public static Interpolator BackpressureSuperIHPtoPSI()
         {
             return new Interpolator(IndicatedHorsepowerIHP, BackPressureSuperPSI);
-        }  
+        }
 
 
-// Saturated Speed factor - ie drop in TE as speed increases due to piston impacts - Ref American locomotive Company
+        // Saturated Speed factor - ie drop in TE as speed increases due to piston impacts - Ref American locomotive Company
         public static Interpolator SaturatedSpeedFactorSpeedDropFtpMintoX()
         {
             return new Interpolator(PistonSpeedFtpMin, SpeedFactorSat);
-        }  
-        
-        
-// Superheated Speed factor - ie drop in TE as speed increases due to piston impacts - Ref American locomotive Company
+        }
+
+
+        // Superheated Speed factor - ie drop in TE as speed increases due to piston impacts - Ref American locomotive Company
         public static Interpolator SuperheatedSpeedFactorSpeedDropFtpMintoX()
         {
             return new Interpolator(PistonSpeedFtpMin, SpeedFactorSuper);
-        }          
-        
+        }
 
-       // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
+
+        // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
         public static Interpolator SuperInitialPressureDropRatioInterpolatorRpMtoX()
         {
             return new Interpolator(WheelRotationRpM, SuperInitialPressureDropRatio);
-        }       
+        }
 
         // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
         public static Interpolator SatInitialPressureDropRatioInterpolatorRpMtoX()
         {
             return new Interpolator(WheelRotationRpM, SatInitialPressureDropRatio);
-        }    
+        }
 
         // Superheat temp per lbs of steam to cylinder - from BTC Test Results for Std 8
         public static Interpolator SuperheatTempInterpolatorLbpHtoDegF()
         {
             return new Interpolator(CylinderSteamTableLbpH, SuperheatTempTableDegF);
-        }    
+        }
 
-        // Injector factor to determine the min capacity of the injector
-        public static Interpolator InjCapMinFactorInterpolatorX()
-        {
-            return new Interpolator(InjectorUsePressureTablePSI, InjMinCapFactorTableX);
-        }       
+        // Definition of Default Injector - Based upon actual tests on a live steam 10.5mm injector described in 1928 Sellers Injector Manual
 
-        // Injector max delivery water temp (Fahr) per pressure of steam (psi)
-        public static Interpolator InjDelWaterTempMaxPressureInterpolatorFtoPSI()
+        // Build 2D Interpolator for Maximum water delivery per boiler steam pressure and feedwater temperature
+
+        public static Interpolator WaterDeliveryMaximumLBperPSIat50F()
         {
-            return new Interpolator(InjectorUsePressureTablePSI, WaterTemPDeliveryMaxTableF);
-        }        
-        
-        // Injector min delivery water temp (Fahr) per pressure of steam (psi)
-        public static Interpolator InjDelWaterTempMinPressureInterpolatorFtoPSI()
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMaxFeedwater50FTable);
+        }
+
+        public static Interpolator WaterDeliveryMaximumLBperPSIat65F()
         {
-            return new Interpolator(InjectorUsePressureTablePSI, WaterTemPDeliveryMinTableF);
-        }  
-        
-        // Injector water fed per lb of steam at pressure of steam (psi)
-        public static Interpolator InjWaterFedSteamPressureInterpolatorFtoPSI()
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMaxFeedwater65FTable);
+        }
+
+        public static Interpolator WaterDeliveryMaximumLBperPSIat80F()
         {
-            return new Interpolator(InjectorUsePressureTablePSI, WaterDelFedSteamTableLbs);
-        }    
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMaxFeedwater80FTable);
+        }
+
+        public static Interpolator WaterDeliveryMaximumLBperPSIat95F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMaxFeedwater95FTable);
+        }
+
+        public static Interpolator WaterDeliveryMaximumLBperPSIat110F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMaxFeedwater110FTable);
+        }
+
+        public static Interpolator WaterDeliveryMaximumLBperPSIat125F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMaxFeedwater125FTable);
+        }
+
+        public static Interpolator WaterDeliveryMaximumLBperPSIat140F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMaxFeedwater140FTable);
+        }
+
+        // Build Combined Interpolator Array
+        static Interpolator[] Initial_water_delivery_maxima = new Interpolator[]
+        {
+            WaterDeliveryMaximumLBperPSIat50F(),
+            WaterDeliveryMaximumLBperPSIat65F(),
+            WaterDeliveryMaximumLBperPSIat80F(),
+            WaterDeliveryMaximumLBperPSIat95F(),
+            WaterDeliveryMaximumLBperPSIat110F(),
+            WaterDeliveryMaximumLBperPSIat125F(),
+            WaterDeliveryMaximumLBperPSIat140F()
+        };
+
+        // Final call
+        public static Interpolator2D WaterInjectorDeliveryMaximaLbsPerPSIPerF()
+        {
+            return new Interpolator2D(InjectorFeedwaterTemperatureTableF, Initial_water_delivery_maxima);
+        }
+
+        // Build 2D Interpolator for Maximum water delivery per boiler steam pressure and feedwater temperature
+
+        public static Interpolator WaterDeliveryMinimumLBperPSIat50F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMinFeedwater50FTable);
+        }
+
+        public static Interpolator WaterDeliveryMinimumLBperPSIat65F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMinFeedwater65FTable);
+        }
+
+        public static Interpolator WaterDeliveryMinimumLBperPSIat80F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMinFeedwater80FTable);
+        }
+
+        public static Interpolator WaterDeliveryMinimumLBperPSIat95F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMinFeedwater95FTable);
+        }
+
+        public static Interpolator WaterDeliveryMinimumLBperPSIat110F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMinFeedwater110FTable);
+        }
+
+        public static Interpolator WaterDeliveryMinimumLBperPSIat125F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMinFeedwater125FTable);
+        }
+
+        public static Interpolator WaterDeliveryMinimumLBperPSIat140F()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, WaterDeliveryMinFeedwater140FTable);
+        }
+
+        // Build Combined Interpolator Array
+        static Interpolator[] Initial_water_delivery_minima = new Interpolator[]
+        {
+            WaterDeliveryMinimumLBperPSIat50F(),
+            WaterDeliveryMinimumLBperPSIat65F(),
+            WaterDeliveryMinimumLBperPSIat80F(),
+            WaterDeliveryMinimumLBperPSIat95F(),
+            WaterDeliveryMinimumLBperPSIat110F(),
+            WaterDeliveryMinimumLBperPSIat125F(),
+            WaterDeliveryMinimumLBperPSIat140F()
+        };
+
+        // Final call
+        public static Interpolator2D WaterInjectorDeliveryMinimaLbsPerPSIPerF()
+        {
+            return new Interpolator2D(InjectorFeedwaterTemperatureTableF, Initial_water_delivery_minima);
+        }
+
+        // Build 2D Interpolator for water delivery temperature per boiler steam pressure and water delivery
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat25PSI()
+        {
+            return new Interpolator(WaterDelivery25PSITable, WaterDeliveryTemperatureF25PSITable);
+        }
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat50PSI()
+        {
+            return new Interpolator(WaterDelivery50PSITable, WaterDeliveryTemperatureF50PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat75PSI()
+        {
+            return new Interpolator(WaterDelivery75PSITable, WaterDeliveryTemperatureF75PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat100PSI()
+        {
+            return new Interpolator(WaterDelivery100PSITable, WaterDeliveryTemperatureF100PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat125PSI()
+        {
+            return new Interpolator(WaterDelivery125PSITable, WaterDeliveryTemperatureF125PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat150PSI()
+        {
+            return new Interpolator(WaterDelivery150PSITable, WaterDeliveryTemperatureF150PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat175PSI()
+        {
+            return new Interpolator(WaterDelivery175PSITable, WaterDeliveryTemperatureF175PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat200PSI()
+        {
+            return new Interpolator(WaterDelivery200PSITable, WaterDeliveryTemperatureF200PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat225PSI()
+        {
+            return new Interpolator(WaterDelivery225PSITable, WaterDeliveryTemperatureF225PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat250PSI()
+        {
+            return new Interpolator(WaterDelivery250PSITable, WaterDeliveryTemperatureF250PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat275PSI()
+        {
+            return new Interpolator(WaterDelivery275PSITable, WaterDeliveryTemperatureF275PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat300PSI()
+        {
+            return new Interpolator(WaterDelivery300PSITable, WaterDeliveryTemperatureF300PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat325PSI()
+        {
+            return new Interpolator(WaterDelivery325PSITable, WaterDeliveryTemperatureF325PSITable);
+        }
+
+        public static Interpolator WaterDeliveryTemperatureFperLBWaterat350PSI()
+        {
+            return new Interpolator(WaterDelivery350PSITable, WaterDeliveryTemperatureF350PSITable);
+        }
+
+        // Build Combined Interpolator Array
+        static Interpolator[] Initial_water_delivery_temperature = new Interpolator[]
+        {
+            WaterDeliveryTemperatureFperLBWaterat25PSI(),
+            WaterDeliveryTemperatureFperLBWaterat50PSI(),
+            WaterDeliveryTemperatureFperLBWaterat75PSI(),
+            WaterDeliveryTemperatureFperLBWaterat100PSI(),
+            WaterDeliveryTemperatureFperLBWaterat125PSI(),
+            WaterDeliveryTemperatureFperLBWaterat150PSI(),
+            WaterDeliveryTemperatureFperLBWaterat175PSI(),
+            WaterDeliveryTemperatureFperLBWaterat200PSI(),
+            WaterDeliveryTemperatureFperLBWaterat225PSI(),
+            WaterDeliveryTemperatureFperLBWaterat250PSI(),
+            WaterDeliveryTemperatureFperLBWaterat275PSI(),
+            WaterDeliveryTemperatureFperLBWaterat300PSI(),
+            WaterDeliveryTemperatureFperLBWaterat325PSI(),
+            WaterDeliveryTemperatureFperLBWaterat325PSI()
+        };
+
+        // Final call
+        public static Interpolator2D WaterInjectorDeliveryTemperatureFPerLbsPerPSI()
+        {
+            return new Interpolator2D(InjectorBoilerPressureTable2PSI, Initial_water_delivery_temperature);
+        }
+
+        // Injector steam (lbs) per pound of water @ boiler steam pressure (psi)
+        public static Interpolator InjSteamUsedForWaterAtPressureInterpolatorLbstoPSI()
+        {
+            return new Interpolator(InjectorBoilerPressureTable2PSI, SteamLbsPerWaterLbs);
+        }
 
         // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area - Saturated
         public static Interpolator SatBoilerEfficiencyGrateAreaInterpolatorLbstoX()
@@ -384,7 +811,7 @@ namespace Orts.Common
         {
             return new Interpolator(CoalGrateAreaTableLbspFt2, SuperBoilerEfficiencyTableX);
         }
-           
+
         // Saturated pressure of steam (psi) @ water temperature (K)
         public static Interpolator SaturationPressureInterpolatorKtoPSI()
         {
@@ -444,18 +871,18 @@ namespace Orts.Common
         // revolutions - z value
         static float[] WheelRevolutionsRpM = new float[]
         {
-            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f  
+            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
         };
 
         // Cutoff - x Value
         static float[] CutOff = new float[]
         {
-            0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f  
+            0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f
         };
-       
+
         // ++++++++++++++++++++++ Upper Limit ++++++++++++
 
-       // % Initial Pressure @ 0rpm - y Value
+        // % Initial Pressure @ 0rpm - y Value
         static float[] InitialPressureUpper0RpM = new float[]
         {
             1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
@@ -572,7 +999,7 @@ namespace Orts.Common
             return new Interpolator2D(WheelRevolutionsRpM, Initial_pressure_upper);
         }
 
-      // ++++++++++++++++++++++ Lower Limit ++++++++++++
+        // ++++++++++++++++++++++ Lower Limit ++++++++++++
 
         // % Initial Pressure @ 0rpm - y Value
         static float[] InitialPressureLower0RpM = new float[]
