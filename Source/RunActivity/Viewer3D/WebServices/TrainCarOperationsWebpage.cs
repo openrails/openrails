@@ -17,20 +17,21 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using EmbedIO.WebSockets;
 using Newtonsoft.Json;
-using System.Reflection;
-using Orts.Viewer3D.Popups;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
-using Orts.Simulation.RollingStocks;
-using System.Linq;
-using System.Collections.Generic;
 using Orts.Common;
+using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Viewer3D.Popups;
+using Orts.Viewer3D.RollingStock;
 using ORTS.Scripting.Api;
-using System.IO;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -81,7 +82,7 @@ namespace Orts.Viewer3D.WebServices
         public static int TrainCarSelectedPositionFromRestore;
 
         public bool TrainCarSelected;
-        public int TrainCarSelectedPosition;
+        public int TrainCarSelectedPosition { get; set; }
         public string CurrentCarID { get; set; }
 
         public int Connections = 0;
@@ -276,7 +277,7 @@ namespace Orts.Viewer3D.WebServices
 
         private void fillStatus(OperationsStatus operationStatus)
         {
-            // Apply reveral point when TrainCarOperations/Viewer windows are not visibles
+            // Apply reveral point when TrainCarOperations/Viewer windows are not visible
             // Makes this Webpage version, more autonoumus
             if (!Viewer.TrainCarOperationsWindow.Visible && !Viewer.TrainCarOperationsViewerWindow.Visible && Viewer.IsFormationReversed)
             {
@@ -483,6 +484,8 @@ namespace Orts.Viewer3D.WebServices
         //
         private void fillStatusArrowLeft(int carPosition)
         {
+            TrainCarOperationsWindow TrainCar = Viewer.TrainCarOperationsWindow;
+            TrainCarOperationsViewerWindow TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
             string filename;
 
             if (TrainCarFromRestore)
@@ -508,6 +511,7 @@ namespace Orts.Viewer3D.WebServices
                     {
                         TrainCarSelected = true;
                         TrainCarSelectedPosition = Viewer.PlayerTrain.Cars.TakeWhile(x => x.CarID != currentCameraCarID).Count();
+                        TrainCarViewer.CarPosition = TrainCar.SelectedCarPosition = TrainCarSelectedPosition;
                     }
                 }
             }
@@ -689,6 +693,7 @@ namespace Orts.Viewer3D.WebServices
 
         public void buttonCouplerFrontClick(int carPosition)
         {
+            TrainCarOperationsWindow TrainCar = Viewer.TrainCarOperationsWindow;
             TrainCarOperationsViewerWindow TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
 
             if (Viewer.Simulator.TimetableMode)
@@ -697,18 +702,28 @@ namespace Orts.Viewer3D.WebServices
             }
             else
             {
+                // Uncouple only the selected car indicated by left yellow arrow
+                if (TrainCarSelectedPosition != carPosition)
+                    return;
+
                 if (TrainCarSelectedPosition >= carPosition)
                 {
-                    TrainCarSelected = false;
+                    TrainCarSelected = !TrainCar.Visible;
                 }
 
                 new UncoupleCommand(Viewer.Log, carPosition - 1);
 
-                TrainCarViewer.CouplerChanged = true;
+                TrainCarViewer.CouplerChanged = TrainCar.CouplerClicked = Viewer.IsDownCameraChanged = true;// Update the car's position
                 TrainCarViewer.NewCarPosition = carPosition - 1;
                 if (Viewer.CarOperationsWindow.CarPosition > carPosition - 1)
+                {
                     Viewer.CarOperationsWindow.Visible = false;
-                Viewer.TrainCarOperationsWindow.SelectedCarPosition = 0;
+                }
+                if (TrainCarSelectedPosition >= carPosition)
+                {
+                    TrainCarSelectedPosition = TrainCarViewer.NewCarPosition;
+                }
+                Viewer.FrontCamera.CameraOutsidePosition();
             }
         }
 
@@ -733,20 +748,20 @@ namespace Orts.Viewer3D.WebServices
 
         public void buttonLocoClick(int carPosition)
         {
-            TrainCarOperationsViewerWindow TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
             TrainCarOperationsWindow TrainCar = Viewer.TrainCarOperationsWindow;
+            TrainCarOperationsViewerWindow TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
 
             if (TrainCarSelected)
             {
                 if (TrainCarSelectedPosition == carPosition)
                 {
-                    TrainCarSelected = false;
+                    TrainCarSelected = !TrainCar.Visible;
                 } 
                 else
                 {
                     TrainCarSelectedPosition = carPosition;
                 }
-            } 
+            }
             else
             {
                 TrainCarSelected = true;
@@ -789,6 +804,7 @@ namespace Orts.Viewer3D.WebServices
 
         public void buttonCouplerRearClick(int carPosition)
         {
+            TrainCarOperationsWindow TrainCar = Viewer.TrainCarOperationsWindow;
             TrainCarOperationsViewerWindow TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
 
             if (Viewer.Simulator.TimetableMode)
@@ -797,17 +813,23 @@ namespace Orts.Viewer3D.WebServices
             }
             else
             {
-                if (TrainCarSelectedPosition > carPosition)
+                // Uncouple only the selected car indicated by left yellow arrow
+                if (TrainCarSelectedPosition != carPosition)
+                    return;
+
+                if (TrainCarSelectedPosition >= carPosition)
                 {
-                    TrainCarSelected = false;
+                    TrainCarSelected = !TrainCar.Visible;
                 }
 
                 new UncoupleCommand(Viewer.Log, carPosition);
 
-                TrainCarViewer.CouplerChanged = true;
+                TrainCarViewer.CouplerChanged = TrainCar.CouplerClicked = Viewer.IsDownCameraChanged = true;// Update the car's position
                 if (Viewer.CarOperationsWindow.CarPosition > carPosition)
                     Viewer.CarOperationsWindow.Visible = false;
-                Viewer.TrainCarOperationsWindow.SelectedCarPosition = 0;
+
+                TrainCarViewer.NewCarPosition = carPosition;
+                Viewer.FrontCamera.CameraOutsidePosition();
             }
         }
 
