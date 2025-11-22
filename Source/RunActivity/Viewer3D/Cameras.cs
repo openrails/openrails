@@ -235,6 +235,30 @@ namespace Orts.Viewer3D
             return distanceSquared < (objectRadius + objectViewingDistance) * (objectRadius + objectViewingDistance);
         }
 
+        // Cull for screen coverage
+        public bool BiggerThan(Matrix worldTileTranslation, Vector4[] boundingBoxNodes, float objectMinimumScreenCoverage)
+        {
+            // Following the Unity standard we check only the object's heigth as the culling prerequisite.
+            // The screen projection gives the height in the -1..1 range, so we compare that with the double of the 0..1 screen coverage.
+            objectMinimumScreenCoverage *= 2;
+            
+            var wvp = worldTileTranslation * XnaView * XnaProjection;
+
+            var minY = float.MaxValue;
+            var maxY = float.MinValue;
+            for (var i = 0; i < boundingBoxNodes.Length; i++)
+            {
+                var screenPosition = Vector4.Transform(boundingBoxNodes[i], wvp);
+                // Coordinates need to be divided by w at perspective projections:
+                var y = screenPosition.Y / screenPosition.W;
+                minY = Math.Min(minY, y);
+                maxY = Math.Max(maxY, y);
+                if (maxY - minY > objectMinimumScreenCoverage)
+                    return true;
+            }
+            return false;
+        }
+
         /// <summary>
         /// If the nearest part of the object is within camera viewing distance
         /// and is within the object's defined viewing distance then
