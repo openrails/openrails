@@ -266,6 +266,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             ElectricTrainSupplySwitch.Update(elapsedClockSeconds);
         }
 
+        public PowerSupplyState GetPowerStatus() => AbstractScript?.GetPowerStatus() ?? PowerSupplyState.Unavailable;
+
         public void HandleEvent(PowerSupplyEvent evt)
         {
             AbstractScript?.HandleEvent(evt);

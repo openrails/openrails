@@ -160,12 +160,12 @@
             this.checkReverseReverser = new System.Windows.Forms.CheckBox();
             this.panelRDButtons = new System.Windows.Forms.Panel();
             this.tabPageDataLogger = new System.Windows.Forms.TabPage();
+            this.checkDataLogSteamPowerCurve = new System.Windows.Forms.CheckBox();
             this.pbDataLoggerOptions = new System.Windows.Forms.PictureBox();
             this.comboDataLogSpeedUnits = new System.Windows.Forms.ComboBox();
             this.comboDataLoggerSeparator = new System.Windows.Forms.ComboBox();
             this.label19 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
-            this.checkDataLogMisc = new System.Windows.Forms.CheckBox();
             this.checkDataLogPerformance = new System.Windows.Forms.CheckBox();
             this.checkDataLogger = new System.Windows.Forms.CheckBox();
             this.label17 = new System.Windows.Forms.Label();
@@ -2051,12 +2051,12 @@
             // 
             // tabPageDataLogger
             // 
+            this.tabPageDataLogger.Controls.Add(this.checkDataLogSteamPowerCurve);
             this.tabPageDataLogger.Controls.Add(this.pbDataLoggerOptions);
             this.tabPageDataLogger.Controls.Add(this.comboDataLogSpeedUnits);
             this.tabPageDataLogger.Controls.Add(this.comboDataLoggerSeparator);
             this.tabPageDataLogger.Controls.Add(this.label19);
             this.tabPageDataLogger.Controls.Add(this.label18);
-            this.tabPageDataLogger.Controls.Add(this.checkDataLogMisc);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogPerformance);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogger);
             this.tabPageDataLogger.Controls.Add(this.label17);
@@ -2070,6 +2070,16 @@
             this.tabPageDataLogger.TabIndex = 6;
             this.tabPageDataLogger.Text = "Data logger";
             this.tabPageDataLogger.UseVisualStyleBackColor = true;
+            // 
+            // checkDataLogSteamPowerCurve
+            // 
+            this.checkDataLogSteamPowerCurve.AutoSize = true;
+            this.checkDataLogSteamPowerCurve.Location = new System.Drawing.Point(6, 180);
+            this.checkDataLogSteamPowerCurve.Name = "checkDataLogSteamPowerCurve";
+            this.checkDataLogSteamPowerCurve.Size = new System.Drawing.Size(214, 17);
+            this.checkDataLogSteamPowerCurve.TabIndex = 24;
+            this.checkDataLogSteamPowerCurve.Text = "Log steam power curve data (exclusive)";
+            this.checkDataLogSteamPowerCurve.UseVisualStyleBackColor = true;
             // 
             // pbDataLoggerOptions
             // 
@@ -2124,16 +2134,6 @@
             this.label18.Text = "Use data logger to record your simulation data (in-game command: F12).\r\nPlease re" +
     "member that the size of the dump file grows with the simulation time!";
             // 
-            // checkDataLogMisc
-            // 
-            this.checkDataLogMisc.AutoSize = true;
-            this.checkDataLogMisc.Location = new System.Drawing.Point(6, 157);
-            this.checkDataLogMisc.Name = "checkDataLogMisc";
-            this.checkDataLogMisc.Size = new System.Drawing.Size(137, 17);
-            this.checkDataLogMisc.TabIndex = 8;
-            this.checkDataLogMisc.Text = "Log miscellaneous data";
-            this.checkDataLogMisc.UseVisualStyleBackColor = true;
-            // 
             // checkDataLogPerformance
             // 
             this.checkDataLogPerformance.AutoSize = true;
@@ -2177,11 +2177,11 @@
             // checkDataLogSteamPerformance
             // 
             this.checkDataLogSteamPerformance.AutoSize = true;
-            this.checkDataLogSteamPerformance.Location = new System.Drawing.Point(6, 180);
+            this.checkDataLogSteamPerformance.Location = new System.Drawing.Point(6, 157);
             this.checkDataLogSteamPerformance.Name = "checkDataLogSteamPerformance";
-            this.checkDataLogSteamPerformance.Size = new System.Drawing.Size(163, 17);
+            this.checkDataLogSteamPerformance.Size = new System.Drawing.Size(214, 17);
             this.checkDataLogSteamPerformance.TabIndex = 9;
-            this.checkDataLogSteamPerformance.Text = "Log Steam performance data";
+            this.checkDataLogSteamPerformance.Text = "Log steam performance data (exclusive)";
             this.checkDataLogSteamPerformance.UseVisualStyleBackColor = true;
             // 
             // checkVerboseConfigurationMessages
@@ -3190,7 +3190,6 @@
         private System.Windows.Forms.CheckBox checkReverseReverser;
         private System.Windows.Forms.Panel panelRDButtons;
         private System.Windows.Forms.CheckBox checkDataLogger;
-        private System.Windows.Forms.CheckBox checkDataLogMisc;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ComboBox comboDataLogSpeedUnits;
         private System.Windows.Forms.Label label19;
@@ -3331,5 +3330,6 @@
         private System.Windows.Forms.PictureBox pbMstsEnvironments;
         private System.Windows.Forms.PictureBox pbAdhesionFactorCorrection;
         private System.Windows.Forms.PictureBox pbAdhesionFactorRandomChange;
+        private System.Windows.Forms.CheckBox checkDataLogSteamPowerCurve;
     }
 }

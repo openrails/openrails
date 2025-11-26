@@ -309,12 +309,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
                     SignalEventToPantograph(PowerSupplyEvent.RaisePantograph, 1);
                     SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent.RaisePantograph, 1);
-                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOnElectricTrainSupply);
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.QuickPowerOn);
                     break;
 
                 case PowerSupplyEvent.QuickPowerOff:
                     QuickPowerOn = false;
-                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOffElectricTrainSupply);
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.QuickPowerOff);
                     SignalEventToCircuitBreaker(PowerSupplyEvent.QuickPowerOff);
                     SignalEventToPantographs(PowerSupplyEvent.LowerPantograph);
                     SignalEventToOtherTrainVehicles(PowerSupplyEvent.LowerPantograph);

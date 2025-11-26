@@ -179,7 +179,7 @@ namespace Orts.Simulation.RollingStocks
                     var transmissionType = stf.ReadString();
                     try
                     {
-                        DieselTransmissionType = (DieselTransmissionTypes)Enum.Parse(typeof(DieselTransmissionTypes), transmissionType.First().ToString().ToUpper() + transmissionType.Substring(1));
+                        DieselTransmissionType = (DieselTransmissionTypes)Enum.Parse(typeof(DieselTransmissionTypes), transmissionType, true);
                     }
                     catch
                     {
@@ -701,25 +701,10 @@ namespace Orts.Simulation.RollingStocks
         {
             if (DieselEngines.HasGearBox && (TractiveForceCurves == null || DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic))
             {
-                TractiveForceN = TractionForceN = DieselEngines.TractiveForceN;
+                TractionForceN = DieselEngines.TractiveForceN;
                 return;
             }
             base.UpdateTractionForce(elapsedClockSeconds);
-        }
-
-        protected override void UpdateAxleDriveForce()
-        {
-            /* TODO: connect different engines to different axles
-            if (DieselEngines.HasGearBox && DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
-            {
-                foreach (var de in DieselEngines)
-                {
-                }
-            }
-            else */
-            {
-                base.UpdateAxleDriveForce();
-            }
         }
 
         /// <summary>
