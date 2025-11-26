@@ -95,13 +95,18 @@ namespace Orts.Viewer3D
 
             // Texture location preference is eng/wag folder -> MSTS GLOBAL\TEXTURES folder -> OR CONTENT folder
             // File type agnostic: We should detect a match if a .ace OR .dds is present, regardless of the specific file type requested
-            // We give the material manager the path to the .dds file, but it will automatically load the .ace file if the .dds is missing
-            if (File.Exists(wagPath + ".dds") || File.Exists(wagPath + ".ace"))
+            if (File.Exists(wagPath + ".dds"))
                 TexturePath = wagPath + ".dds";
-            else if (File.Exists(globalPath + ".dds") || File.Exists(globalPath + ".ace"))
+            else if (File.Exists(wagPath + ".ace"))
+                TexturePath = wagPath + ".ace";
+            else if (File.Exists(globalPath + ".dds"))
                 TexturePath = globalPath + ".dds";
-            else if (File.Exists(contentPath + ".dds") || File.Exists(contentPath + ".ace"))
+            else if (File.Exists(globalPath + ".ace"))
+                TexturePath = globalPath + ".ace";
+            else if (File.Exists(contentPath + ".dds"))
                 TexturePath = contentPath + ".dds";
+            else if (File.Exists(contentPath + ".ace"))
+                TexturePath = contentPath + ".ace";
             else // Fall back to default texture in CONTENT folder
             {
                 TexturePath = Path.Combine(Viewer.ContentPath, defaultTextureName);
