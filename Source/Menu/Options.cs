@@ -212,6 +212,7 @@ namespace Menu
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
             checkDataLogSteamPerformance.Checked = Settings.DataLogExclusiveSteamPerformance;
             checkDataLogSteamPowerCurve.Checked = Settings.DataLogExclusiveSteamPowerCurve;
+            dataLoggerInterval.Value = Settings.DataLoggerInterval;
             checkVerboseConfigurationMessages.Checked = Settings.VerboseConfigurationMessages;
 
             // Evaluation tab
@@ -476,6 +477,7 @@ namespace Menu
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;
             Settings.DataLogExclusiveSteamPerformance = checkDataLogSteamPerformance.Checked;
             Settings.DataLogExclusiveSteamPowerCurve = checkDataLogSteamPowerCurve.Checked;
+            Settings.DataLoggerInterval = (int)dataLoggerInterval.Value;
             Settings.VerboseConfigurationMessages = checkVerboseConfigurationMessages.Checked;
 
             // Evaluation tab
