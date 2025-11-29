@@ -2140,21 +2140,21 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Injector1PressureCorrectionFactor = 1.0f;
                     Injector1AuxiliaryPressureCorrectionFactor = RefLiveSteamInjector1OptimalBoilerPressurePSI / MaxBoilerPressurePSI;
                     if (Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Injector1 Auxiliary Pressure Correction Factor of {0} applied for a Maximum Boiler Pressure of {1}", Injector1NozzleCorrectionFactor, MaxBoilerPressurePSI);
+                        Trace.TraceInformation("Injector1 Auxiliary Pressure Correction Factor of {0} applied for a Maximum Boiler Pressure of {1}", Injector1AuxiliaryPressureCorrectionFactor, MaxBoilerPressurePSI);
                 }
 
                 if (Injector2Type == "Live")
                 {
                     Injector2PressureCorrectionFactor = RefLiveSteamInjector2OptimalBoilerPressurePSI / MaxBoilerPressurePSI;
                     if (Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Injector2 Pressure Correction Factor of {0} applied for a Maximum Boiler Pressure of {1}", Injector2NozzleCorrectionFactor, MaxBoilerPressurePSI);
+                        Trace.TraceInformation("Injector2 Pressure Correction Factor of {0} applied for a Maximum Boiler Pressure of {1}", Injector2PressureCorrectionFactor, MaxBoilerPressurePSI);
                 }
                 else // Exhaust steam injector
                 {
                     Injector2PressureCorrectionFactor = 1.0f;
                     Injector2AuxiliaryPressureCorrectionFactor = RefLiveSteamInjector2OptimalBoilerPressurePSI / MaxBoilerPressurePSI;
                     if (Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Injector2 Auxiliary Pressure Correction Factor of {0} applied for a Maximum Boiler Pressure of {1}", Injector2NozzleCorrectionFactor, MaxBoilerPressurePSI);
+                        Trace.TraceInformation("Injector2 Auxiliary Pressure Correction Factor of {0} applied for a Maximum Boiler Pressure of {1}", Injector2AuxiliaryPressureCorrectionFactor, MaxBoilerPressurePSI);
                 }
             }
             else
