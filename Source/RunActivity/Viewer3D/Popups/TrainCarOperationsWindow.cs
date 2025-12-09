@@ -26,15 +26,16 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using ORTS.Common;
 using ORTS.Common.Input;
+using Color = Microsoft.Xna.Framework.Color;
+using Point = Microsoft.Xna.Framework.Point;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using static Orts.Viewer3D.Popups.TrainCarOperationsWindow;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
-using Orts.Viewer3D.RollingStock;
-using Orts.MultiPlayer;
-using Orts.Viewer3D;
+using ORTS.Scripting.Api;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -135,13 +136,8 @@ namespace Orts.Viewer3D.Popups
         public bool CouplerClicked;
 
         //Electrical power
-        public string BatteryStatus;
-        public string CircuitBreakerState;
-        public bool MainPowerSupplyOn;
-        public string PowerSupplyStatus;
-        public bool PowerSupplyUpdating;
-        public bool SupplyStatusChanged;
-        public bool UpdatingPowerSupply;
+        public bool BatterySwitchOn;
+        public PowerSupplyState PowerSupplyStatus;
 
         public bool CarIdClicked;
         public bool WarningEnabled;
@@ -383,7 +379,7 @@ namespace Orts.Viewer3D.Popups
                     foreach (var car in PlayerTrain.Cars)
                     {
                         TrainCar trainCar = PlayerTrain.Cars[carPosition];
-                        BrakeSystem brakeSystem = (trainCar as MSTSWagon).BrakeSystem;
+                        BrakeSystem brakeSystem = trainCar.BrakeSystem;
                         MSTSLocomotive locomotive = trainCar as MSTSLocomotive;
                         MSTSWagon wagon = trainCar as MSTSWagon;
 
@@ -393,6 +389,9 @@ namespace Orts.Viewer3D.Popups
                         {
                             var carLabel = new buttonLoco(CarUIDLenght + textHeight, textHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
                             carLabel.Click += new Action<Control, Point>(carLabel_Click);
+
+                            var brakeLabel = new buttonBrakeMode(CarUIDLenght - textHeight, textHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
+                            brakeLabel.Click += new Action<Control, Point>(brakeLabel_Click);
 
                             if (car == PlayerTrain.LeadLocomotive || car is MSTSLocomotive || car.WagonType == TrainCar.WagonTypes.Tender) carLabel.Color = Color.Green;
 
@@ -440,11 +439,9 @@ namespace Orts.Viewer3D.Popups
                                 }
                                 if (isElectricDieselLocomotive)
                                 {
-                                    if (locomotive.GetMultipleUnitsConfiguration() != null)
-                                    {
-                                        line.Add(new buttonToggleMU(0, 0, SymbolSize, Owner.Viewer, carPosition));
-                                        AddSpace();
-                                    }
+                                    line.Add(new buttonToggleMU(0, 0, SymbolSize, Owner.Viewer, carPosition));
+                                    AddSpace();
+
                                     line.Add(new buttonTogglePower(0, 0, SymbolSize, Owner.Viewer, carPosition));
                                     AddSpace();
 
@@ -454,6 +451,7 @@ namespace Orts.Viewer3D.Popups
                                         AddSpace();
                                     }
                                 }
+                                line.Add(brakeLabel);
                             }
                             // Right arrow
                             line.Add(new buttonArrowRight(0, 0, textHeight, Owner.Viewer, carPosition));
@@ -549,6 +547,9 @@ namespace Orts.Viewer3D.Popups
         void carLabel_Click(Control arg1, Point arg2)
         {
         }
+        void brakeLabel_Click(Control arg1, Point arg2)
+        {
+        }
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
             base.PrepareFrame(elapsedTime, updateFull);
@@ -622,7 +623,6 @@ namespace Orts.Viewer3D.Popups
                 if (Owner.Viewer.DisplaySize.Y != DisplaySizeY || ModifiedSetting || trainCarViewer.CouplerChanged)
                 {
                     LastRowVisible = false;
-                    SupplyStatusChanged = false;
                     Layout();
                     updateLayoutSize();
                 }
@@ -647,7 +647,8 @@ namespace Orts.Viewer3D.Popups
                 if (controlDiesel == UserCommand.ControlDieselHelper || controlDiesel == UserCommand.ControlDieselPlayer || controlDiesel == UserCommand.ControlInitializeBrakes)
                 {
                     Layout();
-                    PowerSupplyStatus = Owner.Viewer.PlayerTrain.Cars[Owner.Viewer.PlayerTrain.Cars.Count > CarPosition ? CarPosition : CarPosition - 1].GetStatus();
+                    var locomotive = Owner.Viewer.PlayerTrain.Cars[Owner.Viewer.PlayerTrain.Cars.Count > CarPosition ? CarPosition : CarPosition - 1] as MSTSLocomotive;
+                    if (locomotive != null) PowerSupplyStatus = locomotive.LocomotivePowerSupply.GetPowerStatus();
                     ModifiedSetting = true;
                 }
 
@@ -695,16 +696,15 @@ namespace Orts.Viewer3D.Popups
                 else if (SelectedCarPosition <= CarPositionVisible && SelectedCarPosition == CarPosition)
                 {
                     var carposition = Owner.Viewer.PlayerTrain.Cars.Count > CarPosition ? CarPosition : CarPosition - 1;
-                    var powerSupplyStatusChanged = PowerSupplyStatus != null && PowerSupplyStatus != Owner.Viewer.PlayerTrain.Cars[carposition].GetStatus();
-                    var batteyStatusChanged = BatteryStatus != null && BatteryStatus != Owner.Viewer.PlayerTrain.Cars[carposition].GetStatus();
-                    var circuitBreakerStateChanged = CircuitBreakerState != null && CircuitBreakerState != (Owner.Viewer.PlayerTrain.Cars[carposition] as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.State.ToString();
-
-                    if (powerSupplyStatusChanged || batteyStatusChanged || circuitBreakerStateChanged)
+                    if (Owner.Viewer.PlayerTrain.Cars[carposition] is MSTSWagon wagon && wagon.PowerSupply != null)
                     {
-                        var Status = Owner.Viewer.PlayerTrain.Cars[carposition].GetStatus();
-                        if (Status != null && Status != PowerSupplyStatus)
+                        var powerSupplyStatusChanged = wagon is MSTSLocomotive locomotive && PowerSupplyStatus != locomotive.LocomotivePowerSupply.GetPowerStatus();
+                        var batteyStatusChanged = wagon.PowerSupply.BatterySwitch.On != BatterySwitchOn;
+
+                        if (powerSupplyStatusChanged || batteyStatusChanged)
                         {
-                            PowerSupplyStatus = Status;
+                            if (wagon is MSTSLocomotive) PowerSupplyStatus = (wagon as MSTSLocomotive).LocomotivePowerSupply.GetPowerStatus();
+                            BatterySwitchOn = wagon.PowerSupply.BatterySwitch.On;
                             Layout();
                         }
                     }
@@ -1007,7 +1007,7 @@ namespace Orts.Viewer3D.Popups
             : base(x, y, size, size)
         {
             Viewer = viewer;
-            Texture = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).MSTSBrakeSystem.HandBrakePresent ? (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).GetTrainHandbrakeStatus() ? HandBrakeSet : HandBrakeNotSet : HandBrakeNotAvailable;
+            Texture = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.HandBrakePresent ? (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).GetTrainHandbrakeStatus() ? HandBrakeSet : HandBrakeNotSet : HandBrakeNotAvailable;
             Source = new Rectangle(0, 0, size, size);
 
             var trainCarOperations = Viewer.TrainCarOperationsWindow;
@@ -1108,8 +1108,8 @@ namespace Orts.Viewer3D.Popups
         {
             Viewer = viewer;
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
-            var First = car == viewer.PlayerTrain.Cars.First();
             var CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
+            var First = car == viewer.PlayerTrain.Cars.First();
 
             if (CurrentCar.BrakeSystem is VacuumSinglePipe)
             {
@@ -1119,17 +1119,16 @@ namespace Orts.Viewer3D.Popups
             {
                 var carAngleCockAOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpenAmount;
                 var carAngleCockAOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpen;
-                Texture = First ? FrontAngleCockClosed
-                    : carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
+                Texture = carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
                     : carAngleCockAOpen ? FrontAngleCockOpened
                     : FrontAngleCockClosed;
             }
             Source = new Rectangle(0, 0, size, size);
 
             var trainCarOperations = Viewer.TrainCarOperationsWindow;
-            if (!First && !trainCarOperations.WarningCarPosition[carPosition])
+            if (!trainCarOperations.WarningCarPosition[carPosition])
             {
-                trainCarOperations.updateWarningCarPosition(carPosition, Texture, FrontAngleCockClosed);
+                trainCarOperations.updateWarningCarPosition(carPosition, Texture, First ? FrontAngleCockOpened : FrontAngleCockClosed);
                 trainCarOperations.updateWarningCarPosition(carPosition, Texture, FrontAngleCockPartial);
             }
         }
@@ -1141,8 +1140,8 @@ namespace Orts.Viewer3D.Popups
             : base(x, y, size, size)
         {
             Viewer = viewer;
-            var Last = car == viewer.PlayerTrain.Cars.Last();
             var CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
+            var Last = car == viewer.PlayerTrain.Cars.Last();
 
             if (CurrentCar.BrakeSystem is VacuumSinglePipe)
             {
@@ -1152,17 +1151,16 @@ namespace Orts.Viewer3D.Popups
             {
                 var carAngleCockBOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
                 var carAngleCockBOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpen;
-                Texture = Last ? RearAngleCockClosed
-                    : carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
+                Texture = carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
                     : carAngleCockBOpen ? RearAngleCockOpened
                     : RearAngleCockClosed;
             }
             Source = new Rectangle(0, 0, size, size);
 
             var trainCarOperations = Viewer.TrainCarOperationsWindow;
-            if (!Last && !trainCarOperations.WarningCarPosition[carPosition])
+            if (!trainCarOperations.WarningCarPosition[carPosition])
             {
-                trainCarOperations.updateWarningCarPosition(carPosition, Texture, RearAngleCockClosed);
+                trainCarOperations.updateWarningCarPosition(carPosition, Texture, Last ? RearAngleCockOpened: RearAngleCockClosed);
                 trainCarOperations.updateWarningCarPosition(carPosition, Texture, RearAngleCockPartial);
             }
         }
@@ -1206,6 +1204,7 @@ namespace Orts.Viewer3D.Popups
         readonly TrainCarOperationsWindow TrainCarOperations;
         readonly TrainCarOperationsViewerWindow TrainCarViewer;
         readonly int CarPosition;
+        readonly MSTSLocomotive Locomotive;
         public buttonTogglePower(int x, int y, int size, Viewer viewer, int carPosition)
             : base(x, y, size, size)
         {
@@ -1213,56 +1212,18 @@ namespace Orts.Viewer3D.Popups
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
             TrainCarOperations = Viewer.TrainCarOperationsWindow;
             CarPosition = carPosition;
-            var CurrentCar = Viewer.PlayerTrain.Cars[CarPosition];
+            Locomotive = Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive;
 
-            if ((CurrentCar is MSTSElectricLocomotive) || (CurrentCar is MSTSDieselLocomotive))
+            if (Locomotive is MSTSDieselLocomotive || Locomotive is MSTSElectricLocomotive)
             {
-                Texture = LocomotiveStatus(CarPosition);
-                if (CarPosition == TrainCarViewer.CarPosition)
-                {
-                    MSTSLocomotive locomotive = CurrentCar as MSTSLocomotive;
-                    TrainCarOperations.MainPowerSupplyOn = locomotive.LocomotivePowerSupply.MainPowerSupplyOn;
-                }
+                var powerStatus = Locomotive.LocomotivePowerSupply.GetPowerStatus();
+                Texture = powerStatus == PowerSupplyState.PowerOn ? PowerOn : powerStatus == PowerSupplyState.PowerOff ? PowerOff : PowerChanging;
+                TrainCarOperations.PowerSupplyStatus = powerStatus;
             }
             else
                 Texture = Empty;
 
             Source = new Rectangle(0, 0, size, size);
-        }
-        public Texture2D LocomotiveStatus(int CarPosition)
-        {
-            string locomotiveStatus = Viewer.PlayerTrain.Cars[CarPosition].GetStatus();
-            foreach (string data in locomotiveStatus.Split('\n').Where((string d) => !string.IsNullOrWhiteSpace(d)))
-            {
-                string[] parts = data.Split(new string[] { " = " }, 2, StringSplitOptions.None);
-                string keyPart = parts[0];
-                string valuePart = parts?[1];
-                if (Viewer.PlayerTrain.Cars[CarPosition] is MSTSDieselLocomotive && keyPart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Engine")))
-                {
-                    TrainCarOperations.PowerSupplyStatus = locomotiveStatus;
-
-                    Texture = valuePart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Running")) ? PowerOn
-                       : valuePart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Stopped")) ? PowerOff
-                       : PowerChanging;
-
-                    if (CarPosition == TrainCarViewer.CarPosition)
-                    {
-                        TrainCarOperations.PowerSupplyUpdating = Texture == PowerChanging;
-                    }
-                    break;
-                }
-                else if (keyPart.Contains(Viewer.Catalog.GetParticularString("PowerSupply", "Power")))
-                {
-                    TrainCarViewer.PowerSupplyStatus = locomotiveStatus;
-                    var powerStatus = valuePart.Contains(Viewer.Catalog.GetParticularString("PowerSupply", "On"));
-                    Texture = powerStatus ? PowerOn : PowerOff;
-                    if (CarPosition == TrainCarViewer.CarPosition)
-                        TrainCarOperations.SupplyStatusChanged = TrainCarOperations.MainPowerSupplyOn != powerStatus;
-
-                    break;
-                }
-            }
-            return Texture;
         }
     }
     class buttonToggleMU : Image
@@ -1276,10 +1237,9 @@ namespace Orts.Viewer3D.Popups
             Viewer = viewer;
             CarPosition = carPosition;
 
-            var multipleUnitsConfiguration = Viewer.PlayerLocomotive.GetMultipleUnitsConfiguration();
-            if ((Viewer.PlayerTrain.Cars[CarPosition] is MSTSDieselLocomotive) && multipleUnitsConfiguration != null)
+            if (Viewer.PlayerTrain.Cars[CarPosition] is MSTSLocomotive)
             {
-                Texture = (Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).RemoteControlGroup == 0 && multipleUnitsConfiguration != "1" ? MUconnected : MUdisconnected;
+                Texture = (Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).RemoteControlGroup == 0 ? MUconnected : MUdisconnected;
             }
             else
             {
@@ -1316,23 +1276,26 @@ namespace Orts.Viewer3D.Popups
     {
         readonly Viewer Viewer;
         readonly int CarPosition;
+        readonly MSTSWagon Wagon;
 
         public buttonToggleBatterySwitch(int x, int y, int size, Viewer viewer, int carPosition)
             : base(x, y, size, size)
         {
             Viewer = viewer;
             CarPosition = carPosition;
+            Wagon = Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon;
 
-            if (Viewer.PlayerTrain.Cars[CarPosition] is MSTSWagon wagon
-                && wagon.PowerSupply is IPowerSupply)
+            if (Wagon?.PowerSupply is IPowerSupply)
             {
-                if (wagon.PowerSupply.BatterySwitch.Mode == BatterySwitch.ModeType.AlwaysOn)
+                if (Wagon.PowerSupply.BatterySwitch.Mode == BatterySwitch.ModeType.AlwaysOn)
                 {
                     Texture = BattAlwaysOn;
                 }
                 else
                 {
-                    Texture = locomotiveStatus(CarPosition);
+                    bool on = Wagon.PowerSupply.BatterySwitch.On;
+                    Viewer.TrainCarOperationsWindow.BatterySwitchOn = on;
+                    Texture = on ? BattOn : BattOff;
                 }
             }
             else
@@ -1341,22 +1304,58 @@ namespace Orts.Viewer3D.Popups
             }
             Source = new Rectangle(0, 0, size, size);
         }
-        public Texture2D locomotiveStatus(int CarPosition)
+    }
+    class buttonBrakeMode : Label
+    {
+        readonly Viewer Viewer;
+        readonly CarOperationsWindow CarOperations;
+        readonly TrainCarOperationsWindow TrainCar;
+        readonly TrainCarOperationsViewerWindow TrainCarViewer;
+        readonly int CarPosition;
+        readonly MSTSWagon Car;
+        public buttonBrakeMode(int x, int y, Viewer viewer, TrainCar car, int carPosition, LabelAlignment alignment)
+            : base(x, y, "", alignment)
         {
-            string locomotiveStatus = Viewer.PlayerTrain.Cars[CarPosition].GetStatus();
-            foreach (string data in locomotiveStatus.Split('\n').Where((string d) => !string.IsNullOrWhiteSpace(d)))
+            Viewer = viewer;
+            CarOperations = Viewer.CarOperationsWindow;
+            TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
+            TrainCar = Viewer.TrainCarOperationsWindow;
+            CarPosition = carPosition;
+            Car = car as MSTSWagon;
+            Text = Car.BrakeSystem.BrakeMode != BrakeModes.Undefined ? Car.BrakeSystem.BrakeMode.ToString() : "";
+            Click += new Action<Control, Point>(buttonLabel_Click);
+        }
+
+        public void buttonLabel_Click(Control arg1, Point arg2)
+        {
+            // The goal is a circular selection of the BrakeMode, ignoring the load stages, because they are selected automatically
+            var start = -1;
+            var first = -1;
+            var next = -1;
+            for (var i = 0; i < Car.BrakeSystems.Keys.Count(); i++)
             {
-                string[] parts = data.Split(new string[] { " = " }, 2, StringSplitOptions.None);
-                string keyPart = parts[0];
-                string valuePart = parts?[1];
-                if (keyPart.Contains(Viewer.Catalog.GetString("Battery")))
+                if (Car.BrakeSystem.BrakeMode == Car.BrakeSystems.ElementAt(i).Key.BrakeMode)
+                    start = i;
+                else
                 {
-                    Viewer.TrainCarOperationsWindow.BatteryStatus = locomotiveStatus;
-                    Texture = valuePart.Contains(Viewer.Catalog.GetString("On")) ? BattOn : BattOff;
-                    break;
+                    if (start != -1)
+                    {
+                        next = i;
+                        break;
+                    }
+                    else if (first == -1)
+                    {
+                        first = i;
+                    }
                 }
             }
-            return Texture;
+            if (next == -1 && first != -1)
+                next = first;
+            if (next != -1)
+            {
+                Car.SetBrakeSystemMode(Car.BrakeSystems.ElementAtOrDefault(next).Key.BrakeMode, Car.MassKG);
+                Text = Car.BrakeSystem.BrakeMode != BrakeModes.Undefined ? Car.BrakeSystem.BrakeMode.ToString() : "";
+            }
         }
     }
 }

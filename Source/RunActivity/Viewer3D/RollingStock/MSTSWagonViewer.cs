@@ -59,10 +59,10 @@ namespace Orts.Viewer3D.RollingStock
 
         // Wheels are rotated by hand instead of in the shape file.
         float WheelRotationR;
-        Dictionary<int, List<int>> WheelPartIndexes = new Dictionary<int, List<int>>(); // List of wheels attached to each axle
+        Dictionary<int,List<int>> WheelPartIndexes = new Dictionary<int,List<int>>(); // List of wheels attached to each axle
 
         // Everything else is animated through the shape file.
-        Dictionary<int, AnimatedPart> RunningGears; // List of animated parts linked to every axle
+        Dictionary<int,AnimatedPart> RunningGears; // List of animated parts linked to every axle
         AnimatedPart Pantograph1;
         AnimatedPart Pantograph2;
         AnimatedPart Pantograph3;
@@ -114,16 +114,16 @@ namespace Orts.Viewer3D.RollingStock
         public MSTSWagonViewer(Viewer viewer, MSTSWagon car)
             : base(viewer, car)
         {
-
-            string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
-            string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
+            
+            string steamTexture = "smokemain.ace";
+            string dieselTexture = "dieselsmoke.ace";
 
             // Particle Drawers called in Wagon so that wagons can also have steam effects.
             ParticleDrawers = (
                 from effect in MSTSWagon.EffectData
                 select new KeyValuePair<string, List<ParticleEmitterViewer>>(effect.Key, new List<ParticleEmitterViewer>(
                     from data in effect.Value
-                    select new ParticleEmitterViewer(viewer, data, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    select new ParticleEmitterViewer(viewer, data, this, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             // Initaialise particle viewers for special steam effects
             foreach (var emitter in ParticleDrawers)
@@ -149,7 +149,7 @@ namespace Orts.Viewer3D.RollingStock
                 // Exhaust for HEP/Power Generator
                 if (emitter.Key.ToLowerInvariant() == "wagongeneratorfx")
                     WagonGenerator.AddRange(emitter.Value);
-
+                
                 foreach (var drawer in WagonGenerator)
                 {
                     drawer.Initialize(dieselTexture);
@@ -252,7 +252,7 @@ namespace Orts.Viewer3D.RollingStock
             // This insection initialises the MSTS style freight animation - can either be for a coal load, which will adjust with usage, or a static animation, such as additional shape.
             if (car.FreightShapeFileName != null)
             {
-
+                
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
 
@@ -320,8 +320,8 @@ namespace Orts.Viewer3D.RollingStock
             if (car.InteriorShapeFileName != null)
                 InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.Interior, 30.0f);
 
-            RunningGears = new Dictionary<int, AnimatedPart>();
-            for (int i = -1; i < car.LocomotiveAxles.Count; i++)
+            RunningGears = new Dictionary<int,AnimatedPart>();
+            for (int i=-1; i<car.LocomotiveAxles.Count; i++)
             {
                 RunningGears[i] = new AnimatedPart(TrainCarShape);
                 WheelPartIndexes[i] = new List<int>();
@@ -357,14 +357,14 @@ namespace Orts.Viewer3D.RollingStock
             Viewer.SoundProcess.AddSoundSource(this, new TrackSoundSource(MSTSWagon, Viewer));
 
             // Determine if it has first pantograph. So we can match unnamed panto parts correctly
-            for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
+            for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
                 if (TrainCarShape.SharedShape.MatrixNames[i].Contains('1'))
                 {
                     if (TrainCarShape.SharedShape.MatrixNames[i].ToUpper().StartsWith("PANTO")) { HasFirstPanto = true; break; }
                 }
 
             // Check bogies and wheels to find out what we have.
-            for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
+            for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
             {
                 if (TrainCarShape.SharedShape.MatrixNames[i].Equals("BOGIE1"))
                 {
@@ -384,7 +384,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS"))
                     if (TrainCarShape.SharedShape.MatrixNames[i].Length == 8)
                     {
-                        var tpmatrix = TrainCarShape.SharedShape.GetAnimationParent(i);
+                        var tpmatrix = TrainCarShape.SharedShape.GetParentMatrix(i);
                         if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS11") && tpmatrix == bogieMatrix1)
                             bogie1Axles += 1;
                         if (TrainCarShape.SharedShape.MatrixNames[i].Equals("WHEELS12") && tpmatrix == bogieMatrix1)
@@ -413,10 +413,9 @@ namespace Orts.Viewer3D.RollingStock
                     }
             }
 
-            // Using only animations not parented by other animations, thus wheels part of a bogie will be enumerated in another round.
             // Match up all the matrices with their parts.
-            for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
-                if (TrainCarShape.SharedShape.GetAnimationParent(i) == -1)
+            for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                if (TrainCarShape.Hierarchy[i] == -1)
                     MatchMatrixToPart(car, i, 0);
 
             // Precompute bogie positioning parameters for later
@@ -462,22 +461,15 @@ namespace Orts.Viewer3D.RollingStock
             InitializeUserInputCommands();
         }
 
-        /// <summary>
-        /// This is part of the animation handling. Enlisting the various animations and structuring them into their specific class.
-        /// </summary>
-        /// <param name="car">The car to process.</param>
-        /// <param name="matrix">For stf files it is the target node id, for gltf shapes it is the animation id.</param>
-        /// <param name="bogieMatrix">The node id of the containing bogie. 0 if there is no bogie above.</param>
         void MatchMatrixToPart(MSTSWagon car, int matrix, int bogieMatrix)
         {
             var matrixName = TrainCarShape.SharedShape.MatrixNames[matrix].ToUpper();
-            var targetNode = TrainCarShape.SharedShape.GetAnimationTargetNode(matrix);
             // Gate all RunningGearPartIndexes on this!
-            var matrixAnimated = !TrainCarShape.SharedShape.IsAnimationArticulation(matrix);
+            var matrixAnimated = TrainCarShape.SharedShape.Animations != null && TrainCarShape.SharedShape.Animations.Count > 0 && TrainCarShape.SharedShape.Animations[0].anim_nodes.Count > matrix && TrainCarShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0;
             int? LinkedAxleIndex = null;
             int? notDrivenAxleIndex = null;
             int? drivenAxleIndex = null;
-            for (int i = 0; i < car.LocomotiveAxles.Count; i++)
+            for (int i=0; i<car.LocomotiveAxles.Count; i++)
             {
                 if (car.LocomotiveAxles[i].AnimatedParts.Contains(matrixName))
                 {
@@ -493,40 +485,51 @@ namespace Orts.Viewer3D.RollingStock
             {
                 // Standard WHEELS length would be 8 to test for WHEELS11. Came across WHEELS tag that used a period(.) between the last 2 numbers, changing max length to 9.
                 // Changing max length to 9 is not a problem since the initial WHEELS test will still be good.
-                var m = TrainCarShape.SharedShape.GetMatrixProduct(targetNode);
+                var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
                 //someone uses wheel to animate fans, thus check if the wheel is not too high (lower than 3m), will animate it as real wheel
                 if (m.M42 < 3)
                 {
+                    var id = 0;
                     // Model makers are not following the standard rules, For example, one tender uses naming convention of wheels11/12 instead of using Wheels1,2,3 when not part of a bogie.
                     // The next 2 lines will sort out these axles.
-                    var tmatrix = TrainCarShape.SharedShape.GetParentMatrix(targetNode);
+                    var tmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
                     if (matrixName.Length == 8 && bogieMatrix == 0 && tmatrix == 0) // In this test, both tmatrix and bogieMatrix are 0 since these wheels are not part of a bogie.
-                        matrixName = matrixName.Substring(0, 7); // Changing wheel name so that it reflects its actual use since it is not p
-                    if (matrixName.Length == 8 || matrixName.Length == 9 || !matrixAnimated)
-                        WheelPartIndexes[LinkedAxleIndex ?? notDrivenAxleIndex ?? drivenAxleIndex ?? -1].Add(targetNode);
-                    else
-                        RunningGears[LinkedAxleIndex ?? drivenAxleIndex ?? -1].AddMatrix(matrix); // TODO: test this in the gltf case
-                    var id = 0;
+                        matrixName = TrainCarShape.SharedShape.MatrixNames[matrix].Substring(0, 7); // Changing wheel name so that it reflects its actual use since it is not p
                     if (matrixName.Length == 8 || matrixName.Length == 9)
                         Int32.TryParse(matrixName.Substring(6, 1), out id);
-                    var pmatrix = TrainCarShape.SharedShape.GetAnimationTargetNode(TrainCarShape.SharedShape.GetAnimationParent(matrix));
+                    if (matrixName.Length == 8 || matrixName.Length == 9 || !matrixAnimated)
+                        WheelPartIndexes[LinkedAxleIndex ?? notDrivenAxleIndex ?? drivenAxleIndex ?? -1].Add(matrix);
+                    else
+                        RunningGears[LinkedAxleIndex ?? drivenAxleIndex ?? -1].AddMatrix(matrix);
+                    var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
                     car.AddWheelSet(m.Translation, id, pmatrix, matrixName.ToString(), bogie1Axles, bogie2Axles);
                 }
                 // Standard wheels are processed above, but wheels used as animated fans that are greater than 3m are processed here.
                 else
-                    RunningGears[LinkedAxleIndex ?? -1].AddMatrix(matrixAnimated ? matrix : targetNode);
+                    RunningGears[LinkedAxleIndex ?? -1].AddMatrix(matrix);
             }
             else if (matrixName.StartsWith("BOGIE") && matrixName.Length <= 6) //BOGIE1 is valid, BOGIE11 is not, it is used by some modelers to indicate this is part of bogie1
             {
-                var id = 1;
                 if (matrixName.Length == 6)
+                {
+                    var id = 1;
                     Int32.TryParse(matrixName.Substring(5), out id);
-                var m = TrainCarShape.SharedShape.GetMatrixProduct(targetNode);
-                car.AddBogie(m.Translation, targetNode, id, matrixName.ToString(), numBogie1, numBogie2);
-                bogieMatrix = targetNode; // Bogie matrix needs to be saved for test with axles.
+                    var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
+                    car.AddBogie(m.Translation, matrix, id, matrixName.ToString(), numBogie1, numBogie2);
+                    bogieMatrix = matrix; // Bogie matrix needs to be saved for test with axles.
+                }
+                else
+                {
+                    // Since the string content is BOGIE, Int32.TryParse(matrixName.Substring(5), out id) is not needed since its sole purpose is to
+                    //  parse the string number from the string.
+                    var id = 1;
+                    var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
+                    car.AddBogie(m.Translation, matrix, id, matrixName.ToString(), numBogie1, numBogie2);
+                    bogieMatrix = matrix; // Bogie matrix needs to be saved for test with axles.
+                }
                 // Bogies contain wheels!
-                for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
-                    if (TrainCarShape.SharedShape.GetAnimationParent(i) == matrix)
+                for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                    if (TrainCarShape.Hierarchy[i] == matrix)
                         MatchMatrixToPart(car, i, bogieMatrix);
             }
             else if (matrixName.StartsWith("WIPER")) // wipers
@@ -659,11 +662,11 @@ namespace Orts.Viewer3D.RollingStock
             }
             else
             {
-                if (matrixAnimated && matrix != 0 && !ConsistGenerator.GltfVisualTestRun)
+                if (matrixAnimated && matrix != 0)
                     RunningGears[LinkedAxleIndex ?? drivenAxleIndex ?? -1].AddMatrix(matrix);
 
-                for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
-                    if (TrainCarShape.SharedShape.GetAnimationParent(i) == targetNode)
+                for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                    if (TrainCarShape.Hierarchy[i] == matrix)
                         MatchMatrixToPart(car, i, 0);
             }
         }
@@ -718,37 +721,37 @@ namespace Orts.Viewer3D.RollingStock
             // Steam leak in heating hose
             foreach (var drawer in HeatingHose)
             {
-                drawer.SetOutput(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
+                drawer.SetOutputVelocity(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseParticleDurationS);
             }
 
             // Steam leak in heating compartment steamtrap
             foreach (var drawer in HeatingCompartmentSteamTrap)
             {
-                drawer.SetOutput(car.HeatingCompartmentSteamTrapVelocityMpS, car.HeatingCompartmentSteamTrapVolumeM3pS, car.HeatingCompartmentSteamTrapParticleDurationS);
+                drawer.SetOutputVelocity(car.HeatingCompartmentSteamTrapVelocityMpS, car.HeatingCompartmentSteamTrapParticleDurationS);
             }
 
             // Steam leak in heating main pipe steamtrap
             foreach (var drawer in HeatingMainPipeSteamTrap)
             {
-                drawer.SetOutput(car.HeatingMainPipeSteamTrapVelocityMpS, car.HeatingMainPipeSteamTrapVolumeM3pS, car.HeatingMainPipeSteamTrapDurationS);
+                drawer.SetOutputVelocity(car.HeatingMainPipeSteamTrapVelocityMpS, car.HeatingMainPipeSteamTrapDurationS);
             }
 
             // Heating Steam Boiler Exhaust
             foreach (var drawer in HeatingSteamBoiler)
             {
-                drawer.SetOutput(car.HeatingSteamBoilerVolumeM3pS, car.HeatingSteamBoilerDurationS, car.HeatingSteamBoilerSteadyColor);
+                drawer.SetOutputVolumetric(car.HeatingSteamBoilerVolumeM3pS, car.HeatingSteamBoilerDurationS, car.HeatingSteamBoilerSteadyColor);
             }
 
             // Exhaust for HEP/Electrical Generator
             foreach (var drawer in WagonGenerator)
             {
-                drawer.SetOutput(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
+                drawer.SetOutputVolumetric(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
             }
 
             // Wagon fire smoke
             foreach (var drawer in WagonSmoke)
             {
-                drawer.SetOutput(car.WagonSmokeVelocityMpS, car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
+                drawer.SetOutputVelocity(car.WagonSmokeVelocityMpS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
             }
 
             if (car.Train != null) // only process this visual feature if this is a valid car in the train
@@ -758,7 +761,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     foreach (var drawer in WaterScoop)
                     {
-                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
+                        drawer.SetOutputVelocity(car.WaterScoopWaterVelocityMpS, car.WaterScoopParticleDurationS);
                     }
                 }
                 // If travelling in reverse turn on rearward facing effect
@@ -766,7 +769,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     foreach (var drawer in WaterScoopReverse)
                     {
-                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
+                        drawer.SetOutputVelocity(car.WaterScoopWaterVelocityMpS, car.WaterScoopParticleDurationS);
                     }
                 }
             }
@@ -774,19 +777,19 @@ namespace Orts.Viewer3D.RollingStock
             // Water overflow from tender (uses steam effects currently)
             foreach (var drawer in TenderWaterOverflow)
             {
-                drawer.SetOutput(car.TenderWaterOverflowVelocityMpS, car.TenderWaterOverflowVolumeM3pS, car.TenderWaterOverflowParticleDurationS);
+                drawer.SetOutputVelocity(car.TenderWaterOverflowVelocityMpS, car.TenderWaterOverflowParticleDurationS);
             }
 
             // Bearing Hot box smoke
             foreach (var drawer in BearingHotBox)
             {
-                drawer.SetOutput(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeVolumeM3pS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
+                drawer.SetOutputVelocity(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
             }
 
             // Steam Brake effects
             foreach (var drawer in SteamBrake)
             {
-                drawer.SetOutput(car.SteamBrakeLeaksVelocityMpS, car.SteamBrakeLeaksVolumeM3pS, car.SteamBrakeLeaksDurationS);
+                drawer.SetOutputVelocity(car.SteamBrakeLeaksVelocityMpS, car.SteamBrakeLeaksDurationS);
             }
 
             foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)
@@ -826,7 +829,7 @@ namespace Orts.Viewer3D.RollingStock
                         else if (AnimationDriveWheelRadiusM > 0.001)
                             kvp.Value.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
                     }
-
+                        
                 }
                 foreach (var kvp in WheelPartIndexes)
                 {
@@ -939,8 +942,8 @@ namespace Orts.Viewer3D.RollingStock
                 FreightShape.Location.TileX = Car.WorldPosition.TileX;
                 FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
 
-                bool SteamAnimShape = false;
-                float FuelControllerLevel = 0.0f;
+                    bool SteamAnimShape = false;
+                    float FuelControllerLevel = 0.0f;
 
                 // For coal load variation on locomotives determine the current fuel level - and whether locomotive is a tender or tank type locomotive.
                 if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon is MSTSSteamLocomotive)
@@ -963,24 +966,24 @@ namespace Orts.Viewer3D.RollingStock
                         {
                             FuelControllerLevel = NonTenderSteamLocomotive.FuelController.CurrentValue;
                             SteamAnimShape = true;
-                        }
+                        } 
                     }
                 }
 
-                // Set height of FAs - if relevant conditions met, use default position co-ords defined above
-                if (FreightShape.XNAMatrices.Length > 0)
-                {
-                    // For tender coal load animation 
-                    if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM && SteamAnimShape)
+                    // Set height of FAs - if relevant conditions met, use default position co-ords defined above
+                    if (FreightShape.XNAMatrices.Length > 0)
                     {
-                        FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimMinLevelM + FuelControllerLevel * (MSTSWagon.FreightAnimMaxLevelM - MSTSWagon.FreightAnimMinLevelM);
+                        // For tender coal load animation 
+                        if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM && SteamAnimShape)
+                        {
+                            FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimMinLevelM + FuelControllerLevel * (MSTSWagon.FreightAnimMaxLevelM - MSTSWagon.FreightAnimMinLevelM);
+                        }
+                        // reproducing MSTS strange behavior; used to display loco crew when attached to tender
+                        else if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender) 
+                        {
+                            FreightShape.Location.XNAMatrix.M42 += MSTSWagon.FreightAnimMaxLevelM;
+                        }
                     }
-                    // reproducing MSTS strange behavior; used to display loco crew when attached to tender
-                    else if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender)
-                    {
-                        FreightShape.Location.XNAMatrix.M42 += MSTSWagon.FreightAnimMaxLevelM;
-                    }
-                }
                 // Display Animation Shape                    
                 FreightShape.PrepareFrame(frame, elapsedTime);
             }
@@ -1065,7 +1068,7 @@ namespace Orts.Viewer3D.RollingStock
             if (FrontCouplerShape != null && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
             {
                 // Get the movement that would be needed to locate the coupler on the car if they were pointing in the default direction.
-                var displacement = Car.FrontCoupler.Size;
+                var displacement =  Car.FrontCoupler.Size;
                 displacement.Z += (Car.CarLengthM / 2.0f) + Car.FrontCouplerSlackM - Car.WagonFrontCouplerCurveExtM;
 
                 if (Car.CarAhead != null) // Display animated coupler if there is a car infront of this car
@@ -1316,7 +1319,7 @@ namespace Orts.Viewer3D.RollingStock
             // ToDO - For some reason aligning the coupler with a flipped car introduces a small error in the coupler position such that the couplers between a normal and flipped 
             // car will not align correctly.
             // To correct this "somewhat" a test has been introduced to align coupler location with the previous car. See code above in front coupler.
-
+            
             // Place the coupler in the centre of the car
             var p = new WorldPosition(car.WorldPosition);
             couplerShape.Location.Location = new Vector3(p.Location.X, p.Location.Y, p.Location.Z);
@@ -1361,7 +1364,7 @@ namespace Orts.Viewer3D.RollingStock
             var mRotation = Matrix.CreateRotationY(angle);
 
             // Rotate the coupler to align with the calculated angle direction
-            couplerShape.Location.XNAMatrix = mRotation * couplerShape.Location.XNAMatrix;
+            couplerShape.Location.XNAMatrix = mRotation* couplerShape.Location.XNAMatrix;
 
         }
 
@@ -1385,12 +1388,12 @@ namespace Orts.Viewer3D.RollingStock
 
         }
 
-        /// <summary>
-        /// Rotate the coupler to align with the direction (attitude) of the car.
-        /// </summary>
-        /// <param name="car"></param>
-        /// <param name="couplerShape"></param>
-        private void AlignCouplerWithCar(TrainCar car, AnimatedShape couplerShape)
+    /// <summary>
+    /// Rotate the coupler to align with the direction (attitude) of the car.
+    /// </summary>
+    /// <param name="car"></param>
+    /// <param name="couplerShape"></param>
+    private void AlignCouplerWithCar(TrainCar car, AnimatedShape couplerShape)
         {
 
             var p = new WorldPosition(car.WorldPosition);
@@ -1468,7 +1471,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (MSTSWagon is MSTSLocomotive && MSTSWagon.Train != null && MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI)
                 {
                     if (MSTSWagon.CarID == MSTSWagon.Train.Cars[0].CarID)
-                        // Lead loco, enable AI train trigger
+                    // Lead loco, enable AI train trigger
                         MSTSWagon.SignalEvent(Event.AITrainLeadLoco);
                     // AI train helper loco
                     else MSTSWagon.SignalEvent(Event.AITrainHelperLoco);

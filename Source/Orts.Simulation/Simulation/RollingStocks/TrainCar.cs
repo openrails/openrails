@@ -216,10 +216,7 @@ namespace Orts.Simulation.RollingStocks
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
-        public float MaxBrakeShoeForceN; // This is the force applied to the brake shoe, hence it will be decreased by CoF to give force applied to the wheel
         public int NumberCarBrakeShoes;
-        public float InitialMaxHandbrakeForceN;  // Initial force when agon initialised
-        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when wagon initialised, this is the force on the wheel, ie after the brake shoe.
 
         // Coupler Animation
         public AnimatedCoupler FrontCoupler = new AnimatedCoupler();
@@ -584,7 +581,15 @@ namespace Orts.Simulation.RollingStocks
                 Train.MUDirection = Flipped ^ loco.UsingRearCab ? DirectionControl.Flip(value) : value;
             }
         }
+
+        /// <summary>The actually used brake system. When mode is changed, this one is updated from the values of <see cref="BrakeSystems"/> and used directly</summary>
         public BrakeSystem BrakeSystem;
+        /// <summary>Alternative for dual vacuum/air vehicles, to be swapped with <see cref="BrakeSystem"/> and used directly</summary>
+        protected BrakeSystem BrakeSystemAlt;
+        /// <summary>Store for the various loades within modes. Never used directly, only the non-zero values get copied into <see cref="BrakeSystem"/></summary>
+        public readonly Dictionary<(BrakeModes BrakeMode, float MinMass), BrakeSystem> BrakeSystems = new Dictionary<(BrakeModes, float), BrakeSystem>();
+        /// <summary>Filter for the <see cref="BrakeSystems"/>, in case that comes from an include file</summary>
+        public string[] BrakeModeNames { get; protected set; }
 
         public float PreviousSteamBrakeCylinderPressurePSI;
 
@@ -813,11 +818,11 @@ namespace Orts.Simulation.RollingStocks
             if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P10 || BrakeShoeType == BrakeShoeTypes.Cast_Iron_P6 || BrakeShoeType == BrakeShoeTypes.High_Friction_Composite || BrakeShoeType == BrakeShoeTypes.Disc_Pads)
             {
                 float NewtonsTokNewtons = 0.001f;
-                float maxBrakeShoeForcekN = NewtonsTokNewtons * MaxBrakeShoeForceN / NumberCarBrakeShoes;
+                float maxBrakeShoeForcekN = NewtonsTokNewtons * BrakeSystem.MaxBrakeShoeForceN / NumberCarBrakeShoes;
 
                 if (maxBrakeShoeForcekN > 20 && Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Maximum force per brakeshoe is {0} and has exceeded {1}, check MaxBrakeShoeForceN {2} or NumberCarBrakeShoes {3}", FormatStrings.FormatForce(maxBrakeShoeForcekN * 1000, IsMetric), FormatStrings.FormatForce(20 * 1000, IsMetric), FormatStrings.FormatForce(MaxBrakeShoeForceN, IsMetric), NumberCarBrakeShoes);
+                    Trace.TraceInformation("Maximum force per brakeshoe is {0} and has exceeded {1}, check MaxBrakeShoeForceN {2} or NumberCarBrakeShoes {3}",  FormatStrings.FormatForce(maxBrakeShoeForcekN * 1000, IsMetric), FormatStrings.FormatForce(20 * 1000, IsMetric), FormatStrings.FormatForce(BrakeSystem.MaxBrakeShoeForceN, IsMetric), NumberCarBrakeShoes);
                 }
             }
 
@@ -930,9 +935,11 @@ namespace Orts.Simulation.RollingStocks
             // Initialize RigidWheelBaseM in first loop if not defined in ENG file, then ignore
             if (RigidWheelBaseM == 0 && !RigidWheelBaseInitialised)   // Calculate default values if no value in Wag File
             {
-                float Axles = WheelAxles.Count;
-                float Bogies = Parts.Count - 1;
-                float BogieSize = Axles / Bogies;
+                int Axles = WheelAxles.Sum(w => w.Fake ? 0 : 1); // Only consider real axles
+                int Bogies = Parts.Sum(p => p.Bogie ? 1 : 0);
+                int BogieSize = Axles;
+                if (Bogies > 0)
+                    BogieSize = (int)(WheelAxles.Sum(w => !w.Fake && w.Part.Bogie ? 1 : 0) / Bogies); // Only consider axles attached to bogies
 
                 RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
 
@@ -2384,6 +2391,7 @@ public string GetCurveDirection()
             outf.Write(UiD);
             outf.Write(CarID);
             BrakeSystem.Save(outf);
+            BrakeSystemAlt.Save(outf);
             outf.Write(TractionForceN);
             outf.Write(DynamicBrakeForceN);
             outf.Write(MotiveForceN);
@@ -2409,6 +2417,7 @@ public string GetCurveDirection()
             UiD = inf.ReadInt32();
             CarID = inf.ReadString();
             BrakeSystem.Restore(inf);
+            BrakeSystemAlt.Restore(inf);
             TractionForceN = inf.ReadSingle();
             DynamicBrakeForceN = inf.ReadSingle();
             MotiveForceN = inf.ReadSingle();
@@ -2823,16 +2832,20 @@ public string GetCurveDirection()
             // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
             if (Parts.Count == 0)
                 Parts.Add(new TrainCarPart(Vector3.Zero, 0));
-            // No axles but we have bogies.
-            if (WheelAxles.Count == 0 && Parts.Count > 1)
+            // Determine how many parts are considered bogies (used to calculate position of the car)
+            int bogieCount = 0;
+            foreach (TrainCarPart p in Parts)
+                if (p.Bogie == true)
+                    bogieCount++;
+            // No axles but we have bogies. Each bogie needs axles to function correctly
+            if (WheelAxles.Count == 0 && bogieCount > 0)
             {
-                // Fake the axles by pretending each bogie has 1 axle.
+                // Add a fake axle to each bogie, a second fake axle will be added later if needed
                 for (int i = 1; i < Parts.Count; i++)
-                    WheelAxles.Add(new WheelAxle(Parts[i].OffsetM, i, Parts[i].iMatrix));
-                Trace.TraceInformation("Wheel axle data faked based on {1} bogies for {0}", WagFilePath, Parts.Count - 1);
+                    if (Parts[i].Bogie == true)
+                        WheelAxles.Add(new WheelAxle(Parts[i].OffsetM, i, Parts[i].iMatrix, true));
+                Trace.TraceInformation("Wheel axle data faked based on {1} bogies for {0}", WagFilePath, bogieCount);
             }
-            bool articFront = !WheelAxles.Any(a => a.OffsetM.Z < 0);
-            bool articRear = !WheelAxles.Any(a => a.OffsetM.Z > 0);
             // Validate the axles' assigned bogies and count up the axles on each bogie.
             if (WheelAxles.Count > 0)
             {
@@ -2852,10 +2865,6 @@ public string GetCurveDirection()
                     w.Part = Parts[w.BogieIndex];
                     w.Part.SumWgt++;
                 }
-
-                // Make sure the axles are sorted by OffsetM along the car.
-                // Attempting to sort car w/o WheelAxles will resort to an error.
-                WheelAxles.Sort(WheelAxles[0]);
             }
 
             //fix bogies with only one wheel set:
@@ -2875,7 +2884,7 @@ public string GetCurveDirection()
                         {
                             if (w.OffsetM.Z.AlmostEqual(Parts[i].OffsetM.Z, 0.6f))
                             {
-                                var w1 = new WheelAxle(new Vector3(w.OffsetM.X, w.OffsetM.Y, w.OffsetM.Z - 0.5f), w.BogieIndex, i);
+                                var w1 = new WheelAxle(new Vector3(w.OffsetM.X, w.OffsetM.Y, w.OffsetM.Z - 0.5f), w.BogieIndex, i, true);
                                 w1.Part = Parts[w1.BogieIndex]; //create virtual wheel
                                 w1.Part.SumWgt++;
                                 WheelAxles.Add(w1);
@@ -2888,34 +2897,29 @@ public string GetCurveDirection()
                 }
             }
 
-            // Count up the number of bogies (parts) with at least 2 axles.
+            // Check how many parts can drive the position of the car itself
+            // Each part needs at least 2 components (sum of weights > 1.5) for position calculation to work
             for (var i = 1; i < Parts.Count; i++)
                 if (Parts[i].SumWgt > 1.5)
                     Parts[0].SumWgt++;
 
-            // This check is for the single axle/bogie issue.
-            // Check SumWgt using Parts[0].SumWgt.
-            // Certain locomotives do not test well when using Part.SumWgt versus Parts[0].SumWgt.
-            // Make sure test using Parts[0] is performed after the above for loop.
+            // Check if articulation is desired on this car, as this requires different handling
+            bool articFront = (FrontArticulation == 1 || (FrontArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z < 0)));
+            bool articRear = (RearArticulation == 1 || (RearArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z > 0)));
+
+            // If car has insufficient bogies and it's not because of articulation, attempt to avoid position calculation errors
+            // Detach wheels from the last bogie, and instead attach to the main part, which should allow calculations to work properly
             if (!articFront && !articRear && (Parts[0].SumWgt < 1.5))
             {
-                foreach (var w in WheelAxles)
+                foreach (WheelAxle w in WheelAxles)
                 {
                     if (w.BogieIndex >= Parts.Count - 1)
                     {
                         w.BogieIndex = 0;
                         w.Part = Parts[w.BogieIndex];
-
                     }
                 }
             }
-            // Using WheelAxles.Count test to control WheelAxlesLoaded flag.
-            if (WheelAxles.Count >= 2) // Some cars only have two axles.
-            {
-                WheelAxles.Sort(WheelAxles[0]);
-                WheelAxlesLoaded = true;
-            }
-
 
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
@@ -2926,43 +2930,50 @@ public string GetCurveDirection()
             foreach (var p in Parts)
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
-            // Decided to control what is sent to SetUpWheelsArticulation()by using
-            // WheelAxlesLoaded as a flag.  This way, wagons that have to be processed are included
-            // and the rest left out.
+            // Add fake axle(s) to train car for articulation when desired
+            // Adding fake axles automatically is only allowed on non-engines with 0, 2, or 3 axles
+            // These limitations prevent various incompatibilities with existing content
+            bool allowAutoArticulate = WagonType != WagonTypes.Engine && WheelAxles.Count != 1 && WheelAxles.Count <= 3;
+            articFront &= !(FrontArticulation == -1 && !allowAutoArticulate);
+            articRear &= !(RearArticulation == -1 && !allowAutoArticulate);
 
-            // Force articulation if stock is configured as such
-            // Otherwise, use default behavior which gives articulation if there are no axles forward/rearward on the model,
-            // disables articulation on engines, and only allows articulation with 3 or fewer axles, but not 1 axle
-            bool articulatedFront = (FrontArticulation == 1 ||
-                (FrontArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z < 0) && WagonType != WagonTypes.Engine && WheelAxles.Count != 1 && WheelAxles.Count <= 3));
-            bool articulatedRear = (RearArticulation == 1 ||
-                (RearArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z > 0) && WagonType != WagonTypes.Engine && WheelAxles.Count != 1 && WheelAxles.Count <= 3));
+            if (articFront || articRear)
+                SetUpWheelsArticulation(articFront, articRear);
 
-            if (articulatedFront || articulatedRear)
-            {
+            // Other calculations require axles to be sorted based on their Z-offset
+            if (WheelAxles.Count > 0)
+                WheelAxles.Sort(WheelAxles[0]);
+
+            // After all processing is complete, check if the car can have its position calculated
+            // using the position of the axles, which is indicated by the 'WheelAxlesLoaded' flag.
+            // The train car must have at least 2 position references. These references can be either
+            // an axle or a bogie, but each bogie itself needs 2 position references.
+            int[] posReferences = new int[Parts.Count];
+            // Count the number of axles associated with each part (including main object)
+            foreach (WheelAxle w in WheelAxles)
+                posReferences[w.BogieIndex]++;
+            // Add a position reference to the main object for each bogie itself with at least 2 position references
+            for (int i = 1; i < Parts.Count; i++)
+                if (posReferences[i] >= 2) 
+                    posReferences[0]++;
+            // Car has a suitable arrangement of axles for position calculation if the main object has at least 2 position references
+            if (posReferences[0] >= 2) 
                 WheelAxlesLoaded = true;
-                SetUpWheelsArticulation(articulatedFront, articulatedRear);
-            }
         } // end SetUpWheels()
 
         protected void SetUpWheelsArticulation(bool front, bool rear)
         {
-            // If there are no forward wheels, this car is articulated (joined
+            // If there are no forward axles, this car is articulated (joined
             // to the car in front) at the front. Likewise for the rear.
-            // Original process originally used caused too many issues.
-            // The original process did include the below process of just using WheelAxles.Add
-            //  if the initial test did not work.  Since the below process is working without issues the
-            //  original process was stripped down to what is below
-            if (front || rear)
-            {
+            // This will cause the car to move incorrectly, so to produce the
+            // expected motion, a fake axle is added at the articulated end(s)
+            // of the car, attached to the car itself. This will drive the positioning
+            // of the car as expected.
                 if (front)
-                    WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, -CarLengthM / 2.0f), 0, 0) { Part = Parts[0] });
+                WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, -CarLengthM / 2.0f), 0, 0, true) { Part = Parts[0] });
 
                 if (rear)
-                    WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, CarLengthM / 2.0f), 0, 0) { Part = Parts[0] });
-
-                WheelAxles.Sort(WheelAxles[0]);
-            }
+                WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, CarLengthM / 2.0f), 0, 0, true) { Part = Parts[0] });
 
 
 #if DEBUG_WHEELS
@@ -3737,14 +3748,16 @@ public string GetCurveDirection()
     public class WheelAxle : IComparer<WheelAxle>
     {
         public Vector3 OffsetM;   // Offset from the bogie center
-        public int BogieIndex;
-        public int BogieMatrix;
-        public TrainCarPart Part;
-        public WheelAxle(Vector3 offset, int bogie, int parentMatrix)
+        public int BogieIndex;    // Index in the Parts list of the bogie this is attached to
+        public int BogieMatrix;   // Index in the matrix hierarchy of the bogie this is attached to
+        public TrainCarPart Part; // Reference to the object for the bogie this is attached to
+        public bool Fake;         // True for axles that aren't present in the 3D model
+        public WheelAxle(Vector3 offset, int bogie, int parentMatrix, bool fake = false)
         {
             OffsetM = offset;
             BogieIndex = bogie;
             BogieMatrix = parentMatrix;
+            Fake = fake;
         }
         public int Compare(WheelAxle a, WheelAxle b)
         {

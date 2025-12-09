@@ -2462,9 +2462,9 @@ OR supports the following special visual effects in a steam locomotive:
 
 OR supports the following special visual effects in a diesel locomotive:
 
-- Exhaust (named ``Exhaustnumber``) -- is a diesel exhaust. Multiple exhausts can
-  be defined, simply by adjusting the numerical value of the number after the key
-  word exhaust.
+- Exhaust (named ``Exhaustnumber``, eg: ``Exhaust2``) -- is a diesel exhaust. Multiple
+  exhausts can be defined, simply by adjusting the numerical value of the number after
+  the key word Exhaust.
 
 OR supports the following special visual effects in a wagon (also the wagon section of
 an ENG file):
@@ -2493,18 +2493,225 @@ Each effect is defined by inserting a code block into the ENG/WAG file similar t
 the one shown below::
 
     Cylinders11FX (
+        Comment ( Required parameters. )
+        ORTSPosition ( -1.0485m 1.0m 2.8m )
+        ORTSInitialVelocity ( -1  0  0 )
+        ORTSParticleDiameter ( 0.1m )
+
+        Comment ( Optional parameters. )
+        ORTSPositionVariation ( 0m 0m 0m )
+        ORTSInitialVelocityVariation ( 0.1 )
+        ORTSFinalVelocity ( 0 1m/s 0 )
+        ORTSFinalVelocityVariation ( 0.75m/s )
+
+        ORTSLifespanMultiplier ( 1.0 )
+        ORTSLifespanVariation ( 0.5 )
+        ORTSMomentumMultiplier ( 1.0 )
+        ORTSMomentumVariation ( 0.1 )
+
+        ORTSInititalExpansion ( 1.0 )
+        ORTSExpansionSpeed ( 4.0 )
+        ORTSRotationVariation ( 0.25 )
+        ORTSWindMultiplier ( 1.0 )
+        
+        ORTSParticleOpacity ( 1.0 )
+        ORTSPipeArea ( 0.03m^2 )
+        ORTSRateMultiplier ( 1.0 )
+        ORTSUseChaoticRandomization ( false )
+        
+        Comment ( Advanced optional parameters. )
+        ORTSMaxParticles ( 2500 )
+        ORTSGraphic ( "smokemain.ace" )
+        ORTSGraphicAtlasLayout ( 4 4 )
+    )
+
+.. index::
+   single: ORTSPosition
+   single: ORTSInitialVelocity
+   single: ORTSParticleDiameter
+   single: ORTSPositionVariation
+   single: ORTSInitialVelocityVariation
+   single: ORTSFinalVelocity
+   single: ORTSFinalVelocityVariation
+   single: ORTSLifespanMultiplier
+   single: ORTSLifespanVariation
+   single: ORTSMomentumMultiplier
+   single: ORTSMomentumVariation
+   single: ORTSInititalExpansion
+   single: ORTSExpansionSpeed
+   single: ORTSRotationVariation
+   single: ORTSWindMultiplier
+   single: ORTSPipeArea
+   single: ORTSMaxParticles
+   single: ORTSRateMultiplier
+   single: ORTSUseChaoticRandomization
+   single: ORTSParticleOpacity
+   single: ORTSGraphic
+   single: ORTSGraphicAtlasLayout
+
+While there are many parameters available to customize the appearance and behavior of emitted particles, most are set
+to reasonable values by default and should be considered optional unless further customization is desired. The only
+*required* parameters are as follows:
+
+- ``ORTSPosition ( x y z )`` -- REQUIRED parameter which defines the (+/-) right/left, up/down,
+  forward/backward location of the emitter (in meters by default, other units are accepted)
+- ``ORTSInitialVelocity ( x y z )`` -- REQUIRED to define the (+/-) right/left, up/down, forward/backward
+  components of emission direction (no units of measure, the particle speed is multiplied by
+  this vector to determine the 3D velocity of particles. Speed can be divided by inserting values
+  less than 1, or multiplied by inserting values greater than 1.)
+- And ``ORTSParticleDiameter ( d )`` -- REQUIRED to set the nozzle width (default units meters, other units accepted),
+  which sets the initial size of each particle
+
+The *optional* parameters unique to OR are as follows:
+
+- ``ORTSPositionVariation ( x y z )`` -- Specifies the amplitude of random variation
+  in the right/left, up/down, and front/back emission location of a particle (default units
+  are meters). Useful for non-circular exhaust ports, as it allows one particle emitter
+  to be used to spawn particles from an area, rather than a single point. Note that
+  ``ORTSPositionVariation ( 1 0 0 )`` would allow particles to emit 1 meter right and
+  1 meter left of the initial position, for a total variation of 2 meters. Similar is
+  true of all other parameters related to randomness, the total variation is double what's
+  specified. Feature is disabled by default.
+- ``ORTSInitialVelocityVariation ( i )`` -- Defines the randomization of initial particle
+  velocity in all directions, multiplied by the particle's initial speed (no units of measure).
+  The default value is ( 0.1 ), meaning the speed in each direction can be increased or
+  decreased by 10% of the initial particle speed. Larger values make the particle exhaust seem
+  less directed and more diffuse. Alternately, 3 values can be provided in the format
+  ``ORTSInitialVelocityVariation ( x y z )`` to specify the initial velocity variation in each
+  individual direction.
+- ``ORTSFinalVelocity ( x y z )`` -- Determines the final right/left, up/down, and front/back
+  velocity of particles after they have settled (default units of meters per second). The default
+  is 1 m/s directly upward, and can be changed to fine tune the appearance of the particle trail
+  produced. Note that wind velocity is added to this value afterward.
+- ``ORTSFinalVelocityVariation ( f )`` -- Unlike initial velocity variation, final velocity
+  variation determines the amplitude of random variation of final velocity in absolute terms
+  (default units of meters per second). The default setting is +/- 0.75 m/s in all directions, but
+  changing this can adjust the amount of and shape of particle trail spread. Larger variations
+  make for exhaust that seems more chaotic and diffuse. Similar to initial velocity variation,
+  ``ORTSFinalVelocityVariation ( x y z )`` can be used to specify the variation in each direction
+  individually.
+- ``ORTSLifespanMultiplier ( x )`` -- Multiplies the lifetime of particles emitted from this
+  emitter by the given (unitless) value. Particle lifetime varies depending on simulation
+  data, but if particles seem to last too long a value less than 1 can be entered here, or a
+  value greater than 1 entered if particles don't seem to last long enough. The default value
+  is 1, producing particles that last as long as the simulation specifies.
+- ``ORTSLifespanVariation ( x )`` -- Sets the random variation of the particle lifetime multiplier
+  (unitless). Values greater than 1 can cause particles to randomly generate with a lifetime of
+  0 seconds, which will prevent those particles from being rendered.
+  The default is +/- 0.5 times the lifespan.
+- ``ORTSMomentumMultiplier ( x )`` -- Changes how long it takes for a particle to transition from
+  its initial velocity to its final velocity (unitless). Values above 1 make particles
+  have more momentum and move more smoothly, though also travel further from the emitter point before
+  being caught by the wind. Values below 1 give more sudden deceleration and prevent particles from
+  travelling very far before decelerating to their final speed.
+  The default setting is 1x.
+- ``ORTSMomentumVariation ( x )`` -- Similar to ORTSLifespanVariation, gives the amplitude of
+  random variation in the momentum multiplier (unitless). Larger values increase the
+  final spread of particles, which works well in combination with ORTSFinalVelocityVariation.
+  The default setting is +/- 0.1x.
+- ``ORTSInititalExpansion ( x )`` -- When particles are emitted at high speed, they expand
+  substantially as the exhaust pressure equalizes with the surrounding air. The (unitless)
+  value given here multiplies the amount of expansion that occurs in this initial phase.
+  Entering 0 disables this component of particle expansion, any value greater than 0 progressively
+  increases the amount particles expand by. The default setting is 1.
+- ``ORTSExpansionSpeed ( x )`` -- Every particle expands in diameter at a constant rate the longer
+  since it was emitted, making exhaust seem more spread out as it mixes with the air. The
+  (unitless) value entered in this parameter specifies how much the size of a particle increases
+  every second, relative to the original particle size (ie: the nozzle width). The default value is 4.0,
+  meaning every particle will expand by 4x the original width for every second its in the air. Entering
+  0 would disable expansion over time, and negative values would cause particles to shrink over time
+  (particles are not allowed to have a negative size, instead they disappear).
+- ``ORTSRotationVariation ( x )`` -- Particles rotate randomly to create some visual interest, this
+  parameter determines the max rotation speed (in radians per second) a particle is allowed to have,
+  either clockwise or counterclockwise. Higher speeds make for more chaotic looking effects. The
+  default setting allows for random rotation speeds between -0.25 and 0.25 radians per second.
+- ``ORTSWindMultiplier ( x )`` -- Affects how strongly wind changes the final velocity of
+  these particles (unitless). Values greater than 1 increase wind strength, values less than 1
+  decrease wind strength, with 0 completely disabling the wind effect from changing final velocity.
+  A value of 1 is used by default, such that the wind speed used by the simulation is used directly.
+  This can be adjusted to prevent particles that shouldn't be influenced by the wind (eg: cylinder
+  cocks close to ground level) from flying off in whatever direction the wind is going.
+- ``ORTSParticleOpacity ( o )`` -- Controls how transparent emitted particles are by multiplying
+  texture opacity by the given value (unitless number between 0 and 1). The default setting is 1,
+  which doesn't change particle appearance at all. Lower values make particles more transparent,
+  until 0 would make all particles invisible.
+- ``ORTSPipeArea ( a )`` -- Niche parameter to adjust the area of the exhaust pipe used by
+  the simulation (default units square feet). By default, the area is assumed to be a circle with
+  the same diameter as the exhaust particles. However, for non-circular exhausts this can be combined
+  with ORTSPositionVariation to give more believable results. Larger areas result in lower exhaust
+  speed without changing the number of particles emitted per second, which also allows this to
+  be used as a speed multiplier, though ORTSinitialVelocity is preferred for that purpose.
+- ``ORTSRateMultiplier ( x )`` -- Multiplies the number of particles emitted per second by the given
+  value (unitless). Values less than 1 reduce the rate of particle emission, while values greater than
+  1 increase the rate of particle emission. The particle rate is determined by the simulation, but may
+  not produce aesthetically pleasing results in some cases due to particles overlapping (emitted too
+  quickly) or spreading out (emitted too slowly), so some fine-tuning can be done using this parameter.
+  This is set to 1 by default, producing the exact number of particles estimated by the simulation.
+- ``ORTSUseChaoticRandomization ( 0/1 )`` -- Changes the randomization algorithm used for positions,
+  velocities, durations, and so on to be "chaotic" if given a true or 1 value. Default is false or 0,
+  giving "smooth" randomization. With the "chaotic" randomization algorithm, the random changes in
+  velocity/momentum/time are entirely random and do not depend on the random values generated for the
+  previous particle, resulting in sudden dramatic changes. In comparison, the default "smooth"
+  randomziation algorithm changes the random values by a small amount for each iteration. The "chaotic"
+  algorithm tends to make exhaust that is more spread out and discontinuous, which may be desireable in
+  some cases.
+
+The following *advanced* parameters have unusual effects that do not directly influence the motion of
+particles and may only be useful in very specific circumstances. Caution should be taken when using any
+of these to ensure the parameter is used correctly, as improper settings can produce displeasing results
+and poor framerates:
+
+- ``ORTSMaxParticles ( n )`` -- Override for the maximum number of particles this emitter should
+  have in the world simultaneously (unitless integer). The default value is 2500 particles, which works
+  in many cases but may not be appropriate in some unusual circumstances. The limit can be reduced
+  on less extreme particle emitters to reduce memory use, or can be increased for more extreme emitters
+  to prevent particles disappearing and/or the reduction in particle emission rate caused by reaching
+  the particle limit. Do NOT increase the limit if particles are already overlapping; it is often
+  better to simply reduce the number of particles emitted using ORTSRateMultiplier and/or other
+  parameters listed here.
+  By default, the limit is 150 meters per second, which will be suitable in most cases.
+- ``ORTSGraphic ( "tex" )`` -- Gives the name and path to the texture that should be used to render
+  particles from this emitter. The default texture is "smokemain.ace" for steam-type emitters and
+  "dieselsmoke.ace" for diesel-type emitters. If the texture cannot be found from the engine's/wagon's
+  folder, then the ``GLOBAL\TEXTURES`` folder is checked, and if the texture is not there the ``Content``
+  folder included with OR is checked. OR will search for any ``.ace`` or ``.dds`` textures with the name
+  specified, though .dds is preferred over .ace.
+  A path to a texture can also be used, such as ``ORTSGraphic ( "..\\SmokeTextures\\steam.dds" )``, to search
+  for textures not in the same folder as the engine or wagon.
+- ``ORTSGraphicAtlasLayout ( w h )`` -- Particle textures generally include multiple sprites in a single file
+  to allow for randomization of each particle's appearance. In MSTS, this was a sprite atlas 4 wide and 4 high,
+  for a total of 16 variations on the particle graphic. When using custom particle textures, it may be desired
+  to use a custom sprite sheet that is not 4x4, in which case the atlas layout can be set by ``ORTSGraphicAtlasLayout``.
+  For example, a sprite sheet with 4 variations on the particle texture all in a row (4x1) can be represented by
+  ``ORTSGraphicAtlasLayout ( 4 1 )``. Note that each sprite should be a perfect square as each particle is
+  rendered as a square. Rectangular textures will be stretched/squished. Do not change the atlas setting unless you
+  are certain of the texture used, as improper settings will be very aesthetically unpleasing.
+
+
+Note that legacy special effects from MSTS and prior versions of OR use different syntax, simply listing
+a series of numbers rather than using named parameters. The order and arrangement of these values is
+critical, and is interpreted in this order:
+
+- Effect location on the locomotive (given as 3 values forming an x, y, z offset in metres
+  from the origin of the wagon shape)
+- Effect direction of emission (given as 3 values giving a normal x, y and z)
+- Effect nozzle width (a single number given in metres)
+
+To make special effect settings easier to understand, it is recommended to use ``ORTSPosition``, ``ORTSInitialVelocity``,
+and ``ORTSParticleDiameter`` to provide these same values. However, if it is desired to continue using the legacy data,
+all ORTS parameters must be entered *after* the legacy numbers, like so::
+
+    FXName (
         -1.0485 1.0 2.8
         -1  0  0
         0.1
+
+        Comment ( ORTS parameters come after MSTS data! )
+
+        ORTSInitialVelocityVariation ( 0.25 )
+        ORTSFinalVelocityVariation ( 1.0m/s )
+        ...etc...
     )
-
-The code block consists of the following elements:
-
-- Effect name -- as described above,
-- Effect location on the locomotive (given as an x, y, z offset in metres
-  from the origin of the wagon shape)
-- Effect direction of emission (given as a normal x, y and z)
-- Effect nozzle width (in metres)
 
 Auxiliary Water Tenders
 '''''''''''''''''''''''
@@ -2789,6 +2996,46 @@ For EP brakes, two variants are available:
   a reference pressure. Standard triple valves or distributors will follow brake pipe variations
   actuating the cylinders. This system is sometimes called "UIC EP brake". It is typically the system
   used in high speed trains.
+
+Defining Multiple Brake Systems
+-------------------------------
+
+It is possible to define multiple systems within ``OrtsBrakeMode`` sections::
+
+    ORTSBrakeMode (
+        ORTSBrakeModeName ( AG )
+        BrakeSystemType( Air_single_pipe )
+        Comment ( All brake parameters are available in such a section )
+    )
+    ORTSBrakeMode (
+        ORTSBrakeModeName ( VB )
+        BrakeSystemType( Vacuum_single_pipe )
+        Comment ( All brake parameters are available in such a section )
+    )
+
+These sections can be used to either define dual vacuum/air rolling stock, or 
+can be used to define the brake modes of the UIC stock in the following form::
+
+    BrakeSystemType( Air_twin_pipe )
+    ORTSBrakeMode (
+        ORTSBrakeModeName ( G )
+        ORTSBrakeMass ( 67t )
+        Comment ( All brake parameters are available in such a section )
+    )
+    ORTSBrakeMode (
+        ORTSBrakeModeName ( P )
+        ORTSBrakeMass ( 83t )
+        BrakeSystemType( Vacuum_single_pipe )
+        Comment ( All brake parameters are available in such a section )
+    )
+
+Available brake mode names to be used are: GG, G, PP, P, RR, R, R_MG, AG, AP, AU, VB, VP, VU. 
+With the ``ORTSBrakeModeNames`` keyword the used brake modes can be filtered, 
+for being able to define them in an include file, and using only the needed 
+ones. It can be used e.g. in the following form::
+
+    ORTSBrakeModeNames ( "P, R" )
+
 
 .. _physics-brake-controller:
 
@@ -3199,6 +3446,13 @@ using the ORTSBrakeShoeFriction parameter, 1D (ie, speed only, see above section
 
 ``ORTSNumberCarBrakeShoes`` - to facilitate the operation of the default 2D curves above it is necessary to configure the number of brake shoes for each car.
 
+``ORTSBrakeMass`` - Railways part of the UIC organisation instead of NBR 
+provide brake masses, measured in tonnes, which is a virtual value to define 
+the brake efficiency. Openrails uses this value as an alternative to setting 
+the max brake shoe force directly, and recalculates this to that force using 
+approximating formulas to the published UIC brake curves. This parameter is 
+ignored if the ``ORTSMaxBrakeShoeForce`` also set.
+
 Whilst OR will attempt to set some defaults if parameters are left out, the most realistic operation will be achieved by using all the relevant parameters.
 
 The following two legacy arrangements can be used as an alternative to the above method,
@@ -3206,6 +3460,26 @@ The following two legacy arrangements can be used as an alternative to the above
 -  Legacy #1 - legacy arrangements using MaxBrakeForce on its own will remain unchanged. This in effect is an old MSTS file.
 
 - Legacy #2 - where MaxBrakeForce and ORTSBrakeShoeFriction have been set, legacy operation will remain unchanged.
+
+Load Compensation
+-----------------
+
+Load compensation stages can be defined in the following way::
+
+    OrtsLoadStage (
+        OrtsBrakeMass ( 28t )
+        Comment ( All brake parameters are available in such a section )
+    )
+    OrtsLoadStage (
+        OrtsBrakeMass ( 37t )
+        OrtsLoadStageMinMass ( 34t )
+        Comment ( All brake parameters are available in such a section )
+    )
+
+The ``OrtsLoadStageMinMass`` parameter defines the minimum car mass (together 
+with the load) where the stage can be activated without risking the brake lock. 
+For the lowest stage this keyword should be omitted. In OpenRails the switching 
+between stages is automatic.
 
 
 Train Brake Pipe Losses
@@ -3718,10 +3992,11 @@ The retainers of a car will only be available if either the General Option
 :ref:`Retainer valve on all cars <options-retainers>` is checked, or the car's
 .wag file contains a retainer valve declaration. To declare a retainer the line
 ``BrakeEquipmentType (  )`` in the .wag file must include either the item
-``Retainer_4_Position`` or  the item ``Retainer_3_Position``. A 4 position
+``Retainer_4_Position``, ``Retainer_3_Position`` or ``UIC_mountain``. A 4 position
 retainer includes four states: exhaust, low pressure (10 psi), high pressure
 (20 psi), and slow direct (gradual drop to zero). A 3 position retainer does
-not include the low pressure position. The use and display of the retainers is
+not include the low pressure position. The UIC plain-mountain switch has only 
+2 positions. The use and display of the retainers is 
 described in :ref:`Extended HUD for Brake Information <physics-hud-brake>`.
 
 The setting of the retained pressure and the number of retainers is

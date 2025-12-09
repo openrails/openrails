@@ -1303,7 +1303,7 @@ namespace Orts.Simulation
             // place rear of train on starting location of aiPath.
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
 
-            ConsistFile conFile = ConsistGenerator.IsConsistRecognized(conFileName) ? new ConsistFile(ConsistGenerator.GetConsist(conFileName), conFileName) : new ConsistFile(conFileName);
+            ConsistFile conFile = new ConsistFile(conFileName);
             CurveDurability = conFile.Train.TrainCfg.Durability;   // Finds curve durability of consist based upon the value in consist file
             train.TcsParametersFileName = conFile.Train.TrainCfg.TcsParametersFileName;
 
@@ -1320,7 +1320,7 @@ namespace Orts.Simulation
                     wagonFilePath = wagonFolder + @"\" + wagon.Name + ".eot";
                 }
 
-                if (!File.Exists(wagonFilePath) && !ConsistGenerator.IsWagonRecognized(wagonFilePath))
+                if (!File.Exists(wagonFilePath))
                 {
                     // First wagon is the player's loco and required, so issue a fatal error message
                     if (wagon == conFile.Train.TrainCfg.WagonList[0])
@@ -1842,7 +1842,7 @@ namespace Orts.Simulation
 
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;
-            
+
             train2.SpeedMpS = train.SpeedMpS;
 
             train.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
@@ -1886,8 +1886,8 @@ namespace Orts.Simulation
                 foreach (MSTSWagon wagon in train2.Cars)
                 {
                     // Update twice to ensure steady state conditions
-                    wagon.MSTSBrakeSystem.Update(30);
-                    wagon.MSTSBrakeSystem.Update(30);
+                    wagon.BrakeSystem.Update(30);
+                    wagon.BrakeSystem.Update(30);
                 }
             }
             bool inPath;
@@ -2057,8 +2057,8 @@ namespace Orts.Simulation
                     foreach (MSTSWagon wagon in selectedAsPlayer.Cars)
                     {
                         // Update twice to ensure steady state conditions
-                        wagon.MSTSBrakeSystem.Update(30);
-                        wagon.MSTSBrakeSystem.Update(30);
+                        wagon.BrakeSystem.Update(30);
+                        wagon.BrakeSystem.Update(30);
                     }
 
                     // and now let the former static train die

@@ -1364,7 +1364,7 @@ namespace Orts.Viewer3D.Popups
                     AddLabel(new ListLabel
                     {
                         FirstCol = Viewer.Catalog.GetString("Target"),
-                        LastCol = $"{FormatStrings.FormatSpeedDisplay(cc.SetSpeedMpS, Owner.Viewer.PlayerLocomotive.IsMetric) + ColorCode[Color.Cyan]}"//"%%%"
+                        LastCol = $"{FormatStrings.FormatSpeedDisplay(cc.SelectedSpeedMpS, Owner.Viewer.PlayerLocomotive.IsMetric) + ColorCode[Color.Cyan]}"//"%%%"
                     });
 
                     var maxAcceleration = Math.Round(cc.SelectedMaxAccelerationPercent).ToString("0") + "% ";//, "", false, keyPressed);

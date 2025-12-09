@@ -182,10 +182,6 @@ namespace ORTS.Settings
         public int DayAmbientLight { get; set; }
         [Default(AntiAliasingMethod.MSAA2x)]
         public int AntiAliasing { get; set; }
-        [Default(false)]
-        public bool GltfAnimations { get; set; }
-        [Default(true)]
-        public bool GltfTangentsAlwaysCalculatedPerPixel { get; set; }
 
         // Simulation settings:
         [Default(false)]
@@ -222,6 +218,8 @@ namespace ORTS.Settings
         public bool DataLogExclusiveSteamPerformance { get; set; }
         [Default(false)]
         public bool DataLogExclusiveSteamPowerCurve { get; set; }
+        [Default(0)]
+        public int DataLoggerInterval { get; set; }
         [Default(false)]
         public bool VerboseConfigurationMessages { get; set; }
 

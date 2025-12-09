@@ -762,7 +762,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Exhaust color at steady state (no RPM change)
         /// </summary>
-        public Color ExhaustSteadyColor = Color.Gray;
+        public Color ExhaustSteadyColor = new Color(Color.Gray, 127);
         /// <summary>
         /// Exhaust color when accelerating the engine
         /// </summary>
@@ -770,7 +770,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Exhaust color when decelerating the engine
         /// </summary>
-        public Color ExhaustDecelColor = Color.WhiteSmoke;
+        public Color ExhaustDecelColor = new Color(Color.WhiteSmoke, 63);
 
         public Color ExhaustCompressorBlownColor = Color.Gray;
 
@@ -1006,8 +1006,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             RPMRange = MaxRPM - IdleRPM;
             MagnitudeRange = MaxMagnitude - InitialMagnitude;
             ExhaustRange = MaxExhaust - InitialExhaust;
-            ExhaustSteadyColor.A = 10;
-            ExhaustDecelColor.A = 10;
 
             if (GearBoxParams.IsInitialized)
             {
@@ -1265,37 +1263,45 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
 
-            if (RealRPM == IdleRPM)
-            {
-                ExhaustParticles = InitialExhaust;
-                ExhaustMagnitude = InitialMagnitude;
+            ExhaustParticles = InitialExhaust + (ExhaustRange * (RealRPM - IdleRPM) / RPMRange);
+            ExhaustMagnitude = InitialMagnitude + (MagnitudeRange * (RealRPM - IdleRPM) / RPMRange);
                 ExhaustColor = ExhaustSteadyColor;
-            }
+
             if (RealRPM < DemandedRPM)
             {
-                dRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * throttleAcclerationFactor * (DemandedRPM - RealRPM)), ChangeUpRPMpS);
+                // RPM increase exponentially decays, but clamped between 1% and 100% of the linear rate of change
+                dRPM = MathHelper.Clamp((float)Math.Sqrt(2 * RateOfChangeUpRPMpSS * throttleAcclerationFactor * (DemandedRPM - RealRPM)),
+                    0.01f * ChangeUpRPMpS, ChangeUpRPMpS);
 
-                if (dRPM > 1.0f) //The forumula above generates a floating point error that we have to compensate for so we can't actually test for zero.
+                if (RealRPM + dRPM * elapsedClockSeconds > DemandedRPM)
                 {
-                    ExhaustParticles = (InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustAccelIncrease;
-                    ExhaustMagnitude = (InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustAccelIncrease;
-                    ExhaustColor = ExhaustTransientColor;
-                }
-                else
-                {
+                    RealRPM = DemandedRPM;
                     dRPM = 0;
-                    ExhaustParticles = InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange));
-                    ExhaustMagnitude = InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange));
-                    ExhaustColor = ExhaustSteadyColor;
+                }
+                else if (dRPM > 0.25f * ChangeUpRPMpS) // Only change particle emitter if RPM is still increasing substantially
+                {
+                    ExhaustParticles *= ExhaustAccelIncrease;
+                    ExhaustMagnitude *= ExhaustAccelIncrease;
+                    ExhaustColor = ExhaustTransientColor;
                 }
             }
             else if (RealRPM > DemandedRPM)
             {
-                dRPM = (float)Math.Min(-Math.Sqrt(2 * RateOfChangeDownRPMpSS * throttleAcclerationFactor * (RealRPM - DemandedRPM)), -ChangeDownRPMpS);
+                // RPM decrease exponentially decays, but clamped between 1% and 100% of the linear rate of change
+                dRPM = -MathHelper.Clamp((float)Math.Sqrt(2 * RateOfChangeDownRPMpSS * throttleAcclerationFactor * (RealRPM - DemandedRPM)),
+                    0.01f * ChangeDownRPMpS, ChangeDownRPMpS);
 
-                ExhaustParticles = (InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
-                ExhaustMagnitude = (InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
+                if (RealRPM + dRPM * elapsedClockSeconds < DemandedRPM)
+                {
+                    RealRPM = DemandedRPM;
+                    dRPM = 0;
+                }
+                else if (dRPM < -0.25f * ChangeDownRPMpS) // Only change particle emitter if RPM is still decreasing substantially
+                {
+                    ExhaustParticles *= ExhaustDecelReduction;
+                    ExhaustMagnitude *= ExhaustDecelReduction;
                 ExhaustColor = ExhaustDecelColor;
+            }
             }
 
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
