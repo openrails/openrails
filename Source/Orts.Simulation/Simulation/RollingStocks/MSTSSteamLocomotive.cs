@@ -7537,7 +7537,7 @@ namespace Orts.Simulation.RollingStocks
                         }
                         else // Exhaust steam injector
                         {
-                            if (throttle > 0.01)
+                            if (throttle > 0.01 && BackPressureIHPtoPSI[IndicatedHorsePowerHP] > 1)
                             {
                                 Injector1CorrectedPressurePSI = BackPressureIHPtoPSI[IndicatedHorsePowerHP];
                                 ActualInjector1FlowRateLBpS = Injector1Fraction * Injector1NozzleCorrectionFactor * pS.FrompH(ExhaustSteamInjectorMaximaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector1CorrectedPressurePSI));
@@ -7559,7 +7559,7 @@ namespace Orts.Simulation.RollingStocks
                                 // A small amount of supplemental steam will be added to live steam injectors to maintain pressure, hence a small heat loss
                                 Inject1SteamHeatLossBTUpS = LiveSteamInjector1SupplementSteamUsedLBpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
                             }
-                            else // Auxiliary live steam supply when no throttle
+                            else // Auxiliary live steam supply when no throttle or back pressure drops too low
                             {
                                 Injector1CorrectedPressurePSI = Injector1AuxiliaryPressureCorrectionFactor * BoilerPressurePSI;
                                 ActualInjector1FlowRateLBpS = Injector1Fraction * Injector1AuxiliaryNozzleCorrectionFactor * pS.FrompH(LiveSteamInjectorMaximaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector1CorrectedPressurePSI));
@@ -7635,7 +7635,7 @@ namespace Orts.Simulation.RollingStocks
                         }
                         else // Exhaust steam injector
                         {
-                            if (throttle > 0.01)
+                            if (throttle > 0.01 && BackPressureIHPtoPSI[IndicatedHorsePowerHP] > 1)
                             {
                                 Injector2CorrectedPressurePSI = BackPressureIHPtoPSI[IndicatedHorsePowerHP];
                                 ActualInjector2FlowRateLBpS = Injector2Fraction * Injector2NozzleCorrectionFactor * pS.FrompH(ExhaustSteamInjectorMaximaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector2CorrectedPressurePSI));
@@ -7657,7 +7657,7 @@ namespace Orts.Simulation.RollingStocks
                                 // A small amount of supplemental steam will be added to live steam injectors to maintain pressure, hence a small heat loss
                                 Inject2SteamHeatLossBTUpS = LiveSteamInjector2SupplementSteamUsedLBpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
                             }
-                            else // Auxiliary live steam supply when no throttle
+                            else // Auxiliary live steam supply when no throttle or back pressure drops too low
                             {
                                 Injector2CorrectedPressurePSI = Injector2AuxiliaryPressureCorrectionFactor * BoilerPressurePSI;
                                 ActualInjector2FlowRateLBpS = Injector2Fraction * Injector2AuxiliaryNozzleCorrectionFactor * pS.FrompH(LiveSteamInjectorMaximaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector2CorrectedPressurePSI));
