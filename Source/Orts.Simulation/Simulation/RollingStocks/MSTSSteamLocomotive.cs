@@ -2739,7 +2739,7 @@ namespace Orts.Simulation.RollingStocks
                 var NozzleCorrectionFactor = (float)Math.Pow(i / refNozzleSize, 2);
                 float TestInjectorFlowRateLBperH = NozzleCorrectionFactor * LiveSteamInjectorMaximaWaterDeliveryLBatPSIandF.Get(FeedwaterTemperature, pressureCorrectionFactor * MaxBoilerPressurePSI);
 
-                if (TestInjectorFlowRateLBperH >= 0.75f * MaxBoilerOutputLBpH)
+                if (TestInjectorFlowRateLBperH >= MaxBoilerOutputLBpH)
                 {
                     ActualInjectorNozzleSizeMM = i;
                     if (Simulator.Settings.VerboseConfigurationMessages)
