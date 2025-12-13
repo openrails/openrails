@@ -2737,7 +2737,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         Trace.TraceInformation("Calculated Live Steam Injector{0}NozzleSizeMM as {1} mm to meet water delivery requirements", injectorNumber, ActualInjectorNozzleSizeMM);
                     return ActualInjectorNozzleSizeMM;             
                 }
-                else if (i == 20)
+                else if (i == 19)
                 {
                     ActualInjectorNozzleSizeMM = 19; // set to maximum size
                     if (Simulator.Settings.VerboseConfigurationMessages)
@@ -2767,7 +2767,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         Trace.TraceInformation("Calculated Exhaust Steam Injector{0}NozzleSizeMM as {1} mm to meet water delivery requirements", injectorNumber, ActualInjectorNozzleSizeMM);
                     return ActualInjectorNozzleSizeMM;
                 }
-                else if (i == 20)
+                else if (i == 19)
                 {
                     ActualInjectorNozzleSizeMM = 19; // set to maximum size
                     if (Simulator.Settings.VerboseConfigurationMessages)
@@ -7492,7 +7492,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             GradientBoilerLevelFraction = MathHelper.Clamp(GradientBoilerLevelFraction, 0.0f, 1.0f);
 
-            CurrentWaterGaugeFraction = ((BoilerWaterFractionAbs - waterVariationLevelM / BoilerDiameterM) - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // Calculate water glass grade fraction
+            CurrentWaterGaugeFraction = ((BoilerWaterFractionAbs - waterVariationLevelM / BoilerDiameterM) - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // Calculate water glass grade fraction inverse for use in determining water injector operation.
 
             CurrentWaterGaugeFraction = MathHelper.Clamp(CurrentWaterGaugeFraction, 0.0f, 1.0f);
 
