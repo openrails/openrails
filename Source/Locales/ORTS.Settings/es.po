@@ -1,0 +1,673 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2025-07-22 20:55:06+0100\n"
+"PO-Revision-Date: 2025-07-25 18:32+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.5\n"
+
+#: ../../ORTS.Settings/InputSettings.cs:572
+#, csharp-format
+msgid "{0} requires and is modified by Shift"
+msgstr "{0} requiere y es modificado con Mayus"
+
+#: ../../ORTS.Settings/InputSettings.cs:574
+#, csharp-format
+msgid "{0} requires and is modified by Control"
+msgstr "{0} requiere y es modificado con Control"
+
+#: ../../ORTS.Settings/InputSettings.cs:576
+#, csharp-format
+msgid "{0} requires and is modified by Alt"
+msgstr "{0} requiere y es modificado con Alt"
+
+#: ../../ORTS.Settings/InputSettings.cs:607
+#, csharp-format
+msgid "{0} and {1} both match {2}"
+msgstr "{0} y {1} ambos coinciden {2}"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:15
+msgid "Reverser Neutral"
+msgstr "Inversor neutro"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:16
+msgid "Reverser Full Reversed"
+msgstr "Inversor completamente invertido"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:17
+msgid "Reverser Full Forward"
+msgstr "Inversor hacia adelante"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:18
+msgid "Throttle Idle"
+msgstr "Regulador inactivo"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:19
+msgid "Full Throttle"
+msgstr "Regulador a fondo"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:20
+msgid "Dynamic Brake"
+msgstr "Freno dinamico"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:21
+msgid "Dynamic Brake Setup"
+msgstr "Configuración freno dinámico"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:22
+msgid "Auto Brake Released"
+msgstr "Freno automático liberado"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:23
+msgid "Full Auto Brake "
+msgstr "Freno automático completo "
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:24
+msgid "Emergency Brake"
+msgstr "Freno emergencia"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:25
+msgid "Independent Brake Released"
+msgstr "Freno independiente liberado"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:26
+msgid "Independent Brake Full"
+msgstr "Freno independiente completo"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:27
+msgid "Bail Off Disengaged (in Released position)"
+msgstr "Bail Off desconectado (en posición liberado)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:28
+msgid "Bail Off Engaged (in Released position)"
+msgstr "Bail Off enganchado (en posición liberada)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:29
+msgid "Bail Off Disengaged (in Full position)"
+msgstr "Bail Off desconectado (en posición completa)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:30
+msgid "Bail Off Engaged (in Full position)"
+msgstr "Bail Off enganchado (en posición completa)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:31
+msgid "Rotary Switch 1-Position 1(OFF)"
+msgstr "Interruptor giratorio 1 posición 1 (apagado)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:32
+msgid "Rotary Switch 1-Position 2(SLOW)"
+msgstr "Interruptor giratorio 1 posición 2 (LENTO)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:33
+msgid "Rotary Switch 1-Position 3(FULL)"
+msgstr "Interruptor giratorio 1 posición 3 (COMPLETO)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:34
+msgid "Rotary Switch 2-Position 1(OFF)"
+msgstr "Interruptor giratorio de 2 posiciones 1 (apagado)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:35
+msgid "Rotary Switch 2-Position 2(DIM)"
+msgstr "Interruptor giratorio de 2 posiciones 2 (DIM)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:36
+msgid "Rotary Switch 2-Position 3(FULL)"
+msgstr "Interruptor giratorio de 2 posiciones 3 (COMPLETO)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:37
+msgid "Reverse Reverser Direction"
+msgstr "Invertir dirección inversor"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:38
+msgid "Reverse Throttle Direction"
+msgstr "Invertir dirección regulador"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:39
+msgid "Reverse Auto Brake Direction"
+msgstr "Invertir dirección freno automático"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:40
+msgid "Reverse Independent Brake Direction"
+msgstr "Invertir dirección freno independiente"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:41
+msgid "Full Range Throttle"
+msgstr "Rango completo regulador"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:42
+msgid "Cut Off Delta"
+msgstr "Delta de corte"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:227
+#, csharp-format
+msgid ""
+"Button {0} is assigned to \r\n"
+"\t"
+msgstr ""
+"El botón {0} está asignado a \n"
+"\t"
+
+#~ msgid "Game Pause Menu"
+#~ msgstr "Juego Menú pausa"
+
+#~ msgid "Game Save"
+#~ msgstr "Juego Guardar"
+
+#~ msgid "Game Quit"
+#~ msgstr "Juego Salir"
+
+#~ msgid "Game Pause"
+#~ msgstr "Juego Pausa"
+
+#~ msgid "Game Screenshot"
+#~ msgstr "Juego Captura de pantalla"
+
+#~ msgid "Game Fullscreen"
+#~ msgstr "Juego Pantalla completa"
+
+#~ msgid "Game Switch Ahead"
+#~ msgstr "Juego Cambiar desvio delantero"
+
+#~ msgid "Game Switch Behind"
+#~ msgstr "Juego Cambiar desvio trasero"
+
+#~ msgid "Game Switch Picked"
+#~ msgstr "Juego Cambiar desvio seleccionado"
+
+#~ msgid "Game Signal Picked"
+#~ msgstr "Juego Señal seleccionada"
+
+#~ msgid "Game Switch With Mouse"
+#~ msgstr "Juego Cambiar con ratón"
+
+#~ msgid "Game Uncouple With Mouse"
+#~ msgstr "Juego Desacoplar con ratón"
+
+#~ msgid "Game Change Cab"
+#~ msgstr "Juego Cambiar cabina"
+
+#~ msgid "Game Request Control"
+#~ msgstr "Juego Solicitar control del tren"
+
+#~ msgid "Game Multi Player Dispatcher"
+#~ msgstr "Juego Control multi jugador (CTC)"
+
+#~ msgid "Game Multi Player Texting"
+#~ msgstr "Juego Mensaje en multi jugador"
+
+#~ msgid "Game Switch Manual Mode"
+#~ msgstr "Juego Cambio entre modo automatico y manual"
+
+#~ msgid "Game Clear Signal Forward"
+#~ msgstr "Juego Solicitar rebase señal delantera"
+
+#~ msgid "Game Clear Signal Backward"
+#~ msgstr "Juego Solicitar rebase señal trasera"
+
+#~ msgid "Game Reset Signal Backward"
+#~ msgstr "Juego Restablecer estado  señal trasera"
+
+#~ msgid "Game Autopilot Mode"
+#~ msgstr "Juego Modo piloto automatico"
+
+#~ msgid "Game Suspend Old Player"
+#~ msgstr "Juego Suspender antiguo jugador"
+
+#~ msgid "Display Next Window Tab"
+#~ msgstr "Mostrar Ventana siguiente tabla"
+
+#~ msgid "Display Help Window"
+#~ msgstr "Mostrar Ventana Ayuda"
+
+#~ msgid "Display Track Monitor Window"
+#~ msgstr "Mostrar Ventana monitor de vía"
+
+#~ msgid "Display HUD"
+#~ msgstr "Mostrar HUD"
+
+#~ msgid "Display Car Labels"
+#~ msgstr "Mostrar Etiqueta vagones"
+
+#~ msgid "Display Station Labels"
+#~ msgstr "Mostrar Nombre estación"
+
+#~ msgid "Display Switch Window"
+#~ msgstr "Mostrar Ventana desvios"
+
+#~ msgid "Display Train Operations Window"
+#~ msgstr "Mostrar Ventana operaciones tren"
+
+#~ msgid "Display Next Station Window"
+#~ msgstr "Mostrar Ventana proxima estación"
+
+#~ msgid "Display Compass Window"
+#~ msgstr "Mostrar Ventana compas"
+
+#~ msgid "Display Basic HUD Toggle"
+#~ msgstr "Mostrar Alternar HUD basico/expandido"
+
+#~ msgid "Display Train List Window"
+#~ msgstr "Mostrar Ventana lista de trenes"
+
+#~ msgid "Debug Speed Up"
+#~ msgstr "Depurar Aumentar velocidad simulación"
+
+#~ msgid "Debug Speed Down"
+#~ msgstr "Depurar Disminuir velocidad simulación"
+
+#~ msgid "Debug Speed Reset"
+#~ msgstr "Depurar Restablecer velocidad simulación"
+
+#~ msgid "Debug Overcast Increase"
+#~ msgstr "Depurar Aumentar nubosidad"
+
+#~ msgid "Debug Overcast Decrease"
+#~ msgstr "Depurar Disminuir nubosidad"
+
+#~ msgid "Debug Fog Increase"
+#~ msgstr "Depurar Aumentar niebla"
+
+#~ msgid "Debug Fog Decrease"
+#~ msgstr "Depurar Disminuir niebla"
+
+#~ msgid "Debug Precipitation Increase"
+#~ msgstr "Depurar Aumentar precipitación"
+
+#~ msgid "Debug Precipitation Decrease"
+#~ msgstr "Depurar Disminuir precipitación"
+
+#~ msgid "Debug Precipitation Liquidity Increase"
+#~ msgstr "Depurar Aumento Precipitación Liquida"
+
+#~ msgid "Debug Precipitation Liquidity Decrease"
+#~ msgstr "Depurar Descenso Precipitación Liquida"
+
+#~ msgid "Debug Weather Change"
+#~ msgstr "Depurar Cambiar tiempo (sol/lluvia/nieve)"
+
+#~ msgid "Debug Clock Forwards"
+#~ msgstr "Depurar Adelantar reloj"
+
+#~ msgid "Debug Clock Backwards"
+#~ msgstr "Depurar Retrasar reloj"
+
+#~ msgid "Debug Logger"
+#~ msgstr "Depurar Generar archivo registro datos"
+
+#~ msgid "Debug Lock Shadows"
+#~ msgstr "Depurar Bloquear sombras"
+
+#~ msgid "Debug Dump Keyboard Map"
+#~ msgstr "Depurar Mapa del teclado"
+
+#~ msgid "Debug Log Render Frame"
+#~ msgstr "Depurar Registro imagens renderizadas"
+
+#~ msgid "Debug Tracks"
+#~ msgstr "Depurar Vías"
+
+#~ msgid "Debug Signalling"
+#~ msgstr "Depurar Señalización"
+
+#~ msgid "Debug Reset Wheel Slip"
+#~ msgstr "Depurar Restablecer patinaje ruedas"
+
+#~ msgid "Debug Toggle Advanced Adhesion"
+#~ msgstr "Depurar Conmutador de aherencia avanzada"
+
+#~ msgid "Debug Sound Form"
+#~ msgstr "Depurar Sonidos"
+
+#~ msgid "Debug Physics Form"
+#~ msgstr "Depurar Fisicas"
+
+#~ msgid "Camera Cab"
+#~ msgstr "Camara Cabina"
+
+#~ msgid "Camera Change Passenger Viewpoint"
+#~ msgstr "Cámara Cambiar el punto de vista pasajero"
+
+#~ msgid "Camera 3D Cab"
+#~ msgstr "Camara Cabina 3D"
+
+#~ msgid "Camera Toggle Show Cab"
+#~ msgstr "Camara Delantera sin cabina"
+
+#~ msgid "Camera Head Out Forward"
+#~ msgstr "Camara Asomado hacia delante"
+
+#~ msgid "Camera Head Out Backward"
+#~ msgstr "Camara Asomado hacia atrás"
+
+#~ msgid "Camera Outside Front"
+#~ msgstr "Camara Externa frontal"
+
+#~ msgid "Camera Outside Rear"
+#~ msgstr "Camara Externa trasera"
+
+#~ msgid "Camera Trackside"
+#~ msgstr "Camara Externa nivel vía"
+
+#~ msgid "Camera SpecialTracksidePoint"
+#~ msgstr "Camara SpecialTracksidePoint"
+
+#~ msgid "Camera Passenger"
+#~ msgstr "Camara Pasageros"
+
+#~ msgid "Camera Free"
+#~ msgstr "Camara Camara libre"
+
+#~ msgid "Camera Previous Free"
+#~ msgstr "Camara Anterior a libre"
+
+#~ msgid "Camera Reset"
+#~ msgstr "Camara Restablecer posición camara"
+
+#~ msgid "Camera Move Fast"
+#~ msgstr "Camara Movimiento rapido camara"
+
+#~ msgid "Camera Move Slow"
+#~ msgstr "Camara Movimiento lento camara"
+
+#~ msgid "Camera Pan (Rotate) Left"
+#~ msgstr "Camara Panoramica (rotación) izquierda"
+
+#~ msgid "Camera Pan (Rotate) Right"
+#~ msgstr "Camara Panoramica (rotación) derecha"
+
+#~ msgid "Camera Pan (Rotate) Up"
+#~ msgstr "Camara Panoramica (rotación) arriba"
+
+#~ msgid "Camera Pan (Rotate) Down"
+#~ msgstr "Camara Panoramica (rotación) abajo"
+
+#~ msgid "Camera Zoom In (Move Z)"
+#~ msgstr "Camara Acercar zoom"
+
+#~ msgid "Camera Zoom Out (Move Z)"
+#~ msgstr "Camara Alejar zoom"
+
+#~ msgid "Camera Rotate (Pan) Left"
+#~ msgstr "Camara Rotar (panoramica) izquierda"
+
+#~ msgid "Camera Rotate (Pan) Right"
+#~ msgstr "Camara Rotar (panoramica) derecha"
+
+#~ msgid "Camera Rotate (Pan) Up"
+#~ msgstr "Camara Rotar (panoramica) arriba"
+
+#~ msgid "Camera Rotate (Pan) Down"
+#~ msgstr "Camara Rotar (panoramica) abajo"
+
+#~ msgid "Camera Car Next"
+#~ msgstr "Camara Siguiente vagón"
+
+#~ msgid "Camera Car Previous"
+#~ msgstr "Camara Anterior vagón"
+
+#~ msgid "Camera Car First"
+#~ msgstr "Camara Primer vagón"
+
+#~ msgid "Camera Car Last"
+#~ msgstr "Camara Ultimo vagón"
+
+#~ msgid "Camera Jumping Trains"
+#~ msgstr "Camara Salta siguiente tren (multijugador)"
+
+#~ msgid "Camera Jump Back Player"
+#~ msgstr "Camara Regresar al jugador (multijugador)"
+
+#~ msgid "Camera Jump See Switch"
+#~ msgstr "Camara Saltar a ver desvio"
+
+#~ msgid "Camera Vibrate"
+#~ msgstr "Camara Vibración"
+
+#~ msgid "Camera Scroll Right"
+#~ msgstr "Desplazamiento Cámara a la Derecha"
+
+#~ msgid "Camera Scroll Left"
+#~ msgstr "Desplazamiento Cámara a la Izquierda"
+
+#~ msgid "Control Forwards"
+#~ msgstr "Control Inversor hacia delante"
+
+#~ msgid "Control Backwards"
+#~ msgstr "Control Inversor hacia atrás"
+
+#~ msgid "Control Throttle Increase"
+#~ msgstr "Control Aumentar regulador"
+
+#~ msgid "Control Throttle Decrease"
+#~ msgstr "Control Disminuir regulador"
+
+#~ msgid "Control Throttle Zero"
+#~ msgstr "Control Regulador a cero"
+
+#~ msgid "Control Gear Up"
+#~ msgstr "Control Subir marcha"
+
+#~ msgid "Control Gear Down"
+#~ msgstr "Control Bajar marcha"
+
+#~ msgid "Control Train Brake Increase"
+#~ msgstr "Control Aumentar freno del tren"
+
+#~ msgid "Control Train Brake Decrease"
+#~ msgstr "Control Aflojar freno del tren"
+
+#~ msgid "Control Train Brake Zero"
+#~ msgstr "Control Freno tren a cero"
+
+#~ msgid "Control Engine Brake Increase"
+#~ msgstr "Control Aumentar freno de la locomotora"
+
+#~ msgid "Control Engine Brake Decrease"
+#~ msgstr "Control Aflojar freno de la locomotora"
+
+#~ msgid "Control Dynamic Brake Decrease"
+#~ msgstr "Control Disminuir frenado dinámico"
+
+#~ msgid "Control Bail Off"
+#~ msgstr "Control Rescatar frenos"
+
+#~ msgid "Control Initialize Brakes"
+#~ msgstr "Control Reinicio rapido frenos"
+
+#~ msgid "Control Handbrake Full"
+#~ msgstr "Control Aplicar freno de mano"
+
+#~ msgid "Control Handbrake None"
+#~ msgstr "Control Liberar  freno de mano"
+
+#~ msgid "Control Odometer Show/Hide"
+#~ msgstr "Mostrar/Ocultar Control Odómetro"
+
+#~ msgid "Control Odometer Reset"
+#~ msgstr "Control Poner a cero el Odometro"
+
+#~ msgid "Control Odometer Direction"
+#~ msgstr "Control Dirección Odómetro"
+
+#~ msgid "Control Retainers On"
+#~ msgstr "Control Activar retenedores"
+
+#~ msgid "Control Retainers Off"
+#~ msgstr "Control Desactivar retenedores"
+
+#~ msgid "Control Brake Hose Connect"
+#~ msgstr "Control Conectar manguera de freno"
+
+#~ msgid "Control Brake Hose Disconnect"
+#~ msgstr "Control Desconectar manguera de freno"
+
+#~ msgid "Control Alerter"
+#~ msgstr "Control Alerta hombre muerto"
+
+#~ msgid "Control Emergency Push Button"
+#~ msgstr "Control Seta freno emergencia"
+
+#~ msgid "Control Sander"
+#~ msgstr "Control Arenero"
+
+#~ msgid "Control Sander Toggle"
+#~ msgstr "Control Arenero permanente"
+
+#~ msgid "Control Wiper"
+#~ msgstr "Control Limpiaparabrisas"
+
+#~ msgid "Control Horn"
+#~ msgstr "Control Bocina"
+
+#~ msgid "Control Bell"
+#~ msgstr "Control Campana"
+
+#~ msgid "Control Bell Toggle"
+#~ msgstr "Control Campana permanente"
+
+#~ msgid "Control Door Left"
+#~ msgstr "Control Abrir/cerrar puertas izquierda"
+
+#~ msgid "Control Door Right"
+#~ msgstr "Control Abrir/cerrar puertas derecha"
+
+#~ msgid "Control Mirror"
+#~ msgstr "Control Retrovisores"
+
+#~ msgid "Control Light"
+#~ msgstr "Control Encender/apagar luz interior cabina"
+
+#~ msgid "Control Pantograph 1"
+#~ msgstr "Control Subir/bajar pantografo 1"
+
+#~ msgid "Control Pantograph 2"
+#~ msgstr "Control Subir/bajar pantografo 2"
+
+#~ msgid "Control Pantograph 3"
+#~ msgstr "Control Subir/bajar pantografo 3"
+
+#~ msgid "Control Pantograph 4"
+#~ msgstr "Control Subir/bajar pantografo 4"
+
+#~ msgid "Control Circuit Breaker Closing Order"
+#~ msgstr "Control Orden cerrar el disyuntor"
+
+#~ msgid "Control Circuit Breaker Opening Order"
+#~ msgstr "Control Orden abrir el disyuntor"
+
+#~ msgid "Control Circuit Breaker Closing Authorization"
+#~ msgstr "Control Autorización cierre del disyuntor"
+
+#~ msgid "Control Diesel Player"
+#~ msgstr "Control Encender/apagar motor locomotora diesel Jugador"
+
+#~ msgid "Control Diesel Helper"
+#~ msgstr "Control Encender/apagar motor locomotora diesel auxiliar"
+
+#~ msgid "Control Headlight Increase"
+#~ msgstr "Control Encender secuencialmente luces tren"
+
+#~ msgid "Control Headlight Decrease"
+#~ msgstr "Control Apagar secuencialmente luces tren"
+
+#~ msgid "Control Injector 1 Increase"
+#~ msgstr "Control Aumentar inyector agua 1 (vapor de escape)"
+
+#~ msgid "Control Injector 1 Decrease"
+#~ msgstr "Control Disminuir inyector agua 1 (vapor de escape)"
+
+#~ msgid "Control Injector 1"
+#~ msgstr "Control Conectar/desconectar inyector de agua 1"
+
+#~ msgid "Control Injector 2 Increase"
+#~ msgstr "Control Aumentar inyector de agua 2 (vapor vivo)"
+
+#~ msgid "Control Injector 2 Decrease"
+#~ msgstr "Control Disminuir inyector de agua 2 (vapor vivo)"
+
+#~ msgid "Control Injector 2"
+#~ msgstr "Control Conectar/desconectar inyector de agua 2"
+
+#~ msgid "Control Blower Increase"
+#~ msgstr "Control Aumentar ventilador hogar"
+
+#~ msgid "Control Blower Decrease"
+#~ msgstr "Control Disminuir ventilador hogar"
+
+#~ msgid "Control Steam Heat Increase"
+#~ msgstr "Control Aumentar temperatura vapor"
+
+#~ msgid "Control Steam Heat Decrease"
+#~ msgstr "Control Disminuir temperatura vapor"
+
+#~ msgid "Control Damper Increase"
+#~ msgstr "Control Aumentar regulador de tiro"
+
+#~ msgid "Control Damper Decrease"
+#~ msgstr "Control Disminuir regulador de tiro"
+
+#~ msgid "Control Firebox Open"
+#~ msgstr "Control Abrir puerta del hogar"
+
+#~ msgid "Control Firebox Close"
+#~ msgstr "Control Cerrar puerta del hogar"
+
+#~ msgid "Control Firing Rate Increase"
+#~ msgstr "Control Aumentar tasa de paleado del fogonero"
+
+#~ msgid "Control Firing Rate Decrease"
+#~ msgstr "Control Disminuir tasa de paleado del fogonero"
+
+#~ msgid "Control Fire Shovel Full"
+#~ msgstr "Control Palada completa del fogonero"
+
+#~ msgid "Control Cylinder Cocks"
+#~ msgstr "Control Apertura llave purga cilindro"
+
+#~ msgid "Control Small Ejector Increase"
+#~ msgstr "Control Aumentar eyector pequeño"
+
+#~ msgid "Control Small Ejector Decrease"
+#~ msgstr "Control Disminuir eyector pequeño"
+
+#~ msgid "Control Cylinder Compound"
+#~ msgstr "Control Cilindro compuesto"
+
+#~ msgid "Control Firing"
+#~ msgstr "Control Fogonero manual/automático"
+
+#~ msgid "Control Refill"
+#~ msgstr "Control Repostar combustible"
+
+#~ msgid "Control TroughRefill"
+#~ msgstr "Control Recargar baja presión"
+
+#~ msgid "Control ImmediateRefill"
+#~ msgstr "Control Recarga inmediata"
+
+#~ msgid "Control Turntable Clockwise"
+#~ msgstr "Rotación Horaria Placa Giratoria"
+
+#~ msgid "Control Turntable Counterclockwise"
+#~ msgstr "Rotación Antihoraria Placa Giratoria"
+
+#~ msgid "Control Cab Radio"
+#~ msgstr "Control Cab Radio"
+
+#~ msgid "Control AI Fire On"
+#~ msgstr "Control Activar Fogonero IA"
+
+#~ msgid "Control AI Fire Off"
+#~ msgstr "Control Desactivar Fogonero IA"
+
+#~ msgid "Control AI Fire Reset"
+#~ msgstr "Control Resetear Fogonero IA"
+
+#~ msgid "Camera Cab Rotate"
+#~ msgstr "Camara Rotar cabina"

@@ -131,10 +131,7 @@ namespace Orts.Viewer3D.Processes
                 MPManager.Client.Stop();
             if (Program.Simulator != null)
                 Program.Simulator.Stop();
-            if (Program.MapForm != null)
-                Program.MapForm.Dispose();
-            if (Program.SoundDebugForm != null)
-                Program.SoundDebugForm.Dispose();
+            // MapForm and SoundDebugForm run in the Renderer thread and need to be disposed there
             base.Dispose();
         }
 

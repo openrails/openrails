@@ -86,9 +86,9 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("routestart", ()=>{ if (RouteStart == null) RouteStart = new RouteStart(stf); }),
                 new STFReader.TokenProcessor("environment", ()=>{ Environment = new TRKEnvironment(stf); }),
                 new STFReader.TokenProcessor("milepostunitskilometers", ()=>{ MilepostUnitsMetric = true; }),
-				new STFReader.TokenProcessor("electrified", ()=>{ Electrified = stf.ReadBoolBlock(false); }),
+                new STFReader.TokenProcessor("electrified", ()=>{ Electrified = stf.ReadBoolBlock(false); }),
                 new STFReader.TokenProcessor("overheadwireheight", ()=>{ OverheadWireHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, 6.0f);}),
- 				new STFReader.TokenProcessor("speedlimit", ()=>{ SpeedLimit = stf.ReadFloatBlock(STFReader.UNITS.Speed, 500.0f); }),
+                 new STFReader.TokenProcessor("speedlimit", ()=>{ SpeedLimit = stf.ReadFloatBlock(STFReader.UNITS.Speed, 500.0f); }),
                 new STFReader.TokenProcessor("defaultcrossingsms", ()=>{ DefaultCrossingSMS = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("defaultcoaltowersms", ()=>{ DefaultCoalTowerSMS = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("defaultdieseltowersms", ()=>{ DefaultDieselTowerSMS = stf.ReadStringBlock(null); }),
@@ -127,6 +127,9 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortscurveswitchsmsnumber", ()=>{ CurveSwitchSMSNumber = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortsopendoorsinaitrains", ()=>{ OpenDoorsInAITrains = stf.ReadBoolBlock(false); }),
 
+                new STFReader.TokenProcessor("ortsplaytracksoundsbasecontinuous", ()=>{ TrackSoundDefaultContinuousPlay = stf.ReadBoolBlock(false); }),
+                new STFReader.TokenProcessor("ortsdistancebetweentrackjoints", ()=>{ DistanceBetweenTrackJointsM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("ortsconcretesleepers", ()=>{ ConcreteSleepers = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
@@ -174,6 +177,11 @@ namespace Orts.Formats.Msts
 
         public float ForestClearDistance = 0;
         public bool RemoveForestTreesFromRoads = false;
+
+        // Track based sounds
+        public bool TrackSoundDefaultContinuousPlay = false;
+        public float DistanceBetweenTrackJointsM;
+        public float ConcreteSleepers;
 
         // images
         public string Thumbnail;

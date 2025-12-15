@@ -49,13 +49,14 @@ namespace ORTS.Scripting.Api
         protected override void SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState state) {}
         protected override void SetCurrentElectricTrainSupplyState(PowerSupplyState state) {}
         protected override void SetCurrentDynamicBrakeAvailability(bool avail) {}
+        public override PowerSupplyState GetPowerStatus() => PowerSupplyState.Unavailable;
         public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt)
         {
-            ControlActiveLocomotive.LocomotivePowerSupply.HandleEvent(evt);
+            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEvent(evt);
         }
         public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt, int id)
         {
-            ControlActiveLocomotive.LocomotivePowerSupply.HandleEvent(evt, id);
+            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEvent(evt, id);
         }
     }
 }

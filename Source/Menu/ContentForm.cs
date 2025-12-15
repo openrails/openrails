@@ -61,6 +61,10 @@ namespace Menu
         private bool In_dataGridViewManualInstall_SelectionChanged = false;
         private bool In_buttonManualInstallAdd_Click = false;
 
+        private bool ManualInstallChangesMade = false;
+
+        private readonly bool NoInternet = false;
+
         public ContentForm(UserSettings settings, string baseDocumentationUrl)
         {
             InitializeComponent();
@@ -82,7 +86,14 @@ namespace Menu
             //
             // "Auto Installed" tab
             //
-            Settings.Content.ContentRouteSettings.LoadContent();
+            string errorMsg = "";
+            Settings.Content.ContentRouteSettings.LoadContent(ref errorMsg);
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                string message = Catalog.GetStringFmt("Failed to access the content repository (check Internet connection); automatic download not available. Error: {0}", errorMsg);
+                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                NoInternet = true;
+            }
             AutoInstallRoutes = Settings.Content.ContentRouteSettings.Routes;
             for (int index = 0; index < AutoInstallRoutes.Count; index++)
             {
@@ -93,6 +104,10 @@ namespace Menu
                     route.Installed ? route.DateInstalled.ToString(CultureInfo.CurrentCulture.DateTimeFormat) : "",
                     route.Url });
                 dataGridViewAutoInstall.Rows[indexAdded].Cells[2].ToolTipText = route.Url;
+                if (!route.Installed)
+                {
+                    changeManualInstallRoute(routeName);
+                }
             }
 
             dataGridViewAutoInstall.Sort(dataGridViewAutoInstall.Columns[0], ListSortDirection.Ascending);
@@ -113,6 +128,10 @@ namespace Menu
             // set focus to datagridview so that arrow keys can be used to scroll thru the list
             dataGridViewAutoInstall.Select();
 
+            // tab "Auto Installed" does not contain a Cancel button
+            // it's too difficult and not logical to rollback an "Auto Installed" route
+            buttonCancel.Hide();
+
             //
             // "Manually Installed" tab
             //
@@ -130,6 +149,58 @@ namespace Menu
             dataGridViewManualInstall.Sort(dataGridViewManualInstall.Columns[0], ListSortDirection.Ascending);
 
             ManualInstallBrouwseDir = determineBrowseDir();
+            buttonCancel.Enabled = false;
+
+            setTextBoxesManualInstall();
+
+            if (NoInternet)
+            {
+                // open the Manually Installed tab since the Auto Installed tab needs internet
+                tabControlContent.SelectTab(tabPageManuallyInstall);
+            }
+
+            if (dataGridViewAutoInstall.Rows.Count == 0) 
+            {
+                // disable all auto install buttons for a complete empty auto install grid
+                // might be the case when no internet available
+                DisableAutoInstallButtonsWithoutWait();
+            }
+        }
+
+        void changeManualInstallRoute(string Route)
+        {
+            bool found = false;
+
+            foreach (var folder in Settings.Folders.Folders)
+            {
+                if (folder.Key == Route)
+                {
+                    // Route found in folder settings
+                    found = true;
+                }
+            }
+
+            if (found)
+            {
+                // search for the next route (1), (2) etc. not found in folder settings
+                int seqNr = 1;
+                string route = Route + " (" + seqNr + ")";
+                while (found)
+                {
+                    found = false;
+                    foreach (var folder in Settings.Folders.Folders)
+                    {
+                        if (folder.Key == route)
+                        {
+                            found = true;
+                            seqNr++;
+                            route = Route + " (" + seqNr + ")";
+                        }
+                    }
+                }
+                Settings.Folders.Folders[route] = Settings.Folders.Folders[Route];
+                Settings.Folders.Folders.Remove(Route);
+            }
         }
 
         private void tabControlContent_Selecting(object sender, TabControlCancelEventArgs e)
@@ -138,9 +209,12 @@ namespace Menu
             {
                 case "tabPageAutoInstall":
                     dataGridViewAutoInstall.Select();
+                    buttonCancel.Hide();
                     break;
                 case "tabPageManuallyInstall":
                     dataGridViewManualInstall.Select();
+                    buttonCancel.Show();
+                    buttonCancel.Enabled = ManualInstallChangesMade;
                     break;
             }
         }
@@ -220,9 +294,9 @@ namespace Menu
                     try
                     {
                         using (WebClient myWebClient = new WebClient())
-                        {
+                                {
                             myWebClient.DownloadFile(AutoInstallRoutes[AutoInstallRouteName].Image, ImageTempFilename);
-                        }
+                            }
                         if (File.Exists(ImageTempFilename))
                         {
                             pictureBoxAutoInstallRoute.Image = new Bitmap(ImageTempFilename);
@@ -1042,7 +1116,11 @@ namespace Menu
         private void DisableAutoInstallButtons()
         {
             setCursorToWaitCursor();
+            DisableAutoInstallButtonsWithoutWait();
+        }
 
+        private void DisableAutoInstallButtonsWithoutWait()
+        {
             dataGridViewAutoInstall.Enabled = false;
             textBoxAutoInstallPath.Enabled = false;
             buttonAutoInstallBrowse.Enabled = false;
@@ -1051,7 +1129,6 @@ namespace Menu
             buttonAutoInstallUpdate.Enabled = false;
             buttonAutoInstallDelete.Enabled = false;
             buttonOK.Enabled = false;
-            buttonCancel.Enabled = false;
         }
 
         private void setCursorToWaitCursor()
@@ -1068,12 +1145,11 @@ namespace Menu
             dataGridViewAutoInstall.Enabled = true;
             textBoxAutoInstallPath.Enabled = true;
             buttonAutoInstallBrowse.Enabled = true;
-            buttonAutoInstallInfo.Enabled = true;
-            buttonAutoInstallInstall.Enabled = !route.Installed;
-            buttonAutoInstallUpdate.Enabled = route.Installed && (route.getDownloadType() == ContentRouteSettings.DownloadType.github);
+            buttonAutoInstallInfo.Enabled = !NoInternet;
+            buttonAutoInstallInstall.Enabled = !(route.Installed || NoInternet);
+            buttonAutoInstallUpdate.Enabled = route.Installed && (route.getDownloadType() == ContentRouteSettings.DownloadType.github) && !NoInternet;
             buttonAutoInstallDelete.Enabled = route.Installed;
             buttonOK.Enabled = true;
-            buttonCancel.Enabled = true;
 
             setCursorToDefaultCursor();
         }
@@ -1398,6 +1474,18 @@ namespace Menu
             {
                 // only update the grid when user is filling/changing the route in the textbox
                 dataGridViewManualInstall.CurrentRow.Cells[0].Value = textBoxManualInstallRoute.Text;
+                ManualInstallChangesMade = true;
+                buttonCancel.Enabled = true;
+            }
+        }
+
+        private void textBoxManualInstallRoute_Leave(object sender, EventArgs e)
+        {
+            string route = textBoxManualInstallRoute.Text.Trim();
+            textBoxManualInstallRoute.Text = determineUniqueRoute(route);
+            if (textBoxManualInstallRoute.Text != route)
+            {
+                dataGridViewManualInstall.CurrentRow.Cells[0].Value = textBoxManualInstallRoute.Text;
             }
         }
 
@@ -1452,6 +1540,8 @@ namespace Menu
                     string route = determineUniqueRoute(Path.GetFileName(folderBrowser.SelectedPath));
                     dataGridViewManualInstall.CurrentRow.Cells[0].Value = route;
                     dataGridViewManualInstall.CurrentRow.Cells[1].Value = folderBrowser.SelectedPath;
+                    ManualInstallChangesMade = true;
+                    buttonCancel.Enabled = ManualInstallChangesMade;
                 }
                 else
                 {
@@ -1477,6 +1567,8 @@ namespace Menu
             if (dataGridViewManualInstall.CurrentRow != null)
             {
                 dataGridViewManualInstall.Rows.Remove(dataGridViewManualInstall.CurrentRow);
+                ManualInstallChangesMade = true;
+                buttonCancel.Enabled = ManualInstallChangesMade;
             }
         }
 
@@ -1499,6 +1591,7 @@ namespace Menu
                 }
                 else
                 {
+                    // route automatically installed
                     textBoxManualInstallRoute.Text = "";
                     textBoxManualInstallPath.Text = "";
                     textBoxManualInstallRoute.Enabled = false;
@@ -1507,24 +1600,46 @@ namespace Menu
                     buttonManualInstallDelete.Enabled = false;
                 }
             }
+            else
+            {
+                // empty form, like after installing OR
+                textBoxManualInstallRoute.Text = "";
+                textBoxManualInstallPath.Text = "";
+                textBoxManualInstallRoute.Enabled = false;
+                textBoxManualInstallPath.Enabled = false;
+                buttonManualInstallBrowse.Enabled = false;
+                buttonManualInstallDelete.Enabled = false;
+            }
         }
 
         string determineUniqueRoute(string Route)
         {
             string route = Route;
+            long seqNr = 0;
+            bool foundUniqueRoute = false;
 
-            bool found = false;
-
-            while (!found)
+            if (AutoInstallRoutes.ContainsKey(route))
             {
-                found = true;
-                for (int i = 0; i < dataGridViewManualInstall.Rows.Count - 1; i++)
+                // route already exists in the AutoInstall routes
+                seqNr = 1;
+                route = Route + " (" + seqNr + ")";
+            }
+
+            while (!foundUniqueRoute)
+            {
+                bool found = false;
+                for (int i = 0; i < dataGridViewManualInstall.Rows.Count; i++)
                 {
-                    if (dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route)
+                    if ((!dataGridViewManualInstall.Rows[i].Selected) && (dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route))
                     {
-                        route += " copy";
-                        found = false;
+                        seqNr++;
+                        route = Route + " (" + seqNr + ")";
+                        found = true;
                     }
+                }
+                if (!found)
+                {
+                    foundUniqueRoute = true;
                 }
             }
 
@@ -1588,6 +1703,21 @@ namespace Menu
             return false;
         }
 
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            string message = Catalog.GetString("Cancel: changes made in the 'Manually Installed' tab will not be saved, are you sure?");
+            if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+            {
+                // not sure, cancel the cancel
+                this.DialogResult = DialogResult.None;
+            }
+            else 
+            {
+                // sure to cancel the changes
+                ManualInstallChangesMade = false;
+            }
+        }
+
         private void buttonOK_Click(object sender, EventArgs e)
         {
             // save "Manually Installed" tab changes into the registry/ini file via Settings.Folders.Folders
@@ -1641,6 +1771,8 @@ namespace Menu
 
             Settings.Save();
 
+            ManualInstallChangesMade = false;
+
             this.Close();
         }
 
@@ -1672,6 +1804,17 @@ namespace Menu
 
         private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs formClosingEventArgs)
         {
+            if (ManualInstallChangesMade)
+            {
+                string message = Catalog.GetString("Cancel: changes made in the 'Manually Installed' tab will not be saved, are you sure?");
+                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+                {
+                    // not sure, cancel the cancel
+                    formClosingEventArgs.Cancel = true;
+                    return;
+                }
+            }
+
             if (AutoInstallClosingBlocked)
             {
                 // cancelled event, so continue

@@ -1,0 +1,154 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Open Rails po polsku\n"
+"POT-Creation-Date: 2025-02-09 12:41:53+0100\n"
+"PO-Revision-Date: 2025-02-25 21:28+0000\n"
+"Last-Translator: \n"
+"Language-Team: Robert Otremba\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+"X-Poedit-Basepath: .\n"
+
+#: ../../ORTS.Settings/InputSettings.cs:667
+#, csharp-format
+msgid "{0} requires and is modified by Shift"
+msgstr "{0} wymagane i jest zmodyfikowane przez Shift"
+
+#: ../../ORTS.Settings/InputSettings.cs:669
+#, csharp-format
+msgid "{0} requires and is modified by Control"
+msgstr "{0} wymagane i jest zmodyfikowane przez Control"
+
+#: ../../ORTS.Settings/InputSettings.cs:671
+#, csharp-format
+msgid "{0} requires and is modified by Alt"
+msgstr "{0} wymagane i jest zmodyfikowane przez Alt"
+
+#: ../../ORTS.Settings/InputSettings.cs:702
+#, csharp-format
+msgid "{0} and {1} both match {2}"
+msgstr "{0} i {1} oba pasują do {2}"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:14
+msgid "Reverser Neutral"
+msgstr "Nawrotnik Neutralny"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:15
+msgid "Reverser Full Reversed"
+msgstr "Nawrotnik Cała Wstecz"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:16
+msgid "Reverser Full Forward"
+msgstr "Nawrotnik Cała Naprzód"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:17
+msgid "Throttle Idle"
+msgstr "Przepustnica jałowy"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:18
+msgid "Full Throttle"
+msgstr "Przepustnica w pełni otwarta"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:19
+msgid "Dynamic Brake"
+msgstr "Hamulec dynamiczny"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:20
+msgid "Dynamic Brake Setup"
+msgstr "Ustawienie hamulca dynamicznego"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:21
+msgid "Auto Brake Released"
+msgstr "Hamulec automatyczny zwolniony"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:22
+msgid "Full Auto Brake "
+msgstr "Hamulec automatyczny zahamowany "
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:23
+msgid "Emergency Brake"
+msgstr "Hamulec awaryjny"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:24
+msgid "Independent Brake Released"
+msgstr "Hamulec niezależny zwolniony"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:25
+msgid "Independent Brake Full"
+msgstr "Hamulec niezależny zaciągnięty"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:26
+msgid "Bail Off Disengaged (in Released position)"
+msgstr "Odluźniacz załączony (pozycja wyluzowania),"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:27
+msgid "Bail Off Engaged (in Released position)"
+msgstr "Odluźniacz wyłączony (w 100%)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:28
+msgid "Bail Off Disengaged (in Full position)"
+msgstr "Odluźniacz załączony (w 100%)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:29
+msgid "Bail Off Engaged (in Full position)"
+msgstr "Odluźniacz wyłączony (w pełni)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:30
+msgid "Rotary Switch 1-Position 1(OFF)"
+msgstr "Przełącznik obrotowy 1 - Pozycja 1 (Wył.)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:31
+msgid "Rotary Switch 1-Position 2(SLOW)"
+msgstr "Przełącznik obrotowy 1 - Pozycja 2 (Powolny)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:32
+msgid "Rotary Switch 1-Position 3(FULL)"
+msgstr "Przełącznik obrotowy 1 - Pozycja 3 (Pełny)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:33
+msgid "Rotary Switch 2-Position 1(OFF)"
+msgstr "Przełącznik obrotowy 2 - Pozycja 1 (Wył.)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:34
+msgid "Rotary Switch 2-Position 2(DIM)"
+msgstr "Przełącznik obrotowy 2 - Pozycja 2 (Przyciemniony)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:35
+msgid "Rotary Switch 2-Position 3(FULL)"
+msgstr "Przełącznik obrotowy 2 - Pozycja 3 (Pełny)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:36
+msgid "Reverse Reverser Direction"
+msgstr "Odwróć kierunek nawrotnicy"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:37
+msgid "Reverse Throttle Direction"
+msgstr "Odwróć kierunek przepustnicy"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:38
+msgid "Reverse Auto Brake Direction"
+msgstr "Odwróć kierunek hamulca automatycznego"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:39
+msgid "Reverse Independent Brake Direction"
+msgstr "Odwróć kierunek hamulca niezależnego"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:40
+msgid "Full Range Throttle"
+msgstr "Pełny zakres przepustnicy"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:41
+msgid "Cut Off Delta"
+msgstr "Odetnij deltę"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:224
+#, csharp-format
+msgid ""
+"Button {0} is assigned to \r\n"
+"\t"
+msgstr ""
+"Przycisk {0} jest przypisany do \n"
+"\t"

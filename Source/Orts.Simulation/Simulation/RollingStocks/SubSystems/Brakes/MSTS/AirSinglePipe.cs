@@ -81,7 +81,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float ControlResPressurePSI = 64;
         protected float FullServPressurePSI = 50;
         protected float MaxCylPressurePSI;
-        protected float ReferencePressurePSI;
+        public float ReferencePressurePSI { get; protected set; }
         protected float MaxTripleValveCylPressurePSI;
         protected float AuxResVolumeM3;
         protected float AuxCylVolumeRatio;
@@ -143,7 +143,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float AcceleratedApplicationLimitPSIpS = 5.0f;
         protected float InitialApplicationThresholdPSI;
         protected float TripleValveSensitivityPSI;
-        protected float BrakeCylinderSpringPressurePSI;
+        public float BrakeCylinderSpringPressurePSI { get; protected set; }
         protected float ServiceMaxCylPressurePSI;
         protected float ServiceApplicationRatePSIpS;
         protected float TwoStageLowPressurePSI;
@@ -594,10 +594,38 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
+            MSTSLocomotive loco = Car as MSTSLocomotive;
+
             BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
-            if (Car is MSTSLocomotive && Car.Train.LeadLocomotive is MSTSLocomotive lead)
-                lead.EngineBrakeController?.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
+            // Initialize locomotive brakes
+            if (loco != null && Car.Train.LeadLocomotive is MSTSLocomotive lead)
+            {
+                bool brakeLine3Init = false;
+
+                if (loco == lead) // Always initialize loco brakes on lead loco
+                    brakeLine3Init = true;
+                else
+                {
+                    foreach (List<TrainCar> group in Car.Train.LocoGroups)
+                    {
+                        if (group.Contains(loco))
+                        {
+                            if (group.Contains(lead))
+                                brakeLine3Init = true; // Always initialize loco brakes on locos in same group as lead loco
+                            else if (loco.DPSyncIndependent && lead.DPSyncIndependent)
+                                brakeLine3Init = true; // Otherwise, only initialize loco brakes if synchronized by DP system
+
+                            break;
+                        }
+                    }
+                }
+
+                if (brakeLine3Init) // Sync loco brakes with lead brake system
+                    lead.EngineBrakeController?.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
+                else // Release loco brakes
+                    BrakeLine3PressurePSI = 0.0f;
+            }
             if (maxPressurePSI > 0)
                 ControlResPressurePSI = maxPressurePSI;
 
@@ -623,7 +651,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             IsolationValve = ValveState.Release;
             HandbrakePercent = handbrakeOn & HandBrakePresent ? 100 : 0;
             SetRetainer(RetainerSetting.Exhaust);
-            if (Car is MSTSLocomotive loco) 
+            if (loco != null) 
                 loco.MainResPressurePSI = loco.MaxMainResPressurePSI;
 
             // Prevent initialization triggering emergency vent valves
@@ -1733,48 +1761,47 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             if (loco.Train.DetermineDPLeadLocomotive(loco) is MSTSLocomotive lead && (lead.BailOff || (lead.EngineBrakeController != null && lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.BailOff)))
                             {
                                 if (BrakeValve == BrakeValveType.Distributor)
-                                {
                                     ControlResPressurePSI = 0;
 
-                                    if (loco.AttachedTender?.BrakeSystem is AirSinglePipe tenderBrakes)
-                                        tenderBrakes.ControlResPressurePSI = 0;
-                                }
-                                else
-                                {
-                                    float dp = Math.Max(MaxReleaseRatePSIpS, loco.EngineBrakeReleaseRatePSIpS) * elapsedClockSeconds;
-                                    AutoCylPressurePSI -= dp;
-                                    if (AutoCylPressurePSI < 0)
-                                        AutoCylPressurePSI = 0;
+                                float dp = Math.Max(MaxReleaseRatePSIpS, loco.EngineBrakeReleaseRatePSIpS) * elapsedClockSeconds;
+                                AutoCylPressurePSI -= dp;
+                                if (AutoCylPressurePSI < 0)
+                                    AutoCylPressurePSI = 0;
 
-                                    if (loco.AttachedTender?.BrakeSystem is AirSinglePipe tenderBrakes)
-                                    {
-                                        tenderBrakes.AutoCylPressurePSI -= dp;
-                                        if (tenderBrakes.AutoCylPressurePSI < 0)
-                                            tenderBrakes.AutoCylPressurePSI = 0;
-                                    }
+                                if (loco.AttachedTender?.BrakeSystem is AirSinglePipe tenderBrakes)
+                                {
+                                    if (tenderBrakes.BrakeValve == BrakeValveType.Distributor)
+                                        tenderBrakes.ControlResPressurePSI = 0;
+
+                                    tenderBrakes.AutoCylPressurePSI -= dp;
+                                    if (tenderBrakes.AutoCylPressurePSI < 0)
+                                        tenderBrakes.AutoCylPressurePSI = 0;
                                 }
                             }
                         }
                     }
-                    if (loco.LocomotivePowerSupply.DynamicBrakeAvailable)
                     {
-                        if (loco.DynamicBrakePercent > 0 && Car.FrictionBrakeBlendingMaxForceN > 0)
+                        if (loco.LocomotivePowerSupply.DynamicBrakeAvailable && loco.MaxDynamicBrakePercent > 0 && loco.DynamicBrakePercent > 0 && Car.FrictionBrakeBlendingMaxForceN > 0)
                         {
                             if (loco.DynamicBrakePartialBailOff)
                             {
-                                var requiredBrakeForceN = MathHelper.Max((AutoCylPressurePSI * RelayValveRatio - BrakeCylinderSpringPressurePSI)
-                                    / (ReferencePressurePSI - BrakeCylinderSpringPressurePSI), 0) * Car.FrictionBrakeBlendingMaxForceN;
-                                var localBrakeForceN = loco.DynamicBrakeForceN + MathHelper.Max((CylPressurePSI - BrakeCylinderSpringPressurePSI)
-                                    / (ReferencePressurePSI - BrakeCylinderSpringPressurePSI), 0) * Car.FrictionBrakeBlendingMaxForceN;
+                                var requiredBrakeForceN = (AutoCylPressurePSI * RelayValveRatio - loco.DynamicBrakeBlendingRetainedPressurePSI)
+                                    / (ReferencePressurePSI - loco.DynamicBrakeBlendingRetainedPressurePSI) * Car.FrictionBrakeBlendingMaxForceN;
+                                var localBrakeForceN = loco.DynamicBrakeForceN + (CylPressurePSI - loco.DynamicBrakeBlendingRetainedPressurePSI)
+                                    / (ReferencePressurePSI - loco.DynamicBrakeBlendingRetainedPressurePSI) * Car.FrictionBrakeBlendingMaxForceN;
                                 if (localBrakeForceN > requiredBrakeForceN - 0.15f * Car.FrictionBrakeBlendingMaxForceN)
                                 {
-                                    demandedPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN) / Car.FrictionBrakeBlendingMaxForceN * ReferencePressurePSI
-                                        + BrakeCylinderSpringPressurePSI, 0), MaxCylPressurePSI);
+                                    demandedPressurePSI = MathHelper.Clamp((requiredBrakeForceN - loco.DynamicBrakeForceN) / Car.FrictionBrakeBlendingMaxForceN *
+                                        (ReferencePressurePSI - loco.DynamicBrakeBlendingRetainedPressurePSI) + loco.DynamicBrakeBlendingRetainedPressurePSI,
+                                        loco.DynamicBrakeBlendingRetainedPressurePSI, MaxCylPressurePSI);
                                     if (demandedPressurePSI > CylPressurePSI && demandedPressurePSI < CylPressurePSI + 4) // Allow some margin for unnecessary air brake application
                                     {
                                         demandedPressurePSI = CylPressurePSI;
                                     }
                                     demandedPressurePSI /= RelayValveRatio;
+
+                                    if (demandedPressurePSI > AutoCylPressurePSI)
+                                        demandedPressurePSI = AutoCylPressurePSI;
                                 }
                             }
                             else if (loco.DynamicBrakeAutoBailOff)
@@ -1785,21 +1812,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 }
                                 else
                                 {
-                                    var dynforce = loco.DynamicBrakeForceCurves.Get(1.0f, loco.AbsSpeedMpS);
+                                    var dynforce = loco.DynamicBrakeForceCurves.Get(1.0f, loco.AbsTractionSpeedMpS);
                                     if ((loco.MaxDynamicBrakeForceN == 0 && dynforce > 0) || dynforce > loco.MaxDynamicBrakeForceN * 0.6)
                                     {
                                         demandedPressurePSI = 0;
                                     }
                                 }
                             }
-                            if (loco.DynamicBrakeEngineBrakeReplacement && loco.RemoteControlGroup == 0 && loco.AbsTractionSpeedMpS < loco.DynamicBrakeEngineBrakeReplacementSpeed && loco.Train.LeadLocomotive is MSTSLocomotive lead && lead.TrainBrakeController.TrainDynamicBrakeIntervention > 0)
-                            {
-                                var requiredBrakeForceN = loco.MaxDynamicBrakeForceN * lead.TrainBrakeController.TrainDynamicBrakeIntervention;
-                                var reverseBlendingPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN) / Car.FrictionBrakeBlendingMaxForceN * ReferencePressurePSI
-                                + BrakeCylinderSpringPressurePSI, 0), MaxCylPressurePSI);
-                                reverseBlendingPressurePSI /= RelayValveRatio;
-                                if (demandedPressurePSI < reverseBlendingPressurePSI) demandedPressurePSI = reverseBlendingPressurePSI;
-                            }
+                        }
+                        if (loco.DynamicBrakeEngineBrakeReplacement && loco.RemoteControlGroup == 0 && loco.AbsTractionSpeedMpS < loco.DynamicBrakeEngineBrakeReplacementSpeed && loco.Train.LeadLocomotive is MSTSLocomotive lead && lead.TrainBrakeController.TrainDynamicBrakeIntervention > 0)
+                        {
+                            var requiredBrakeForceN = loco.MaxDynamicBrakeForceN * lead.TrainBrakeController.TrainDynamicBrakeIntervention;
+                            var reverseBlendingPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN) / Car.FrictionBrakeBlendingMaxForceN * ReferencePressurePSI
+                            + BrakeCylinderSpringPressurePSI, 0), MaxCylPressurePSI);
+                            reverseBlendingPressurePSI /= RelayValveRatio;
+                            if (demandedPressurePSI < reverseBlendingPressurePSI) demandedPressurePSI = reverseBlendingPressurePSI;
                         }
                     }
                 }
@@ -1976,14 +2003,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             Car.HuDBrakeShoeFriction = Car.GetBrakeShoeFrictionCoefficientHuD();
 
             Car.BrakeRetardForceN = Car.BrakeShoeForceN * brakeShoeFriction; // calculates value of force applied to wheel, independent of wheel skid
-            if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
-            {
-                Car.BrakeForceN = Car.BrakeShoeForceN * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
-            }
-            else
-            {
-                Car.BrakeForceN = Car.BrakeShoeForceN * brakeShoeFriction; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
-            }
 
             // sound trigger checking runs every half second, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
             if (SoundTriggerCounter >= 0.5f)
@@ -2157,7 +2176,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     float supplyPressure = locoAirSystem.SupplyReservoirPresent ? locoAirSystem.SupplyResPressurePSI : loco.MainResPressurePSI; // Pressure of reservoir used for brake pipe charging
 
                                     if (supplyPressure - locoAirSystem.BrakeLine1PressurePSI < 15.0f) // Reduce recharge rate if near MR pressure as per reality
-                                        PressureDiffEqualToPipePSI *= MathHelper.Lerp(0, 1.0f, (supplyPressure - train.EqualReservoirPressurePSIorInHg) / 15.0f);
+                                        PressureDiffEqualToPipePSI *= MathHelper.Lerp(0, 1.0f, (supplyPressure - locoAirSystem.BrakeLine1PressurePSI) / 15.0f);
                                     if (train.EqualReservoirPressurePSIorInHg - locoAirSystem.BrakeLine1PressurePSI < chargeSlowdown) // Reduce recharge rate if near EQ to simulate feed valve behavior
                                         PressureDiffEqualToPipePSI *= (float)Math.Pow((train.EqualReservoirPressurePSIorInHg - locoAirSystem.BrakeLine1PressurePSI) / chargeSlowdown,
                                             1.0f/3.0f);

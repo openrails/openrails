@@ -29,6 +29,7 @@ using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
+using Orts.Viewer3D;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
 using ORTS.Common.Input;
@@ -270,7 +271,7 @@ namespace Orts.Viewer3D
         {
             // Will not zoom-in-out when help windows is up.
             // TODO: Property input processing through WindowManager.
-            if (UserInput.IsMouseWheelChanged && !Viewer.HelpWindow.Visible && !Viewer.RenderProcess.IsMouseVisible)
+            if (UserInput.IsMouseWheelChanged && (!UserInput.IsDown(UserCommand.GameSwitchWithMouse) || !(this is ThreeDimCabCamera)) && !Viewer.HelpWindow.Visible)
             {
                 var fieldOfView = MathHelper.Clamp(FieldOfView - speed * UserInput.MouseWheelChange / 10, 1, 135);
                 new FieldOfViewCommand(Viewer.Log, fieldOfView);
@@ -992,6 +993,14 @@ namespace Orts.Viewer3D
         protected float HighWagonOffsetLimit;
         public int oldCarPosition;
         public bool IsCameraFront;
+        public bool IsVisibleTrainCarViewerOrWebpage;
+        public bool IsVisibleTrainCarWebPage;
+        public bool IsDownCameraOutsideFront;
+        public bool IsDownCameraOutsideRear;
+        public UserCommand? CameraCommand;
+        private static UserCommand? GetPressedKey(params UserCommand[] keysToTest) => keysToTest
+            .Where((UserCommand key) => UserInput.IsDown(key))
+            .FirstOrDefault();
         public override bool IsUnderground
         {
             get
@@ -1072,30 +1081,64 @@ namespace Orts.Viewer3D
             var isDownCameraOutsideFront = UserInput.IsDown(UserCommand.CameraOutsideFront);
             var isDownCameraOutsideRear = UserInput.IsDown(UserCommand.CameraOutsideRear);
 
-            bool isVisibleTrainCarViewerOrWebpage;
             if (Viewer.TrainCarOperationsWebpage == null) 
             {
                 // when starting Open Rails by means of a restore Viewer.TrainCarOperationsWebpage not yet available
-                isVisibleTrainCarViewerOrWebpage = Viewer.TrainCarOperationsViewerWindow.Visible;
+                IsVisibleTrainCarViewerOrWebpage = Viewer.TrainCarOperationsViewerWindow.Visible;
             }
             else
             {
-                isVisibleTrainCarViewerOrWebpage = (Viewer.TrainCarOperationsWindow.Visible && !Viewer.TrainCarOperationsViewerWindow.Visible) || Viewer.TrainCarOperationsViewerWindow.Visible || (Viewer.TrainCarOperationsWebpage?.Connections > 0 && Viewer.TrainCarOperationsWebpage.TrainCarSelected);
+                IsVisibleTrainCarViewerOrWebpage = (Viewer.TrainCarOperationsWindow.Visible && !Viewer.TrainCarOperationsViewerWindow.Visible) || Viewer.TrainCarOperationsViewerWindow.Visible || (Viewer.TrainCarOperationsWebpage?.Connections > 0 && Viewer.TrainCarOperationsWebpage.TrainCarSelected);
             }
 
-            // Update the camera view
-            oldCarPosition = oldCarPosition == 0 && carPosition == 0 ? -1 : oldCarPosition;
+            if (IsVisibleTrainCarViewerOrWebpage)
+            {
+                // Update the camera view
+                oldCarPosition = oldCarPosition == 0 && carPosition == 0 ? -1 : oldCarPosition;
+            }
+
+            if (attachedCar != null && !IsVisibleTrainCarViewerOrWebpage)
+            {   // Reset behaviour of camera 2 and camera 3, after closing F9-window and F9-web.
+                var attachedCarPosition = Front ? Viewer.CameraOutsideFrontPosition : Viewer.CameraOutsideRearPosition;
+
+                Viewer.FirstLoop = false;
+                if (Front)
+                {
+                    SetCameraCar(trainCars[Viewer.CameraOutsideFrontPosition]);
+                    Viewer.CameraFrontUpdated = true;
+                }
+                else
+                {
+                    if (Viewer.CameraOutsideRearPosition == 0)
+                    {
+                        SetCameraCar(GetCameraCars().Last());
+                    }
+                    else
+                    {
+                        if (Viewer.CameraOutsideRearPosition < trainCars.Count)
+                        {
+                            SetCameraCar(trainCars[Viewer.CameraOutsideRearPosition]);
+                        }
+                        else
+                        {
+                            SetCameraCar(trainCars[trainCars.Count - 1]);
+                        }
+                    }
+                    Viewer.CameraRearUpdated = true;
+                }
+                Viewer.IsCameraPositionUpdated = Viewer.CameraFrontUpdated && Viewer.CameraRearUpdated;
+            }
 
             if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || carPosition != oldCarPosition)
             {
                 if (Front)
                 {
-                    if (!isVisibleTrainCarViewerOrWebpage && isDownCameraOutsideFront)
+                    if (!IsVisibleTrainCarViewerOrWebpage && isDownCameraOutsideFront)
                     {
-                        SetCameraCar(GetCameraCars().First());
+                        if (Viewer.CameraOutsideFrontPosition == 0) SetCameraCar(GetCameraCars().First());
                         oldCarPosition = 0;
                     }
-                    else if (isVisibleTrainCarViewerOrWebpage && carPosition >= 0)
+                    else if (IsVisibleTrainCarViewerOrWebpage && carPosition >= 0)
                     {
                         if (carPosition < trainCars.Count)
                         {
@@ -1114,12 +1157,12 @@ namespace Orts.Viewer3D
                 }
                 else
                 {
-                    if (!isVisibleTrainCarViewerOrWebpage && isDownCameraOutsideRear)
+                    if (!IsVisibleTrainCarViewerOrWebpage && isDownCameraOutsideRear)
                     {
-                        SetCameraCar(GetCameraCars().Last());
+                        if (Viewer.CameraOutsideRearPosition == 0) SetCameraCar(GetCameraCars().Last());
                         oldCarPosition = 0;
                     }
-                    else if (carPosition < trainCars.Count && isVisibleTrainCarViewerOrWebpage && carPosition >= 0)
+                    else if (carPosition < trainCars.Count && IsVisibleTrainCarViewerOrWebpage && carPosition >= 0)
                     {
                         SetCameraCar(trainCars[carPosition]);
                         oldCarPosition = carPosition;
@@ -1135,6 +1178,24 @@ namespace Orts.Viewer3D
                 BrowseDistance = attachedCar.CarLengthM * 0.5f;
             }
             base.OnActivate(sameCamera);
+            CameraOutsidePosition();
+        }
+
+        public void CameraOutsidePosition()
+        {
+            if (!IsVisibleTrainCarViewerOrWebpage)
+            {
+                var attachedCarIdPos = attachedCar.Train.Cars.TakeWhile(x => x.CarID != attachedCar.CarID).Count();
+                if (Front)
+                {
+                    Viewer.CameraOutsideFrontPosition = attachedCarIdPos;
+                }
+                else if (!Front)
+                {
+                    Viewer.CameraOutsideRearPosition = attachedCarIdPos;
+                }
+            }
+            Viewer.IsCameraPositionUpdated = !IsVisibleTrainCarViewerOrWebpage;
         }
 
         protected override bool IsCameraFlipped()
@@ -1214,6 +1275,16 @@ namespace Orts.Viewer3D
                 new ToggleBrowseBackwardsCommand(Viewer.Log);
             if (UserInput.IsPressed(UserCommand.CameraBrowseForwards))
                 new ToggleBrowseForwardsCommand(Viewer.Log);
+
+            UserCommand? CameraCommand = GetPressedKey(UserCommand.CameraCarPrevious, UserCommand.CameraCarNext,
+            UserCommand.CameraCarFirst, UserCommand.CameraCarLast);
+
+            if (CameraCommand == UserCommand.CameraCarPrevious || CameraCommand == UserCommand.CameraCarNext || CameraCommand == UserCommand.CameraCarFirst
+                || CameraCommand == UserCommand.CameraCarLast)
+            {   // updates camera out side car position
+                CameraOutsidePosition();
+                Viewer.IsDownCameraChanged = IsDownCameraOutsideFront = IsDownCameraOutsideRear = false;
+            }
         }
 
         public override void Update(ElapsedTime elapsedTime)

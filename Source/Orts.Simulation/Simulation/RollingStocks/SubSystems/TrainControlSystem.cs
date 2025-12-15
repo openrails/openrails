@@ -150,6 +150,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool CircuitBreakerClosingOrder { get; private set; }
         public bool CircuitBreakerOpeningOrder { get; private set; }
         public bool TractionAuthorization { get; private set; }
+        public bool DynamicBrakingAuthorization { get; private set; }
         public float MaxThrottlePercent { get; private set; } = 100f;
         public bool FullDynamicBrakingOrder { get; private set; }
         public bool BrakeSystemTractionAuthorization = true;
@@ -188,6 +189,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             CircuitBreakerClosingOrder = false;
             CircuitBreakerOpeningOrder = false;
             TractionAuthorization = true;
+            DynamicBrakingAuthorization = true;
             FullDynamicBrakingOrder = false;
         }
 
@@ -364,6 +366,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.MaxThrottlePercent = () => MaxThrottlePercent;
                 Script.DynamicBrakePercent = () => Locomotive.DynamicBrakeController == null ? 0 : Locomotive.DynamicBrakeController.CurrentValue * 100;
                 Script.TractionAuthorization = () => TractionAuthorization;
+                Script.DynamicBrakingAuthorization = () => DynamicBrakingAuthorization;
                 Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
                 Script.LocomotiveBrakeCylinderPressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.GetCylPressurePSI()) : float.MaxValue;
                 Script.DoesBrakeCutPower = () => Locomotive.DoesBrakeCutPower || Locomotive.DoesVacuumBrakeCutPower;
@@ -432,7 +435,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     if (Locomotive.Pantographs.State == PantographState.Up)
                     {
-                        Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.LowerPantograph);
+                        Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.LowerPantograph);
                     }
                 };
                 Script.SetPantographUp = (pantoID) =>
@@ -442,7 +445,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
                         return;
                     }
-                    Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.RaisePantograph, pantoID);
+                    Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.RaisePantograph, pantoID);
                 };               
                 Script.SetPantographDown = (pantoID) =>
                 {
@@ -451,12 +454,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
                         return;
                     }
-                    Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.LowerPantograph, pantoID);
+                    Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.LowerPantograph, pantoID);
                 };
                 Script.SetPowerAuthorization = (value) => PowerAuthorization = value;
                 Script.SetCircuitBreakerClosingOrder = (value) => CircuitBreakerClosingOrder = value;
                 Script.SetCircuitBreakerOpeningOrder = (value) => CircuitBreakerOpeningOrder = value;
                 Script.SetTractionAuthorization = (value) => TractionAuthorization = value;
+                Script.SetDynamicBrakingAuthorization = (value) => DynamicBrakingAuthorization = value;
                 Script.SetMaxThrottlePercent = (value) =>
                 {
                     if (value >= 0 && value <= 100f)
@@ -673,13 +677,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     foreach (var head in trainSignal.SignalObject.SignalHeads)
                         if (head.Function == function)
                             functionHead = head;
+                    if (functionHead == null)
+                        goto Exit;
                     signalTypeName = functionHead.SignalTypeName;
-                    foreach (var key in functionHead.signalType.DrawStates.Keys)
+                    if (functionHead?.signalType?.DrawStates != null)
                     {
-                        if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
+                        foreach (var key in functionHead.signalType.DrawStates.Keys)
                         {
-                            drawStateName = functionHead.signalType.DrawStates[key].Name;
-                            break;
+                            if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
+                            {
+                                drawStateName = functionHead.signalType.DrawStates[key].Name;
+                                break;
+                            }
                         }
                     }
                     textAspect = functionHead?.TextSignalAspect ?? "";
@@ -915,7 +924,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
                 if (length > 0)
                 {
-                    buffer.Trim();
+                    buffer = buffer.Trim('\0').Trim();
                     return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
                 }
             }
@@ -927,7 +936,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
                 if (length > 0)
                 {
-                    buffer.Trim();
+                    buffer = buffer.Trim('\0').Trim();
                     return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
                 }
             }
@@ -1190,6 +1199,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
 
                 SetTractionAuthorization(BrakeSystemTractionAuthorization);
+                SetDynamicBrakingAuthorization(!EmergencyBrakeCutsDynamicBrake || !IsBrakeEmergency());
 
                 SetEmergencyBrake(EmergencyBrake);
                 SetFullBrake(FullBrake);
