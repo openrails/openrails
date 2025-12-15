@@ -115,10 +115,20 @@
             this.checkDynamicShadows = new System.Windows.Forms.CheckBox();
             this.checkWire = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
+            this.pbAdvancedAdhesionModel = new System.Windows.Forms.PictureBox();
+            this.pbBreakCouplers = new System.Windows.Forms.PictureBox();
+            this.pbCurveDependentSpeedLimit = new System.Windows.Forms.PictureBox();
+            this.pbAtGameStartSteamPreHeatBoiler = new System.Windows.Forms.PictureBox();
+            this.pbAtGameStartDieselRunEngines = new System.Windows.Forms.PictureBox();
+            this.pbAtGameStartElectricPowerConnected = new System.Windows.Forms.PictureBox();
+            this.pbSimpleControlAndPhysics = new System.Windows.Forms.PictureBox();
             this.checkElectricPowerConnected = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
             this.checkDieselEnginesStarted = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.pbForcedRedAtStationStops = new System.Windows.Forms.PictureBox();
+            this.pbLocationLinkedPassingPathProcessing = new System.Windows.Forms.PictureBox();
+            this.pbOpenCloseDoorsOnAiTrains = new System.Windows.Forms.PictureBox();
             this.checkUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
             this.checkDoorsAITrains = new System.Windows.Forms.CheckBox();
             this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
@@ -128,11 +138,13 @@
             this.checkBreakCouplers = new System.Windows.Forms.CheckBox();
             this.checkUseAdvancedAdhesion = new System.Windows.Forms.CheckBox();
             this.tabPageKeyboard = new System.Windows.Forms.TabPage();
+            this.pbKeyboardOptions = new System.Windows.Forms.PictureBox();
             this.buttonExport = new System.Windows.Forms.Button();
             this.buttonDefaultKeys = new System.Windows.Forms.Button();
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageRailDriver = new System.Windows.Forms.TabPage();
+            this.pbRailDriverOptions = new System.Windows.Forms.PictureBox();
             this.btnRDSettingsExport = new System.Windows.Forms.Button();
             this.btnCheck = new System.Windows.Forms.Button();
             this.btnRDReset = new System.Windows.Forms.Button();
@@ -148,11 +160,12 @@
             this.checkReverseReverser = new System.Windows.Forms.CheckBox();
             this.panelRDButtons = new System.Windows.Forms.Panel();
             this.tabPageDataLogger = new System.Windows.Forms.TabPage();
+            this.checkDataLogSteamPowerCurve = new System.Windows.Forms.CheckBox();
+            this.pbDataLoggerOptions = new System.Windows.Forms.PictureBox();
             this.comboDataLogSpeedUnits = new System.Windows.Forms.ComboBox();
             this.comboDataLoggerSeparator = new System.Windows.Forms.ComboBox();
             this.label19 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
-            this.checkDataLogMisc = new System.Windows.Forms.CheckBox();
             this.checkDataLogPerformance = new System.Windows.Forms.CheckBox();
             this.checkDataLogger = new System.Windows.Forms.CheckBox();
             this.label17 = new System.Windows.Forms.Label();
@@ -188,6 +201,13 @@
             this.comboLanguage = new System.Windows.Forms.ComboBox();
             this.labelUpdateMode = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.pbAdhesionFactorRandomChange = new System.Windows.Forms.PictureBox();
+            this.pbAdhesionFactorCorrection = new System.Windows.Forms.PictureBox();
+            this.pbMstsEnvironments = new System.Windows.Forms.PictureBox();
+            this.pbActivityWeatherRandomization = new System.Windows.Forms.PictureBox();
+            this.pbActivityRandomization = new System.Windows.Forms.PictureBox();
+            this.pbCorrectQuestionableBrakingParameters = new System.Windows.Forms.PictureBox();
+            this.pbShowShapeWarnings = new System.Windows.Forms.PictureBox();
             this.label27 = new System.Windows.Forms.Label();
             this.numericActWeatherRandomizationLevel = new System.Windows.Forms.NumericUpDown();
             this.label26 = new System.Windows.Forms.Label();
@@ -256,13 +276,26 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericViewingFOV)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             this.tabPageSimulation.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAdvancedAdhesionModel)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbBreakCouplers)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCurveDependentSpeedLimit)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAtGameStartSteamPreHeatBoiler)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAtGameStartDieselRunEngines)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAtGameStartElectricPowerConnected)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSimpleControlAndPhysics)).BeginInit();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbForcedRedAtStationStops)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLocationLinkedPassingPathProcessing)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOpenCloseDoorsOnAiTrains)).BeginInit();
             this.tabPageKeyboard.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbKeyboardOptions)).BeginInit();
             this.tabPageRailDriver.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRailDriverOptions)).BeginInit();
             this.panelRDSettings.SuspendLayout();
             this.panelRDOptions.SuspendLayout();
             this.groupBoxReverseRDLevers.SuspendLayout();
             this.tabPageDataLogger.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDataLoggerOptions)).BeginInit();
             this.tabPageEvaluate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).BeginInit();
             this.tabPageSystem.SuspendLayout();
@@ -276,6 +309,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbUpdateMode)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
             this.tabPageExperimental.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAdhesionFactorRandomChange)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAdhesionFactorCorrection)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbMstsEnvironments)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbActivityWeatherRandomization)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbActivityRandomization)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCorrectQuestionableBrakingParameters)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbShowShapeWarnings)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).BeginInit();
@@ -1453,6 +1493,13 @@
             // 
             // tabPageSimulation
             // 
+            this.tabPageSimulation.Controls.Add(this.pbAdvancedAdhesionModel);
+            this.tabPageSimulation.Controls.Add(this.pbBreakCouplers);
+            this.tabPageSimulation.Controls.Add(this.pbCurveDependentSpeedLimit);
+            this.tabPageSimulation.Controls.Add(this.pbAtGameStartSteamPreHeatBoiler);
+            this.tabPageSimulation.Controls.Add(this.pbAtGameStartDieselRunEngines);
+            this.tabPageSimulation.Controls.Add(this.pbAtGameStartElectricPowerConnected);
+            this.tabPageSimulation.Controls.Add(this.pbSimpleControlAndPhysics);
             this.tabPageSimulation.Controls.Add(this.checkElectricPowerConnected);
             this.tabPageSimulation.Controls.Add(this.label4);
             this.tabPageSimulation.Controls.Add(this.checkDieselEnginesStarted);
@@ -1470,15 +1517,102 @@
             this.tabPageSimulation.Text = "Simulation";
             this.tabPageSimulation.UseVisualStyleBackColor = true;
             // 
+            // pbAdvancedAdhesionModel
+            // 
+            this.pbAdvancedAdhesionModel.Image = global::Menu.Properties.Resources.info_18;
+            this.pbAdvancedAdhesionModel.Location = new System.Drawing.Point(6, 7);
+            this.pbAdvancedAdhesionModel.Name = "pbAdvancedAdhesionModel";
+            this.pbAdvancedAdhesionModel.Size = new System.Drawing.Size(18, 18);
+            this.pbAdvancedAdhesionModel.TabIndex = 41;
+            this.pbAdvancedAdhesionModel.TabStop = false;
+            this.pbAdvancedAdhesionModel.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAdvancedAdhesionModel.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAdvancedAdhesionModel.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbBreakCouplers
+            // 
+            this.pbBreakCouplers.Image = global::Menu.Properties.Resources.info_18;
+            this.pbBreakCouplers.Location = new System.Drawing.Point(6, 55);
+            this.pbBreakCouplers.Name = "pbBreakCouplers";
+            this.pbBreakCouplers.Size = new System.Drawing.Size(18, 18);
+            this.pbBreakCouplers.TabIndex = 42;
+            this.pbBreakCouplers.TabStop = false;
+            this.pbBreakCouplers.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbBreakCouplers.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbBreakCouplers.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbCurveDependentSpeedLimit
+            // 
+            this.pbCurveDependentSpeedLimit.Image = global::Menu.Properties.Resources.info_18;
+            this.pbCurveDependentSpeedLimit.Location = new System.Drawing.Point(6, 100);
+            this.pbCurveDependentSpeedLimit.Name = "pbCurveDependentSpeedLimit";
+            this.pbCurveDependentSpeedLimit.Size = new System.Drawing.Size(18, 18);
+            this.pbCurveDependentSpeedLimit.TabIndex = 43;
+            this.pbCurveDependentSpeedLimit.TabStop = false;
+            this.pbCurveDependentSpeedLimit.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbCurveDependentSpeedLimit.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbCurveDependentSpeedLimit.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbAtGameStartSteamPreHeatBoiler
+            // 
+            this.pbAtGameStartSteamPreHeatBoiler.Image = global::Menu.Properties.Resources.info_18;
+            this.pbAtGameStartSteamPreHeatBoiler.Location = new System.Drawing.Point(26, 192);
+            this.pbAtGameStartSteamPreHeatBoiler.Name = "pbAtGameStartSteamPreHeatBoiler";
+            this.pbAtGameStartSteamPreHeatBoiler.Size = new System.Drawing.Size(18, 18);
+            this.pbAtGameStartSteamPreHeatBoiler.TabIndex = 44;
+            this.pbAtGameStartSteamPreHeatBoiler.TabStop = false;
+            this.pbAtGameStartSteamPreHeatBoiler.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAtGameStartSteamPreHeatBoiler.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAtGameStartSteamPreHeatBoiler.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbAtGameStartDieselRunEngines
+            // 
+            this.pbAtGameStartDieselRunEngines.Image = global::Menu.Properties.Resources.info_18;
+            this.pbAtGameStartDieselRunEngines.Location = new System.Drawing.Point(26, 217);
+            this.pbAtGameStartDieselRunEngines.Name = "pbAtGameStartDieselRunEngines";
+            this.pbAtGameStartDieselRunEngines.Size = new System.Drawing.Size(18, 18);
+            this.pbAtGameStartDieselRunEngines.TabIndex = 45;
+            this.pbAtGameStartDieselRunEngines.TabStop = false;
+            this.pbAtGameStartDieselRunEngines.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAtGameStartDieselRunEngines.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAtGameStartDieselRunEngines.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbAtGameStartElectricPowerConnected
+            // 
+            this.pbAtGameStartElectricPowerConnected.Image = global::Menu.Properties.Resources.info_18;
+            this.pbAtGameStartElectricPowerConnected.Location = new System.Drawing.Point(26, 241);
+            this.pbAtGameStartElectricPowerConnected.Name = "pbAtGameStartElectricPowerConnected";
+            this.pbAtGameStartElectricPowerConnected.Size = new System.Drawing.Size(18, 18);
+            this.pbAtGameStartElectricPowerConnected.TabIndex = 46;
+            this.pbAtGameStartElectricPowerConnected.TabStop = false;
+            this.pbAtGameStartElectricPowerConnected.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAtGameStartElectricPowerConnected.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAtGameStartElectricPowerConnected.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbSimpleControlAndPhysics
+            // 
+            this.pbSimpleControlAndPhysics.Image = global::Menu.Properties.Resources.info_18;
+            this.pbSimpleControlAndPhysics.Location = new System.Drawing.Point(6, 280);
+            this.pbSimpleControlAndPhysics.Name = "pbSimpleControlAndPhysics";
+            this.pbSimpleControlAndPhysics.Size = new System.Drawing.Size(18, 18);
+            this.pbSimpleControlAndPhysics.TabIndex = 47;
+            this.pbSimpleControlAndPhysics.TabStop = false;
+            this.pbSimpleControlAndPhysics.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbSimpleControlAndPhysics.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbSimpleControlAndPhysics.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
             // checkElectricPowerConnected
             // 
             this.checkElectricPowerConnected.AutoSize = true;
-            this.checkElectricPowerConnected.Location = new System.Drawing.Point(26, 238);
+            this.checkElectricPowerConnected.Location = new System.Drawing.Point(50, 238);
             this.checkElectricPowerConnected.Name = "checkElectricPowerConnected";
             this.checkElectricPowerConnected.Size = new System.Drawing.Size(153, 17);
             this.checkElectricPowerConnected.TabIndex = 6;
             this.checkElectricPowerConnected.Text = "Electric - power connected";
             this.checkElectricPowerConnected.UseVisualStyleBackColor = true;
+            this.checkElectricPowerConnected.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.checkElectricPowerConnected.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkElectricPowerConnected.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // label4
             // 
@@ -1492,15 +1626,21 @@
             // checkDieselEnginesStarted
             // 
             this.checkDieselEnginesStarted.AutoSize = true;
-            this.checkDieselEnginesStarted.Location = new System.Drawing.Point(26, 215);
+            this.checkDieselEnginesStarted.Location = new System.Drawing.Point(50, 215);
             this.checkDieselEnginesStarted.Name = "checkDieselEnginesStarted";
             this.checkDieselEnginesStarted.Size = new System.Drawing.Size(142, 17);
             this.checkDieselEnginesStarted.TabIndex = 5;
             this.checkDieselEnginesStarted.Text = "Diesel - engine(s) started";
             this.checkDieselEnginesStarted.UseVisualStyleBackColor = true;
+            this.checkDieselEnginesStarted.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.checkDieselEnginesStarted.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkDieselEnginesStarted.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.pbForcedRedAtStationStops);
+            this.groupBox1.Controls.Add(this.pbLocationLinkedPassingPathProcessing);
+            this.groupBox1.Controls.Add(this.pbOpenCloseDoorsOnAiTrains);
             this.groupBox1.Controls.Add(this.checkUseLocationPassingPaths);
             this.groupBox1.Controls.Add(this.checkDoorsAITrains);
             this.groupBox1.Controls.Add(this.checkForcedRedAtStationStops);
@@ -1512,92 +1652,145 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Activity Options";
             // 
+            // pbForcedRedAtStationStops
+            // 
+            this.pbForcedRedAtStationStops.Image = global::Menu.Properties.Resources.info_18;
+            this.pbForcedRedAtStationStops.Location = new System.Drawing.Point(8, 22);
+            this.pbForcedRedAtStationStops.Name = "pbForcedRedAtStationStops";
+            this.pbForcedRedAtStationStops.Size = new System.Drawing.Size(18, 18);
+            this.pbForcedRedAtStationStops.TabIndex = 47;
+            this.pbForcedRedAtStationStops.TabStop = false;
+            this.pbForcedRedAtStationStops.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbForcedRedAtStationStops.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbForcedRedAtStationStops.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbLocationLinkedPassingPathProcessing
+            // 
+            this.pbLocationLinkedPassingPathProcessing.Image = global::Menu.Properties.Resources.info_18;
+            this.pbLocationLinkedPassingPathProcessing.Location = new System.Drawing.Point(8, 68);
+            this.pbLocationLinkedPassingPathProcessing.Name = "pbLocationLinkedPassingPathProcessing";
+            this.pbLocationLinkedPassingPathProcessing.Size = new System.Drawing.Size(18, 18);
+            this.pbLocationLinkedPassingPathProcessing.TabIndex = 49;
+            this.pbLocationLinkedPassingPathProcessing.TabStop = false;
+            this.pbLocationLinkedPassingPathProcessing.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbLocationLinkedPassingPathProcessing.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbLocationLinkedPassingPathProcessing.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbOpenCloseDoorsOnAiTrains
+            // 
+            this.pbOpenCloseDoorsOnAiTrains.Image = global::Menu.Properties.Resources.info_18;
+            this.pbOpenCloseDoorsOnAiTrains.Location = new System.Drawing.Point(8, 44);
+            this.pbOpenCloseDoorsOnAiTrains.Name = "pbOpenCloseDoorsOnAiTrains";
+            this.pbOpenCloseDoorsOnAiTrains.Size = new System.Drawing.Size(18, 18);
+            this.pbOpenCloseDoorsOnAiTrains.TabIndex = 48;
+            this.pbOpenCloseDoorsOnAiTrains.TabStop = false;
+            this.pbOpenCloseDoorsOnAiTrains.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbOpenCloseDoorsOnAiTrains.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbOpenCloseDoorsOnAiTrains.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
             // checkUseLocationPassingPaths
             // 
             this.checkUseLocationPassingPaths.AutoSize = true;
             this.checkUseLocationPassingPaths.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkUseLocationPassingPaths.Location = new System.Drawing.Point(6, 71);
+            this.checkUseLocationPassingPaths.Location = new System.Drawing.Point(32, 67);
             this.checkUseLocationPassingPaths.Name = "checkUseLocationPassingPaths";
             this.checkUseLocationPassingPaths.Size = new System.Drawing.Size(215, 17);
             this.checkUseLocationPassingPaths.TabIndex = 2;
             this.checkUseLocationPassingPaths.Text = "Location-linked passing path processing";
             this.checkUseLocationPassingPaths.UseVisualStyleBackColor = true;
+            this.checkUseLocationPassingPaths.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkUseLocationPassingPaths.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkDoorsAITrains
             // 
             this.checkDoorsAITrains.AutoSize = true;
             this.checkDoorsAITrains.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkDoorsAITrains.Location = new System.Drawing.Point(6, 46);
+            this.checkDoorsAITrains.Location = new System.Drawing.Point(32, 44);
             this.checkDoorsAITrains.Name = "checkDoorsAITrains";
             this.checkDoorsAITrains.Size = new System.Drawing.Size(163, 17);
             this.checkDoorsAITrains.TabIndex = 1;
             this.checkDoorsAITrains.Text = "Open/close doors in AI trains";
             this.checkDoorsAITrains.UseVisualStyleBackColor = true;
+            this.checkDoorsAITrains.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkDoorsAITrains.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkForcedRedAtStationStops
             // 
             this.checkForcedRedAtStationStops.AutoSize = true;
             this.checkForcedRedAtStationStops.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkForcedRedAtStationStops.Location = new System.Drawing.Point(6, 23);
+            this.checkForcedRedAtStationStops.Location = new System.Drawing.Point(32, 22);
             this.checkForcedRedAtStationStops.Name = "checkForcedRedAtStationStops";
             this.checkForcedRedAtStationStops.Size = new System.Drawing.Size(151, 17);
             this.checkForcedRedAtStationStops.TabIndex = 0;
             this.checkForcedRedAtStationStops.Text = "Forced red at station stops";
             this.checkForcedRedAtStationStops.UseVisualStyleBackColor = true;
+            this.checkForcedRedAtStationStops.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkForcedRedAtStationStops.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkBoilerPreheated
             // 
             this.checkBoilerPreheated.AutoSize = true;
-            this.checkBoilerPreheated.Location = new System.Drawing.Point(26, 192);
+            this.checkBoilerPreheated.Location = new System.Drawing.Point(50, 192);
             this.checkBoilerPreheated.Name = "checkBoilerPreheated";
             this.checkBoilerPreheated.Size = new System.Drawing.Size(144, 17);
             this.checkBoilerPreheated.TabIndex = 4;
             this.checkBoilerPreheated.Text = "Steam - boiler pre-heated";
             this.checkBoilerPreheated.UseVisualStyleBackColor = true;
+            this.checkBoilerPreheated.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkBoilerPreheated.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkSimpleControlsPhysics
             // 
             this.checkSimpleControlsPhysics.AutoSize = true;
-            this.checkSimpleControlsPhysics.Location = new System.Drawing.Point(6, 279);
+            this.checkSimpleControlsPhysics.Location = new System.Drawing.Point(30, 280);
             this.checkSimpleControlsPhysics.Name = "checkSimpleControlsPhysics";
             this.checkSimpleControlsPhysics.Size = new System.Drawing.Size(156, 17);
             this.checkSimpleControlsPhysics.TabIndex = 7;
             this.checkSimpleControlsPhysics.Text = "Simple controls and physics";
             this.checkSimpleControlsPhysics.UseVisualStyleBackColor = true;
+            this.checkSimpleControlsPhysics.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkSimpleControlsPhysics.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkCurveSpeedDependent
             // 
             this.checkCurveSpeedDependent.AutoSize = true;
-            this.checkCurveSpeedDependent.Location = new System.Drawing.Point(6, 100);
+            this.checkCurveSpeedDependent.Location = new System.Drawing.Point(32, 100);
             this.checkCurveSpeedDependent.Name = "checkCurveSpeedDependent";
             this.checkCurveSpeedDependent.Size = new System.Drawing.Size(160, 17);
             this.checkCurveSpeedDependent.TabIndex = 2;
             this.checkCurveSpeedDependent.Text = "Curve dependent speed limit";
             this.checkCurveSpeedDependent.UseVisualStyleBackColor = true;
+            this.checkCurveSpeedDependent.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkCurveSpeedDependent.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkBreakCouplers
             // 
             this.checkBreakCouplers.AutoSize = true;
-            this.checkBreakCouplers.Location = new System.Drawing.Point(6, 54);
+            this.checkBreakCouplers.Location = new System.Drawing.Point(32, 55);
             this.checkBreakCouplers.Name = "checkBreakCouplers";
             this.checkBreakCouplers.Size = new System.Drawing.Size(97, 17);
             this.checkBreakCouplers.TabIndex = 1;
             this.checkBreakCouplers.Text = "Break couplers";
             this.checkBreakCouplers.UseVisualStyleBackColor = true;
+            this.checkBreakCouplers.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkBreakCouplers.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkUseAdvancedAdhesion
             // 
             this.checkUseAdvancedAdhesion.AutoSize = true;
-            this.checkUseAdvancedAdhesion.Location = new System.Drawing.Point(6, 6);
+            this.checkUseAdvancedAdhesion.Location = new System.Drawing.Point(32, 6);
             this.checkUseAdvancedAdhesion.Name = "checkUseAdvancedAdhesion";
             this.checkUseAdvancedAdhesion.Size = new System.Drawing.Size(152, 17);
             this.checkUseAdvancedAdhesion.TabIndex = 0;
             this.checkUseAdvancedAdhesion.Text = "Advanced adhesion model";
             this.checkUseAdvancedAdhesion.UseVisualStyleBackColor = true;
+            this.checkUseAdvancedAdhesion.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkUseAdvancedAdhesion.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // tabPageKeyboard
             // 
             this.tabPageKeyboard.AutoScroll = true;
+            this.tabPageKeyboard.Controls.Add(this.pbKeyboardOptions);
             this.tabPageKeyboard.Controls.Add(this.buttonExport);
             this.tabPageKeyboard.Controls.Add(this.buttonDefaultKeys);
             this.tabPageKeyboard.Controls.Add(this.buttonCheckKeys);
@@ -1609,6 +1802,16 @@
             this.tabPageKeyboard.TabIndex = 1;
             this.tabPageKeyboard.Text = "Keyboard";
             this.tabPageKeyboard.UseVisualStyleBackColor = true;
+            // 
+            // pbKeyboardOptions
+            // 
+            this.pbKeyboardOptions.Image = global::Menu.Properties.Resources.info_18_hover;
+            this.pbKeyboardOptions.Location = new System.Drawing.Point(180, 378);
+            this.pbKeyboardOptions.Name = "pbKeyboardOptions";
+            this.pbKeyboardOptions.Size = new System.Drawing.Size(18, 18);
+            this.pbKeyboardOptions.TabIndex = 21;
+            this.pbKeyboardOptions.TabStop = false;
+            this.pbKeyboardOptions.Click += new System.EventHandler(this.HelpIcon_Click);
             // 
             // buttonExport
             // 
@@ -1660,6 +1863,7 @@
             // 
             // tabPageRailDriver
             // 
+            this.tabPageRailDriver.Controls.Add(this.pbRailDriverOptions);
             this.tabPageRailDriver.Controls.Add(this.btnRDSettingsExport);
             this.tabPageRailDriver.Controls.Add(this.btnCheck);
             this.tabPageRailDriver.Controls.Add(this.btnRDReset);
@@ -1672,6 +1876,16 @@
             this.tabPageRailDriver.TabIndex = 10;
             this.tabPageRailDriver.Text = "RailDriver";
             this.tabPageRailDriver.UseVisualStyleBackColor = true;
+            // 
+            // pbRailDriverOptions
+            // 
+            this.pbRailDriverOptions.Image = global::Menu.Properties.Resources.info_18_hover;
+            this.pbRailDriverOptions.Location = new System.Drawing.Point(338, 377);
+            this.pbRailDriverOptions.Name = "pbRailDriverOptions";
+            this.pbRailDriverOptions.Size = new System.Drawing.Size(18, 18);
+            this.pbRailDriverOptions.TabIndex = 22;
+            this.pbRailDriverOptions.TabStop = false;
+            this.pbRailDriverOptions.Click += new System.EventHandler(this.HelpIcon_Click);
             // 
             // btnRDSettingsExport
             // 
@@ -1837,11 +2051,12 @@
             // 
             // tabPageDataLogger
             // 
+            this.tabPageDataLogger.Controls.Add(this.checkDataLogSteamPowerCurve);
+            this.tabPageDataLogger.Controls.Add(this.pbDataLoggerOptions);
             this.tabPageDataLogger.Controls.Add(this.comboDataLogSpeedUnits);
             this.tabPageDataLogger.Controls.Add(this.comboDataLoggerSeparator);
             this.tabPageDataLogger.Controls.Add(this.label19);
             this.tabPageDataLogger.Controls.Add(this.label18);
-            this.tabPageDataLogger.Controls.Add(this.checkDataLogMisc);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogPerformance);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogger);
             this.tabPageDataLogger.Controls.Add(this.label17);
@@ -1855,6 +2070,26 @@
             this.tabPageDataLogger.TabIndex = 6;
             this.tabPageDataLogger.Text = "Data logger";
             this.tabPageDataLogger.UseVisualStyleBackColor = true;
+            // 
+            // checkDataLogSteamPowerCurve
+            // 
+            this.checkDataLogSteamPowerCurve.AutoSize = true;
+            this.checkDataLogSteamPowerCurve.Location = new System.Drawing.Point(6, 180);
+            this.checkDataLogSteamPowerCurve.Name = "checkDataLogSteamPowerCurve";
+            this.checkDataLogSteamPowerCurve.Size = new System.Drawing.Size(214, 17);
+            this.checkDataLogSteamPowerCurve.TabIndex = 24;
+            this.checkDataLogSteamPowerCurve.Text = "Log steam power curve data (exclusive)";
+            this.checkDataLogSteamPowerCurve.UseVisualStyleBackColor = true;
+            // 
+            // pbDataLoggerOptions
+            // 
+            this.pbDataLoggerOptions.Image = global::Menu.Properties.Resources.info_18_hover;
+            this.pbDataLoggerOptions.Location = new System.Drawing.Point(578, 6);
+            this.pbDataLoggerOptions.Name = "pbDataLoggerOptions";
+            this.pbDataLoggerOptions.Size = new System.Drawing.Size(18, 18);
+            this.pbDataLoggerOptions.TabIndex = 23;
+            this.pbDataLoggerOptions.TabStop = false;
+            this.pbDataLoggerOptions.Click += new System.EventHandler(this.HelpIcon_Click);
             // 
             // comboDataLogSpeedUnits
             // 
@@ -1899,16 +2134,6 @@
             this.label18.Text = "Use data logger to record your simulation data (in-game command: F12).\r\nPlease re" +
     "member that the size of the dump file grows with the simulation time!";
             // 
-            // checkDataLogMisc
-            // 
-            this.checkDataLogMisc.AutoSize = true;
-            this.checkDataLogMisc.Location = new System.Drawing.Point(6, 157);
-            this.checkDataLogMisc.Name = "checkDataLogMisc";
-            this.checkDataLogMisc.Size = new System.Drawing.Size(137, 17);
-            this.checkDataLogMisc.TabIndex = 8;
-            this.checkDataLogMisc.Text = "Log miscellaneous data";
-            this.checkDataLogMisc.UseVisualStyleBackColor = true;
-            // 
             // checkDataLogPerformance
             // 
             this.checkDataLogPerformance.AutoSize = true;
@@ -1952,11 +2177,11 @@
             // checkDataLogSteamPerformance
             // 
             this.checkDataLogSteamPerformance.AutoSize = true;
-            this.checkDataLogSteamPerformance.Location = new System.Drawing.Point(6, 180);
+            this.checkDataLogSteamPerformance.Location = new System.Drawing.Point(6, 157);
             this.checkDataLogSteamPerformance.Name = "checkDataLogSteamPerformance";
-            this.checkDataLogSteamPerformance.Size = new System.Drawing.Size(163, 17);
+            this.checkDataLogSteamPerformance.Size = new System.Drawing.Size(214, 17);
             this.checkDataLogSteamPerformance.TabIndex = 9;
-            this.checkDataLogSteamPerformance.Text = "Log Steam performance data";
+            this.checkDataLogSteamPerformance.Text = "Log steam performance data (exclusive)";
             this.checkDataLogSteamPerformance.UseVisualStyleBackColor = true;
             // 
             // checkVerboseConfigurationMessages
@@ -2362,6 +2587,13 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.pbAdhesionFactorRandomChange);
+            this.tabPageExperimental.Controls.Add(this.pbAdhesionFactorCorrection);
+            this.tabPageExperimental.Controls.Add(this.pbMstsEnvironments);
+            this.tabPageExperimental.Controls.Add(this.pbActivityWeatherRandomization);
+            this.tabPageExperimental.Controls.Add(this.pbActivityRandomization);
+            this.tabPageExperimental.Controls.Add(this.pbCorrectQuestionableBrakingParameters);
+            this.tabPageExperimental.Controls.Add(this.pbShowShapeWarnings);
             this.tabPageExperimental.Controls.Add(this.label27);
             this.tabPageExperimental.Controls.Add(this.numericActWeatherRandomizationLevel);
             this.tabPageExperimental.Controls.Add(this.label26);
@@ -2393,6 +2625,90 @@
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
             // 
+            // pbAdhesionFactorRandomChange
+            // 
+            this.pbAdhesionFactorRandomChange.Image = global::Menu.Properties.Resources.info_18;
+            this.pbAdhesionFactorRandomChange.Location = new System.Drawing.Point(280, 309);
+            this.pbAdhesionFactorRandomChange.Name = "pbAdhesionFactorRandomChange";
+            this.pbAdhesionFactorRandomChange.Size = new System.Drawing.Size(18, 18);
+            this.pbAdhesionFactorRandomChange.TabIndex = 38;
+            this.pbAdhesionFactorRandomChange.TabStop = false;
+            this.pbAdhesionFactorRandomChange.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAdhesionFactorRandomChange.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAdhesionFactorRandomChange.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbAdhesionFactorCorrection
+            // 
+            this.pbAdhesionFactorCorrection.Image = global::Menu.Properties.Resources.info_18;
+            this.pbAdhesionFactorCorrection.Location = new System.Drawing.Point(280, 258);
+            this.pbAdhesionFactorCorrection.Name = "pbAdhesionFactorCorrection";
+            this.pbAdhesionFactorCorrection.Size = new System.Drawing.Size(18, 18);
+            this.pbAdhesionFactorCorrection.TabIndex = 37;
+            this.pbAdhesionFactorCorrection.TabStop = false;
+            this.pbAdhesionFactorCorrection.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAdhesionFactorCorrection.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAdhesionFactorCorrection.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbMstsEnvironments
+            // 
+            this.pbMstsEnvironments.Image = global::Menu.Properties.Resources.info_18;
+            this.pbMstsEnvironments.Location = new System.Drawing.Point(280, 212);
+            this.pbMstsEnvironments.Name = "pbMstsEnvironments";
+            this.pbMstsEnvironments.Size = new System.Drawing.Size(18, 18);
+            this.pbMstsEnvironments.TabIndex = 36;
+            this.pbMstsEnvironments.TabStop = false;
+            this.pbMstsEnvironments.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbMstsEnvironments.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbMstsEnvironments.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbActivityWeatherRandomization
+            // 
+            this.pbActivityWeatherRandomization.Image = global::Menu.Properties.Resources.info_18;
+            this.pbActivityWeatherRandomization.Location = new System.Drawing.Point(441, 117);
+            this.pbActivityWeatherRandomization.Name = "pbActivityWeatherRandomization";
+            this.pbActivityWeatherRandomization.Size = new System.Drawing.Size(18, 18);
+            this.pbActivityWeatherRandomization.TabIndex = 35;
+            this.pbActivityWeatherRandomization.TabStop = false;
+            this.pbActivityWeatherRandomization.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbActivityWeatherRandomization.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbActivityWeatherRandomization.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbActivityRandomization
+            // 
+            this.pbActivityRandomization.Image = global::Menu.Properties.Resources.info_18;
+            this.pbActivityRandomization.Location = new System.Drawing.Point(301, 117);
+            this.pbActivityRandomization.Name = "pbActivityRandomization";
+            this.pbActivityRandomization.Size = new System.Drawing.Size(18, 18);
+            this.pbActivityRandomization.TabIndex = 34;
+            this.pbActivityRandomization.TabStop = false;
+            this.pbActivityRandomization.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbActivityRandomization.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbActivityRandomization.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbCorrectQuestionableBrakingParameters
+            // 
+            this.pbCorrectQuestionableBrakingParameters.Image = global::Menu.Properties.Resources.info_18;
+            this.pbCorrectQuestionableBrakingParameters.Location = new System.Drawing.Point(280, 74);
+            this.pbCorrectQuestionableBrakingParameters.Name = "pbCorrectQuestionableBrakingParameters";
+            this.pbCorrectQuestionableBrakingParameters.Size = new System.Drawing.Size(18, 18);
+            this.pbCorrectQuestionableBrakingParameters.TabIndex = 33;
+            this.pbCorrectQuestionableBrakingParameters.TabStop = false;
+            this.pbCorrectQuestionableBrakingParameters.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbCorrectQuestionableBrakingParameters.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbCorrectQuestionableBrakingParameters.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbShowShapeWarnings
+            // 
+            this.pbShowShapeWarnings.Image = global::Menu.Properties.Resources.info_18;
+            this.pbShowShapeWarnings.Location = new System.Drawing.Point(6, 189);
+            this.pbShowShapeWarnings.Name = "pbShowShapeWarnings";
+            this.pbShowShapeWarnings.Size = new System.Drawing.Size(18, 18);
+            this.pbShowShapeWarnings.TabIndex = 32;
+            this.pbShowShapeWarnings.TabStop = false;
+            this.pbShowShapeWarnings.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbShowShapeWarnings.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbShowShapeWarnings.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
             // label27
             // 
             this.label27.AutoSize = true;
@@ -2402,6 +2718,8 @@
             this.label27.Size = new System.Drawing.Size(33, 13);
             this.label27.TabIndex = 12;
             this.label27.Text = "Level";
+            this.label27.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.label27.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // numericActWeatherRandomizationLevel
             // 
@@ -2426,6 +2744,8 @@
             this.label26.Size = new System.Drawing.Size(150, 13);
             this.label26.TabIndex = 8;
             this.label26.Text = "Activity weather randomization";
+            this.label26.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.label26.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // label13
             // 
@@ -2436,6 +2756,8 @@
             this.label13.Size = new System.Drawing.Size(109, 13);
             this.label13.TabIndex = 7;
             this.label13.Text = "Activity randomization";
+            this.label13.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.label13.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // label12
             // 
@@ -2446,6 +2768,8 @@
             this.label12.Size = new System.Drawing.Size(33, 13);
             this.label12.TabIndex = 10;
             this.label12.Text = "Level";
+            this.label12.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.label12.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // numericActRandomizationLevel
             // 
@@ -2470,6 +2794,8 @@
             this.checkCorrectQuestionableBrakingParams.TabIndex = 6;
             this.checkCorrectQuestionableBrakingParams.Text = "Correct questionable braking parameters";
             this.checkCorrectQuestionableBrakingParams.UseVisualStyleBackColor = true;
+            this.checkCorrectQuestionableBrakingParams.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkCorrectQuestionableBrakingParams.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // label16
             // 
@@ -2480,6 +2806,8 @@
             this.label16.Size = new System.Drawing.Size(161, 13);
             this.label16.TabIndex = 16;
             this.label16.Text = "Adhesion factor random change:";
+            this.label16.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.label16.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // label9
             // 
@@ -2490,6 +2818,8 @@
             this.label9.Size = new System.Drawing.Size(134, 13);
             this.label9.TabIndex = 14;
             this.label9.Text = "Adhesion factor correction:";
+            this.label9.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.label9.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // AdhesionFactorChangeValueLabel
             // 
@@ -2512,12 +2842,14 @@
             // checkShapeWarnings
             // 
             this.checkShapeWarnings.AutoSize = true;
-            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 189);
+            this.checkShapeWarnings.Location = new System.Drawing.Point(27, 189);
             this.checkShapeWarnings.Name = "checkShapeWarnings";
             this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
             this.checkShapeWarnings.TabIndex = 5;
             this.checkShapeWarnings.Text = "Show shape warnings";
             this.checkShapeWarnings.UseVisualStyleBackColor = true;
+            this.checkShapeWarnings.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkShapeWarnings.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // AdhesionLevelValue
             // 
@@ -2550,6 +2882,8 @@
             this.toolTip1.SetToolTip(this.trackAdhesionFactorChange, "Default is 10%");
             this.trackAdhesionFactorChange.Value = 10;
             this.trackAdhesionFactorChange.ValueChanged += new System.EventHandler(this.trackAdhesionFactor_ValueChanged);
+            this.trackAdhesionFactorChange.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.trackAdhesionFactorChange.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // trackAdhesionFactor
             // 
@@ -2566,6 +2900,8 @@
             this.toolTip1.SetToolTip(this.trackAdhesionFactor, "Default is 100%");
             this.trackAdhesionFactor.Value = 100;
             this.trackAdhesionFactor.ValueChanged += new System.EventHandler(this.trackAdhesionFactor_ValueChanged);
+            this.trackAdhesionFactor.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.trackAdhesionFactor.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkUseMSTSEnv
             // 
@@ -2576,6 +2912,8 @@
             this.checkUseMSTSEnv.TabIndex = 13;
             this.checkUseMSTSEnv.Text = "MSTS environments";
             this.checkUseMSTSEnv.UseVisualStyleBackColor = true;
+            this.checkUseMSTSEnv.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkUseMSTSEnv.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // label8
             // 
@@ -2586,6 +2924,8 @@
             this.label8.Size = new System.Drawing.Size(101, 13);
             this.label8.TabIndex = 4;
             this.label8.Text = "Default Gauge (mm)";
+            this.label8.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.label8.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbSuperElevation
             // 
@@ -2653,6 +2993,8 @@
             this.toolTip1.SetToolTip(this.checkUseSuperElevation, "Enables visual elements of superelevation on legacy routes. May lead to suboptima" +
         "l track rendering.");
             this.checkUseSuperElevation.UseVisualStyleBackColor = true;
+            this.checkUseSuperElevation.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkUseSuperElevation.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // ElevationText
             // 
@@ -2663,6 +3005,8 @@
             this.ElevationText.Size = new System.Drawing.Size(78, 13);
             this.ElevationText.TabIndex = 1;
             this.ElevationText.Text = "Superelevation";
+            this.ElevationText.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.ElevationText.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // OptionsForm
             // 
@@ -2727,16 +3071,29 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).EndInit();
             this.tabPageSimulation.ResumeLayout(false);
             this.tabPageSimulation.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAdvancedAdhesionModel)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbBreakCouplers)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCurveDependentSpeedLimit)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAtGameStartSteamPreHeatBoiler)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAtGameStartDieselRunEngines)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAtGameStartElectricPowerConnected)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSimpleControlAndPhysics)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbForcedRedAtStationStops)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLocationLinkedPassingPathProcessing)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOpenCloseDoorsOnAiTrains)).EndInit();
             this.tabPageKeyboard.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbKeyboardOptions)).EndInit();
             this.tabPageRailDriver.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbRailDriverOptions)).EndInit();
             this.panelRDSettings.ResumeLayout(false);
             this.panelRDOptions.ResumeLayout(false);
             this.groupBoxReverseRDLevers.ResumeLayout(false);
             this.groupBoxReverseRDLevers.PerformLayout();
             this.tabPageDataLogger.ResumeLayout(false);
             this.tabPageDataLogger.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDataLoggerOptions)).EndInit();
             this.tabPageEvaluate.ResumeLayout(false);
             this.tabPageEvaluate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).EndInit();
@@ -2752,6 +3109,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAdhesionFactorRandomChange)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAdhesionFactorCorrection)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbMstsEnvironments)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbActivityWeatherRandomization)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbActivityRandomization)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCorrectQuestionableBrakingParameters)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbShowShapeWarnings)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).EndInit();
@@ -2796,7 +3160,6 @@
         private System.Windows.Forms.NumericUpDown numericWorldObjectDensity;
         private System.Windows.Forms.CheckBox checkDynamicShadows;
         private System.Windows.Forms.CheckBox checkWire;
-        private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown numericSuperElevationGauge;
         private System.Windows.Forms.Label labelFOVHelp;
@@ -2827,7 +3190,6 @@
         private System.Windows.Forms.CheckBox checkReverseReverser;
         private System.Windows.Forms.Panel panelRDButtons;
         private System.Windows.Forms.CheckBox checkDataLogger;
-        private System.Windows.Forms.CheckBox checkDataLogMisc;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ComboBox comboDataLogSpeedUnits;
         private System.Windows.Forms.Label label19;
@@ -2948,5 +3310,26 @@
         private System.Windows.Forms.PictureBox pbAutoSave;
         private System.Windows.Forms.PictureBox pbTelemetry;
         private System.Windows.Forms.Button buttonTelemetry;
+        private System.Windows.Forms.PictureBox pbAdvancedAdhesionModel;
+        private System.Windows.Forms.PictureBox pbForcedRedAtStationStops;
+        private System.Windows.Forms.PictureBox pbAtGameStartElectricPowerConnected;
+        private System.Windows.Forms.PictureBox pbAtGameStartDieselRunEngines;
+        private System.Windows.Forms.PictureBox pbAtGameStartSteamPreHeatBoiler;
+        private System.Windows.Forms.PictureBox pbCurveDependentSpeedLimit;
+        private System.Windows.Forms.PictureBox pbBreakCouplers;
+        private System.Windows.Forms.PictureBox pbLocationLinkedPassingPathProcessing;
+        private System.Windows.Forms.PictureBox pbOpenCloseDoorsOnAiTrains;
+        private System.Windows.Forms.PictureBox pbSimpleControlAndPhysics;
+        private System.Windows.Forms.PictureBox pbKeyboardOptions;
+        private System.Windows.Forms.PictureBox pbRailDriverOptions;
+        private System.Windows.Forms.PictureBox pbDataLoggerOptions;
+        private System.Windows.Forms.PictureBox pbShowShapeWarnings;
+        private System.Windows.Forms.PictureBox pbCorrectQuestionableBrakingParameters;
+        private System.Windows.Forms.PictureBox pbActivityRandomization;
+        private System.Windows.Forms.PictureBox pbActivityWeatherRandomization;
+        private System.Windows.Forms.PictureBox pbMstsEnvironments;
+        private System.Windows.Forms.PictureBox pbAdhesionFactorCorrection;
+        private System.Windows.Forms.PictureBox pbAdhesionFactorRandomChange;
+        private System.Windows.Forms.CheckBox checkDataLogSteamPowerCurve;
     }
 }

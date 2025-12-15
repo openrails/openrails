@@ -26,7 +26,6 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
-using MSTS;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
@@ -211,8 +210,8 @@ namespace Menu
             checkDataLogger.Checked = Settings.DataLogger;
             checkDataLogPerformance.Checked = Settings.DataLogPerformance;
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
-            checkDataLogMisc.Checked = Settings.DataLogMisc;
-            checkDataLogSteamPerformance.Checked = Settings.DataLogSteamPerformance;
+            checkDataLogSteamPerformance.Checked = Settings.DataLogExclusiveSteamPerformance;
+            checkDataLogSteamPowerCurve.Checked = Settings.DataLogExclusiveSteamPowerCurve;
             checkVerboseConfigurationMessages.Checked = Settings.VerboseConfigurationMessages;
 
             // Evaluation tab
@@ -475,8 +474,8 @@ namespace Menu
             Settings.DataLogger = checkDataLogger.Checked;
             Settings.DataLogPerformance = checkDataLogPerformance.Checked;
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;
-            Settings.DataLogMisc = checkDataLogMisc.Checked;
-            Settings.DataLogSteamPerformance = checkDataLogSteamPerformance.Checked;
+            Settings.DataLogExclusiveSteamPerformance = checkDataLogSteamPerformance.Checked;
+            Settings.DataLogExclusiveSteamPowerCurve = checkDataLogSteamPowerCurve.Checked;
             Settings.VerboseConfigurationMessages = checkVerboseConfigurationMessages.Checked;
 
             // Evaluation tab
@@ -821,8 +820,27 @@ namespace Menu
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
                 (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
 
+                // Simulation tab
+                (pbAdvancedAdhesionModel, new[] { checkUseAdvancedAdhesion }),
+                (pbBreakCouplers, new[] { checkBreakCouplers }),
+                (pbCurveDependentSpeedLimit, new[] { checkCurveSpeedDependent }),   
+                (pbAtGameStartSteamPreHeatBoiler, new[] { checkBoilerPreheated }),
+                (pbAtGameStartDieselRunEngines, new[] { checkDieselEnginesStarted }),
+                (pbAtGameStartElectricPowerConnected, new[] { checkElectricPowerConnected }),
+                (pbSimpleControlAndPhysics, new[] { checkSimpleControlsPhysics }),
+                (pbForcedRedAtStationStops, new[] { checkForcedRedAtStationStops }),
+                (pbOpenCloseDoorsOnAiTrains, new[] { checkDoorsAITrains }),
+                (pbLocationLinkedPassingPathProcessing, new[] { checkUseLocationPassingPaths }),
+
                 // Experimental tab
-                (pbSuperElevation, new[] { ElevationText }),
+                (pbSuperElevation, new Control [] { ElevationText, checkUseSuperElevation, label8}),
+                (pbShowShapeWarnings, new[] { checkShapeWarnings }),
+                (pbCorrectQuestionableBrakingParameters, new[] { checkCorrectQuestionableBrakingParams }),
+                (pbActivityRandomization, new Control [] { label13, label12 }),
+                (pbActivityWeatherRandomization, new Control [] { label26, label27 }),
+                (pbMstsEnvironments, new[] { checkUseMSTSEnv }),
+                (pbAdhesionFactorCorrection, new Control [] { label9,  trackAdhesionFactor}),
+                (pbAdhesionFactorRandomChange, new Control [] { label16, trackAdhesionFactorChange}),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -990,11 +1008,99 @@ namespace Menu
                     BaseDocumentationUrl + "/options.html#performance-tuner"
                 },
 
+                // Simulation tab
+                {
+                    pbAdvancedAdhesionModel,
+                    BaseDocumentationUrl + "/options.html#advanced-adhesion-model"
+                },
+                {
+                    pbBreakCouplers,
+                    BaseDocumentationUrl + "/options.html#break-couplers"
+                },
+                {
+                    pbCurveDependentSpeedLimit,
+                    BaseDocumentationUrl + "/options.html#curve-dependent-speed-limit"
+                },
+                {
+                    pbAtGameStartSteamPreHeatBoiler,
+                    BaseDocumentationUrl + "/options.html#at-game-start-steam-pre-heat-boiler"
+                },
+                {
+                    pbAtGameStartDieselRunEngines,
+                    BaseDocumentationUrl + "/options.html#at-game-start-diesel-run-engines"
+                },
+                {
+                    pbAtGameStartElectricPowerConnected,
+                    BaseDocumentationUrl + "/options.html#at-game-start-electric-power-connected"
+                },
+                {
+                    pbSimpleControlAndPhysics,
+                    BaseDocumentationUrl + "/options.html#simple-control-and-physics"
+                },
+                {
+                    pbForcedRedAtStationStops,
+                    BaseDocumentationUrl + "/options.html#forced-red-at-station-stops"
+                },
+{
+                    pbOpenCloseDoorsOnAiTrains,
+                    BaseDocumentationUrl + "/options.html#open-close-doors-on-ai-trains"
+                },
+                {
+                    pbLocationLinkedPassingPathProcessing,
+                    BaseDocumentationUrl + "/options.html#location-linked-passing-path-processing"
+                },
+
+                // Keyboard tab
+                {
+                    pbKeyboardOptions,
+                    BaseDocumentationUrl + "/options.html#keyboard-options"
+                },
+
+                // Raildriver tab
+                {
+                    pbRailDriverOptions,
+                    BaseDocumentationUrl + "/options.html#raildriver-options"
+                },
+
+                // Data Logger Options
+                {
+                    pbDataLoggerOptions,
+                    BaseDocumentationUrl + "/options.html#data-logger-options"
+                },                
+
                 // Experimental tab
                 {
                     pbSuperElevation,
-                    BaseDocumentationUrl + "/options.html#super-elevation"
+                    BaseDocumentationUrl + "/options.html#superelevation"
                 },
+                {
+                    pbShowShapeWarnings,
+                    BaseDocumentationUrl + "/options.html#show-shape-warnings"
+                },
+                {
+                    pbCorrectQuestionableBrakingParameters,
+                    BaseDocumentationUrl + "/options.html#correct-questionable-braking-parameters"
+                },
+                {
+                    pbActivityRandomization,
+                    BaseDocumentationUrl + "/options.html#activity-randomization"
+                },
+                {
+                    pbActivityWeatherRandomization,
+                    BaseDocumentationUrl + "/options.html#activity-weather-randomization"
+                },
+                {
+                    pbMstsEnvironments,
+                    BaseDocumentationUrl + "/options.html#msts-environments"
+                },
+                {
+                    pbAdhesionFactorCorrection,
+                    BaseDocumentationUrl + "/options.html#adhesion-factor-correction"
+                },
+                {
+                    pbAdhesionFactorRandomChange,
+                    BaseDocumentationUrl + "/options.html#adhesion-factor-random-change"
+                }
             };
             if (urls.TryGetValue(sender, out var url))
             {

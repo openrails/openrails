@@ -1718,6 +1718,9 @@ namespace Orts.Parsers.Msts
         MaxStackedContainers,
         Length,
         Flipped,
+
+        // TSRE specific
+        Ruler
     }
 
 }

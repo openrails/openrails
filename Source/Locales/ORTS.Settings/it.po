@@ -122,27 +122,27 @@ msgstr "Commutatore rotante 2-Posizione 3 (FULL)"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:37
 msgid "Reverse Reverser Direction"
-msgstr ""
+msgstr "Inverti direzione Reverser"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:38
 msgid "Reverse Throttle Direction"
-msgstr ""
+msgstr "Inverti direzione acceleratore"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:39
 msgid "Reverse Auto Brake Direction"
-msgstr ""
+msgstr "Inverti direzione Auto-Frenata"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:40
 msgid "Reverse Independent Brake Direction"
-msgstr ""
+msgstr "Inverti direzione Frenata Indipendente"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:41
 msgid "Full Range Throttle"
-msgstr ""
+msgstr "Accelerazione al Massimo"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:42
 msgid "Cut Off Delta"
-msgstr ""
+msgstr "Delta del Cut Off"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:225
 #, csharp-format

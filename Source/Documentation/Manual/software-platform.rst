@@ -159,7 +159,7 @@ If you choose to develop your own pages, please consider sharing them with the O
 
 .. image:: images/switch-panel.png
 
-- The Train Car Operations page has the same functionality as the :ref:`Ctrl-Alt-F9 Train Operations Monitor <train-operations-monitor>`.
+- The Train Car Operations page has the same functionality as the :ref:`F9 Train Operations Monitor <train-operations-monitor>`.
   Advantage of having this windows as a web page is that it can be shown outside the Open Rails main window.
   Even on another display like for instance a tablet. It has more or less the same functionality, more details
   to be found :ref:`here <train-operations-monitor>`.
@@ -227,5 +227,16 @@ Note: To avoid overloading the simulator, please keep API calls to once or twice
      - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiSampleData``
 
 
+.. _dds-and-ace:
 
+DDS and ACE Texture Files
+=========================
+
+Open Rails prefers DDS over ACE texture files, but is tolerant where these don't match references in other files.
+
+If a texture file is referenced with no extension, then ``.dds`` is added, searched for and loaded.
+If not found, then ``.ace`` is added, searched for and loaded.
+
+If a texture file is referenced with either a ``dds`` or ``ace`` extension, then that is searched for and loaded
+but, if not found, then the other extension is substituted, searched for and loaded.
 
