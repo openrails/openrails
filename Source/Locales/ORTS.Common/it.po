@@ -212,7 +212,7 @@ msgstr "Folle"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:28
 msgid "Game Pause Menu"
-msgstr "Gioco attiva il menu Pausa"
+msgstr "Gioco Menu Pausa"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:29
 msgid "Game Save"
@@ -458,11 +458,11 @@ msgstr "Debug scrive mappa tastiera"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:91
 msgid "Debug Log Render Frame"
-msgstr ""
+msgstr "Debug log del Frame di Rendering"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:92
 msgid "Debug Tracks"
-msgstr ""
+msgstr "Debug Tracce"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:93
 msgid "Debug Signalling"

@@ -1490,10 +1490,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     data = Locomotive.TractiveForceN;
                     break;
                 case CABViewControlTypes.ORTS_MOTIVE_FORCE_KILONEWTON:
-                    if (Locomotive.TractionForceN >0)
-                        data = (float)Math.Round(Locomotive.TractionForceN / 1000, 0);
-                    else if (Locomotive.DynamicBrakeForceN > 0)
+                    if (Locomotive.DynamicBrake)
                         data = -(float)Math.Round(Locomotive.DynamicBrakeForceN / 1000, 0);
+                    else
+                        data = (float)Math.Round(Locomotive.TractionForceN / 1000, 0);
                     break;
                 case CABViewControlTypes.ORTS_MAXIMUM_FORCE:
                     data = Locomotive.MaxForceN;

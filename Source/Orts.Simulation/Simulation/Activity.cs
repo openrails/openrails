@@ -1325,13 +1325,16 @@ namespace Orts.Simulation
                     }
                     break;
                 case EventType.DropOffWagonsAtLocation:
-                    // Dropping off of wagons should only count once disconnected from player train.
-                    // A better name than DropOffWagonsAtLocation would be ArriveAtSidingWithWagons.
-                    // To recognize the dropping off of the cars before the event is activated, this method is used.
-                    if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
+                    consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
+                    if (consistTrain != null)
                     {
-                        consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
-                        triggered = consistTrain != null;
+                        if (consistTrain.TrainType == Train.TRAINTYPE.STATIC)
+                        {
+                            if (atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
+                            {
+                                triggered = true;
+                            }
+                        }
                     }
                     break;
                 case EventType.PickUpPassengers:
@@ -1377,7 +1380,9 @@ namespace Orts.Simulation
             return null;
         }
         /// <summary>
-        /// Finds the train that contains exactly the wagons (and maybe loco) in the list. Exact order is not required.
+        /// Finds the train that contains the wagons in the list. 
+        /// Exact order is not required.
+        /// Some lists may only contain the first and last wagon. Check that first and last wagon match with those two wagons in the activity list.
         /// </summary>
         /// <param name="wagonIdList"></param>
         /// <returns>train or null</returns>
@@ -1385,25 +1390,20 @@ namespace Orts.Simulation
         {
             foreach (var trainItem in Simulator.Trains)
             {
-                int nCars = 0;//all cars other than WagonIdList.
-                int nWagonListCars = 0;//individual wagon drop.
+                int nWagonListCars = 0;
                 foreach (var item in trainItem.Cars)
                 {
-                    if (!wagonIdList.Contains(item.CarID)) nCars++;
-                    if (wagonIdList.Contains(item.CarID)) nWagonListCars++;
+                    if (wagonIdList.Contains(item.CarID))
+                    {
+                        nWagonListCars++;
+                    }
+                    if (nWagonListCars == wagonIdList.Count)
+                    {
+                        return trainItem;
+                    }
                 }
-                // Compare two lists to make sure wagons are present.
-                bool listsMatch = true;
-                //support individual wagonIdList drop
-                if (trainItem.Cars.Count - nCars == (wagonIdList.Count == nWagonListCars ? wagonIdList.Count : nWagonListCars))
-                {
-                    if (excludesWagons(trainItem, wagonIdList)) listsMatch = false;//all wagons dropped
-                    
-                    if (listsMatch) return trainItem;
-                    
-                }
-               
             }
+
             return null;
         }
         /// <summary>
