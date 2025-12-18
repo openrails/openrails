@@ -294,6 +294,7 @@ namespace Orts.Simulation.RollingStocks
         float FuelFeedRateKGpS;
         float DesiredChange;     // Amount of change to increase fire mass, clamped to range 0.0 - 1.0
         public float CylinderSteamUsageLBpS;
+        public float CylinderSteamUsageLBpH;
         public float NewCylinderSteamUsageLBpS;
         public float BlowerSteamUsageLBpS;
         public float FuelOilHeatingSteamUsageLbpS;
@@ -405,7 +406,8 @@ namespace Orts.Simulation.RollingStocks
         float LPCylinderSweptVolumeFT3pFT;     // Volume of LP steam Cylinder
         float CylinderCondensationFactor;  // Cylinder compensation factor for condensation in cylinder due to cutoff
         float BlowerSteamUsageFactor;
-        Interpolator BackPressureIHPtoPSI;             // back pressure in cylinders given usage
+        Interpolator BackPressureIHPtoPSI;             // back pressure in cylinders given usage - this value needs to be deprerecated
+        Interpolator BackPressuretoSteamOutput;        // back pressure in cylinders given steam usage
         Interpolator CylinderSteamDensityPSItoLBpFT3;   // steam density in cylinders given pressure (could be super heated)
         Interpolator WaterDensityPSItoLBpFT3;   // water density given pressure
         Interpolator WaterHeatPSItoBTUpLB;      // total heat in water given pressure
@@ -1018,6 +1020,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortscylinderefficiencyrate": CylinderEfficiencyRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderinitialpressuredrop": InitialPressureDropRatioRpMtoX = new Interpolator(stf); break;
                 case "engine(ortscylinderbackpressure": BackPressureIHPtoPSI = new Interpolator(stf); break;
+                case "engine(ortscylinderbackpressurevssteamoutput": BackPressuretoSteamOutput = new Interpolator(stf); break;
                 case "engine(ortsburnrate": NewBurnRateSteamToFuelLbspH = new Interpolator(stf); break;
                 case "engine(ortsboilerefficiency": BoilerEfficiencyGrateAreaLBpFT2toX = new Interpolator(stf); break;
                 case "engine(ortscylindereventexhaust": CylinderExhausttoCutoff = new Interpolator(stf); break;
@@ -1190,6 +1193,7 @@ namespace Orts.Simulation.RollingStocks
             CylinderEfficiencyRate = locoCopy.CylinderEfficiencyRate;
             InitialPressureDropRatioRpMtoX = new Interpolator(locoCopy.InitialPressureDropRatioRpMtoX);
             BackPressureIHPtoPSI = new Interpolator(locoCopy.BackPressureIHPtoPSI);
+            BackPressuretoSteamOutput = new Interpolator(locoCopy.BackPressuretoSteamOutput);
             NewBurnRateSteamToFuelLbspH = new Interpolator(locoCopy.NewBurnRateSteamToFuelLbspH);
             BoilerEfficiency = locoCopy.BoilerEfficiency;
             SteamGearRatioLow = locoCopy.SteamGearRatioLow;
@@ -2101,22 +2105,31 @@ namespace Orts.Simulation.RollingStocks
             // Assign default steam table values if table not in ENG file 
             // Back pressure increases with the speed of the locomotive, as cylinder finds it harder to exhaust all the steam.
 
-            if (BackPressureIHPtoPSI == null)
+            if (BackPressureIHPtoPSI != null)
             {
-                if (HasSuperheater)
-                {
-                    BackPressureIHPtoPSI = SteamTable.BackpressureSuperIHPtoPSI();
-                    if (Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("BackPressureIHPtoAtmPSI (Superheated) - default information read from SteamTables");
-                }
-                else
-                {
-                    BackPressureIHPtoPSI = SteamTable.BackpressureSatIHPtoPSI();
-                    if (Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("BackPressureIHPtoAtmPSI (Saturated) - default information read from SteamTables");
-                }
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("ORTSCylinderBackPressure read. This is an inaccurate and depreceated value. It is thereofre suggested that either the OR default value is used (leave the ORTSCylinderBackPressure out) or use ORTSCylinderBackPressureVsSteamoutput instead.");
             }
 
+            // if no user input provided then assign default values
+            if (BackPressuretoSteamOutput == null)
+            {
+                float tempMaxBackPressurePSI = 0.0002762f * pS.TopH(TheoreticalMaxSteamOutputLBpS);
+
+                // Create a new default back pressure table based upon default information
+                float[] TempSteamOutputRate = new float[]
+                    {
+                               0.0f, pS.TopH(TheoreticalMaxSteamOutputLBpS * 0.1f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 0.2f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 0.3f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 0.4f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 0.5f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 0.6f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 0.7f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 0.8f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 0.9f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 1.0f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 1.1f)
+                    };
+
+                float[] TempBackPressure = new float[]
+                    {
+                                0.0f, tempMaxBackPressurePSI* (float)Math.Pow(0.1f, 2.0f), tempMaxBackPressurePSI* (float)Math.Pow(0.2f, 2.0f), tempMaxBackPressurePSI* (float)Math.Pow(0.3f, 2.0f), tempMaxBackPressurePSI* (float)Math.Pow(0.4f, 2.0f), tempMaxBackPressurePSI* (float)Math.Pow(0.5f, 2.0f), tempMaxBackPressurePSI* (float)Math.Pow(0.6f, 2.0f), tempMaxBackPressurePSI* (float)Math.Pow(0.7f, 2.0f), tempMaxBackPressurePSI* (float)Math.Pow(0.8f, 2.0f), tempMaxBackPressurePSI* (float)Math.Pow(0.9f, 2.0f), tempMaxBackPressurePSI* (float)Math.Pow(1.0f, 2.0f), tempMaxBackPressurePSI* (float)Math.Pow(1.1f, 2.0f)
+                    };
+
+                BackPressuretoSteamOutput = new Interpolator(TempSteamOutputRate, TempBackPressure);
+            }
+        
             // Confirm Injector type
             if (Injector1Type == "Unknown" )
             {
@@ -2199,7 +2212,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             var RefFeedwaterTempF = 65.0f;
-            var maxExhaustPressure = BackPressureIHPtoPSI[maxIndicatedHorsePowerTemp];
+            var maxExhaustPressure = BackPressuretoSteamOutput[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
 
             if (ActualInjector1NozzleSizeMM == 0)
             {
@@ -3073,6 +3086,7 @@ namespace Orts.Simulation.RollingStocks
                         // Steam Flow (lb/hr) = 24.24 x Press(BoilerPressure + Atmosphere(psi)) x ChokeDia^2 (in) - this needs to be multiplied by Num Cyls
                         SteamBoosterPressurePSI = (BoilerPressurePSI + OneAtmospherePSI) * BoosterPressureFactor;
                         SteamEngines[i].CylinderSteamUsageLBpS = pS.FrompH(SteamEngines[i].NumberCylinders * (24.24f * (SteamBoosterPressurePSI) * BoosterIdleChokeSizeIn * BoosterIdleChokeSizeIn));
+                        SteamEngines[i].CylinderSteamUsageLBpH = pS.TopH(SteamEngines[i].CylinderSteamUsageLBpS);
                         HuDBoosterSteamConsumptionLbpS = SteamEngines[i].CylinderSteamUsageLBpS;
 
                     }
@@ -5439,14 +5453,14 @@ namespace Orts.Simulation.RollingStocks
                     // (d) - Exhaust (Back) Pressure (For LP equates to point m)
                     // LP Cylinder
                     // Cylinder back pressure will be decreased depending upon locomotive speed
-                    SteamEngines[numberofengine].LPPressure_d_AtmPSI = BackPressureIHPtoPSI[SteamEngines[numberofengine].IndicatedHorsePowerHP] + OneAtmospherePSI;
+                    SteamEngines[numberofengine].LPPressure_d_AtmPSI = BackPressuretoSteamOutput[SteamEngines[numberofengine].CylinderSteamUsageLBpH] + OneAtmospherePSI;
 
                     SteamEngines[numberofengine].LogLPBackPressurePSI = SteamEngines[numberofengine].LPPressure_d_AtmPSI - OneAtmospherePSI;  // Value for recording in log file
                     SteamEngines[numberofengine].LogLPBackPressurePSI = MathHelper.Clamp(SteamEngines[numberofengine].LogLPBackPressurePSI, 0.00f, SteamEngines[numberofengine].LogLPBackPressurePSI); // Clamp so that LP Back pressure does not go negative
 
                     // HP Cylinder
 
-                    SteamEngines[numberofengine].Pressure_d_AtmPSI = BackPressureIHPtoPSI[SteamEngines[numberofengine].IndicatedHorsePowerHP] + OneAtmospherePSI;
+                    SteamEngines[numberofengine].Pressure_d_AtmPSI = BackPressuretoSteamOutput[SteamEngines[numberofengine].CylinderSteamUsageLBpH] + OneAtmospherePSI;
 
                     SteamEngines[numberofengine].LogBackPressurePSI = SteamEngines[numberofengine].Pressure_d_AtmPSI - OneAtmospherePSI;  // Value for log file
                     SteamEngines[numberofengine].LogBackPressurePSI = MathHelper.Clamp(SteamEngines[numberofengine].LogBackPressurePSI, 0.00f, SteamEngines[numberofengine].LogBackPressurePSI); // Clamp so that Back pressure does not go negative
@@ -5729,7 +5743,7 @@ namespace Orts.Simulation.RollingStocks
 
                     // (m) - LP exhaust pressure  
                     // LP Cylinder back pressure will be increased depending upon locomotive speed
-                    SteamEngines[numberofengine].LPCompPressure_m_AtmPSI = BackPressureIHPtoPSI[SteamEngines[numberofengine].IndicatedHorsePowerHP] + OneAtmospherePSI;
+                    SteamEngines[numberofengine].LPCompPressure_m_AtmPSI = BackPressuretoSteamOutput[SteamEngines[numberofengine].CylinderSteamUsageLBpH] + OneAtmospherePSI;
 
                     SteamEngines[numberofengine].LogLPBackPressurePSI = SteamEngines[numberofengine].LPCompPressure_m_AtmPSI - OneAtmospherePSI;  // Value for recording in log file
                     SteamEngines[numberofengine].LogLPBackPressurePSI = MathHelper.Clamp(SteamEngines[numberofengine].LogLPBackPressurePSI, 0.00f, SteamEngines[numberofengine].LogLPBackPressurePSI); // Clamp so that LP Back pressure does not go negative
@@ -6056,7 +6070,7 @@ namespace Orts.Simulation.RollingStocks
 
 
                 // (d) - Back Pressure 
-                SteamEngines[numberofengine].Pressure_d_AtmPSI = BackPressureIHPtoPSI[SteamEngines[numberofengine].IndicatedHorsePowerHP] + OneAtmospherePSI;
+                SteamEngines[numberofengine].Pressure_d_AtmPSI = BackPressuretoSteamOutput[SteamEngines[numberofengine].CylinderSteamUsageLBpH] + OneAtmospherePSI;
 
                 if (throttle < 0.02f)
                 {
@@ -6376,6 +6390,7 @@ namespace Orts.Simulation.RollingStocks
             // usage calculated as moving average to minimize chance of oscillation.
             // Decrease steam usage by SuperheaterUsage factor to model superheater - very crude model - to be improved upon
             SteamEngines[numberofengine].CylinderSteamUsageLBpS = (0.6f * SteamEngines[numberofengine].CylinderSteamUsageLBpS + 0.4f * CalculatedCylinderSteamUsageLBpS);
+            SteamEngines[numberofengine].CylinderSteamUsageLBpH = pS.TopH(SteamEngines[numberofengine].CylinderSteamUsageLBpS);
             MeanEffectivePressurePSI = SteamEngines[numberofengine].MeanEffectivePressurePSI; // for display purposes
 
             SteamReleasePressure_AtmPSI = SteamEngines[numberofengine].Pressure_c_AtmPSI; // for steam and smoke effects
@@ -7537,9 +7552,9 @@ namespace Orts.Simulation.RollingStocks
                         }
                         else // Exhaust steam injector
                         {
-                            if (throttle > 0.01 && BackPressureIHPtoPSI[IndicatedHorsePowerHP] > 1)
+                            if (throttle > 0.01 && BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)] > 1)
                             {
-                                Injector1CorrectedPressurePSI = BackPressureIHPtoPSI[IndicatedHorsePowerHP];
+                                Injector1CorrectedPressurePSI = BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)];
                                 ActualInjector1FlowRateLBpS = Injector1Fraction * Injector1NozzleCorrectionFactor * pS.FrompH(ExhaustSteamInjectorMaximaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector1CorrectedPressurePSI));
                                 Inj1MinimaFlowRateLBpS = Injector1Fraction * Injector1NozzleCorrectionFactor * pS.FrompH(ExhaustSteamInjectorMinimaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector1CorrectedPressurePSI));
 
@@ -7635,9 +7650,9 @@ namespace Orts.Simulation.RollingStocks
                         }
                         else // Exhaust steam injector
                         {
-                            if (throttle > 0.01 && BackPressureIHPtoPSI[IndicatedHorsePowerHP] > 1)
+                            if (throttle > 0.01 && BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)] > 1)
                             {
-                                Injector2CorrectedPressurePSI = BackPressureIHPtoPSI[IndicatedHorsePowerHP];
+                                Injector2CorrectedPressurePSI = BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)];
                                 ActualInjector2FlowRateLBpS = Injector2Fraction * Injector2NozzleCorrectionFactor * pS.FrompH(ExhaustSteamInjectorMaximaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector2CorrectedPressurePSI));
                                 Inj2MinimaFlowRateLBpS = Injector2Fraction * Injector2NozzleCorrectionFactor * pS.FrompH(ExhaustSteamInjectorMinimaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector2CorrectedPressurePSI));
 
@@ -8100,6 +8115,9 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case CABViewControlTypes.STEAM_PR:
                     data = ConvertFromPSI(cvc, BoilerPressurePSI);
+                    break;
+                case CABViewControlTypes.BACK_PR:
+                    data = ConvertFromPSI(cvc, -1 * BackPressuretoSteamOutput[CylinderSteamUsageLBpH]);
                     break;
                 case CABViewControlTypes.STEAMCHEST_PR:
                     data = ConvertFromPSI(cvc, CabSteamChestPressurePSI);

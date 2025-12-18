@@ -1088,31 +1088,6 @@ namespace Orts.Common
               1.0f, 1.0f, 1.0f, 0.988f, 0.965f, 0.912f, 0.859f, 0.800f, 0.753f, 0.706f, 0.659f, 0.612f, 0.571f, 0.535f, 0.500f, 0.471f, 0.447f, 0.433f, 0.424f, 0.420f, 0.410f, 0.410f
         };
 
-        // Indicated HorsePower - 
-        static float[] IndicatedHorsepowerIHP = new float[]
-        {
-              0.0f, 200.0f, 500.0f, 1000.0f, 1250.0f, 1500.0f, 1750.0f, 2000.0f, 2500.0f, 3000.0f,
-              3500.0f, 4000.0f, 4500.0f, 5000.0f, 5500.0f, 6000.0f, 6500.0f, 7000.0f, 7500.0f
-        };
-
-        // BackPressure - Saturated locomotive -  Ref Principles of Locomotive Operation and Train Operation - Fig 73 - pg 178 - Assume atmospheric -
-        // extrapolated beyond 1800IHP with test results from PRR Test reports
-        // 
-        static float[] BackPressureSatPSI = new float[]
-        {
-              1.0f, 1.5f, 2.0f, 3.0f, 3.75f, 4.5f, 5.6f, 7.0f, 10.0f, 12.8f,
-              15.5f, 18.5f, 22.0f, 26.0f, 30.0f, 35.0f, 40.0f, 45.0f, 50.0f
-        };
-
-        // BackPressure - Superheated locomotive -  Ref Principles of Locomotive Operation and Train Operation - Fig 73 - pg 178 - Assume atmospheric
-        // extrapolated beyond 1800IHP with test results from PRR Test reports
-        // 
-        static float[] BackPressureSuperPSI = new float[]
-        {
-              0.0f, 0.25f, 0.5f, 1.0f, 1.5f, 2.0f,2.5f, 2.8f, 3.5f,4.5f,
-              6.0f, 7.5f, 10.0f, 14.0f, 18.0f, 25.0f, 30.0f , 35.0f, 40.0f
-        };
-
         // Indicator Diagram - Cylinder Events
 
         // Indicator Diagram Event - Exhaust Open - Perwall program - http://5at.co.uk/index.php/references-and-links/software.html
@@ -1144,19 +1119,6 @@ namespace Orts.Common
         {
             return new Interpolator(CutOffFractionTableX, SuperheatCondenstationLimitTableDegF);
         }
-
-        // Saturated Backpressure - Ref Principles of Locomotive Operation
-        public static Interpolator BackpressureSatIHPtoPSI()
-        {
-            return new Interpolator(IndicatedHorsepowerIHP, BackPressureSatPSI);
-        }
-
-        // Superheated Backpressure - Ref Principles of Locomotive Operation
-        public static Interpolator BackpressureSuperIHPtoPSI()
-        {
-            return new Interpolator(IndicatedHorsepowerIHP, BackPressureSuperPSI);
-        }
-
 
         // Saturated Speed factor - ie drop in TE as speed increases due to piston impacts - Ref American locomotive Company
         public static Interpolator SaturatedSpeedFactorSpeedDropFtpMintoX()
