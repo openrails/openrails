@@ -38,8 +38,6 @@ namespace ORTS.Common
 
         static SystemInfo()
         {
-            var systemInfoHelper = new SystemInfoHelper();
-
             Application = new Platform
             {
                 Name = ApplicationInfo.ProductName,
@@ -54,13 +52,60 @@ namespace ORTS.Common
                 Version = runtime.Groups[2].Value,
             };
 
-            OperatingSystem = systemInfoHelper.GetOperatingSystem();
+            try
+            {
+                // Almost nothing will correctly identify Windows 11 at this point, so we have to use WMI.
+                var operatingSystem = new ManagementClass("Win32_OperatingSystem").GetInstances().Cast<ManagementObject>().First();
+                OperatingSystem = new Platform
+                {
+                    Name = (string)operatingSystem["Caption"],
+                    Version = (string)operatingSystem["Version"],
+                    Architecture = RuntimeInformation.OSArchitecture.ToString(),
+                    Language = CultureInfo.CurrentUICulture.IetfLanguageTag,
+                    Languages = (string[])operatingSystem["MUILanguages"],
+                };
+            }
+            catch (Exception error)
+            {
+                // Likely to catch multiple exceptions like:
+                // Exception thrown: 'System.IO.InvalidDataException' in ORTS.Menu.dll
+                Trace.WriteLine(error);
+            }
 
             NativeMethods.GlobalMemoryStatusEx(MemoryStatusExtended);
             InstalledMemoryMB = (int)(MemoryStatusExtended.TotalPhysical / 1024 / 1024);
 
-            CPUs = systemInfoHelper.GetCPUs();
-            GPUs = systemInfoHelper.GetGPUs();
+            try
+            {
+                CPUs = new ManagementClass("Win32_Processor").GetInstances().Cast<ManagementObject>().Select(processor => new CPU
+                {
+                    Name = (string)processor["Name"],
+                    Manufacturer = (string)processor["Manufacturer"],
+                    ThreadCount = (uint)processor["ThreadCount"],
+                    MaxClockMHz = (uint)processor["MaxClockSpeed"],
+                }).ToList();
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(error);
+            }
+
+            // The WMI data for AdapterRAM is unreliable, so we have to use DXGI to get the real numbers.
+            // Alas, DXGI doesn't give us the manufacturer name for the adapter, so we combine it with WMI.
+            var descriptions = new Factory1().Adapters.Select(adapter => adapter.Description).ToArray();
+            try
+            {
+                GPUs = new ManagementClass("Win32_VideoController").GetInstances().Cast<ManagementObject>().Select(adapter => new GPU
+                {
+                    Name = (string)adapter["Name"],
+                    Manufacturer = (string)adapter["AdapterCompatibility"],
+                    MemoryMB = (uint)((long)descriptions.FirstOrDefault(desc => desc.Description == (string)adapter["Name"]).DedicatedVideoMemory / 1024 / 1024),
+                }).ToList();
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(error);
+            }
 
             var featureLevels = new uint[] {
                 NativeMethods.D3D_FEATURE_LEVEL_12_2,
@@ -182,89 +227,6 @@ namespace ORTS.Common
                 out uint featureLevel,
                 IntPtr immediateContext
             );
-        }
-
-        /// <summary>
-        /// Provides helper methods for retrieving information about the system's operating system, CPUs, and GPUs.
-        /// These methods were moved into a non-static class so that an exception thrown and caught would not lead to a fatal System.TypeInitializationException in the constructor of the static SystemInfo class
-        /// </summary>
-        /// <remarks>This class offers methods to query system hardware and software details using
-        /// platform-specific APIs. The information returned by these methods may vary depending on the underlying
-        /// operating system and available system permissions. Methods may return partial or default information if
-        /// system queries fail or are unsupported on the current platform.</remarks>
-        public class SystemInfoHelper
-        {
-            public Platform GetOperatingSystem()
-            {
-                var platform = new Platform();
-                try
-                {
-                    // Uncomment this throw to prove the exception reported in https://bugs.launchpad.net/or/+bug/2131143 is no longer fatal.
-                    //throw new ManagementException();
-
-                    // Almost nothing will correctly identify Windows 11 at this point, so we have to use WMI.
-                    var operatingSystem = new ManagementClass("Win32_OperatingSystem").GetInstances().Cast<ManagementObject>().First();
-                    platform = new Platform
-                    {
-                        Name = (string)operatingSystem["Caption"],
-                        Version = (string)operatingSystem["Version"],
-                        Architecture = RuntimeInformation.OSArchitecture.ToString(),
-                        Language = CultureInfo.CurrentUICulture.IetfLanguageTag,
-                        Languages = (string[])operatingSystem["MUILanguages"],
-                    };
-                }
-                catch (Exception ex)
-                {
-                    // Likely to catch multiple exceptions like:
-                    // Exception thrown: 'System.IO.InvalidDataException' in ORTS.Menu.dll
-                    Trace.WriteLine($"Exception in GetOperatingSystem(): {ex}");
-                }
-                return platform;
-            }
-
-            public List<CPU> GetCPUs()
-            {
-                var cpus = new List<CPU>();
-                try
-                {
-                    cpus = new ManagementClass("Win32_Processor").GetInstances().Cast<ManagementObject>().Select(processor => new CPU
-                    {
-                        Name = (string)processor["Name"],
-                        Manufacturer = (string)processor["Manufacturer"],
-                        ThreadCount = (uint)processor["ThreadCount"],
-                        MaxClockMHz = (uint)processor["MaxClockSpeed"],
-                    }).ToList();
-                }
-                catch (Exception ex)
-                {
-                    Trace.WriteLine($"Exception in GetCPUs(): {ex}");
-                }
-                return cpus;
-            }
-
-            public List<GPU> GetGPUs()
-            {
-                var gpus = new List<GPU>();
-
-                // The WMI data for AdapterRAM is unreliable, so we have to use DXGI to get the real numbers.
-                // Alas, DXGI doesn't give us the manufacturer name for the adapter, so we combine it with WMI.
-                var descriptions = new Factory1().Adapters.Select(adapter => adapter.Description).ToArray();
-
-                try
-                {
-                    gpus = new ManagementClass("Win32_VideoController").GetInstances().Cast<ManagementObject>().Select(adapter => new GPU
-                    {
-                        Name = (string)adapter["Name"],
-                        Manufacturer = (string)adapter["AdapterCompatibility"],
-                        MemoryMB = (uint)((long)descriptions.FirstOrDefault(desc => desc.Description == (string)adapter["Name"]).DedicatedVideoMemory / 1024 / 1024),
-                    }).ToList();
-                }
-                catch (Exception ex)
-                {
-                    Trace.WriteLine($"Exception in GetGPUs(): {ex}");
-                }
-                return gpus;
-            }
         }
     }
 }
