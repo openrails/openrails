@@ -1523,6 +1523,35 @@ will be determined by a number of factors, and principal amongst them are the fo
 
 To display the changing water level in the Cab, use ``BOILER_WATER_GRADE``.
 
+Steam Water Injectors
+.....................
+
+Water injectors are typically modelled by default, and sizes and injection rates will be calculated automatically by OR.
+
+If desired the user may customise some of the default values by using the following parameters:
+
+``InjectorTypes ( x, y )`` - will allow the user to set up a combination of exhaust or live steam injectors for the 
+locomotive. Use 0 = Live steam and 1 = Exhaust steam in either of the x or y positions.
+
+``ORTSInjectorSize ( x, y )`` - the size of each injector can be indicated in this parameter. The values will be in 
+mm, and typically should not be greater then 19mm.
+
+
+Locomotive Back Pressure
+........................
+
+OR calculates a default back pressure value for the exhaust steam emitted from the cylinder.
+
+The user may customise the default value where appropriate values are known, ie from test reports, etc.
+
+To customise the backpressure curve use:
+
+``ORTSCylinderBackPressureVsSteamOutput ( x, y )`` - where x = series of cylinder steam usage rates in lb/h, and y = back 
+pressure in psig.
+
+Note: The older parameter ``ortscylinderbackpressure`` is inaccurate and no longer supported in OR. An error message will 
+display if OR detects the use of this parameter.
+
 
 Locomotive Types
 ................
