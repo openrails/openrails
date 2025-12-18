@@ -140,6 +140,7 @@ namespace Orts.Formats.Msts
         WATER_INJECTOR1,
         WATER_INJECTOR2,
         SMALL_EJECTOR,
+        BACK_PR,
         STEAM_PR,
         STEAMCHEST_PR,
         TENDER_WATER,
