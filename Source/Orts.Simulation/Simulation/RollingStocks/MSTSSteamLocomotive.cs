@@ -3192,6 +3192,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             }
 
+            // calculate total back pressure from all exhausts
+            BackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpH)];
+
             UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
 
             #endregion

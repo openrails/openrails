@@ -240,7 +240,7 @@ namespace Orts.Formats.Msts
 
     public class VolumeCurve
     {
-        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled };
+        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, BackPressureControlled };
 
         public Controls Control = Controls.None;
         public float Granularity = 1.0f;
@@ -264,6 +264,7 @@ namespace Orts.Formats.Msts
                 case "variable3controlled": Control = Controls.Variable3Controlled; break;
                 case "brakecylcontrolled": Control = Controls.BrakeCylControlled; break;
                 case "curveforcecontrolled": Control = Controls.CurveForceControlled; break;
+                case "backpressurecontrolled": Control = Controls.BackPressureControlled; break;
                 default: STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type); stf.SkipRestOfBlock(); return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {
