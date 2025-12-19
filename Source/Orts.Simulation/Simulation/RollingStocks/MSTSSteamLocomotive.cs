@@ -578,6 +578,9 @@ namespace Orts.Simulation.RollingStocks
         public float LogReleasePressurePSI;
         public float LogSteamChestPressurePSI;
 
+        float BackPressureCorrectionFactor = 0.15f; // Factor to adjust back pressure for steam usage by exhaust injectors
+        float LocomotiveBackPressurePSIG; // Back pressure in locomotive including effect of cylinders and blast pipe
+
         // Values for Steam Cylinder events
         // Commented out as never used
         //float ValveTravel = 10.8268f;
@@ -2103,6 +2106,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
 
             // if no user input provided then assign default values
+            // the default is the "full locomotive" back pressure, it will be decreased further down if an exhaust injector is fitted
             if (BackPressuretoSteamOutput == null)
             {
                 float tempMaxBackPressurePSI = 0.0002762f * pS.TopH(TheoreticalMaxSteamOutputLBpS);
@@ -2937,6 +2941,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             CabSteamChestPressurePSI = 0;
             CabSteamBoosterPressurePSI = 0;
             SteamDrvWheelWeightLbs = 0;
+            LocomotiveBackPressurePSIG = 0;
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
@@ -3085,9 +3090,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         HuDBoosterSteamConsumptionLbpS = SteamEngines[i].CylinderSteamUsageLBpS;
                         SteamBoosterPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(SteamEngines[i].DriveWheelRevRpS)] * BoilerPressurePSI); // equivalent to steam chest pressure
                     }
-
-
                 }
+
+                // update the boiler steam values as appropriate for each locomotive engine
                 BoilerMassLB -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS; //  Boiler mass will be reduced by cylinder steam usage
                 BoilerHeatBTU -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); //  Boiler Heat will be reduced by heat required to replace the cylinder steam usage, ie create steam from hot water. 
                 TotalSteamUsageLBpS += SteamEngines[i].CylinderSteamUsageLBpS;
@@ -3095,6 +3100,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 CumulativeCylinderSteamConsumptionLbs += SteamEngines[i].CylinderSteamUsageLBpS * elapsedClockSeconds;
                 CylinderSteamUsageLBpS += SteamEngines[i].CylinderSteamUsageLBpS;
                 CylCockSteamUsageLBpS += SteamEngines[i].CylCockSteamUsageLBpS;
+                // Back pressure in cylinder - this is an approximation using the back pressure from the blast pipe
+                SteamEngines[i].CylinderBackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(SteamEngines[i].CylinderSteamUsageLBpS)];
+                // Sum back pressure for all engines to give total locomotive back pressure
+                LocomotiveBackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)];
 
                 if (SteamEngines[i].CylinderCocksPressureAtmPSI > CylinderCocksPressureAtmPSI)
                 {
@@ -5498,14 +5507,14 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // (d) - Exhaust (Back) Pressure (For LP equates to point m)
                     // LP Cylinder
                     // Cylinder back pressure will be decreased depending upon locomotive speed
-                    SteamEngines[numberofengine].LPPressure_d_AtmPSI = BackPressuretoSteamOutput[SteamEngines[numberofengine].CylinderSteamUsageLBpH] + OneAtmospherePSI;
+                    SteamEngines[numberofengine].LPPressure_d_AtmPSI = SteamEngines[numberofengine].CylinderBackPressurePSIG + OneAtmospherePSI;
 
                     SteamEngines[numberofengine].LogLPBackPressurePSI = SteamEngines[numberofengine].LPPressure_d_AtmPSI - OneAtmospherePSI;  // Value for recording in log file
                     SteamEngines[numberofengine].LogLPBackPressurePSI = MathHelper.Clamp(SteamEngines[numberofengine].LogLPBackPressurePSI, 0.00f, SteamEngines[numberofengine].LogLPBackPressurePSI); // Clamp so that LP Back pressure does not go negative
 
                     // HP Cylinder
 
-                    SteamEngines[numberofengine].Pressure_d_AtmPSI = BackPressuretoSteamOutput[SteamEngines[numberofengine].CylinderSteamUsageLBpH] + OneAtmospherePSI;
+                    SteamEngines[numberofengine].Pressure_d_AtmPSI = SteamEngines[numberofengine].CylinderBackPressurePSIG + OneAtmospherePSI;
 
                     SteamEngines[numberofengine].LogBackPressurePSI = SteamEngines[numberofengine].Pressure_d_AtmPSI - OneAtmospherePSI;  // Value for log file
                     SteamEngines[numberofengine].LogBackPressurePSI = MathHelper.Clamp(SteamEngines[numberofengine].LogBackPressurePSI, 0.00f, SteamEngines[numberofengine].LogBackPressurePSI); // Clamp so that Back pressure does not go negative
@@ -5788,7 +5797,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                     // (m) - LP exhaust pressure  
                     // LP Cylinder back pressure will be increased depending upon locomotive speed
-                    SteamEngines[numberofengine].LPCompPressure_m_AtmPSI = BackPressuretoSteamOutput[SteamEngines[numberofengine].CylinderSteamUsageLBpH] + OneAtmospherePSI;
+                    SteamEngines[numberofengine].LPCompPressure_m_AtmPSI = SteamEngines[numberofengine].CylinderBackPressurePSIG + OneAtmospherePSI;
 
                     SteamEngines[numberofengine].LogLPBackPressurePSI = SteamEngines[numberofengine].LPCompPressure_m_AtmPSI - OneAtmospherePSI;  // Value for recording in log file
                     SteamEngines[numberofengine].LogLPBackPressurePSI = MathHelper.Clamp(SteamEngines[numberofengine].LogLPBackPressurePSI, 0.00f, SteamEngines[numberofengine].LogLPBackPressurePSI); // Clamp so that LP Back pressure does not go negative
@@ -6115,7 +6124,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
 
                 // (d) - Back Pressure 
-                SteamEngines[numberofengine].Pressure_d_AtmPSI = BackPressuretoSteamOutput[SteamEngines[numberofengine].CylinderSteamUsageLBpH] + OneAtmospherePSI;
+                SteamEngines[numberofengine].Pressure_d_AtmPSI = SteamEngines[numberofengine].CylinderBackPressurePSIG + OneAtmospherePSI;
 
                 if (throttle < 0.02f)
                 {
@@ -7656,9 +7665,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         }
                         else // Exhaust steam injector
                         {
-                            if (throttle > 0.01 && BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)] > 1)
+                            // Calculate back pressure if exhaust injector is on
+                            var EstimatedCylinderBackPressurePSIG = (1 - BackPressureCorrectionFactor) * BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)];
+
+                            if (throttle > 0.01 && EstimatedCylinderBackPressurePSIG > 1)
                             {
-                                Injector1CorrectedPressurePSI = BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)];
+                                Injector1CorrectedPressurePSI = EstimatedCylinderBackPressurePSIG;
                                 ActualInjector1FlowRateLBpS = Injector1Fraction * Injector1NozzleCorrectionFactor * pS.FrompH(ExhaustSteamInjectorMaximaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector1CorrectedPressurePSI));
                                 Inj1MinimaFlowRateLBpS = Injector1Fraction * Injector1NozzleCorrectionFactor * pS.FrompH(ExhaustSteamInjectorMinimaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector1CorrectedPressurePSI));
 
@@ -7754,9 +7766,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         }
                         else // Exhaust steam injector
                         {
-                            if (throttle > 0.01 && BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)] > 1)
+                            // Calculate back pressure if exhaust injector is on
+                            var EstimatedCylinderBackPressurePSIG = (1 - BackPressureCorrectionFactor) * BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)];
+
+                            if (throttle > 0.01 && EstimatedCylinderBackPressurePSIG > 1)
                             {
-                                Injector2CorrectedPressurePSI = BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)];
+                                Injector2CorrectedPressurePSI = EstimatedCylinderBackPressurePSIG;
                                 ActualInjector2FlowRateLBpS = Injector2Fraction * Injector2NozzleCorrectionFactor * pS.FrompH(ExhaustSteamInjectorMaximaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector2CorrectedPressurePSI));
                                 Inj2MinimaFlowRateLBpS = Injector2Fraction * Injector2NozzleCorrectionFactor * pS.FrompH(ExhaustSteamInjectorMinimaWaterDeliveryLBatPSIandF.Get(tenderTemperatureF, Injector2CorrectedPressurePSI));
 
@@ -8221,7 +8236,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     data = ConvertFromPSI(cvc, BoilerPressurePSI);
                     break;
                 case CABViewControlTypes.BACK_PR:
-                    data = ConvertFromPSI(cvc, -1 * BackPressuretoSteamOutput[CylinderSteamUsageLBpH]);
+                    data = ConvertFromPSI(cvc, -1 * LocomotiveBackPressurePSIG);
                     break;
                 case CABViewControlTypes.STEAMCHEST_PR:
                     data = ConvertFromPSI(cvc, CabSteamChestPressurePSI);

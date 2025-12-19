@@ -533,6 +533,11 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float CylCockSteamUsageLBpS;
 
         /// <summary>
+        /// Back pressure in cylinder
+        /// </summary>
+        public float CylinderBackPressurePSIG;
+
+        /// <summary>
         /// Cylinder steam cocks atmospheric pressure usage per steam engine steam cocks
         /// </summary>
         public float CylinderCocksPressureAtmPSI;
