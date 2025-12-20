@@ -39,6 +39,7 @@ namespace Orts.Viewer3D
 
         int FrameNumber;
         double LastUpdateRealTime;   // update text message only 10 times per second
+        double NextLogTime;
 
         float PreviousLoggedSpeedMpH = -1.0f;
 
@@ -64,9 +65,15 @@ namespace Orts.Viewer3D
             {
                 Viewer.Settings.DataLogger = !Viewer.Settings.DataLogger;
                 if (Viewer.Settings.DataLogger)
+                {
                     DataLoggerStart();
+                    Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Data Logger started"));
+                }
                 else
+                {
                     DataLoggerStop();
+                    Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Data Logger stopped"));
+                }
             }
         }
 
@@ -81,9 +88,10 @@ namespace Orts.Viewer3D
                 Profile(elapsedRealSeconds);
             }
 
-            if (Viewer.Settings.DataLogger)
+            if (Viewer.Settings.DataLogger && (Viewer.Settings.DataLoggerInterval == 0 || Viewer.RealTime >= NextLogTime))
             {
                 DataLoggerLog();
+                NextLogTime = Viewer.RealTime + Viewer.Settings.DataLoggerInterval / 1000f;
             }
         }
 
