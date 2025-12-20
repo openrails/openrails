@@ -608,53 +608,66 @@ namespace Orts.Viewer3D.Popups
 
                 foreach (var axle in car.WheelAxles)
                 {
-                    if (!axle.Part.Bogie) // if not a bogie then check for the number of axles.
+                    // Do not consider fake axles
+                    if (!axle.Fake)
                     {
-                        if (currentBogie != axle.BogieIndex && currentCount != 0)
+                        if (!axle.Part.Bogie) // if not a bogie then check for the number of axles.
                         {
-                            whyte.Add(currentCount.ToString());
-                            currentBogie = axle.BogieIndex;
-                            currentCount = 0;
-                        }
-
-                        if (steamloco.SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
-                        {
-                            currentCount += 2;
-                            axlesCount += 1;
-
-                            if (axlesCount >= steamloco.SteamEngines[i].AttachedAxle.NumWheelsetAxles && currentCount != 0)
+                            if (currentBogie != axle.BogieIndex)
                             {
-                                whyte.Add(currentCount.ToString());
+                                if (currentCount != 0)
+                                {
+                                    whyte.Add(currentCount.ToString());
+                                    currentCount = 0;
+                                }
                                 currentBogie = axle.BogieIndex;
-                                currentCount = 0;
-                                axlesCount = 0;
-                                i = i + 1;
+                            }
+
+                            if (steamloco.SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                            {
+                                currentCount += 2;
+                                axlesCount += 1;
+
+                                if (axlesCount >= steamloco.SteamEngines[i].AttachedAxle.NumWheelsetAxles)
+                                {
+                                    if (currentCount != 0)
+                                    {
+                                        whyte.Add(currentCount.ToString());
+                                        currentCount = 0;
+                                    }
+                                    currentBogie = axle.BogieIndex;
+                                    axlesCount = 0;
+                                    i = i + 1;
+                                }
                             }
                         }
-                    }
-                    else if (axle.Part.Bogie) // this is a bogie
-                    {
-                        if ( PreviousAxlePart)
+                        else if (axle.Part.Bogie) // this is a bogie
                         {
-                            currentBogie = axle.BogieIndex;
+                            if (PreviousAxlePart)
+                            {
+                                currentBogie = axle.BogieIndex;
+                            }
+
+                            if (currentBogie != axle.BogieIndex)
+                            {
+                                if (currentCount != 0)
+                                {
+                                    whyte.Add(currentCount.ToString());
+                                    currentCount = 0;
+                                }
+                                currentBogie = axle.BogieIndex;
+                            }
+                            currentCount += 2;
                         }
 
-                        if (currentBogie != axle.BogieIndex && currentCount != 0)
+                        if (axle.Part.Bogie)
                         {
-                            whyte.Add(currentCount.ToString());
-                            currentBogie = axle.BogieIndex;
-                            currentCount = 0;
+                            PreviousAxlePart = true;
                         }
-                        currentCount += 2;
-                    }
-
-                    if (axle.Part.Bogie)
-                    {
-                        PreviousAxlePart = true;
-                    }
-                    else
-                    {
-                        PreviousAxlePart = false;
+                        else
+                        {
+                            PreviousAxlePart = false;
+                        }
                     }
                 }
 
@@ -665,13 +678,20 @@ namespace Orts.Viewer3D.Popups
             {
                 foreach (var axle in car.WheelAxles)
                 {
-                    if (currentBogie != axle.BogieIndex && currentCount != 0)
+                    // Do not consider fake axles
+                    if (!axle.Fake)
                     {
-                        whyte.Add(currentCount.ToString());
-                        currentBogie = axle.BogieIndex;
-                        currentCount = 0;
+                        if (currentBogie != axle.BogieIndex)
+                        {
+                            if (currentCount != 0)
+                            {
+                                whyte.Add(currentCount.ToString());
+                                currentCount = 0;
+                            }
+                            currentBogie = axle.BogieIndex;
+                        }
+                        currentCount += 2;
                     }
-                    currentCount += 2;
                 }
                 whyte.Add(currentCount.ToString());
                 return String.Join("-", whyte.ToArray());
