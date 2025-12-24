@@ -7585,6 +7585,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // water variation is calculated as the opposite side of a triangle with half the boiler length as the reference length (Adjacent side)
             var waterVariationLevelM = (float)Math.Tan(boilerangleRad) * (BoilerLengthM / 2.0f);
 
+            var waterSlopingVariationLevelM = (float)Math.Tan(BoilerAngleHorizontalRad) * (BoilerLengthM / 2.0f);
+
             // Downslope - CurrentElevationPercent = +ve, level variation will be -ve 
             // Uphill  - CurrentElevationPercent = -ve, level variation will be +ve
             // So, for example, if the loco is on a 1 in 100 down slope, the water level at the front of the boiler will be lower than at the
@@ -7612,34 +7614,50 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Cab First - (i.e. reverse "Normal reference")
             // Cab Centre - ignore gradients
             // Vertical boilers - ignore gradients as boiler diameter is small and therefore there will be little effect with gradient
-            // Sloping Boiler - 
+            // Sloping Boiler - subtract boiler angle from track angle
 
             // water level in boiler water glass - affected by gradient
-            CurrentWaterGaugeGradeFraction = ((BoilerWaterFractionAbs + waterVariationLevelM / BoilerDiameterM) - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // Calculate water glass grade fraction inverse for use in determining water injector operation.
-
-            CurrentWaterGaugeGradeFraction = MathHelper.Clamp(CurrentWaterGaugeGradeFraction, 0.0f, 1.0f);
-
+    //        CurrentWaterGaugeGradeFraction = ((BoilerWaterFractionAbs + waterVariationLevelM / BoilerDiameterM) - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); 
+            
+            // Calculate water glass grade fraction inverse for use in determining water injector operation.
             // water level based upon boiler is impacted by gradient
 
             if (SteamLocomotiveBoilerOrientationType == SteamLocomotiveBoilerOrientationTypes.CabForward)
             {
                 GradientBoilerLevelFraction = ((BoilerWaterFractionAbs - waterVariationLevelM / BoilerDiameterM) - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // Reverse gradient impact
+
+                CurrentWaterGaugeGradeFraction = GradientBoilerLevelFraction;
             }
             else if (SteamLocomotiveBoilerOrientationType == SteamLocomotiveBoilerOrientationTypes.Vertical || SteamLocomotiveBoilerOrientationType == SteamLocomotiveBoilerOrientationTypes.CabCentre)
             {
                 GradientBoilerLevelFraction = (BoilerWaterFractionAbs - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // ignore gradients
+
+                CurrentWaterGaugeGradeFraction = GradientBoilerLevelFraction;
             }
             else if (SteamLocomotiveBoilerOrientationType == SteamLocomotiveBoilerOrientationTypes.Vertical)
             {
                 GradientBoilerLevelFraction = (BoilerWaterFractionAbs - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // ignore gradients
+
+                CurrentWaterGaugeGradeFraction = GradientBoilerLevelFraction;
+            }
+            else if (SteamLocomotiveBoilerOrientationType == SteamLocomotiveBoilerOrientationTypes.Sloping)
+            {
+              
+                GradientBoilerLevelFraction = ((BoilerWaterFractionAbs + (waterVariationLevelM - waterSlopingVariationLevelM) / BoilerDiameterM) - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // ignore gradients
+
+                CurrentWaterGaugeGradeFraction = GradientBoilerLevelFraction;
             }
             else
             {
                 // Normal Horizontal boiler
                 GradientBoilerLevelFraction = ((BoilerWaterFractionAbs + waterVariationLevelM / BoilerDiameterM) - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // Calculate water glass grade fraction
+
+                CurrentWaterGaugeGradeFraction = GradientBoilerLevelFraction;
             }
 
             GradientBoilerLevelFraction = MathHelper.Clamp(GradientBoilerLevelFraction, 0.0f, 1.0f);
+
+            CurrentWaterGaugeGradeFraction = MathHelper.Clamp(CurrentWaterGaugeGradeFraction, 0.0f, 1.0f);
 
             if (BoilerWaterFractionAbs < WaterMinLevel)  // Blow fusible plugs if absolute boiler water drops below minimum level
             {
@@ -8425,7 +8443,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     data = ConvertFromPSI(cvc, BoilerPressurePSI);
                     break;
                 case CABViewControlTypes.BACK_PR:
-                    data = ConvertFromPSI(cvc, -1 * LocomotiveBackPressurePSIG);
+                    data = ConvertFromPSI(cvc, LocomotiveBackPressurePSIG);
                     break;
                 case CABViewControlTypes.STEAMCHEST_PR:
                     data = ConvertFromPSI(cvc, CabSteamChestPressurePSI);
