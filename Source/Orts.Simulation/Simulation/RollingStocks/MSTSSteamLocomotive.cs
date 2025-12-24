@@ -3035,8 +3035,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-                var enginethrottle = 0.0f;
-
                 // Back pressure in cylinder - this is an approximation using the back pressure from the blast pipe
                 SteamEngines[i].CylinderBackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(SteamEngines[i].CylinderSteamUsageLBpS)];
                 // Sum back pressure for all engines to give total locomotive back pressure
@@ -3044,6 +3042,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 {
                     LocomotiveBackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)];
                 }
+
+                var enginethrottle = 0.0f;
 
                 if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
