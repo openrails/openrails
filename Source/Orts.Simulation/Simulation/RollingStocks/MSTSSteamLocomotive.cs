@@ -126,6 +126,9 @@ namespace Orts.Simulation.RollingStocks
         string Injector1Type = "Unknown"; // Type of injector 1 fitted to locomotive
         string Injector2Type = "Unknown"; // Type of injector 2 fitted to locomotive
 
+        string MSTSInjector1Type = "Unknown"; // Type of injector 1 fitted to locomotive
+        string MSTSInjector2Type = "Unknown"; // Type of injector 2 fitted to locomotive
+
         float Injector1Fraction = 0.0f;     // Fraction (0-1) of injector 1 flow from Fireman controller or AI
         float Injector2Fraction = 0.0f;     // Fraction (0-1) of injector  of injector 2 flow from Fireman controller or AI
         float Injector1WaterDelTempF = 65f;   // Injector 1 water delivery temperature - F
@@ -1123,6 +1126,26 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     }
                     break;
                 case "engine(ortsboilerangle": BoilerAngleHorizontalRad = stf.ReadFloatBlock(STFReader.UNITS.Angle, null); break;
+                case "engine(injectortypes":
+                    stf.MustMatch("(");
+                    var mstsinj1 = stf.ReadInt(null);
+                    var mstsinj2 = stf.ReadInt(null);
+                    stf.SkipRestOfBlock();
+
+                    if (mstsinj1 == 0)
+                        MSTSInjector1Type = "Live";
+                    else if (mstsinj1 == 1)
+                        MSTSInjector1Type = "Exhaust";
+                    else
+                        MSTSInjector1Type = "Unknown";
+
+                    if (mstsinj2 == 0)
+                        MSTSInjector2Type = "Live";
+                    else if (mstsinj2 == 1)
+                        MSTSInjector2Type = "Exhaust";
+                    else
+                        MSTSInjector2Type = "Unknown";
+                    break;
                 case "engine(ortsinjectortypes":
                     stf.MustMatch("(");
                     var inj1 = stf.ReadInt(null);
@@ -1268,6 +1291,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             ActualInjector2NozzleSizeMM = locoCopy.ActualInjector2NozzleSizeMM;
             Injector1Type = locoCopy.Injector1Type;
             Injector2Type = locoCopy.Injector2Type;
+            MSTSInjector1Type = locoCopy.MSTSInjector1Type;
+            MSTSInjector2Type = locoCopy.MSTSInjector2Type;
 
             SteamEngines.Copy(locoCopy.SteamEngines);
         }
@@ -2173,8 +2198,24 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 BackPressuretoSteamOutput = new Interpolator(TempSteamOutputRate, TempBackPressure);
             }
-        
+
             // Confirm Injector type and set if not defined by the user
+            // ORTS values take precendence over MSTS values if both defined. Use MSTS values only if no ORTS values defined.
+            if ( Injector1Type == "Unknown" && MSTSInjector1Type != "Unknown" )
+            {
+                Injector1Type = MSTSInjector1Type;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Injector1 type not defined in ORTS, set to MSTS value of {0} Steam Injector", Injector1Type);
+            }
+
+            if ( Injector2Type == "Unknown" && MSTSInjector2Type != "Unknown" )
+            {
+                Injector2Type = MSTSInjector2Type;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Injector2 type not defined in ORTS, set to MSTS value of {0} Steam Injector", Injector2Type);
+            }
+
+            // If injector type not set, and not set by MSTS values, then set to default of Live steam injector
             if (Injector1Type == "Unknown" )
             {
                 Injector1Type = "Live";
