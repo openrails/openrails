@@ -7,12 +7,12 @@ using System.Windows;
 // Allgemeine Informationen über eine Assembly werden über die folgenden
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die einer Assembly zugeordnet sind.
-[assembly: AssemblyTitle("TimeTableEditor")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Open Rails Timetable Editor (Contributed)")]
+[assembly: AssemblyDescription("Open Rails Transport Simulator")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TimeTableEditor")]
-[assembly: AssemblyCopyright("Copyright ©  2025")]
+[assembly: AssemblyCompany("Open Rails")]
+[assembly: AssemblyProduct("Open Rails")]
+[assembly: AssemblyCopyright("Copyright © 2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
