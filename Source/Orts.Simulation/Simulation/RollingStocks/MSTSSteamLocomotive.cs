@@ -3069,7 +3069,7 @@ namespace Orts.Simulation.RollingStocks
                 // Sum back pressure for all engines to give total locomotive back pressure
                 if (SteamEngines[i].CylinderBackPressurePSIG > LocomotiveBackPressurePSIG)
                 {
-                    LocomotiveBackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpS)];
+                    LocomotiveBackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(SteamEngines[i].CylinderSteamUsageLBpS)];
                 }
 
                 var enginethrottle = 0.0f;
@@ -7970,23 +7970,28 @@ namespace Orts.Simulation.RollingStocks
                 if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump && !WaterIsExhausted)
                 {
                     
-                    if (waterGlassFractionLevel > 0.55)        // turn pumps off if water level in boiler greater then 0.55 water gauge, to stop cycling
+                    if (GradientBoilerLevelFraction > 0.50 && waterGlassFractionLevel > 0.60 || waterGlassFractionLevel > 0.90)  
+                    // turn water pumps off if water level in boiler greater then 0.60
                     {
                         WaterMotionPump1IsOn = false;
-                        WaterMotionPump2IsOn = false;
                         StopMotionPump1Sound();
-                        StopMotionPump2Sound();
                     }
-                    else if (waterGlassFractionLevel <= 0.55 && waterGlassFractionLevel > 0.45 && !WaterMotionPumpLockedOut)  // turn water pump #1 on if water level in boiler drops below 0.55 and is above 0.45
+                    else if ((GradientBoilerLevelFraction < 0.40 || waterGlassFractionLevel < 0.55) && !WaterMotionPumpLockedOut)
+                    // turn water pump #1 on if water level in boiler drops below 0.55
                     {
                         WaterMotionPump1IsOn = true;
-                        WaterMotionPump2IsOn = false;
                         WaterMotionPumpLockedOut = true;
                         PlayMotionPump1SoundIfStarting();
                     }
-                    else if (waterGlassFractionLevel <= 0.45 && !WaterMotionPumpLockedOut)  // turn water pump #2 on as well if water level in boiler drops below 0.45 
+
+                    if ((GradientBoilerLevelFraction > 0.35 && waterGlassFractionLevel > 0.50) || waterGlassFractionLevel > 0.80 && !WaterMotionPumpLockedOut)
+                    // turn water pump #2 off if water level in boiler greater then 0.50
                     {
-                        WaterMotionPump1IsOn = true;
+                        WaterMotionPump2IsOn = false;
+                        StopMotionPump2Sound();
+                    }
+                    else if ((GradientBoilerLevelFraction < 0.25 || waterGlassFractionLevel < 0.45) && !WaterMotionPumpLockedOut)     // turn water pump #2 on if water level in boiler drops below 0.45
+                    {
                         WaterMotionPump2IsOn = true;
                         WaterMotionPumpLockedOut = true;
                         PlayMotionPump2SoundIfStarting();
@@ -8156,7 +8161,7 @@ namespace Orts.Simulation.RollingStocks
                         StopInjector1Sound();
                         SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Off;
                     }
-                    else if ((GradientBoilerLevelFraction > 0.50 || waterGlassFractionLevel > 0.58) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Midway && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction > 0.50 && waterGlassFractionLevel > 0.58) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Midway && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.6f;
@@ -8164,7 +8169,7 @@ namespace Orts.Simulation.RollingStocks
                         PlayInjector1SoundIfStarting();
                         SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Minimum;
                     }
-                    else if ((GradientBoilerLevelFraction > 0.46 || waterGlassFractionLevel > 0.56) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Maximum && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction > 0.46 && waterGlassFractionLevel > 0.56) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Maximum && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.75f;
@@ -8172,7 +8177,7 @@ namespace Orts.Simulation.RollingStocks
                         PlayInjector1SoundIfStarting();
                         SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Midway;
                     }
-                    else if ((GradientBoilerLevelFraction < 0.48 && waterGlassFractionLevel < 0.57) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Off && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.48 || waterGlassFractionLevel < 0.57) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Off && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.6f;
@@ -8181,7 +8186,7 @@ namespace Orts.Simulation.RollingStocks
                         SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Minimum;
                     }
 
-                    else if ((GradientBoilerLevelFraction < 0.44 && waterGlassFractionLevel < 0.55) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Minimum && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.44 || waterGlassFractionLevel < 0.55) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Minimum && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.75f;
@@ -8209,7 +8214,7 @@ namespace Orts.Simulation.RollingStocks
                         StopInjector2Sound();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Off;
                     }
-                    else if ((GradientBoilerLevelFraction > 0.38 || waterGlassFractionLevel > 0.52) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Midway && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction > 0.38 && waterGlassFractionLevel > 0.52) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Midway && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.6f;
@@ -8217,7 +8222,7 @@ namespace Orts.Simulation.RollingStocks
                         PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Minimum;
                     }
-                    else if ((GradientBoilerLevelFraction > 0.34 || waterGlassFractionLevel > 0.50) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Maximum && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction > 0.34 && waterGlassFractionLevel > 0.50) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Maximum && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.75f;
@@ -8225,7 +8230,7 @@ namespace Orts.Simulation.RollingStocks
                         PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Midway;
                     }
-                    else if ((GradientBoilerLevelFraction < 0.36 && waterGlassFractionLevel < 0.51) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Off && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.36 || waterGlassFractionLevel < 0.51) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Off && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.6f;
@@ -8234,7 +8239,7 @@ namespace Orts.Simulation.RollingStocks
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Minimum;
                     }
 
-                    else if ((GradientBoilerLevelFraction < 0.32 && waterGlassFractionLevel < 0.49) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Minimum && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.32 || waterGlassFractionLevel < 0.49) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Minimum && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.75f;
@@ -8457,7 +8462,7 @@ namespace Orts.Simulation.RollingStocks
                     data = CurrentWaterGaugeGradeFraction; // Shows the level in the water glass varies as gradient varies
                     break;
                 case CABViewControlTypes.TENDER_WATER:
-                    data = CombinedTenderWaterVolumeUKG; // Looks like default locomotives need an absolute UK gallons value
+                    data = CombinedTenderWaterVolumeUKG; // Looks like default locomotives need an absolute UK gallons value, this is not impacted by gradient
                     break;
                 case CABViewControlTypes.STEAM_PR:
                     data = ConvertFromPSI(cvc, BoilerPressurePSI);
