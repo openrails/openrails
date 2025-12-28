@@ -8153,7 +8153,7 @@ namespace Orts.Simulation.RollingStocks
 
                     */
 
-                    if (GradientBoilerLevelFraction > 0.52 && waterGlassFractionLevel > 0.59 || waterGlassFractionLevel > 0.90)        // turn injectors off if water level in boiler greater then 0.52, to stop cycling
+                    if ((GradientBoilerLevelFraction > 0.52 && waterGlassFractionLevel > 0.59) || waterGlassFractionLevel > 0.90)        // turn injectors off if water level in boiler greater then 0.52, to stop cycling
                     {
                         Injector1IsOn = false;
                         Injector1Fraction = 0.0f;
@@ -8206,7 +8206,7 @@ namespace Orts.Simulation.RollingStocks
 
                     // Injector 2 operation
 
-                    if (GradientBoilerLevelFraction > 0.40 && waterGlassFractionLevel > 0.53 || waterGlassFractionLevel > 0.80 && !InjectorLockedOut)
+                    if ((GradientBoilerLevelFraction > 0.40 && waterGlassFractionLevel > 0.53) || waterGlassFractionLevel > 0.80 && !InjectorLockedOut)
                     {
                         Injector2IsOn = false;
                         Injector2Fraction = 0.0f;
