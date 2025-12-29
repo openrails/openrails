@@ -204,9 +204,12 @@ namespace Orts.Simulation.RollingStocks
         bool WaterMotionPumpSound1IsOn = false;
         bool WaterMotionPumpSound2IsOn = false;
         float WaterMotionPumpHeatLossBTU;
-        bool WaterMotionPumpLockedOut = false;
-        float WaterMotionPumpLockOutResetTimeS = 15.0f; // Time to reset the pump lock out time - time to prevent change of pumps
-        float WaterMotionPumpLockOutTimeS; // Current lock out time - reset after Reset Time exceeded 
+        bool WaterMotionPump1LockedOut = false;
+        float WaterMotionPump1LockOutResetTimeS = 15.0f; // Time to reset the pump lock out time - time to prevent change of pumps
+        float WaterMotionPump1LockOutTimeS; // Current lock out time - reset after Reset Time exceeded 
+        bool WaterMotionPump2LockedOut = false;
+        float WaterMotionPump2LockOutResetTimeS = 15.0f; // Time to reset the pump lock out time - time to prevent change of pumps
+        float WaterMotionPump2LockOutTimeS; // Current lock out time - reset after Reset Time exceeded 
 
         public bool CylinderCocksAreOpen;
         public bool BlowdownValveOpen;
@@ -1337,9 +1340,10 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(Injector2Fraction);
             outf.Write(Injector1LockedOut);
             outf.Write(Injector2LockedOut);
-            outf.Write(WaterMotionPumpLockedOut);
+            outf.Write(WaterMotionPump1LockedOut);
+            outf.Write(WaterMotionPump2LockedOut);
             outf.Write(Injector1LockOutTimeS);
-            outf.Write(WaterMotionPumpLockOutTimeS);
+            outf.Write(WaterMotionPump1LockOutTimeS);
             outf.Write(WaterTempNewK);
             outf.Write(BkW_Diff);
             outf.Write(BoilerWaterFractionAbs);
@@ -1403,9 +1407,10 @@ namespace Orts.Simulation.RollingStocks
             Injector2Fraction = inf.ReadSingle();
             Injector1LockedOut = inf.ReadBoolean();
             Injector2LockedOut = inf.ReadBoolean();
-            WaterMotionPumpLockedOut = inf.ReadBoolean();
+            WaterMotionPump1LockedOut = inf.ReadBoolean();
+            WaterMotionPump2LockedOut = inf.ReadBoolean();
             Injector1LockOutTimeS = inf.ReadSingle();
-            WaterMotionPumpLockOutTimeS = inf.ReadSingle();
+            WaterMotionPump1LockOutTimeS = inf.ReadSingle();
             WaterTempNewK = inf.ReadSingle();
             BkW_Diff = inf.ReadSingle();
             BoilerWaterFractionAbs = inf.ReadSingle();
@@ -7650,20 +7655,34 @@ namespace Orts.Simulation.RollingStocks
                 BoilerWaterInputLB += (elapsedClockSeconds * TotalPumpFlowRateLbpS); // Keep track of water flow into boilers from Pump
                 BoilerHeatOutBTUpS += WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water injection - inject steam and water Heat
 
-                // Update pump lockout timer
-                if (WaterMotionPump1IsOn || WaterMotionPump2IsOn || WaterMotionPumpLockedOut)
+                // Update pump lockout timers
+                if (WaterMotionPump1IsOn || WaterMotionPump1LockedOut)
                 {
-                    if (WaterMotionPumpLockedOut)
+                    if (WaterMotionPump1LockedOut)
                     {
-                        WaterMotionPumpLockOutTimeS += elapsedClockSeconds;
+                        WaterMotionPump1LockOutTimeS += elapsedClockSeconds;
                     }
-                    if (WaterMotionPumpLockOutTimeS > WaterMotionPumpLockOutResetTimeS)
+                    if (WaterMotionPump1LockOutTimeS > WaterMotionPump1LockOutResetTimeS)
                     {
-                        WaterMotionPumpLockedOut = false;
-                        WaterMotionPumpLockOutTimeS = 0.0f;
+                        WaterMotionPump1LockedOut = false;
+                        WaterMotionPump1LockOutTimeS = 0.0f;
 
                     }
                 }
+                if (WaterMotionPump2IsOn || WaterMotionPump2LockedOut)
+                {
+                    if (WaterMotionPump2LockedOut)
+                    {
+                        WaterMotionPump2LockOutTimeS += elapsedClockSeconds;
+                    }
+                    if (WaterMotionPump2LockOutTimeS > WaterMotionPump2LockOutResetTimeS)
+                    {
+                        WaterMotionPump2LockedOut = false;
+                        WaterMotionPump2LockOutTimeS = 0.0f;
+
+                    }
+                }
+
             }
             else
             {
@@ -7999,184 +8018,33 @@ namespace Orts.Simulation.RollingStocks
                     // turn water pumps off if water level in boiler greater then 0.60
                     {
                         WaterMotionPump1IsOn = false;
+                        WaterMotionPump1LockedOut = true;
                         StopMotionPump1Sound();
                     }
-                    else if ((GradientBoilerLevelFraction < 0.40 || waterGlassFractionLevel < 0.55) && !WaterMotionPumpLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.40 || waterGlassFractionLevel < 0.55) && !WaterMotionPump1LockedOut)
                     // turn water pump #1 on if water level in boiler drops below 0.55
                     {
                         WaterMotionPump1IsOn = true;
-                        WaterMotionPumpLockedOut = true;
+                        WaterMotionPump1LockedOut = true;
                         PlayMotionPump1SoundIfStarting();
                     }
 
-                    if ((GradientBoilerLevelFraction > 0.35 && waterGlassFractionLevel > 0.50) || waterGlassFractionLevel > 0.80 && !WaterMotionPumpLockedOut)
+                    if ((GradientBoilerLevelFraction > 0.35 && waterGlassFractionLevel > 0.50) || waterGlassFractionLevel > 0.80 && !WaterMotionPump2LockedOut)
                     // turn water pump #2 off if water level in boiler greater then 0.50
                     {
                         WaterMotionPump2IsOn = false;
+                        WaterMotionPump2LockedOut = true;
                         StopMotionPump2Sound();
                     }
-                    else if ((GradientBoilerLevelFraction < 0.25 || waterGlassFractionLevel < 0.45) && !WaterMotionPumpLockedOut)     // turn water pump #2 on if water level in boiler drops below 0.45
+                    else if ((GradientBoilerLevelFraction < 0.25 || waterGlassFractionLevel < 0.45) && !WaterMotionPump2LockedOut)     // turn water pump #2 on if water level in boiler drops below 0.45
                     {
                         WaterMotionPump2IsOn = true;
-                        WaterMotionPumpLockedOut = true;
+                        WaterMotionPump2LockedOut = true;
                         PlayMotionPump2SoundIfStarting();
                     }
                 }
                 else
                 {
-                    /*
-                    // Injectors
-                    // Injectors normally not on when stationary?
-                    // Injector water delivery heat decreases with the capacity of the injectors, ideally one injector would be used as appropriate to match steam consumption. @nd one only used if required.
-                                        if (GradientBoilerLevelFraction > 0.51)        // turn injectors off if water level in boiler greater then 0.51, to stop cycling
-                    {
-                        Injector1IsOn = false;
-                        Injector1Fraction = 0.0f;
-                        Injector2IsOn = false;
-                        Injector2Fraction = 0.0f;
-                        StopInjector1Sound();
-                        StopInjector2Sound();
-                    }
-                                        else if (GradientBoilerLevelFraction <= 0.51 && GradientBoilerLevelFraction > 0.475 && !InjectorLockedOut)  
-                    {
-                        Injector1IsOn = true;
-                        Injector1Fraction = 0.6f;
-                        Injector2IsOn = false;
-                        Injector2Fraction = 0.0f;
-                        InjectorLockedOut = true;
-                        PlayInjector1SoundIfStarting();
-                    }
-                                        else if (GradientBoilerLevelFraction <= 0.475 && GradientBoilerLevelFraction > 0.45 && !InjectorLockedOut)  
-                    {
-                        Injector1IsOn = true;
-                                            Injector1Fraction = 0.75f;
-                        Injector2IsOn = false;
-                        Injector2Fraction = 0.0f;
-                        InjectorLockedOut = true;
-                        PlayInjector1SoundIfStarting();
-                    }
-                                        else if (GradientBoilerLevelFraction <= 0.45 && GradientBoilerLevelFraction > 0.425 && !InjectorLockedOut)  
-                    {
-                        Injector1IsOn = true;
-                        Injector1Fraction = 1.0f;
-                        Injector2IsOn = false;
-                        Injector2Fraction = 0.0f;
-                        InjectorLockedOut = true;
-                        PlayInjector1SoundIfStarting();
-                    }
-                                        else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2 as well
-                    {
-                                            if (GradientBoilerLevelFraction <= 0.425 && GradientBoilerLevelFraction > 0.40 && !InjectorLockedOut)
-                        {
-
-                                                Injector1IsOn = true;
-                                                Injector1Fraction = 1.0f; 
-                            Injector2IsOn = true;
-                            Injector2Fraction = 0.6f;
-                            InjectorLockedOut = true;
-                            PlayInjector2SoundIfStarting();
-                        }
-                                            else if (GradientBoilerLevelFraction <= 0.375 && GradientBoilerLevelFraction > 0.35 && !InjectorLockedOut)
-                        {
-                                                Injector1IsOn = true;
-                                                Injector1Fraction = 1.0f;
-                            Injector2IsOn = true;
-                                                Injector2Fraction = 0.75f;
-                            InjectorLockedOut = true;
-                            PlayInjector2SoundIfStarting();
-                        }
-                                            else if (GradientBoilerLevelFraction <= 0.35 && !InjectorLockedOut)
-                        {
-                                                Injector1IsOn = true;
-                                                Injector1Fraction = 1.0f;
-                            Injector2IsOn = true;
-                            Injector2Fraction = 1.0f;
-                            InjectorLockedOut = true;
-                            PlayInjector2SoundIfStarting();
-                        }
-                    }
-                    */
-
-                    /*
-
-                                        if (GradientBoilerLevelFraction > 0.52 && waterGlassFractionLevel > 0.59 || waterGlassFractionLevel > 0.90)        // turn injectors off if water level in boiler greater then 0.52, to stop cycling
-                                        {
-                                            Injector1IsOn = false;
-                                            Injector1Fraction = 0.0f;
-                                            Injector2IsOn = false;
-                                            Injector2Fraction = 0.0f;
-                                            StopInjector1Sound();
-                                            StopInjector2Sound();
-                                        }
-                                        else if ((GradientBoilerLevelFraction < 0.50 || waterGlassFractionLevel < 0.58) && ( GradientBoilerLevelFraction > 0.48 && waterGlassFractionLevel > 0.57 ) && !InjectorLockedOut)
-                                        {
-                                            Injector1IsOn = true;
-                                            Injector1Fraction = 0.6f;
-                                            Injector2IsOn = false;
-                                            Injector2Fraction = 0.0f;
-                                            InjectorLockedOut = true;
-                                            PlayInjector1SoundIfStarting();
-                                        }
-                                        else if ((GradientBoilerLevelFraction < 0.46 || waterGlassFractionLevel < 0.56) && (GradientBoilerLevelFraction > 0.44 && waterGlassFractionLevel > 0.55) && !InjectorLockedOut)
-                                        {
-                                            Injector1IsOn = true;
-                                            Injector1Fraction = 0.75f;
-                                            Injector2IsOn = false;
-                                            Injector2Fraction = 0.0f;
-                                            InjectorLockedOut = true;
-                                            PlayInjector1SoundIfStarting();
-                                        }
-                                        else if ((GradientBoilerLevelFraction < 0.42 || waterGlassFractionLevel < 0.50) && !InjectorLockedOut)
-                                        {
-                                            Injector1IsOn = true;
-                                            Injector1Fraction = 1.0f;
-                                            Injector2IsOn = false;
-                                            Injector2Fraction = 0.0f;
-                                            InjectorLockedOut = true;
-                                            PlayInjector1SoundIfStarting();
-                                        }
-
-                                        else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2 as well
-                                        {
-                                            if (GradientBoilerLevelFraction > 0.40 && waterGlassFractionLevel > 0.53 || waterGlassFractionLevel > 0.90 && !InjectorLockedOut)
-                                            {
-                                                Injector1IsOn = true;
-                                                Injector1Fraction = 1.0f;
-                                                Injector2IsOn = false;
-                                                Injector2Fraction = 0.0f;
-                                                InjectorLockedOut = true;
-                                                StopInjector2Sound();
-                                            }
-                                            else if ((GradientBoilerLevelFraction < 0.38 || waterGlassFractionLevel < 0.52) && (GradientBoilerLevelFraction > 0.36 && waterGlassFractionLevel > 0.51) && !InjectorLockedOut)
-                                            {
-                                                Injector1IsOn = true;
-                                                Injector1Fraction = 1.0f;
-                                                Injector2IsOn = true;
-                                                Injector2Fraction = 0.6f;
-                                                InjectorLockedOut = true;
-                                                PlayInjector2SoundIfStarting();
-                                            }
-                                            else if ((GradientBoilerLevelFraction < 0.34 || waterGlassFractionLevel < 0.50) && (GradientBoilerLevelFraction > 0.32 && waterGlassFractionLevel > 0.49) && !InjectorLockedOut)
-                                            {
-                                                Injector1IsOn = true;
-                                                Injector1Fraction = 1.0f;
-                                                Injector2IsOn = true;
-                                                Injector2Fraction = 0.75f;
-                                                InjectorLockedOut = true;
-                                                PlayInjector2SoundIfStarting();
-                                            }
-                                            else if ((GradientBoilerLevelFraction < 0.30 || waterGlassFractionLevel < 0.48) && !InjectorLockedOut)
-                                            {
-                                                Injector1IsOn = true;
-                                                Injector1Fraction = 1.0f;
-                                                Injector2IsOn = true;
-                                                Injector2Fraction = 1.0f;
-                                                InjectorLockedOut = true;
-                                                PlayInjector2SoundIfStarting();
-                                            }
-                                        }
-
-                    */
 
                     if ((GradientBoilerLevelFraction > 0.52 && waterGlassFractionLevel > 0.59) || waterGlassFractionLevel > 0.90)        // turn injectors off if water level in boiler greater then 0.52, to stop cycling
                     {
@@ -8240,44 +8108,44 @@ namespace Orts.Simulation.RollingStocks
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Off;
                     }
                     else if ((GradientBoilerLevelFraction > 0.38 && waterGlassFractionLevel > 0.52) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Midway && !Injector2LockedOut)
-                    {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 0.6f;
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.6f;
                         Injector2LockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                            PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Minimum;
-                    }
+                        }
                     else if ((GradientBoilerLevelFraction > 0.34 && waterGlassFractionLevel > 0.50) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Maximum && !Injector2LockedOut)
-                    {
-                        Injector2IsOn = true;
+                        {
+                            Injector2IsOn = true;
                         Injector2Fraction = 0.75f;
                         Injector2LockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                            PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Midway;
-                    }
+                        }
                     else if ((GradientBoilerLevelFraction < 0.36 || waterGlassFractionLevel < 0.51) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Off && !Injector2LockedOut)
-                    {
-                        Injector2IsOn = true;
+                        {
+                            Injector2IsOn = true;
                         Injector2Fraction = 0.6f;
                         Injector2LockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                            PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Minimum;
-                    }
+                        }
 
                     else if ((GradientBoilerLevelFraction < 0.32 || waterGlassFractionLevel < 0.49) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Minimum && !Injector2LockedOut)
-                    {
-                        Injector2IsOn = true;
+                        {
+                            Injector2IsOn = true;
                         Injector2Fraction = 0.75f;
                         Injector2LockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                            PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Midway;
-                    }
+                        }
                     else if ((GradientBoilerLevelFraction < 0.30 || waterGlassFractionLevel < 0.48) && !Injector2LockedOut)
-                    {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 1.0f;
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 1.0f;
                         Injector2LockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                            PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Maximum;
                     }
                 }
