@@ -33,6 +33,7 @@ using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Settings;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -63,6 +64,19 @@ namespace Orts.Simulation
         public static Random Random { get; private set; }
         public static double Resolution = 1000000; // resolution for calculation of random value with a pseudo-gaussian distribution
         public const float MaxStoppedMpS = 0.1f; // stopped is taken to be a speed less than this 
+
+        // Hot reloading: File monitoring for each main install folder
+        public FileSystemWatcher GLOBALWatcher;
+        public FileSystemWatcher ROUTESWatcher;
+        public FileSystemWatcher SOUNDWatcher;
+        public FileSystemWatcher TRAINSWatcher;
+        public float FileChangedDelayS = 1.0f; // Time to wait after files are updated before processing updates
+        public DateTime FileUpdateTime; // The REAL world time after which file updates can be processed
+
+        // Hot reloading: Lists of updated files for file monitoring purposes
+        private HashSet<string> TrainsetUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        private HashSet<string> IncludeUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        private HashSet<string> CabviewUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
         public bool Paused = true;          // start off paused, set to true once the viewer is fully loaded and initialized
         public float GameSpeed = 1;
@@ -283,6 +297,8 @@ namespace Orts.Simulation
             DayAmbientLight = (int)Settings.DayAmbientLight;
             EOTPath = BasePath + @"\TRAINS\ORTS_EOT\";
 
+            if (Settings.EnableHotReloading)
+                EstablishFileWatchers(BasePath);
 
             string ORfilepath = System.IO.Path.Combine(RoutePath, "OpenRails");
 
@@ -825,6 +841,15 @@ namespace Orts.Simulation
             // Advance the times.
             GameTime += elapsedClockSeconds;
             ClockTime += elapsedClockSeconds;
+
+            // Mark assets as stale if there are updated files to process, and no files have been updated recently
+            if (DateTime.Compare(FileUpdateTime, DateTime.Now) < 0)
+            {
+                if (IncludeUpdates.Count > 0 || TrainsetUpdates.Count > 0 || CabviewUpdates.Count > 0)
+                {
+                    ProcessTrainsFileUpdates();
+                }
+            }
 
             // Check if there is a request to switch to another played train
 
@@ -2269,6 +2294,158 @@ namespace Orts.Simulation
             if (logExists) logfilefull = String.Empty;
 
             return (logfilefull);
+        }
+
+        // File watcher methods for hot-reloading of simulator files
+
+        /// <summary>
+        /// Generate FileSystemWatcher objects for the main MSTS folders at the specified location, and
+        /// add subscribers for FileSystemWatcher events throughout the simulation side of the program
+        /// </summary>
+        private void EstablishFileWatchers(string basePath)
+        {
+            // To save on memory space, we only track the full list of file references
+            // when hot reloading is enabled. Otherwise, that information is not needed.
+            SharedSMSFileManager.TrackFileReferences = true;
+
+            GLOBALWatcher = new FileSystemWatcher(basePath + @"\GLOBAL\")
+            {
+                EnableRaisingEvents = true,
+                IncludeSubdirectories = true
+            };
+
+            ROUTESWatcher = new FileSystemWatcher(basePath + @"\ROUTES\")
+            {
+                EnableRaisingEvents = true,
+                IncludeSubdirectories = true
+            };
+
+            SOUNDWatcher = new FileSystemWatcher(basePath + @"\SOUND\")
+            {
+                EnableRaisingEvents = true,
+                IncludeSubdirectories = true
+            };
+
+            TRAINSWatcher = new FileSystemWatcher(basePath + @"\TRAINS\")
+            {
+                EnableRaisingEvents = true,
+                IncludeSubdirectories = true
+            };
+
+            // Train files (.eng, .wag, .inc) can be in the TRAINS folder
+
+            SubscribeToFileWatcher(TRAINSWatcher, HandleTrainsFileChange, HandleTrainsFileRename);
+        }
+
+        /// <summary>
+        /// Helper method to add the first given method as a subscriber to file
+        /// change/creation/deletion events, and the second given method as a subscriber
+        /// to file renamed events, produced by the given file system watcher object
+        /// </summary>
+        /// <param name="watcher">The file system watcher to subscribe to</param>
+        /// <param name="changedMethod">The event handler to add as a subscriber for change/creation/deletion events</param>
+        /// <param name="renamedMethod">The event handler to add as a subscriber for rename events</param>
+        public static void SubscribeToFileWatcher(FileSystemWatcher watcher, FileSystemEventHandler changedMethod, RenamedEventHandler renamedMethod)
+        {
+            watcher.Changed += changedMethod;
+            watcher.Created += changedMethod;
+            watcher.Deleted += changedMethod;
+            watcher.Renamed += renamedMethod;
+        }
+
+        /// <summary>
+        /// Subscriber for file updates in train-related MSTS installation directories
+        /// Accepts all file updates, which will be further sorted later on
+        /// </summary>
+        public void HandleTrainsFileChange(object sender, FileSystemEventArgs e)
+        {
+            SortTrainsFileUpdates(new HashSet<string> { e.FullPath });
+        }
+
+        /// <summary>
+        /// Subscriber for file updates in train-related MSTS installation directories
+        /// Accepts all file updates, which will be further sorted later on
+        /// </summary>
+        public void HandleTrainsFileRename(object sender, RenamedEventArgs e)
+        {
+            SortTrainsFileUpdates(new HashSet<string> { e.OldFullPath, e.FullPath });
+        }
+
+        /// <summary>
+        /// Accepts paths to any updated file in train-related MSTS installation directories
+        /// then organizes files based on file type and use case
+        /// </summary>
+        public void SortTrainsFileUpdates(HashSet<string> paths)
+        {
+            bool found = false;
+
+            foreach (string path in paths)
+            {
+                string ext = Path.GetExtension(path).ToLowerInvariant();
+
+                if (ext == ".eng" || ext == ".wag")
+                {
+                    TrainsetUpdates.Add(path);
+
+                    found = true;
+                }
+                else if (ext == ".inc")
+                {
+                    IncludeUpdates.Add(path);
+
+                    found = true;
+                }
+                else if (ext == ".cvf")
+                {
+                    CabviewUpdates.Add(path);
+
+                    found = true;
+                }
+            }
+
+            if (found)
+                FileUpdateTime = DateTime.Now.AddSeconds(FileChangedDelayS);
+        }
+
+        /// <summary>
+        /// Determines if any engines or wagons have gone stale using the file lists from SortTrainsFileUpdates()
+        /// </summary>
+        private void ProcessTrainsFileUpdates()
+        {
+            if (CabviewUpdates.Count > 0 || IncludeUpdates.Count > 0)
+            {
+                // Note that this only considers changes to .cvf files and .inc files references, NOT TEXTURES
+                // Textures are checked on the viewer side
+                CarManager.MarkCabsStale(CabviewUpdates, IncludeUpdates);
+
+                // Unlike other shared object types, data is not shared between all instances of train car objects
+                // Need to manually propagate the stale cab flag to all instances of train cars by iterating through all trains
+                HashSet<string> staleCabs = CarManager.LoadedCars.Keys.Where(c => CarManager.LoadedCars[c].StaleCab).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+
+                foreach (Train train in Trains)
+                    foreach (TrainCar car in train.Cars)
+                        if (!car.StaleCab && staleCabs.Contains(car.WagFilePath, StringComparer.InvariantCultureIgnoreCase))
+                            car.StaleCab = true;
+
+                CabviewUpdates.Clear();
+            }
+            if (TrainsetUpdates.Count > 0 || IncludeUpdates.Count > 0)
+            {
+                CarManager.MarkStale(TrainsetUpdates, IncludeUpdates);
+
+                // Unlike other shared object types, data is not shared between all instances of train car objects
+                // Need to manually propagate the stale flag to all instances of train cars by iterating through all trains
+                HashSet<string> staleCars = CarManager.LoadedCars.Keys.Where(c => CarManager.LoadedCars[c].StaleData).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+
+                foreach (Train train in Trains)
+                    foreach (TrainCar car in train.Cars)
+                        if (!car.StaleData && staleCars.Contains(car.WagFilePath, StringComparer.InvariantCultureIgnoreCase))
+                            car.StaleData = true;
+
+                TrainsetUpdates.Clear();
+            }
+            if (IncludeUpdates.Count > 0)
+                IncludeUpdates.Clear(); // Include file updates have been considered and can be cleared out
         }
 
         /// <summary>

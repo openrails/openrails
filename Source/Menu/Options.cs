@@ -276,6 +276,7 @@ namespace Menu
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;   // Inverted as "Show warnings" is better UI than "Suppress warnings"
+            checkEnableHotReloading.Checked = Settings.EnableHotReloading;
             checkCorrectQuestionableBrakingParams.Checked = Settings.CorrectQuestionableBrakingParams;
             numericActRandomizationLevel.Value = Settings.ActRandomizationLevel;
             numericActWeatherRandomizationLevel.Value = Settings.ActWeatherRandomizationLevel;
@@ -508,6 +509,7 @@ namespace Menu
             Settings.AdhesionFactor = (int)trackAdhesionFactor.Value;
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
+            Settings.EnableHotReloading = checkEnableHotReloading.Checked;
             Settings.CorrectQuestionableBrakingParams = checkCorrectQuestionableBrakingParams.Checked;
             Settings.ActRandomizationLevel = (int)numericActRandomizationLevel.Value;
             Settings.ActWeatherRandomizationLevel = (int)numericActWeatherRandomizationLevel.Value;
@@ -835,6 +837,7 @@ namespace Menu
                 // Experimental tab
                 (pbSuperElevation, new Control [] { ElevationText, checkUseSuperElevation, label8}),
                 (pbShowShapeWarnings, new[] { checkShapeWarnings }),
+                (pbEnableHotReloading, new [] { checkEnableHotReloading }),
                 (pbCorrectQuestionableBrakingParameters, new[] { checkCorrectQuestionableBrakingParams }),
                 (pbActivityRandomization, new Control [] { label13, label12 }),
                 (pbActivityWeatherRandomization, new Control [] { label26, label27 }),
@@ -1076,6 +1079,10 @@ namespace Menu
                 {
                     pbShowShapeWarnings,
                     BaseDocumentationUrl + "/options.html#show-shape-warnings"
+                },
+                {
+                    pbEnableHotReloading,
+                    BaseDocumentationUrl + "/options.html#enable-hot-reloading-of-simulator-files"
                 },
                 {
                     pbCorrectQuestionableBrakingParameters,

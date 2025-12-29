@@ -1299,9 +1299,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             base.Restore(inf);
         }
 
-        public override void Initialize()
+        public override void Initialize(bool reinitialize = false)
         {
-            base.Initialize();
+            base.Initialize(reinitialize);
 
             // Create a steam engine block if none exits, typically for a MSTS or BASIC configuration
             if (SteamEngines.Count == 0)

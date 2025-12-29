@@ -45,7 +45,6 @@ using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
-using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
@@ -76,6 +75,10 @@ namespace Orts.Viewer3D
         public abstract bool Update();
 
         /// <summary>
+        /// True if any .wav or .sms referenced by this sound source is out of date
+        /// </summary>
+        public bool StaleData;
+        /// <summary>
         /// The sound may be from a train car
         /// </summary>
         public MSTSWagon Car;
@@ -102,8 +105,8 @@ namespace Orts.Viewer3D
         private int _curTType = -1;
         private SoundSource _activeInSource;
         private SoundSource _activeOutSource;
-        private List<SoundSource> _inSources;
-        private List<SoundSource> _outSources;
+        public List<SoundSource> InSources { get; private set; } = new List<SoundSource>();
+        public List<SoundSource> OutSources { get; private set; } = new List<SoundSource>();
 
         // data to evaluate if ttype selection is needed or not
         private float nextDist = -1; // initial distance to sound region forward
@@ -120,8 +123,6 @@ namespace Orts.Viewer3D
             TrackSound = true;
             Car = car;
             Viewer = viewer;
-            _inSources = new List<SoundSource>();
-            _outSources = new List<SoundSource>();
 
             foreach (Orts.Formats.Msts.TrackTypesFile.TrackType ttdf in viewer.TrackTypes)
             {
@@ -150,11 +151,11 @@ namespace Orts.Viewer3D
             }
             if (isInside)
             {
-                _inSources.Add(new SoundSource(Viewer, Car, fullPath));
-                _inSources.Last().IsInternalTrackSound = true;
+                InSources.Add(new SoundSource(Viewer, Car, fullPath));
+                InSources.Last().IsInternalTrackSound = true;
             }
             else
-                _outSources.Add(new SoundSource(Viewer, Car, fullPath));
+                OutSources.Add(new SoundSource(Viewer, Car, fullPath));
         }
 
         public override void Uninitialize()
@@ -168,11 +169,11 @@ namespace Orts.Viewer3D
 
         public override void InitInitials()
         {
-            if (_inSources != null && _inSources.Count > 0)
-                _activeInSource = _inSources[0];
+            if (InSources != null && InSources.Count > 0)
+                _activeInSource = InSources[0];
 
-            if (_outSources != null && _outSources.Count > 0)
-                _activeOutSource = _outSources[0];
+            if (OutSources != null && OutSources.Count > 0)
+                _activeOutSource = OutSources[0];
 
             _curTType = 0;
             _prevTType = 0;
@@ -303,8 +304,8 @@ namespace Orts.Viewer3D
                     {
                         _activeInSource.Uninitialize();
                         //_activeInSource.Car = null;
-                        if (0 <= _curTType && _curTType < _inSources.Count)
-                            _activeInSource = _inSources[_curTType];
+                        if (0 <= _curTType && _curTType < InSources.Count)
+                            _activeInSource = InSources[_curTType];
                         else
                             Trace.TraceWarning("Could not change inside sound region to {0}", _curTType);
                         //_activeInSource.Car = Car;
@@ -314,8 +315,8 @@ namespace Orts.Viewer3D
                     {
                         _activeOutSource.Uninitialize();
                         //_activeOutSource.Car = null;
-                        if (0 <= _curTType && _curTType < _outSources.Count)
-                            _activeOutSource = _outSources[_curTType];
+                        if (0 <= _curTType && _curTType < OutSources.Count)
+                            _activeOutSource = OutSources[_curTType];
                         else
                             Trace.TraceWarning("Could not change outside sound region to {0}", _curTType);
                         //_activeOutSource.Car = Car;
@@ -363,17 +364,17 @@ namespace Orts.Viewer3D
 
         public override void Dispose()
         {
-            if (_inSources != null)
+            if (InSources != null)
             {
-                foreach (SoundSource s in _inSources)
+                foreach (SoundSource s in InSources)
                     s.Dispose();
-                _inSources.Clear();
+                InSources.Clear();
             }
-            if (_outSources != null)
+            if (OutSources != null)
             {
-                foreach (SoundSource s in _outSources)
+                foreach (SoundSource s in OutSources)
                     s.Dispose();
-                _outSources.Clear();
+                OutSources.Clear();
             }
             Car = null;
         }
@@ -442,8 +443,8 @@ namespace Orts.Viewer3D
                     {
                         _activeInSource.Uninitialize();
                         //_activeInSource.Car = null;
-                        if (0 <= _curTType && _curTType < _inSources.Count)
-                            _activeInSource = _inSources[_curTType];
+                        if (0 <= _curTType && _curTType < InSources.Count)
+                            _activeInSource = InSources[_curTType];
                         else
                             Trace.TraceWarning("Could not change inside sound region to {0}", _curTType);
                         //_activeInSource.Car = Car;
@@ -453,8 +454,8 @@ namespace Orts.Viewer3D
                     {
                         _activeOutSource.Uninitialize();
                         //_activeOutSource.Car = null;
-                        if (0 <= _curTType && _curTType < _outSources.Count)
-                            _activeOutSource = _outSources[_curTType];
+                        if (0 <= _curTType && _curTType < OutSources.Count)
+                            _activeOutSource = OutSources[_curTType];
                         else
                             Trace.TraceWarning("Could not change outside sound region to {0}", _curTType);
                         //_activeOutSource.Car = Car;
@@ -694,6 +695,9 @@ namespace Orts.Viewer3D
             if (smsFilePath == null)
                 return;
 
+            // Use resolved path, without any 'up one level' ("..\\") calls
+            smsFilePath = Path.GetFullPath(smsFilePath);
+
             SMSFolder = Path.GetDirectoryName(smsFilePath);
             SMSFileName = Path.GetFileName(smsFilePath);
             Orts.Formats.Msts.SoundManagmentFile smsFile = Orts.Formats.Msts.SharedSMSFileManager.Get(smsFilePath);
@@ -741,6 +745,9 @@ namespace Orts.Viewer3D
 
             if (wavFilePath == null)
                 return;
+
+            // Use resolved path, without any 'up one level' ("..\\") calls
+            wavFilePath = Path.GetFullPath(wavFilePath);
 
             WavFolder = Path.GetDirectoryName(wavFilePath);
             WavFileName = Path.GetFileName(wavFilePath);
@@ -1564,6 +1571,7 @@ namespace Orts.Viewer3D
             if (ALSoundSource != null)
             {
                 ALSoundSource.HardDeactivate();
+                ALSoundSource.ForceResetQueue();
             }
             Sweep();
         }
@@ -1574,6 +1582,7 @@ namespace Orts.Viewer3D
             {
                 ALSoundSource.HardDeactivate();
                 ALSoundSource.Dispose();
+                ALSoundSource.ForceResetQueue();
                 ALSoundSource = null;
             }
             Sweep();
@@ -1584,10 +1593,21 @@ namespace Orts.Viewer3D
         /// </summary>
         private void Sweep()
         {
-            foreach (var trigger in Triggers)
-                if (trigger.SoundCommand is ORTSSoundPlayCommand)
-                    foreach (var name in (trigger.SoundCommand as ORTSSoundPlayCommand).Files)
-                        SoundItem.Sweep(name, SoundSource.IsExternal, IsReleasedWithJump);
+            string[] pathArray = {SoundSource.SMSFolder ?? "",
+                                     Program.Simulator.RoutePath + @"\SOUND",
+                                     Program.Simulator.BasePath + @"\SOUND"};
+
+            foreach (ORTSTrigger trigger in Triggers)
+            {
+                if (trigger.SoundCommand is ORTSSoundPlayCommand soundPlayCommand)
+                {
+                    foreach (string name in soundPlayCommand.Files)
+                    {
+                        string fullPath = ORTSPaths.GetFileFromFolders(pathArray, name);
+                        SoundItem.Sweep(fullPath, SoundSource.IsExternal, IsReleasedWithJump);
+                    }
+                }
+            }
         }
 
     } // class ORTSStream

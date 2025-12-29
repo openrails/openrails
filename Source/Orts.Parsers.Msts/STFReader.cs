@@ -179,7 +179,8 @@ namespace Orts.Parsers.Msts
             if (Directory.Exists(path))
             {
                 streamSTF = new StreamReader(filename, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
-                FileName = filename;
+                FileName = Path.GetFullPath(filename);
+                FileNames.Add(FileName);
                 SimisSignature = streamSTF.ReadLine();
                 LineNumber = 2;
                 if (useTree) tree = new List<string>();
@@ -232,7 +233,10 @@ namespace Orts.Parsers.Msts
                     STFException.TraceWarning(this, string.Format("Expected depth 0; got depth {0} at end of file (missing ')'?)", block_depth));
                 streamSTF.Close(); streamSTF = null;
                 if (includeReader != null)
+                {   // Add any new files names, including those found recursively with other include files
+                    FileNames.UnionWith(includeReader.FileNames);
                     includeReader.Dispose();
+                }
                 itemBuilder.Length = 0;
                 itemBuilder.Capacity = 0;
             }
@@ -244,6 +248,9 @@ namespace Orts.Parsers.Msts
         /// <summary>Filename property for the file being parsed - for reporting purposes
         /// </summary>
         public string FileName { get; private set; }
+        /// <summary>Set of ALL file names that have been parsed by this reader, especially including include files
+        /// </summary>
+        public HashSet<string> FileNames { get; private set; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
         /// <summary>Line Number property for the file being parsed - for reporting purposes
         /// </summary>
         public int LineNumber { get; private set; }
@@ -439,6 +446,8 @@ namespace Orts.Parsers.Msts
                 if (eob) UpdateTreeAndStepBack(")");
                 if (includeReader.Eof)
                 {
+                    // Add any new files names, including those found recursively with other include files
+                    FileNames.UnionWith(includeReader.FileNames);
                     includeReader.Dispose();
                     includeReader = null;
                 }
@@ -1774,6 +1783,7 @@ namespace Orts.Parsers.Msts
                 string item = includeReader.ReadItem(skip_mode, string_mode);
                 UpdateTreeAndStepBack(item);
                 if ((!includeReader.Eof) || (item.Length > 0)) return item;
+                FileNames.UnionWith(includeReader.FileNames); // Add any new files names, including those found recursively with other include files
                 includeReader.Dispose();
                 includeReader = null;
             }
