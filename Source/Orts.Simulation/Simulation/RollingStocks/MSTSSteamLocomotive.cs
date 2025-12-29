@@ -119,9 +119,13 @@ namespace Orts.Simulation.RollingStocks
         bool Injector1SoundIsOn = false;
         public bool Injector2IsOn;
         bool Injector2SoundIsOn = false;
-        bool InjectorLockedOut = false; // Flag to lock injectors from changing within a fixed period of time
-        float InjectorLockOutResetTimeS = 15.0f; // Time to reset the injector lock out time - time to prevent change of injectors
-        float InjectorLockOutTimeS = 0.0f; // Current lock out time - reset after Reset Time exceeded 
+        bool Injector1LockedOut = false; // Flag to lock injectors from changing within a fixed period of time
+        float Injector1LockOutResetTimeS = 15.0f; // Time to reset the injector lock out time - time to prevent change of injectors
+        float Injector1LockOutTimeS = 0.0f; // Current lock out time - reset after Reset Time exceeded 
+
+        bool Injector2LockedOut = false; // Flag to lock injectors from changing within a fixed period of time
+        float Injector2LockOutResetTimeS = 15.0f; // Time to reset the injector lock out time - time to prevent change of injectors
+        float Injector2LockOutTimeS = 0.0f; // Current lock out time - reset after Reset Time exceeded 
 
         string Injector1Type = "Unknown"; // Type of injector 1 fitted to locomotive
         string Injector2Type = "Unknown"; // Type of injector 2 fitted to locomotive
@@ -1331,9 +1335,10 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(Injector1Fraction);
             outf.Write(Injector2IsOn);
             outf.Write(Injector2Fraction);
-            outf.Write(InjectorLockedOut);
+            outf.Write(Injector1LockedOut);
+            outf.Write(Injector2LockedOut);
             outf.Write(WaterMotionPumpLockedOut);
-            outf.Write(InjectorLockOutTimeS);
+            outf.Write(Injector1LockOutTimeS);
             outf.Write(WaterMotionPumpLockOutTimeS);
             outf.Write(WaterTempNewK);
             outf.Write(BkW_Diff);
@@ -1396,9 +1401,10 @@ namespace Orts.Simulation.RollingStocks
             Injector1Fraction = inf.ReadSingle();
             Injector2IsOn = inf.ReadBoolean();
             Injector2Fraction = inf.ReadSingle();
-            InjectorLockedOut = inf.ReadBoolean();
+            Injector1LockedOut = inf.ReadBoolean();
+            Injector2LockedOut = inf.ReadBoolean();
             WaterMotionPumpLockedOut = inf.ReadBoolean();
-            InjectorLockOutTimeS = inf.ReadSingle();
+            Injector1LockOutTimeS = inf.ReadSingle();
             WaterMotionPumpLockOutTimeS = inf.ReadSingle();
             WaterTempNewK = inf.ReadSingle();
             BkW_Diff = inf.ReadSingle();
@@ -1477,6 +1483,9 @@ namespace Orts.Simulation.RollingStocks
             }
 
             base.Initialize();
+
+            SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Off;
+            SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Off;
 
             // Create a steam engine block if none exits, typically for a MSTS or BASIC configuration
             if (SteamEngines.Count == 0)
@@ -7899,18 +7908,34 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-                // Update injector lockout timer
-                if (Injector1IsOn || Injector2IsOn || InjectorLockedOut)
+                // Locks out operation of the injector for a period of time to prevent rapid operation fluctuations
+                // Update injector 1 lockout timer
+                if (Injector1IsOn || Injector1LockedOut)
                 {
-                    if (InjectorLockedOut)
+                    if (Injector1LockedOut)
                     {
-                        InjectorLockOutTimeS += elapsedClockSeconds;
+                        Injector1LockOutTimeS += elapsedClockSeconds;
                     }
 
-                    if (InjectorLockOutTimeS > InjectorLockOutResetTimeS)
+                    if (Injector1LockOutTimeS > Injector1LockOutResetTimeS)
                     {
-                        InjectorLockedOut = false;
-                        InjectorLockOutTimeS = 0.0f;
+                        Injector1LockedOut = false;
+                        Injector1LockOutTimeS = 0.0f;
+
+                    }
+                }
+
+                if (Injector2IsOn || Injector2LockedOut)
+                {
+                    if (Injector2LockedOut)
+                    {
+                        Injector2LockOutTimeS += elapsedClockSeconds;
+                    }
+
+                    if (Injector2LockOutTimeS > Injector2LockOutResetTimeS)
+                    {
+                        Injector2LockedOut = false;
+                        Injector2LockOutTimeS = 0.0f;
 
                     }
                 }
@@ -8157,48 +8182,48 @@ namespace Orts.Simulation.RollingStocks
                     {
                         Injector1IsOn = false;
                         Injector1Fraction = 0.0f;
-                        InjectorLockedOut = true;
+                        Injector1LockedOut = true;
                         StopInjector1Sound();
                         SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Off;
                     }
-                    else if ((GradientBoilerLevelFraction > 0.50 && waterGlassFractionLevel > 0.58) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Midway && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction > 0.50 && waterGlassFractionLevel > 0.58) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Midway && !Injector1LockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.6f;
-                        InjectorLockedOut = true;
+                        Injector1LockedOut = true;
                         PlayInjector1SoundIfStarting();
                         SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Minimum;
                     }
-                    else if ((GradientBoilerLevelFraction > 0.46 && waterGlassFractionLevel > 0.56) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Maximum && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction > 0.46 && waterGlassFractionLevel > 0.56) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Maximum && !Injector1LockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.75f;
-                        InjectorLockedOut = true;
+                        Injector1LockedOut = true;
                         PlayInjector1SoundIfStarting();
                         SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Midway;
                     }
-                    else if ((GradientBoilerLevelFraction < 0.48 || waterGlassFractionLevel < 0.57) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Off && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.48 || waterGlassFractionLevel < 0.57) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Off && !Injector1LockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.6f;
-                        InjectorLockedOut = true;
+                        Injector1LockedOut = true;
                         PlayInjector1SoundIfStarting();
                         SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Minimum;
                     }
 
-                    else if ((GradientBoilerLevelFraction < 0.44 || waterGlassFractionLevel < 0.55) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Minimum && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.44 || waterGlassFractionLevel < 0.55) && SteamInjector1OperationalLevel == SteamInjector1OperationalLevels.Minimum && !Injector1LockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.75f;
-                        InjectorLockedOut = true;
+                        Injector1LockedOut = true;
                         PlayInjector1SoundIfStarting();
                         SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Midway;
                     }
-                    else if ((GradientBoilerLevelFraction < 0.42 || waterGlassFractionLevel < 0.54) && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.42 || waterGlassFractionLevel < 0.54) && !Injector1LockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 1.0f;
-                        InjectorLockedOut = true;
+                        Injector1LockedOut = true;
                         PlayInjector1SoundIfStarting();
                         SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Maximum;
 
@@ -8206,52 +8231,52 @@ namespace Orts.Simulation.RollingStocks
 
                     // Injector 2 operation
 
-                    if ((GradientBoilerLevelFraction > 0.40 && waterGlassFractionLevel > 0.53) || waterGlassFractionLevel > 0.80 && !InjectorLockedOut)
+                    if ((GradientBoilerLevelFraction > 0.40 && waterGlassFractionLevel > 0.53) || waterGlassFractionLevel > 0.80 && !Injector2LockedOut)
                     {
                         Injector2IsOn = false;
                         Injector2Fraction = 0.0f;
-                        InjectorLockedOut = true;
+                        Injector2LockedOut = true;
                         StopInjector2Sound();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Off;
                     }
-                    else if ((GradientBoilerLevelFraction > 0.38 && waterGlassFractionLevel > 0.52) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Midway && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction > 0.38 && waterGlassFractionLevel > 0.52) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Midway && !Injector2LockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.6f;
-                        InjectorLockedOut = true;
+                        Injector2LockedOut = true;
                         PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Minimum;
                     }
-                    else if ((GradientBoilerLevelFraction > 0.34 && waterGlassFractionLevel > 0.50) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Maximum && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction > 0.34 && waterGlassFractionLevel > 0.50) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Maximum && !Injector2LockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.75f;
-                        InjectorLockedOut = true;
+                        Injector2LockedOut = true;
                         PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Midway;
                     }
-                    else if ((GradientBoilerLevelFraction < 0.36 || waterGlassFractionLevel < 0.51) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Off && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.36 || waterGlassFractionLevel < 0.51) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Off && !Injector2LockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.6f;
-                        InjectorLockedOut = true;
+                        Injector2LockedOut = true;
                         PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Minimum;
                     }
 
-                    else if ((GradientBoilerLevelFraction < 0.32 || waterGlassFractionLevel < 0.49) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Minimum && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.32 || waterGlassFractionLevel < 0.49) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Minimum && !Injector2LockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.75f;
-                        InjectorLockedOut = true;
+                        Injector2LockedOut = true;
                         PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Midway;
                     }
-                    else if ((GradientBoilerLevelFraction < 0.30 || waterGlassFractionLevel < 0.48) && !InjectorLockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.30 || waterGlassFractionLevel < 0.48) && !Injector2LockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 1.0f;
-                        InjectorLockedOut = true;
+                        Injector2LockedOut = true;
                         PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Maximum;
                     }
