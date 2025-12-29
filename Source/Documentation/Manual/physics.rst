@@ -1524,7 +1524,7 @@ will be determined by a number of factors, and principal amongst them are the fo
 CabForward, CabCentre, Vertical, Sloping. Default = Horizontal
 ``ORTSBoilerAngle`` - Angle of boiler to horizontal, typically for Sloping boilers on steep inclines. (UoM Degree)
 
-To display the changing water level in the Cab, use ``BOILER_WATER_GRADE``.
+To display the changing water level with gradient in the Cab, use ``BOILER_WATER_GRADE``.
 
 Steam Water Injectors
 .....................
