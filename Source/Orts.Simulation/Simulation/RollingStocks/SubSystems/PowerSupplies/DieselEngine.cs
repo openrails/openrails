@@ -1265,7 +1265,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             ExhaustParticles = InitialExhaust + (ExhaustRange * (RealRPM - IdleRPM) / RPMRange);
             ExhaustMagnitude = InitialMagnitude + (MagnitudeRange * (RealRPM - IdleRPM) / RPMRange);
-                ExhaustColor = ExhaustSteadyColor;
+            ExhaustColor = ExhaustSteadyColor;
 
             if (RealRPM < DemandedRPM)
             {
@@ -1300,8 +1300,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     ExhaustParticles *= ExhaustDecelReduction;
                     ExhaustMagnitude *= ExhaustDecelReduction;
-                ExhaustColor = ExhaustDecelColor;
-            }
+                    ExhaustColor = ExhaustDecelColor;
+                }
             }
 
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
