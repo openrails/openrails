@@ -7721,8 +7721,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump)
             {
-                var MaximumWaterMotionPumpFlowRateLBpS = 0;
-
                 // Calculate the amount of water pumped by pump per wheel revolution
                 // Assume a pump with a 1.75" diameter plunger and a stroke equal to the main cylinder stroke
                 var tempVolumeIn3PerRev = (float)Math.PI * (1.75f / 2.0f) * (1.75f / 2.0f) * Me.ToIn(MSTSCylinderStrokeM);
@@ -7730,7 +7728,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (WaterMotionPump1IsOn && absSpeedMpS > 0)
                 {
-                    WaterMotionPump1FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * AbsTractionSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                    WaterMotionPump1FlowRateLBpS = tempWaterLbpRpM * DrvWheelRevRpS;
                 }
                 else
                 {
@@ -7739,7 +7737,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (WaterMotionPump2IsOn && absSpeedMpS > 0)
                 {
-                    WaterMotionPump2FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * AbsTractionSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                    WaterMotionPump2FlowRateLBpS = tempWaterLbpRpM * DrvWheelRevRpS;
                 }
                 else
                 {
