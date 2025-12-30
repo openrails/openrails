@@ -355,17 +355,17 @@ namespace Orts.Viewer3D
                 // Play base (default, ie TType=1 SMS file) sound continuously
                 if (_activeInSource != null)
                 {
-                    _activeInSource = _inSources[0];
+                    _activeInSource = InSources[0];
                     retval &= _activeInSource.Update();
                     NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
-                    _activeInSource = _inSources[_curTType];
+                    _activeInSource = InSources[_curTType];
                 }
                 if (_activeOutSource != null)
                 {
-                    _activeOutSource = _outSources[0];
+                    _activeOutSource = OutSources[0];
                     retval &= _activeOutSource.Update();
                     NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
-                    _activeOutSource = _outSources[_curTType];
+                    _activeOutSource = OutSources[_curTType];
                 }
 
                 if (_curTType != 0) // if base sound is not being played, then play additional relevant track region sound
