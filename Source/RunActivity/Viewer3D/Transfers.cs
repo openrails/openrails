@@ -1,4 +1,4 @@
-// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -146,7 +146,7 @@ namespace Orts.Viewer3D
 
     public class TransferMaterial : Material
     {
-        readonly Texture2D Texture;
+        readonly SharedTexture Texture;
         IEnumerator<EffectPass> ShaderPasses;
         readonly SamplerState TransferSamplerState;
 
@@ -207,6 +207,21 @@ namespace Orts.Viewer3D
         public override bool GetBlending()
         {
             return true;
+        }
+
+        /// <summary>
+        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this material changed from fresh to stale</returns>
+        public override bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                StaleData = Texture.StaleData;
+                return StaleData;
+            }
+            else
+                return false;
         }
 
         public override void Mark()

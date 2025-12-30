@@ -91,9 +91,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             DelayTimer = new Timer(this);
         }
 
-        public override void Initialize()
+        public override void Initialize(bool reinitialize = false)
         {
-            base.Initialize();
+            base.Initialize(reinitialize);
         }
 
         public override void InitializeMoving()

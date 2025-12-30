@@ -49,6 +49,8 @@ namespace Orts.Viewer3D
         readonly Material LightGlowMaterial;
         readonly Material LightConeMaterial;
 
+        public bool StaleData = false;
+
         public int TrainHeadlight;
         public bool CarIsReversed;
         public bool CarIsFirst;
@@ -282,6 +284,36 @@ namespace Orts.Viewer3D
                 LightConeMinDotProduct = (float)Math.Cos(MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y));
                 LightConeColor = Vector4.Lerp(ActiveLightCone.Color1, ActiveLightCone.Color2, ActiveLightCone.Fade.Y);
             }
+        }
+
+        /// <summary>
+        /// Checks all light materials for stale textures and sets the stale data flag if any materials are stale
+        /// </summary>
+        /// <returns>bool indicating if this light viewer changed from fresh to stale</returns>
+        public bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                if (LightGlowMaterial.StaleData || LightConeMaterial.StaleData)
+                {
+                    StaleData = true;
+                }
+                else
+                {
+                    foreach (LightPrimitive light in LightPrimitives)
+                    {
+                        if (light is LightGlowPrimitive lightGlow && lightGlow.SpecificGlowMaterial.StaleData)
+                        {
+                            StaleData = true;
+                            break;
+                        }
+                    }
+                }
+
+                return StaleData;
+            }
+            else
+                return false;
         }
 
         [CallOnThread("Loader")]
@@ -982,13 +1014,13 @@ namespace Orts.Viewer3D
 
     public class LightGlowMaterial : Material
     {
-        readonly Texture2D LightGlowTexture;
+        readonly SharedTexture LightGlowTexture;
 
         public LightGlowMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
             // TODO: This should happen on the loader thread.
-            LightGlowTexture = textureName.StartsWith(Viewer.ContentPath, StringComparison.OrdinalIgnoreCase) ? SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, textureName) : Viewer.TextureManager.Get(textureName);
+            LightGlowTexture = textureName.StartsWith(Viewer.ContentPath, StringComparison.OrdinalIgnoreCase) ? (SharedTexture)SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, textureName) : Viewer.TextureManager.Get(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1029,6 +1061,21 @@ namespace Orts.Viewer3D
         public override bool GetBlending()
         {
             return true;
+        }
+
+        /// <summary>
+        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this material changed from fresh to stale</returns>
+        public override bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                StaleData = LightGlowTexture.StaleData;
+                return StaleData;
+            }
+            else
+                return false;
         }
 
         public override void Mark()

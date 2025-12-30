@@ -98,6 +98,11 @@ namespace Orts.Simulation.RollingStocks
         public readonly string WagFilePath;
         public string RealWagFilePath; //we are substituting missing remote cars in MP, so need to remember this
 
+        public bool StaleData = true; // Hot reloading: Indicates this train car has gone stale and needs to be reloaded
+        public bool StaleViewer = true; // Hot reloading: Indicates the VIEWER for this train car has gone stale and needs to be reloaded
+        public bool StaleCab = true; // Hot reloading: Indicates a cabview for this train car (as a locomotive) has gone stale and needs to be reloaded
+        public HashSet<string> FilesReferenced = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase); // Hot reloading: List of .inc files referenced by this car
+
         public static int DbfEvalTravellingTooFast;//Debrief eval
         public static int DbfEvalTravellingTooFastSnappedBrakeHose;//Debrief eval
         public bool dbfEvalsnappedbrakehose = false;//Debrief eval
@@ -809,9 +814,12 @@ namespace Orts.Simulation.RollingStocks
 
         public CarTunnelInfoData CarTunnelData;
 
-        public virtual void Initialize()
+        public virtual void Initialize(bool reinitialize = false)
         {
             BrakeSystem.Initialize();
+            // If car has been initialized previously, brake system needs additional initialization steps
+            if (reinitialize)
+                Train?.UnconditionalInitializeBrakes(false);
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
 
             // Check Brake Shoe Friction parameters

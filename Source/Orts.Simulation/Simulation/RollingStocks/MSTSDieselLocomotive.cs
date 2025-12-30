@@ -98,7 +98,6 @@ namespace Orts.Simulation.RollingStocks
         public SmoothedData ExhaustColorR = new SmoothedData(1);
         public SmoothedData ExhaustColorG = new SmoothedData(1);
         public SmoothedData ExhaustColorB = new SmoothedData(1);
-        public SmoothedData ExhaustColorA = new SmoothedData(1);
 
         public float DieselOilPressurePSI = 0f;
         public float DieselMinOilPressurePSI;
@@ -461,16 +460,16 @@ namespace Orts.Simulation.RollingStocks
             DieselEngines.Copy(locoCopy.DieselEngines);
         }
 
-        public override void Initialize()
+        public override void Initialize(bool reinitialize = false)
         {
-            DieselEngines.Initialize();
+            DieselEngines.Initialize(reinitialize);
 
             if (DieselEngines[0].GearBox != null)
             {
                 GearBoxController = new MSTSNotchController(DieselEngines[0].GearBox.NumOfGears + 1);
             }
 
-            base.Initialize();
+            base.Initialize(reinitialize);
 
             // Initialise water level in steam heat boiler
             if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0 && IsSteamHeatFitted)
@@ -583,7 +582,6 @@ namespace Orts.Simulation.RollingStocks
             ExhaustColorR.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.R);
             ExhaustColorG.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.G);
             ExhaustColorB.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.B);
-            ExhaustColorA.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.A);
 
             base.Update(elapsedClockSeconds);
 
@@ -1338,14 +1336,13 @@ namespace Orts.Simulation.RollingStocks
         }
 
         //used by remote diesels to update their exhaust
-        public void RemoteUpdate(float exhPart, float exhMag, float exhColorR, float exhColorG, float exhColorB, float exhColorA)
+        public void RemoteUpdate(float exhPart, float exhMag, float exhColorR, float exhColorG, float exhColorB)
         {
             ExhaustParticles.ForceSmoothValue(exhPart);
             ExhaustMagnitude.ForceSmoothValue(exhMag);
             ExhaustColorR.ForceSmoothValue(exhColorR);
             ExhaustColorG.ForceSmoothValue(exhColorG);
             ExhaustColorB.ForceSmoothValue(exhColorB);
-            ExhaustColorA.ForceSmoothValue(exhColorA);
         }
 
 

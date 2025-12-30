@@ -115,15 +115,15 @@ namespace Orts.Viewer3D.RollingStock
             : base(viewer, car)
         {
             
-            string steamTexture = "smokemain.ace";
-            string dieselTexture = "dieselsmoke.ace";
+            string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
+            string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
 
             // Particle Drawers called in Wagon so that wagons can also have steam effects.
             ParticleDrawers = (
                 from effect in MSTSWagon.EffectData
                 select new KeyValuePair<string, List<ParticleEmitterViewer>>(effect.Key, new List<ParticleEmitterViewer>(
                     from data in effect.Value
-                    select new ParticleEmitterViewer(viewer, data, this, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    select new ParticleEmitterViewer(viewer, data, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             // Initaialise particle viewers for special steam effects
             foreach (var emitter in ParticleDrawers)
@@ -249,10 +249,9 @@ namespace Orts.Viewer3D.RollingStock
                 ? new PoseableShape(viewer, wagonFolderSlash + car.MainShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster)
                 : new PoseableShape(viewer, null, car.WorldPosition);
 
-            // This insection initialises the MSTS style freight animation - can either be for a coal load, which will adjust with usage, or a static animation, such as additional shape.
+            // This section initializes the MSTS style freight animation - can either be for a coal load, which will adjust with usage, or a static animation, such as additional shape.
             if (car.FreightShapeFileName != null)
             {
-                
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
 
@@ -698,6 +697,13 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            // Forcibly unload this viewer if it is marked as stale
+            if (Car.StaleViewer)
+            {
+                Unload();
+                return;
+            }
+
             Pantograph1.UpdateState(MSTSWagon.Pantographs[1].CommandUp, elapsedTime);
             Pantograph2.UpdateState(MSTSWagon.Pantographs[2].CommandUp, elapsedTime);
             if (MSTSWagon.Pantographs.List.Count > 2) Pantograph3.UpdateState(MSTSWagon.Pantographs[3].CommandUp, elapsedTime);
@@ -721,37 +727,37 @@ namespace Orts.Viewer3D.RollingStock
             // Steam leak in heating hose
             foreach (var drawer in HeatingHose)
             {
-                drawer.SetOutputVelocity(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseParticleDurationS);
+                drawer.SetOutput(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
             }
 
             // Steam leak in heating compartment steamtrap
             foreach (var drawer in HeatingCompartmentSteamTrap)
             {
-                drawer.SetOutputVelocity(car.HeatingCompartmentSteamTrapVelocityMpS, car.HeatingCompartmentSteamTrapParticleDurationS);
+                drawer.SetOutput(car.HeatingCompartmentSteamTrapVelocityMpS, car.HeatingCompartmentSteamTrapVolumeM3pS, car.HeatingCompartmentSteamTrapParticleDurationS);
             }
 
             // Steam leak in heating main pipe steamtrap
             foreach (var drawer in HeatingMainPipeSteamTrap)
             {
-                drawer.SetOutputVelocity(car.HeatingMainPipeSteamTrapVelocityMpS, car.HeatingMainPipeSteamTrapDurationS);
+                drawer.SetOutput(car.HeatingMainPipeSteamTrapVelocityMpS, car.HeatingMainPipeSteamTrapVolumeM3pS, car.HeatingMainPipeSteamTrapDurationS);
             }
 
             // Heating Steam Boiler Exhaust
             foreach (var drawer in HeatingSteamBoiler)
             {
-                drawer.SetOutputVolumetric(car.HeatingSteamBoilerVolumeM3pS, car.HeatingSteamBoilerDurationS, car.HeatingSteamBoilerSteadyColor);
+                drawer.SetOutput(car.HeatingSteamBoilerVolumeM3pS, car.HeatingSteamBoilerDurationS, car.HeatingSteamBoilerSteadyColor);
             }
 
             // Exhaust for HEP/Electrical Generator
             foreach (var drawer in WagonGenerator)
             {
-                drawer.SetOutputVolumetric(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
+                drawer.SetOutput(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
             }
 
             // Wagon fire smoke
             foreach (var drawer in WagonSmoke)
             {
-                drawer.SetOutputVelocity(car.WagonSmokeVelocityMpS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
+                drawer.SetOutput(car.WagonSmokeVelocityMpS, car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
             }
 
             if (car.Train != null) // only process this visual feature if this is a valid car in the train
@@ -761,7 +767,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     foreach (var drawer in WaterScoop)
                     {
-                        drawer.SetOutputVelocity(car.WaterScoopWaterVelocityMpS, car.WaterScoopParticleDurationS);
+                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
                     }
                 }
                 // If travelling in reverse turn on rearward facing effect
@@ -769,7 +775,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     foreach (var drawer in WaterScoopReverse)
                     {
-                        drawer.SetOutputVelocity(car.WaterScoopWaterVelocityMpS, car.WaterScoopParticleDurationS);
+                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
                     }
                 }
             }
@@ -777,19 +783,19 @@ namespace Orts.Viewer3D.RollingStock
             // Water overflow from tender (uses steam effects currently)
             foreach (var drawer in TenderWaterOverflow)
             {
-                drawer.SetOutputVelocity(car.TenderWaterOverflowVelocityMpS, car.TenderWaterOverflowParticleDurationS);
+                drawer.SetOutput(car.TenderWaterOverflowVelocityMpS, car.TenderWaterOverflowVolumeM3pS, car.TenderWaterOverflowParticleDurationS);
             }
 
             // Bearing Hot box smoke
             foreach (var drawer in BearingHotBox)
             {
-                drawer.SetOutputVelocity(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
+                drawer.SetOutput(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeVolumeM3pS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
             }
 
             // Steam Brake effects
             foreach (var drawer in SteamBrake)
             {
-                drawer.SetOutputVelocity(car.SteamBrakeLeaksVelocityMpS, car.SteamBrakeLeaksDurationS);
+                drawer.SetOutput(car.SteamBrakeLeaksVelocityMpS, car.SteamBrakeLeaksVolumeM3pS, car.SteamBrakeLeaksDurationS);
             }
 
             foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)
@@ -890,7 +896,7 @@ namespace Orts.Viewer3D.RollingStock
 
             foreach (var p in Car.Parts)
             {
-                if (p.iMatrix <= 0)
+                if (p.iMatrix <= 0 || p.iMatrix >= TrainCarShape.SharedShape.Matrices.Count())
                     continue;
 
                 Matrix m = Matrix.Identity;
@@ -1520,6 +1526,99 @@ namespace Orts.Viewer3D.RollingStock
                 return;
             }
             Viewer.SoundProcess.AddSoundSource(this, new SoundSource(Viewer, MSTSWagon, path));
+        }
+
+        /// <summary>
+        /// Checks this wagon viewer for stale shapes and sets the stale data flag if any shapes are stale
+        /// </summary>
+        /// <returns>bool indicating if this viewer changed from fresh to stale</returns>
+        public override bool CheckStaleShapes()
+        {
+            if (!Car.StaleViewer)
+            {
+                // Wagons can use a variety of shapes, need to check if any of these are out of date
+                if ((TrainCarShape != null && TrainCarShape.SharedShape.StaleData) ||
+                    (FreightShape != null && FreightShape.SharedShape.StaleData) ||
+                    (InteriorShape != null && InteriorShape.SharedShape.StaleData) ||
+                    (FrontCouplerShape != null && FrontCouplerShape.SharedShape.StaleData) ||
+                    (FrontCouplerOpenShape != null && FrontCouplerOpenShape.SharedShape.StaleData) ||
+                    (FrontAirHoseShape != null && FrontAirHoseShape.SharedShape.StaleData) ||
+                    (FrontAirHoseDisconnectedShape != null && FrontAirHoseDisconnectedShape.SharedShape.StaleData) ||
+                    (RearCouplerShape != null && RearCouplerShape.SharedShape.StaleData) ||
+                    (RearCouplerOpenShape != null && RearCouplerOpenShape.SharedShape.StaleData) ||
+                    (RearAirHoseShape != null && RearAirHoseShape.SharedShape.StaleData) ||
+                    (RearAirHoseDisconnectedShape != null && RearAirHoseDisconnectedShape.SharedShape.StaleData))
+                {
+                    Car.StaleViewer = true;
+                }
+                else if (FreightAnimations != null)
+                {
+                    foreach (FreightAnimationViewer animation in FreightAnimations.Animations)
+                    {
+                        if (animation.FreightShape != null && animation.FreightShape.SharedShape.StaleData)
+                        {
+                            Car.StaleViewer = true;
+
+                            break;
+                        }
+                    }
+                }
+
+                return Car.StaleViewer;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Checks this wagon viewer for stale directly-referenced textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this viewer changed from fresh to stale</returns>
+        public override bool CheckStaleTextures()
+        {
+            if (!Car.StaleViewer)
+            {
+                // Textures referenced directly by the viewer include light textures and particle textures
+                // as opposed to textures referenced indirectly through shape files
+                if (!base.CheckStaleTextures())
+                {
+                    foreach (List<ParticleEmitterViewer> emitters in ParticleDrawers.Values)
+                    {
+                        foreach (ParticleEmitterViewer emitter in emitters)
+                        {
+                            if (emitter.CheckStale())
+                            {
+                                Car.StaleViewer = true;
+                                break;
+                            }
+                        }
+                        if (Car.StaleViewer)
+                            break;
+                    }
+                }
+
+                return Car.StaleViewer;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Checks this wagon viewer for stale sounds and sets the stale data flag if any sounds are stale
+        /// </summary>
+        /// <returns>bool indicating if this viewer changed from fresh to stale</returns>
+        public override bool CheckStaleSounds()
+        {
+            bool found = false;
+
+            if (!Car.StaleViewer)
+            {
+                Car.StaleViewer = Viewer.SoundProcess.GetStale(this);
+
+                return Car.StaleViewer;
+            }
+            else
+                return false;
         }
 
         internal override void Mark()

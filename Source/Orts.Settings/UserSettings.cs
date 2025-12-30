@@ -298,6 +298,8 @@ namespace ORTS.Settings
         public int ActRandomizationLevel { get; set; }
         [Default(0)]
         public int ActWeatherRandomizationLevel { get; set; }
+        [Default(false)]
+        public bool EnableHotReloading { get; set; }
 
         // Hidden settings:
         [Default(0)]

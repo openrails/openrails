@@ -161,7 +161,7 @@ namespace Orts.Viewer3D
 
     public class WaterMaterial : Material
     {
-        readonly Texture2D WaterTexture;
+        readonly SharedTexture WaterTexture;
         IEnumerator<EffectPass> ShaderPasses;
 
         public WaterMaterial(Viewer viewer, string waterTexturePath)
@@ -212,6 +212,21 @@ namespace Orts.Viewer3D
         public override bool GetBlending()
         {
             return true;
+        }
+
+        /// <summary>
+        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this material changed from fresh to stale</returns>
+        public override bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                StaleData = WaterTexture.StaleData;
+                return StaleData;
+            }
+            else
+                return false;
         }
 
         public override void Mark()
