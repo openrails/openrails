@@ -884,6 +884,8 @@ namespace Orts.Simulation
                         double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
                                                 - ActArrive).Value.TotalSeconds;
                         BoardingEndS -= sinceActArriveS;
+
+                        ldbfevaldepartbeforeboarding = false; // reset flag. Debrief Eval
                     }
                     else
                     {
@@ -900,29 +902,30 @@ namespace Orts.Simulation
                         if (BoardingS > 0 || ((double)(SchDepart - SchArrive).TotalSeconds > 0 &&
                             MyPlayerTrain.PassengerCarsNumber == 1 && MyPlayerTrain.Cars.Count > 10 ))
                         {
-                        // accepted station stop because either freight train or passenger train or fake passenger train with passenger car on platform or fake passenger train
+                            // accepted station stop because either freight train or passenger train or fake passenger train with passenger car on platform or fake passenger train
                             // with Scheduled Depart > Scheduled Arrive
-                                // ActArrive is usually same as ClockTime
-                                BoardingEndS = Simulator.ClockTime + BoardingS;
+                            // ActArrive is usually same as ClockTime
+                            BoardingEndS = Simulator.ClockTime + BoardingS;
 
-                                if (ActArrive == null)
-                                {
-                                    ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime));
-                                }
-
-                                arrived = true;
-                                // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
-                                double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
-                                                        - ActArrive).Value.TotalSeconds;
-                                BoardingEndS -= sinceActArriveS;
-                                double SchDepartS = SchDepart.Subtract(new DateTime()).TotalSeconds;
-                                BoardingEndS = CompareTimes.LatestTime((int)SchDepartS, (int)BoardingEndS);
-
+                            if (ActArrive == null)
+                            {
+                                ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime));
                             }
+
+                            arrived = true;
+                            // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
+                            double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
+                                                    - ActArrive).Value.TotalSeconds;
+                            BoardingEndS -= sinceActArriveS;
+                            double SchDepartS = SchDepart.Subtract(new DateTime()).TotalSeconds;
+                            BoardingEndS = CompareTimes.LatestTime((int)SchDepartS, (int)BoardingEndS);
+
                         }
+
+                        ldbfevaldepartbeforeboarding = false; // reset flag. Debrief Eval
+                    }
                     if  (MyPlayerTrain.NextSignalObject[0] != null)
                            distanceToNextSignal =  MyPlayerTrain.NextSignalObject[0].DistanceTo(MyPlayerTrain.FrontTDBTraveller);
-
                 }
             }
             else if (EventType == ActivityEventType.TrainStart)
@@ -936,6 +939,15 @@ namespace Orts.Simulation
                     IsCompleted = maydepart;
                     if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
                        MyPlayerTrain.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
+
+                    // Debrief Eval: departure before boarding completed
+                    if (!maydepart && !ldbfevaldepartbeforeboarding)
+                    {
+                        var train = Simulator.PlayerLocomotive.Train;
+                        ldbfevaldepartbeforeboarding = true;
+                        DbfEvalDepartBeforeBoarding.Add(PlatformEnd1.Station);
+                        train.DbfEvalValueChanged = true;
+                    }
 
                     if (LogStationStops)
                     {
@@ -981,15 +993,6 @@ namespace Orts.Simulation
                     {
                         DisplayMessage = Simulator.Catalog.GetStringFmt("Passenger boarding completes in {0:D2}:{1:D2}",
                             remaining / 60, remaining % 60);
-
-                        //Debrief Eval
-                        if (Simulator.PlayerLocomotive.SpeedMpS > 0 && !ldbfevaldepartbeforeboarding)
-                        {
-                            var train = Simulator.PlayerLocomotive.Train;
-                            ldbfevaldepartbeforeboarding = true;
-                            DbfEvalDepartBeforeBoarding.Add(PlatformEnd1.Station);
-                            train.DbfEvalValueChanged = true;
-                        }
                     }
                     // May depart
                     else if (!maydepart)
@@ -1007,8 +1010,6 @@ namespace Orts.Simulation
                             DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
                             if (MyPlayerTrain.IsActualPlayerTrain) Simulator.SoundNotify = Event.PermissionToDepart;
                         }
-
-                        ldbfevaldepartbeforeboarding = false;//reset flag. Debrief Eval
 
                         // if last task, show closure window
                         // also set times in logfile
@@ -1324,13 +1325,16 @@ namespace Orts.Simulation
                     }
                     break;
                 case EventType.DropOffWagonsAtLocation:
-                    // Dropping off of wagons should only count once disconnected from player train.
-                    // A better name than DropOffWagonsAtLocation would be ArriveAtSidingWithWagons.
-                    // To recognize the dropping off of the cars before the event is activated, this method is used.
-                    if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
+                    consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
+                    if (consistTrain != null)
                     {
-                        consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
-                        triggered = consistTrain != null;
+                        if (consistTrain.TrainType == Train.TRAINTYPE.STATIC)
+                        {
+                            if (atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
+                            {
+                                triggered = true;
+                            }
+                        }
                     }
                     break;
                 case EventType.PickUpPassengers:
@@ -1376,7 +1380,9 @@ namespace Orts.Simulation
             return null;
         }
         /// <summary>
-        /// Finds the train that contains exactly the wagons (and maybe loco) in the list. Exact order is not required.
+        /// Finds the train that contains the wagons in the list. 
+        /// Exact order is not required.
+        /// Some lists may only contain the first and last wagon. Check that first and last wagon match with those two wagons in the activity list.
         /// </summary>
         /// <param name="wagonIdList"></param>
         /// <returns>train or null</returns>
@@ -1384,25 +1390,20 @@ namespace Orts.Simulation
         {
             foreach (var trainItem in Simulator.Trains)
             {
-                int nCars = 0;//all cars other than WagonIdList.
-                int nWagonListCars = 0;//individual wagon drop.
+                int nWagonListCars = 0;
                 foreach (var item in trainItem.Cars)
                 {
-                    if (!wagonIdList.Contains(item.CarID)) nCars++;
-                    if (wagonIdList.Contains(item.CarID)) nWagonListCars++;
+                    if (wagonIdList.Contains(item.CarID))
+                    {
+                        nWagonListCars++;
+                    }
+                    if (nWagonListCars == wagonIdList.Count)
+                    {
+                        return trainItem;
+                    }
                 }
-                // Compare two lists to make sure wagons are present.
-                bool listsMatch = true;
-                //support individual wagonIdList drop
-                if (trainItem.Cars.Count - nCars == (wagonIdList.Count == nWagonListCars ? wagonIdList.Count : nWagonListCars))
-                {
-                    if (excludesWagons(trainItem, wagonIdList)) listsMatch = false;//all wagons dropped
-                    
-                    if (listsMatch) return trainItem;
-                    
-                }
-               
             }
+
             return null;
         }
         /// <summary>

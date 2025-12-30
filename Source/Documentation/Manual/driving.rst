@@ -202,7 +202,8 @@ F1 Information Monitor
 ----------------------
 
 The F1 key displays the following set of panels in a tabbed format, 
-selected by clicking with the mouse on the desired heading:
+selected by clicking with the mouse on the desired heading or
+using ``<Shift+F1>`` to step through the tabs:
 
 ``Key Commands``: displays the actions of the keyboard keys
 
@@ -231,6 +232,11 @@ completed, the string ``Done`` appears in the last column:
 
 ``Procedures``: basic instructions for driving trains in Open Rails.
 
+``Train Info``: information about the player train.
+
+.. image:: images/driving-traininfo.png
+  :align: center
+  :scale: 80%
 
 F3 
 ----------------
@@ -464,6 +470,77 @@ specified by the player:
 
 .. image:: images/driving-train-names-multiplayer.png
 
+Alt-F7 Train Forces
+-------------------
+
+Pressing ``<Alt+F7>`` opens the Train Forces window.
+It shows the forces along the player's train in bar-graph form.
+The window is sized to fit the train (graph), with a minimum size for short trains,
+and a maximum size for very long trains.
+Scrolling may be required to see the end of the train, or the end of the text line.
+
+.. image:: images/driving-trainforces.png
+  :align: center
+  :scale: 80%
+
+The train is shown as a white line; locomotives are shown in blue.
+The front of the train is to the left.
+
+``Coupler Force``
+'''''''''''''''''
+
+Shows the length-wise pull or push force at each coupling, as a colored bar graph.
+Up (positive) is pull, down (negative) is push.
+The scale is determined by the weakest coupler in the train.
+The steps are non-linear, to provide more sensitivity near the breaking point.
+
+Note: Because the graph is scaled by the weakest car,
+a red bar may not mean that the coupler will break.
+When the car has a higher coupler strength, it can tolerate higher forces than the weakest car.
+
+``Derail Force``
+''''''''''''''''
+
+Shows the sideway push or pull at the wheels as a colored bar graph.
+Up (positive) is pull to the inside (stringline), down (negative) is push to the outside (jackknife).
+The scale is determined by the car with the lowest axle-load (lowest vertical force).
+The steps are non-linear, to provide more sensitivity near the derailing point.
+But this is less effective for lateral forces, as the force is proportional to the curve radius,
+which changes in discrete steps (MSTS legacy).
+
+Note: Because the graph is scaled by the most susceptible car,
+a red bar may not mean that the car will derail.
+When the car has a higher vertical force, it can tolerate higher lateral forces than the most susceptible car.
+
+
+``Brake Force``
+'''''''''''''''
+
+Shows the braking force of each car as a bar graph.
+The scale is determined by the car with the smallest brake force (generally lowest weight).
+The steps are non-linear, to provide more sensitivity near the small brake applications.
+As the weight (and thus brake force varies greatly between cars (and especially engines),
+the graph can be quite jagged, even though all brake cylinders have the same pressure.
+Locomotives will show a full bar long before the brakes are fully applied.
+
+Dynamic braking is shown in blue (unless there also is a greater force from the air-brakes).
+
+``Text Line``
+'''''''''''''
+
+The text line at the bottom shows the following information.
+
+- Max Coupler: The current maximum coupler force within the train,
+  and the car (count from front, including locomotives) where the maximum force is.
+- Max Derail: The current maximum derail force within the train,
+  and the car (count from front, including locomotives) where the maximum force is.
+- Low Coupler: The lowest coupler strength within the train.
+- Low Derail: The lowest derail force within the train.
+  This is an estimate, based on the vertical force.
+  Dynamic factors also affect the force needed to derail.
+
+It may be necessary to scroll to see the rightmost parts of the line.
+
 F8 Switch Monitor
 -----------------
 
@@ -496,8 +573,8 @@ A switch shown in green can be operated, a switch shown in red is locked.
 
 .. _driving-train-operations:
 
-F9 Train Operations Monitor
----------------------------
+Ctrl-Alt-F9 Train Operations Monitor
+------------------------------------
 
 The Open Rails Train Operations window is similar in function to the F9 
 window in MSTS, but includes additional features to control the air brake 
@@ -578,10 +655,10 @@ uncoupling can also be found :ref:`here <driving-hud-brake>`.
 
 .. _train-operations-monitor:
 
-Ctrl-Alt-F9 Train Operations Monitor
-------------------------------------
+F9 Train Car Operations Monitor
+---------------------------
 
-This Open Rails Train Operations window has a vertical view of the entire train:
+This Train Operations window provides a vertical view of the entire train:
 
 .. image:: images/TrainCarOperations-01.png
   :align: center
@@ -592,7 +669,7 @@ This Open Rails Train Operations window has a vertical view of the entire train:
 This window shows the whole train in vertical mode. Any car can be selected by clicking on the Car ID. 
 Two arrows will then appear pointing to the selected car.
 
-By clicking on the selected CarId the "Train Operations Viewer" window will be displayed:
+By clicking on the selected Car Id the "Train Operations Viewer" window will be displayed:
 
 .. image:: images/TrainOperationsViewer-02.png
   :align: center
@@ -600,7 +677,7 @@ By clicking on the selected CarId the "Train Operations Viewer" window will be d
 
 |
 
-From the "Train Operations Viewer" window, we can set all the available systems, as in the “Car Operation menu”:
+From the "Train Operations Viewer" window, we can set all the available systems, as in the “Car Operation Menu”:
 
 - FrontBrakeHose
 - FrontAngleCock
@@ -633,7 +710,7 @@ Any changes made in this window will also appear in the "Train Car Operations" w
 
 |
 
-After a change in the braking system that keeps the train stopped, the CarID changes to a cyan colour. 
+After a change in the braking system that keeps the train stopped, the Car ID changes to a cyan colour. 
 In this way, it is easy for the user, to find out which car is stopping the train.
 
 A click on the right arrow hides all non-system brake symbols, inside the "Train Car Operations" window:
@@ -653,10 +730,10 @@ To make the text bold, click the left arrow:
 |
 
 While the "Train Operations Viewer" window is visible, we can modify the "Train Car Operations" window, 
-but if we open the "Train Operations" window <F9> and click on any CarID, the "Car Operation Menu" will 
-appear and it will point to the previously selected CarID in the "Train Operations Viewer" window.
+but if we open the "Train Operations" window <Alt+Shift+F9> and click on any Car ID, the "Car Operation Menu" will 
+appear and it will point to the Car ID which was previously selected in the "Train Operations Viewer" window.
 The "Car Operations Menu" is updated from the "Train Operations Viewer" window.
-A click on the CarID in the “Train Operations Viewer” will close the window.
+A click on the Car ID in the “Train Operations Viewer” will close the window.
 
 If the train is very long and not all the cars are displayed in the "Train Car Operations" window, we can scroll by clicking on the white down arrow (vertical scroll bar) at the bottom right.
 Once the required car has been selected, it will remain visible on the last row:
@@ -1123,8 +1200,9 @@ of the train that is approaching. In this image, signal 462 is showing an APPROA
 
 .. image:: images/timetable_tab4.png
 
-The adjustment for "Daylight offset (hrs)" is provided for convenience to advance the sun as it moves 
+An adjustment for "Daylight offset (hrs)" is provided for convenience to advance the sun as it moves 
 across the sky so that night time trains can be more easily observed in daylight.
+Use ``<Alt+Shift+=>`` to increase the offset and ``<Alt+Shift+->`` to decrease it.
 
 Additional Train Operation Commands
 ===================================

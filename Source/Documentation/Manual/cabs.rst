@@ -20,46 +20,65 @@ next paragraphs.
 ETCS circular speed gauge
 -------------------------
 
-You can add to the cabview a
-circular speed gauge accordingly to the European standard train control
-system ETCS.
+A circular speed gauge accordingly to the standard European Train Control System 
+(ETCS) can be added to the cabview. The information displayed in the Driver 
+Machine Interface (DMI) is controlled via the TCS script. For more details,
+see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
+
 
 .. image:: images/options-etcs.png
    :scale: 60 %
    :align: center
 
 
-.. admonition:: For content developers
+The gauge is added by the insertion of a block like the following
+into the .cvf file::
 
-    The gauge is added by the insertion of a block like the following
-    into the .cvf file::
-
-        Digital (
-            Type ( SPEEDOMETER DIGITAL )
-            Style ( NEEDLE )
-            Position ( 160 255 56 56 )
-            ScaleRange ( 0 250 )
-            Units ( KM_PER_HOUR )
-        )
+    Digital (
+        Type ( SPEEDOMETER DIGITAL )
+        Style ( NEEDLE )
+        Position ( 160 255 56 56 )
+        ScaleRange ( 0 250 )
+        Units ( KM_PER_HOUR )
+    )
 
 It is also possible to display the full ETCS display using the following block
 instead::
 
-		ScreenDisplay (
-			Type ( ORTS_ETCS SCREEN_DISPLAY )
-			Position ( 280 272 320 240 )
-			Units ( KM_PER_HOUR )
-			Parameters (
-				Mode FullSize
-			)
-		)
-		
-The following DMI size variants are available: FullSize (displays the whole DMI), SpeedArea
-(displays only the left part with information about distance and speed) and PlanningArea
-(displays only the planning area and navigation buttons).
+    ScreenDisplay (
+        Type ( ORTS_ETCS SCREEN_DISPLAY )
+        Graphic ( statictexture.ace ) Comment( 3D cab only, mandatory there )
+        Position ( 280 272 320 240 )  Comment( 2D cab only )
+        Units ( KM_PER_HOUR )
+        Parameters (
+            Mode FullSize
+            MaxSpeed 180
+            DisplayUnits 0
+        )
+    )
 
-The information displayed in the DMI is controlled via the TCS script. For more details,
-see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
+The following commonly used ``MaxSpeed`` or ``ScaleRange`` values can be set
+* 140, 150, 180, 240, 250, 260, 280, 400 for ``KM_PER_HOUR`` unit
+* 87, 111, 155, 248 for ``MILES_PER_HOUR`` unit
+The default value is 400 with KM_PER_HOUR unit.
+
+The following DMI size variants are available: 
+``FullSize`` displays the whole DMI, 
+``SpeedArea`` displays only the left part with information about distance and speed, 
+``PlanningArea`` displays only the right side planning area and navigation buttons. 
+The default value is FullSize
+
+Use the ``MaxVisibleSpeed`` to set the highest speed displayed as a number, 
+if literal numbering is undesirable above this number on the circular speed gauge. 
+The default value is the MaxSpeed rounded to the highest tens below.
+
+Use the ``DisplayUnits`` parameter to suppress diplaying the speed unit at the 
+bottom of the circular speed gauge. The default is 1, displaying the units.
+
+Use the ``Graphic`` parameter in 3D cabs to designate the static texture inside 
+the .s file that will be replaced at runtime with the dynamic picture of the 
+display. This parameter is mandatory. If omitted, or the named texture cannot 
+be found in the model, no display will be shown.
 
 .. _cabs-battery:
 
@@ -270,21 +289,33 @@ Example::
    single: ORTS_PLAYER_DIESEL_ENGINE_STATE
 
 ORTS_PLAYER_DIESEL_ENGINE_STATE: this control respectively selects frames 0, 
-1, 2, 3 for the player locomotive engine states Stopped, Starting, Running and 
-Stopping. It is a display-only control.
+1, 2, 3 for the player locomotive engine states Stopped, Stopping, Starting and Running. It is a display-only control.
 
 Example::
 
-                MultiState (
-                        Type ( ORTS_PLAYER_DIESEL_ENGINE_STATE TRI_STATE)
-                        Position ( 270 446 39 40 )
-                        Graphic ( cd_363_zberace.ace )
-                        NumFrames ( 4 4 1 )
-                        Style ( NONE )
-                        MouseControl ( 1 )
-                        Orientation ( 0 )
-                        DirIncrease ( 1 )
-                )
+		MultiStateDisplay (
+			Type ( ORTS_PLAYER_DIESEL_ENGINE_STATE MULTI_STATE_DISPLAY )
+			Position ( 140 306 6.5 6.2 )
+			Graphic ( "engine_state.ace" )
+			States ( 4 4 1
+				State (
+					Style ( 0 )
+					SwitchVal ( 0 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 1 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 2 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 3 )
+				)
+			)
+		)
 
 
 .. index::

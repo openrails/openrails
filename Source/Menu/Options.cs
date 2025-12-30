@@ -26,7 +26,6 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
-using MSTS;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
@@ -211,15 +210,15 @@ namespace Menu
             checkDataLogger.Checked = Settings.DataLogger;
             checkDataLogPerformance.Checked = Settings.DataLogPerformance;
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
-            checkDataLogMisc.Checked = Settings.DataLogMisc;
-            checkDataLogSteamPerformance.Checked = Settings.DataLogSteamPerformance;
+            checkDataLogSteamPerformance.Checked = Settings.DataLogExclusiveSteamPerformance;
+            checkDataLogSteamPowerCurve.Checked = Settings.DataLogExclusiveSteamPowerCurve;
             checkVerboseConfigurationMessages.Checked = Settings.VerboseConfigurationMessages;
 
             // Evaluation tab
             checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
             labelDataLogTSInterval.Enabled = checkDataLogTrainSpeed.Checked;
             numericDataLogTSInterval.Enabled = checkDataLogTrainSpeed.Checked;
-            checkListDataLogTSContents.Enabled = checkDataLogTrainSpeed.Checked;  
+            checkListDataLogTSContents.Enabled = checkDataLogTrainSpeed.Checked;
             numericDataLogTSInterval.Value = Settings.DataLogTSInterval;
             checkListDataLogTSContents.Items.AddRange(new object[] {
                 catalog.GetString("Time"),
@@ -240,48 +239,7 @@ namespace Menu
             checkDataLogStationStops.Checked = Settings.DataLogStationStops;
 
             // System tab
-            comboLanguage.Text = Settings.Language;
-
-            var updateChannelNames = new Dictionary<string, string> {
-                { "stable", catalog.GetString("Stable (recommended)") },
-                { "testing", catalog.GetString("Testing") },
-                { "unstable", catalog.GetString("Unstable") },
-                { "", catalog.GetString("None") },
-            };
-            var updateChannelDescriptions = new Dictionary<string, string> {
-                { "stable", catalog.GetString("Infrequent updates to official, hand-picked versions. Recommended for most users.") },
-                { "testing", catalog.GetString("Weekly updates which may contain noticable defects. For project supporters.") },
-                { "unstable", catalog.GetString("Daily updates which may contain serious defects. For developers only.") },
-                { "", catalog.GetString("No updates.") },
-            };
-            var spacing = labelUpdateMode.Margin.Size;
-            var indent = 180;
-            var top = labelUpdateMode.Bottom + spacing.Height;
-            foreach (var channel in UpdateManager.GetChannels())
-            {
-                var radio = new RadioButton()
-                {
-                    Text = updateChannelNames[channel.ToLowerInvariant()],
-                    Margin = labelUpdateMode.Margin,
-                    Left = spacing.Width + 32, // to leave room for HelpIcon
-                    Top = top,
-                    Checked = updateManager.ChannelName.Equals(channel, StringComparison.InvariantCultureIgnoreCase),
-                    AutoSize = true,
-                    Tag = channel,
-                };
-                tabPageSystem.Controls.Add(radio);
-                var label = new Label()
-                {
-                    Text = updateChannelDescriptions[channel.ToLowerInvariant()],
-                    Margin = labelUpdateMode.Margin,
-                    Left = spacing.Width + indent,
-                    Top = top + 2, // Offset to align with radio button text
-                    Width = tabPageSystem.ClientSize.Width - indent - spacing.Width * 2,
-                    AutoSize = true,
-                };
-                tabPageSystem.Controls.Add(label);
-                top += label.Height + spacing.Height - 3; // -3 to close them up a bit
-            }
+            DrawSystemTab(updateManager);
 
             checkWindowed.Checked = !Settings.FullScreen;
             comboWindowSize.Text = Settings.WindowSize;
@@ -307,7 +265,7 @@ namespace Menu
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
 
             // Experimental tab
-            checkUseSuperElevation.Checked = Settings.UseSuperElevation;
+            checkUseSuperElevation.Checked = Settings.LegacySuperElevation;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
@@ -321,6 +279,53 @@ namespace Menu
             checkCorrectQuestionableBrakingParams.Checked = Settings.CorrectQuestionableBrakingParams;
             numericActRandomizationLevel.Value = Settings.ActRandomizationLevel;
             numericActWeatherRandomizationLevel.Value = Settings.ActWeatherRandomizationLevel;
+        }
+
+        private void DrawSystemTab(UpdateManager updateManager)
+        {
+            comboLanguage.Text = Settings.Language;
+
+            var updateChannelNames = new Dictionary<string, string> {
+                { "stable", catalog.GetString("Stable (recommended)") },
+                { "testing", catalog.GetString("Testing") },
+                { "unstable", catalog.GetString("Unstable") },
+                { "", catalog.GetString("None") },
+            };
+            var updateChannelDescriptions = new Dictionary<string, string> {
+                { "stable", catalog.GetString("Infrequent updates to official, hand-picked versions. Recommended for most users.") },
+                { "testing", catalog.GetString("Weekly updates which may contain noticable defects. For project supporters.") },
+                { "unstable", catalog.GetString("Daily updates which may contain serious defects. For developers only.") },
+                { "", catalog.GetString("No updates.") },
+            };
+            var spacing = labelUpdateMode.Margin.Size;
+            var indent = 180;
+            var top = labelUpdateMode.Bottom + spacing.Height;
+            // Positioning gives maximum spave for lengthy Russian text.
+            foreach (var channel in UpdateManager.GetChannels())
+            {
+                var radio = new RadioButton()
+                {
+                    Text = updateChannelNames[channel.ToLowerInvariant()],
+                    Margin = labelUpdateMode.Margin,
+                    Left = spacing.Width + 32, // to leave room for HelpIcon
+                    Top = top,
+                    Checked = updateManager.ChannelName.Equals(channel, StringComparison.InvariantCultureIgnoreCase),
+                    AutoSize = true,
+                    Tag = channel,
+                };
+                tabPageSystem.Controls.Add(radio);
+                var label = new Label()
+                {
+                    Text = updateChannelDescriptions[channel.ToLowerInvariant()],
+                    Margin = labelUpdateMode.Margin,
+                    Left = spacing.Width + 30, // to leave room for HelpIcon
+                    Top = top + spacing.Height + 15, // Offset to place below radio button
+                    Width = tabPageSystem.ClientSize.Width - indent - spacing.Width * 2,
+                    AutoSize = true,
+                };
+                tabPageSystem.Controls.Add(label);
+                top += (label.Height + spacing.Height) * 2 - 5; // -3 to close them up a bit
+            }
         }
 
         static string ParseCategoryFrom(string name)
@@ -469,8 +474,8 @@ namespace Menu
             Settings.DataLogger = checkDataLogger.Checked;
             Settings.DataLogPerformance = checkDataLogPerformance.Checked;
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;
-            Settings.DataLogMisc = checkDataLogMisc.Checked;
-            Settings.DataLogSteamPerformance = checkDataLogSteamPerformance.Checked;
+            Settings.DataLogExclusiveSteamPerformance = checkDataLogSteamPerformance.Checked;
+            Settings.DataLogExclusiveSteamPowerCurve = checkDataLogSteamPowerCurve.Checked;
             Settings.VerboseConfigurationMessages = checkVerboseConfigurationMessages.Checked;
 
             // Evaluation tab
@@ -494,7 +499,7 @@ namespace Menu
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
 
             // Experimental tab
-            Settings.UseSuperElevation = checkUseSuperElevation.Checked;
+            Settings.LegacySuperElevation = checkUseSuperElevation.Checked;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
@@ -815,8 +820,27 @@ namespace Menu
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
                 (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
 
+                // Simulation tab
+                (pbAdvancedAdhesionModel, new[] { checkUseAdvancedAdhesion }),
+                (pbBreakCouplers, new[] { checkBreakCouplers }),
+                (pbCurveDependentSpeedLimit, new[] { checkCurveSpeedDependent }),   
+                (pbAtGameStartSteamPreHeatBoiler, new[] { checkBoilerPreheated }),
+                (pbAtGameStartDieselRunEngines, new[] { checkDieselEnginesStarted }),
+                (pbAtGameStartElectricPowerConnected, new[] { checkElectricPowerConnected }),
+                (pbSimpleControlAndPhysics, new[] { checkSimpleControlsPhysics }),
+                (pbForcedRedAtStationStops, new[] { checkForcedRedAtStationStops }),
+                (pbOpenCloseDoorsOnAiTrains, new[] { checkDoorsAITrains }),
+                (pbLocationLinkedPassingPathProcessing, new[] { checkUseLocationPassingPaths }),
+
                 // Experimental tab
-                (pbSuperElevation, new[] { ElevationText }),
+                (pbSuperElevation, new Control [] { ElevationText, checkUseSuperElevation, label8}),
+                (pbShowShapeWarnings, new[] { checkShapeWarnings }),
+                (pbCorrectQuestionableBrakingParameters, new[] { checkCorrectQuestionableBrakingParams }),
+                (pbActivityRandomization, new Control [] { label13, label12 }),
+                (pbActivityWeatherRandomization, new Control [] { label26, label27 }),
+                (pbMstsEnvironments, new[] { checkUseMSTSEnv }),
+                (pbAdhesionFactorCorrection, new Control [] { label9,  trackAdhesionFactor}),
+                (pbAdhesionFactorRandomChange, new Control [] { label16, trackAdhesionFactorChange}),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -984,11 +1008,99 @@ namespace Menu
                     BaseDocumentationUrl + "/options.html#performance-tuner"
                 },
 
+                // Simulation tab
+                {
+                    pbAdvancedAdhesionModel,
+                    BaseDocumentationUrl + "/options.html#advanced-adhesion-model"
+                },
+                {
+                    pbBreakCouplers,
+                    BaseDocumentationUrl + "/options.html#break-couplers"
+                },
+                {
+                    pbCurveDependentSpeedLimit,
+                    BaseDocumentationUrl + "/options.html#curve-dependent-speed-limit"
+                },
+                {
+                    pbAtGameStartSteamPreHeatBoiler,
+                    BaseDocumentationUrl + "/options.html#at-game-start-steam-pre-heat-boiler"
+                },
+                {
+                    pbAtGameStartDieselRunEngines,
+                    BaseDocumentationUrl + "/options.html#at-game-start-diesel-run-engines"
+                },
+                {
+                    pbAtGameStartElectricPowerConnected,
+                    BaseDocumentationUrl + "/options.html#at-game-start-electric-power-connected"
+                },
+                {
+                    pbSimpleControlAndPhysics,
+                    BaseDocumentationUrl + "/options.html#simple-control-and-physics"
+                },
+                {
+                    pbForcedRedAtStationStops,
+                    BaseDocumentationUrl + "/options.html#forced-red-at-station-stops"
+                },
+{
+                    pbOpenCloseDoorsOnAiTrains,
+                    BaseDocumentationUrl + "/options.html#open-close-doors-on-ai-trains"
+                },
+                {
+                    pbLocationLinkedPassingPathProcessing,
+                    BaseDocumentationUrl + "/options.html#location-linked-passing-path-processing"
+                },
+
+                // Keyboard tab
+                {
+                    pbKeyboardOptions,
+                    BaseDocumentationUrl + "/options.html#keyboard-options"
+                },
+
+                // Raildriver tab
+                {
+                    pbRailDriverOptions,
+                    BaseDocumentationUrl + "/options.html#raildriver-options"
+                },
+
+                // Data Logger Options
+                {
+                    pbDataLoggerOptions,
+                    BaseDocumentationUrl + "/options.html#data-logger-options"
+                },                
+
                 // Experimental tab
                 {
                     pbSuperElevation,
-                    BaseDocumentationUrl + "/options.html#super-elevation"
+                    BaseDocumentationUrl + "/options.html#superelevation"
                 },
+                {
+                    pbShowShapeWarnings,
+                    BaseDocumentationUrl + "/options.html#show-shape-warnings"
+                },
+                {
+                    pbCorrectQuestionableBrakingParameters,
+                    BaseDocumentationUrl + "/options.html#correct-questionable-braking-parameters"
+                },
+                {
+                    pbActivityRandomization,
+                    BaseDocumentationUrl + "/options.html#activity-randomization"
+                },
+                {
+                    pbActivityWeatherRandomization,
+                    BaseDocumentationUrl + "/options.html#activity-weather-randomization"
+                },
+                {
+                    pbMstsEnvironments,
+                    BaseDocumentationUrl + "/options.html#msts-environments"
+                },
+                {
+                    pbAdhesionFactorCorrection,
+                    BaseDocumentationUrl + "/options.html#adhesion-factor-correction"
+                },
+                {
+                    pbAdhesionFactorRandomChange,
+                    BaseDocumentationUrl + "/options.html#adhesion-factor-random-change"
+                }
             };
             if (urls.TryGetValue(sender, out var url))
             {

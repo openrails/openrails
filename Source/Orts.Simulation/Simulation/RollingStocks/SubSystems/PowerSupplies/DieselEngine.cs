@@ -17,6 +17,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
+using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -1037,9 +1038,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             DemandedThrottlePercent = Math.Max(DemandedThrottlePercent, ReverseThrottleRPMTab[Locomotive.DieselPowerSupply.DieselEngineMinRpm]);
 
-            if ((State == DieselEngineState.Running) && (Locomotive.ThrottlePercent > 0))
+            if (State == DieselEngineState.Running)
             {
-                var abstempTractiveForce = Math.Abs(Locomotive.PrevTractiveForceN);
+                var abstempTractiveForce = Locomotive.TractionForceN;
                 OutputPowerW = ( abstempTractiveForce > 0 ? abstempTractiveForce * Locomotive.AbsWheelSpeedMpS : 0) / Locomotive.DieselEngines.NumOfActiveEngines;
             }
             else
@@ -1264,37 +1265,45 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
 
-            if (RealRPM == IdleRPM)
-            {
-                ExhaustParticles = InitialExhaust;
-                ExhaustMagnitude = InitialMagnitude;
-                ExhaustColor = ExhaustSteadyColor;
-            }
+            ExhaustParticles = InitialExhaust + (ExhaustRange * (RealRPM - IdleRPM) / RPMRange);
+            ExhaustMagnitude = InitialMagnitude + (MagnitudeRange * (RealRPM - IdleRPM) / RPMRange);
+            ExhaustColor = ExhaustSteadyColor;
+
             if (RealRPM < DemandedRPM)
             {
-                dRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * throttleAcclerationFactor * (DemandedRPM - RealRPM)), ChangeUpRPMpS);
+                // RPM increase exponentially decays, but clamped between 1% and 100% of the linear rate of change
+                dRPM = MathHelper.Clamp((float)Math.Sqrt(2 * RateOfChangeUpRPMpSS * throttleAcclerationFactor * (DemandedRPM - RealRPM)),
+                    0.01f * ChangeUpRPMpS, ChangeUpRPMpS);
 
-                if (dRPM > 1.0f) //The forumula above generates a floating point error that we have to compensate for so we can't actually test for zero.
+                if (RealRPM + dRPM * elapsedClockSeconds > DemandedRPM)
                 {
-                    ExhaustParticles = (InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustAccelIncrease;
-                    ExhaustMagnitude = (InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustAccelIncrease;
-                    ExhaustColor = ExhaustTransientColor;
-                }
-                else
-                {
+                    RealRPM = DemandedRPM;
                     dRPM = 0;
-                    ExhaustParticles = InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange));
-                    ExhaustMagnitude = InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange));
-                    ExhaustColor = ExhaustSteadyColor;
+                }
+                else if (dRPM > 0.25f * ChangeUpRPMpS) // Only change particle emitter if RPM is still increasing substantially
+                {
+                    ExhaustParticles *= ExhaustAccelIncrease;
+                    ExhaustMagnitude *= ExhaustAccelIncrease;
+                    ExhaustColor = ExhaustTransientColor;
                 }
             }
             else if (RealRPM > DemandedRPM)
             {
-                dRPM = (float)Math.Min(-Math.Sqrt(2 * RateOfChangeDownRPMpSS * throttleAcclerationFactor * (RealRPM - DemandedRPM)), -ChangeDownRPMpS);
+                // RPM decrease exponentially decays, but clamped between 1% and 100% of the linear rate of change
+                dRPM = -MathHelper.Clamp((float)Math.Sqrt(2 * RateOfChangeDownRPMpSS * throttleAcclerationFactor * (RealRPM - DemandedRPM)),
+                    0.01f * ChangeDownRPMpS, ChangeDownRPMpS);
 
-                ExhaustParticles = (InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
-                ExhaustMagnitude = (InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
-                ExhaustColor = ExhaustDecelColor;
+                if (RealRPM + dRPM * elapsedClockSeconds < DemandedRPM)
+                {
+                    RealRPM = DemandedRPM;
+                    dRPM = 0;
+                }
+                else if (dRPM < -0.25f * ChangeDownRPMpS) // Only change particle emitter if RPM is still decreasing substantially
+                {
+                    ExhaustParticles *= ExhaustDecelReduction;
+                    ExhaustMagnitude *= ExhaustDecelReduction;
+                    ExhaustColor = ExhaustDecelColor;
+                }
             }
 
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
@@ -1375,18 +1384,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (DieselPowerTab != null)
             {
-                CurrentDieselOutputPowerW = (DieselPowerTab[RawRpM] * (1 - Locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - Locomotive.PowerReduction) ? DieselPowerTab[RawRpM] * (1 - Locomotive.PowerReduction) : MaximumDieselPowerW * (1 - Locomotive.PowerReduction));
+                CurrentDieselOutputPowerW = Math.Min(DieselPowerTab[RawRpM], MaximumDieselPowerW) * (1 - Locomotive.PowerReduction);
             }
             else
             {
                 CurrentDieselOutputPowerW = (RawRpM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
-            }
-
-            if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
-            {
-
-                CurrentDieselOutputPowerW -= Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
-                CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
             }
 
             CurrentDieselOutputPowerW = MathHelper.Clamp(CurrentDieselOutputPowerW, 0.0f, CurrentDieselOutputPowerW);  // prevent power going -ve
@@ -1397,7 +1399,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 if (LoadPercent != 0)
                 {
-                    CurrentDieselOutputPowerW = GearBox.TractiveForceN * Locomotive.AbsSpeedMpS * 100.0f / LoadPercent;
+                    CurrentDieselOutputPowerW = GearBox.TractiveForceN * Locomotive.AbsTractionSpeedMpS * 100.0f / LoadPercent;
 
                     if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
                     {

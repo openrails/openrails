@@ -257,6 +257,7 @@ namespace Orts.Simulation
         public event System.EventHandler<PlayerTrainChangedEventArgs> PlayerTrainChanged;
         public event System.EventHandler<QueryCarViewerLoadedEventArgs> QueryCarViewerLoaded;
         public event System.EventHandler RequestTTDetachWindow;
+        public event System.EventHandler TTRequestStopMessageWindow;
 
         public float TimetableLoadedFraction = 0.0f;    // Set by AI.PrerunAI(), Get by GameStateRunActivity.Update()
 
@@ -273,7 +274,7 @@ namespace Orts.Simulation
             UseAdvancedAdhesion = Settings.UseAdvancedAdhesion;
             BreakCouplers = Settings.BreakCouplers;
             CarVibrating = Settings.CarVibratingLevel; //0 no vib, 1-2 mid vib, 3 max vib
-            UseSuperElevation = Settings.UseSuperElevation;
+            UseSuperElevation = Settings.LegacySuperElevation;
             RouteTrackGaugeM = (float)Settings.SuperElevationGauge / 1000f; // Gauge in settings is given in mm, convert to m
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             if (useOpenRailsDirectory) RoutePath = Path.GetDirectoryName(RoutePath); // starting one level deeper!
@@ -297,8 +298,8 @@ namespace Orts.Simulation
                 Trace.TraceInformation("No route track gauge given in TRK, using default setting: {0}", FormatStrings.FormatVeryShortDistanceDisplay(RouteTrackGaugeM, MilepostUnitsMetric));
             if (TRK.Tr_RouteFile.SuperElevationMode >= 0)
             {
-                UseSuperElevation = TRK.Tr_RouteFile.SuperElevationMode == 1; // Perfer superelevation mode in TRK over the one in settings
-                if (UseSuperElevation != Settings.UseSuperElevation)
+                UseSuperElevation = TRK.Tr_RouteFile.SuperElevationMode == 1; // Prefer superelevation mode in TRK over the one in settings
+                if (UseSuperElevation != Settings.LegacySuperElevation)
                     Trace.TraceInformation("Superelevation graphics have been forced " + (UseSuperElevation ? "ENABLED" : "DISABLED") +
                         " by setting of ORTSForceSuperElevation in TRK file.");
             }
@@ -694,6 +695,23 @@ namespace Orts.Simulation
                 VacuumExhausterCommand.Receiver = dieselLocomotive;
             }
 
+            if (PlayerLocomotive is MSTSControlTrailerCar controlCar)
+            {
+                VoltageSelectorCommand.Receiver = controlCar.LocomotivePowerSupply;
+                PantographSelectorCommand.Receiver = controlCar.LocomotivePowerSupply;
+                PowerLimitationSelectorCommand.Receiver = controlCar.LocomotivePowerSupply;
+                CircuitBreakerClosingOrderCommand.Receiver = controlCar.LocomotivePowerSupply;
+                CircuitBreakerClosingOrderButtonCommand.Receiver = controlCar.LocomotivePowerSupply;
+                CircuitBreakerOpeningOrderButtonCommand.Receiver = controlCar.LocomotivePowerSupply;
+                CircuitBreakerClosingAuthorizationCommand.Receiver = controlCar.LocomotivePowerSupply;
+
+                TractionCutOffRelayClosingOrderCommand.Receiver = controlCar.LocomotivePowerSupply;
+                TractionCutOffRelayClosingOrderButtonCommand.Receiver = controlCar.LocomotivePowerSupply;
+                TractionCutOffRelayOpeningOrderButtonCommand.Receiver = controlCar.LocomotivePowerSupply;
+                TractionCutOffRelayClosingAuthorizationCommand.Receiver = controlCar.LocomotivePowerSupply;
+                TogglePlayerEngineCommand.Receiver = controlCar;
+            }
+
             ToggleOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ResetOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleOdometerDirectionCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
@@ -755,14 +773,20 @@ namespace Orts.Simulation
         public TrainCar SetPlayerLocomotive(Train playerTrain)
         {
             TrainCar PlayerLocomotive = null;
+            var leadFound = false;
             foreach (TrainCar car in playerTrain.Cars)
                 if (car.IsDriveable)  // first loco is the one the player drives
                 {
-                    PlayerLocomotive = car;
-                    playerTrain.LeadLocomotive = car;
-                    playerTrain.InitializeBrakes();
-                    PlayerLocomotive.LocalThrottlePercent = playerTrain.AITrainThrottlePercent;
-                    break;
+                    if (!leadFound)
+                    {
+                        PlayerLocomotive = car;
+                        playerTrain.LeadLocomotive = car;
+                        playerTrain.InitializeBrakes();
+                        PlayerLocomotive.LocalThrottlePercent = playerTrain.AITrainThrottlePercent;
+                        PlayerLocomotive.SignalEvent(Event.PlayerTrainLeadLoco);
+                        leadFound = true;
+                    }
+                    else car.SignalEvent(Event.PlayerTrainHelperLoco);
                 }
             if (PlayerLocomotive == null)
                 throw new InvalidDataException("Can't find player locomotive in activity");
@@ -982,6 +1006,7 @@ namespace Orts.Simulation
                     }
                     drivenTrain.Cars.Clear();
                     AI.TrainsToRemoveFromAI.Add((AITrain)train);
+                    PlayerLocomotive.SignalEvent(Event.PlayerTrainHelperLoco);
                     PlayerLocomotive = SetPlayerLocomotive(train);
                     (train as AITrain).SwitchToPlayerControl();
                     OnPlayerLocomotiveChanged();
@@ -1096,6 +1121,7 @@ namespace Orts.Simulation
                             {
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
+                                if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                             }
                             FinishRearCoupling(drivenTrain, train, true);
                             return;
@@ -1126,6 +1152,7 @@ namespace Orts.Simulation
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
+                                if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                             }
                             FinishRearCoupling(drivenTrain, train, false);
                             return;
@@ -1190,6 +1217,7 @@ namespace Orts.Simulation
                                     TrainCar car = train.Cars[i];
                                     drivenTrain.Cars.Insert(i, car);
                                     car.Train = drivenTrain;
+                                    if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                                 }
                                 if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
                                 FinishFrontCoupling(drivenTrain, train, lead, true);
@@ -1223,6 +1251,7 @@ namespace Orts.Simulation
                                 drivenTrain.Cars.Insert(0, car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
+                                if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                             }
                             if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
                             FinishFrontCoupling(drivenTrain, train, lead, false);
@@ -1810,14 +1839,15 @@ namespace Orts.Simulation
             train.activityClearingDistanceM = train.Cars.Count < Train.standardTrainMinCarNo ? Train.shortClearingDistanceM : Train.standardClearingDistanceM;
             train2.activityClearingDistanceM = train2.Cars.Count < Train.standardTrainMinCarNo ? Train.shortClearingDistanceM : Train.standardClearingDistanceM;
 
-
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;
-            
+
             train2.SpeedMpS = train.SpeedMpS;
 
+            train.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
             train.Cars[train.Cars.Count - 1].BrakeSystem.RearBrakeHoseConnected = false;
             train2.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
+            train2.Cars[train2.Cars.Count - 1].BrakeSystem.RearBrakeHoseConnected = false;
 
             train2.AITrainDirectionForward = train.AITrainDirectionForward;
 
@@ -1831,6 +1861,19 @@ namespace Orts.Simulation
                 train2.TrainType = Train.TRAINTYPE.AI;
                 train.IncorporatedTrainNo = -1;
                 train2.MUDirection = Direction.Forward;
+                var leadFound = false;
+                foreach (var trainCar in train2.Cars)
+                {
+                    if (trainCar is MSTSLocomotive)
+                    {
+                        if (!leadFound)
+                        {
+                            trainCar.SignalEvent(Event.AITrainLeadLoco);
+                            leadFound = true;
+                        }
+                    }
+                    else trainCar.SignalEvent(Event.AITrainHelperLoco);
+                }
             }
             else train2.TrainType = Train.TRAINTYPE.STATIC;
             train2.LeadLocomotive = null;
@@ -1959,6 +2002,7 @@ namespace Orts.Simulation
                         playerTrain.TrainType = Train.TRAINTYPE.AI;
                         if (!TimetableMode) AI.AITrains.Add(playerTrain);
                         playerTrain.Autopilot = false;
+                        playerTrain.RedefineAITriggers();
                         if (TrainSwitcher.SuspendOldPlayer)
                         {
                             playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.SUSPENDED;
@@ -2158,6 +2202,7 @@ namespace Orts.Simulation
                 PlayerLocomotive.Train.CreatePathlessPlayerTrain();
             }
             var playerLocomotive = PlayerLocomotive as MSTSLocomotive;
+            PlayerLocomotive.Train.RedefinePlayerTrainTriggers();
             playerLocomotive.UsingRearCab = (PlayerLocomotive.Flipped ^ PlayerLocomotive.Train.MUDirection == Direction.Reverse) && (playerLocomotive.HasRearCab || playerLocomotive.HasRear3DCab);
             OnPlayerLocomotiveChanged();
             playerSwitchOngoing = false;
@@ -2367,6 +2412,12 @@ namespace Orts.Simulation
         {
             var requestTTDetachWindow = RequestTTDetachWindow;
             requestTTDetachWindow(this, EventArgs.Empty);
+        }
+
+        internal void OnTTRequestStopMessageWindow()
+        {
+            var TTRequestStopWindow = TTRequestStopMessageWindow;
+            TTRequestStopWindow(this, EventArgs.Empty);
         }
 
         bool OnQueryCarViewerLoaded(TrainCar car)
