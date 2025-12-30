@@ -145,7 +145,10 @@ namespace Orts.Viewer3D
                         }
                     }
                     else
+                    {
+                        Trace.TraceWarning("Unsupported texture format: {0}", path);
                         return defaultTexture;
+                    }
 
                     Textures[path] = new SharedTexture(texture, false);
                     return Textures[path];

@@ -228,8 +228,29 @@ namespace Orts.Viewer3D
 
             // Calculate XNA matrix for shape file objects by offsetting from car's location
             // The new List<int> is intentional, this allows the dictionary to be changed while iterating
+            int maxDepth = trainCarShape.Hierarchy.Max();
             foreach (int index in new List<int>(ShapeXNATranslations.Keys))
-                ShapeXNATranslations[index] = trainCarShape.XNAMatrices[index] * xnaDTileTranslation;
+            {
+                Matrix res = trainCarShape.XNAMatrices[index];
+                int hIndex = trainCarShape.Hierarchy[index];
+
+                int i = 0;
+
+                // Transform the matrix repeatedly for all of its parents
+                while (hIndex > -1 && hIndex < trainCarShape.Hierarchy.Length && i < maxDepth)
+                {
+                    res = res * trainCarShape.XNAMatrices[hIndex];
+                    // Prevent potential infinite loop due to faulty hierarchy definition
+                    if (hIndex != trainCarShape.Hierarchy[hIndex])
+                        hIndex = trainCarShape.Hierarchy[hIndex];
+                    else
+                        break;
+
+                    i++;
+                }
+
+                ShapeXNATranslations[index] = res * xnaDTileTranslation;
+            }
 
             float objectRadius = 20; // Even more arbitrary.
             float objectViewingDistance = Viewer.Settings.ViewingDistance; // Arbitrary.
@@ -999,7 +1020,7 @@ namespace Orts.Viewer3D
             : base(viewer, textureName)
         {
             // TODO: This should happen on the loader thread.
-            LightGlowTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, textureName);
+            LightGlowTexture = textureName.StartsWith(Viewer.ContentPath, StringComparison.OrdinalIgnoreCase) ? SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, textureName) : Viewer.TextureManager.Get(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

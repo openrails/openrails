@@ -279,6 +279,14 @@ namespace Orts.Viewer3D
         public static double DbfEvalIniAutoPilotTimeS = 0;//Debrief eval
         public static bool DbfEvalAutoPilot = false;//DebriefEval
         public bool IsFormationReversed; //Avoid flickering when reversal using TrainCarOperations window
+        public int CameraOutsideFrontPosition { get; set; }
+        public int CameraOutsideRearPosition { get; set; }
+        public bool CameraF9Reference { get; set; }
+        public bool FirstLoop { get; set; } = false;
+        public bool IsDownCameraChanged { get; set; }
+        public bool IsCameraPositionUpdated { get; set; } = false;
+        public bool CameraFrontUpdated { get; set; }
+        public bool CameraRearUpdated { get; set; }
 
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
@@ -662,11 +670,13 @@ namespace Orts.Viewer3D
             FreeRoamCameraList.RemoveAt(0);
         }
 
-
         public void InitializeAutomaticTrackSounds()
         {
             SharedSMSFileManager.AutoTrackSound = false;
             SharedSMSFileManager.SwitchSMSNumber = Simulator.TRK.Tr_RouteFile.SwitchSMSNumber;
+
+            SharedSMSFileManager.PlayDefaultTrackSoundsContinuous = Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay;
+            SharedSMSFileManager.ConcreteSleepers = Simulator.TRK.Tr_RouteFile.ConcreteSleepers;
 
             if (SharedSMSFileManager.SwitchSMSNumber < -1 || SharedSMSFileManager.SwitchSMSNumber >= TrackTypes.Count)
             {
