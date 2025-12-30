@@ -198,7 +198,7 @@ namespace Orts.Simulation.RollingStocks
         // Feedwater Pump
         float WaterMotionPump1FlowRateLBpS;
         float WaterMotionPump2FlowRateLBpS;
-        float MaximumWaterMotionPumpFlowRateLBpS;
+        float WaterMotionPumpWaterLBpRpM;
         bool WaterMotionPump1IsOn = false;
         bool WaterMotionPump2IsOn = false;
         bool WaterMotionPumpSound1IsOn = false;
@@ -7721,11 +7721,15 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump)
             {
-                MaximumWaterMotionPumpFlowRateLBpS = (1.2f * EvaporationLBpS) / 2.0f; // Assume two pumps and that they can pump a fraction more water the the maximum steam production
+                
+                // Calculate the amount of water pumped by pump per wheel revolution
+                // Assume a pump with a 1.75" diameter plunger and a stroke equal to the main cylinder stroke
+                var tempVolumeIn3PerRev = (float)Math.PI * (1.75f / 2.0f) * (1.75f / 2.0f) * Me.ToIn(MSTSCylinderStrokeM);
+                var tempWaterLbpRpM = Kg.ToLb(WaterDensityAt100DegC1BarKGpM3 * Me3.FromIn3(tempVolumeIn3PerRev)); // convert to lb per rev
 
                 if (WaterMotionPump1IsOn && absSpeedMpS > 0)
                 {
-                    WaterMotionPump1FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * absSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                    WaterMotionPump1FlowRateLBpS = tempWaterLbpRpM * DrvWheelRevRpS;
                 }
                 else
                 {
@@ -7734,7 +7738,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (WaterMotionPump2IsOn && absSpeedMpS > 0)
                 {
-                    WaterMotionPump2FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * absSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                    WaterMotionPump2FlowRateLBpS = tempWaterLbpRpM * DrvWheelRevRpS;
                 }
                 else
                 {
@@ -8117,30 +8121,28 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump && !WaterIsExhausted)
                 {
-
-                    if (GradientBoilerLevelFraction > 0.50 && waterGlassFractionLevel > 0.60 || waterGlassFractionLevel > 0.90)  
-                    // turn water pumps off if water level in boiler greater then 0.60
+                    // Water pump #1 operation
+                    if (GradientBoilerLevelFraction > 0.25 && waterGlassFractionLevel > 0.60 || waterGlassFractionLevel > 0.90)  
                     {
                         WaterMotionPump1IsOn = false;
                         WaterMotionPump1LockedOut = true;
                         StopMotionPump1Sound();
                     }
-                    else if ((GradientBoilerLevelFraction < 0.40 || waterGlassFractionLevel < 0.55) && !WaterMotionPump1LockedOut)
-                    // turn water pump #1 on if water level in boiler drops below 0.55
+                    else if ((GradientBoilerLevelFraction < 0.10 || waterGlassFractionLevel < 0.45) && !WaterMotionPump1LockedOut)
                     {
                         WaterMotionPump1IsOn = true;
                         WaterMotionPump1LockedOut = true;
                         PlayMotionPump1SoundIfStarting();
                     }
 
-                    if ((GradientBoilerLevelFraction > 0.35 && waterGlassFractionLevel > 0.50) || waterGlassFractionLevel > 0.80 && !WaterMotionPump2LockedOut)
-                    // turn water pump #2 off if water level in boiler greater then 0.50
+                    // Water pump #2 operation
+                    if ((GradientBoilerLevelFraction < 0.2 && waterGlassFractionLevel > 0.55) || waterGlassFractionLevel > 0.85 && !WaterMotionPump2LockedOut)
                     {
                         WaterMotionPump2IsOn = false;
                         WaterMotionPump2LockedOut = true;
                         StopMotionPump2Sound();
                     }
-                    else if ((GradientBoilerLevelFraction < 0.25 || waterGlassFractionLevel < 0.45) && !WaterMotionPump2LockedOut)     // turn water pump #2 on if water level in boiler drops below 0.45
+                    else if ((GradientBoilerLevelFraction < 0.05 || waterGlassFractionLevel < 0.40) && !WaterMotionPump2LockedOut) 
                     {
                         WaterMotionPump2IsOn = true;
                         WaterMotionPump2LockedOut = true;
@@ -8149,7 +8151,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
                 else
                 {
-
+                    // Injector Operation
                     if ((GradientBoilerLevelFraction > 0.52 && waterGlassFractionLevel > 0.59) || waterGlassFractionLevel > 0.90)        // turn injectors off if water level in boiler greater then 0.52, to stop cycling
                     {
                         Injector1IsOn = false;
@@ -9105,10 +9107,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 #endif
             if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump)
             {
-                status.AppendFormat("{0}\t{1}\t{2}/{7}\t\t{3}\t{4}/{7}\t\t{5}\t{6}/{7}\n",
+                status.AppendFormat("{0}\t\t{1}\t{2}/{5}\t\t{3}\t{4}/{5}\n",
                     Simulator.Catalog.GetString("Pump:"),
-                    Simulator.Catalog.GetString("Max"),
-                    FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(MaximumWaterMotionPumpFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                     Simulator.Catalog.GetString("Pump1"),
                     FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(WaterMotionPump1FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
                     Simulator.Catalog.GetString("Pump2"),
