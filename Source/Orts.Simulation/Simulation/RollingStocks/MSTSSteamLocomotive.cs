@@ -565,7 +565,7 @@ namespace Orts.Simulation.RollingStocks
 
         // Values from previous iteration to use in UpdateFiring() and show in HUD
         public float PreviousBoilerHeatOutBTUpS { get; protected set; } = 0.0f;
-        public float PreviousTotalSteamUsageLBpS { get; protected set; }
+        public float PreviousTotalSteamUsageLBpS { get; protected set; }                   
 
         // Derating factors for motive force 
         float BoilerPrimingDeratingFactor = 0.1f;   // Factor if boiler is priming
@@ -1492,8 +1492,8 @@ namespace Orts.Simulation.RollingStocks
             SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Off;
             SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Off;
 
-            // Create a steam engine block if none exits, typically for a MSTS or BASIC configuration
-            if (SteamEngines.Count == 0)
+                // Create a steam engine block if none exits, typically for a MSTS or BASIC configuration
+                if (SteamEngines.Count == 0)
             {
                 SteamEngines.Add(new Simulation.RollingStocks.SubSystems.PowerSupplies.SteamEngine(this));
 
@@ -6528,7 +6528,7 @@ namespace Orts.Simulation.RollingStocks
             // Decrease steam usage by SuperheaterUsage factor to model superheater - very crude model - to be improved upon
             SteamEngines[numberofengine].CylinderSteamUsageLBpS = (0.6f * SteamEngines[numberofengine].CylinderSteamUsageLBpS + 0.4f * CalculatedCylinderSteamUsageLBpS);
             SteamEngines[numberofengine].CylinderSteamUsageLBpH = pS.TopH(SteamEngines[numberofengine].CylinderSteamUsageLBpS);
-            MeanEffectivePressurePSI = SteamEngines[numberofengine].MeanEffectivePressurePSI; // for display purposes
+           MeanEffectivePressurePSI = SteamEngines[numberofengine].MeanEffectivePressurePSI; // for display purposes
 
             SteamReleasePressure_AtmPSI = SteamEngines[numberofengine].Pressure_c_AtmPSI; // for steam and smoke effects
 
@@ -7617,8 +7617,6 @@ namespace Orts.Simulation.RollingStocks
 
             if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump)
             {
-                var MaximumWaterMotionPumpFlowRateLBpS = 0;
-
                 // Calculate the amount of water pumped by pump per wheel revolution
                 // Assume a pump with a 1.75" diameter plunger and a stroke equal to the main cylinder stroke
                 var tempVolumeIn3PerRev = (float)Math.PI * (1.75f / 2.0f) * (1.75f / 2.0f) * Me.ToIn(MSTSCylinderStrokeM);
@@ -7626,7 +7624,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (WaterMotionPump1IsOn && AbsTractionSpeedMpS > 0)
                 {
-                    WaterMotionPump1FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * AbsTractionSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                    WaterMotionPump1FlowRateLBpS = tempWaterLbpRpM * DrvWheelRevRpS;
                 }
                 else
                 {
@@ -7635,7 +7633,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (WaterMotionPump2IsOn && AbsTractionSpeedMpS > 0)
                 {
-                    WaterMotionPump2FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * AbsTractionSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                    WaterMotionPump2FlowRateLBpS = tempWaterLbpRpM * DrvWheelRevRpS;
                 }
                 else
                 {
@@ -7720,7 +7718,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    // Injectors to fill boiler   
+                    // Injectors to fill boiler
                     // // Injector #1
                     if (Injector1IsOn)
                     {
@@ -7812,15 +7810,15 @@ namespace Orts.Simulation.RollingStocks
                         BoilerHeatBTU -= elapsedClockSeconds * (Inject1WaterHeatLossBTUpS + Inject1SteamHeatLossBTUpS); // Total loss of boiler heat due to water injection - inject steam and water Heat   
                         BoilerWaterInputLB += (elapsedClockSeconds * Injector1Fraction * ActualInjector1FlowRateLBpS); // Keep track of water flow into boilers from Injector 1
                         BoilerHeatOutBTUpS += (Inject1WaterHeatLossBTUpS + Inject1SteamHeatLossBTUpS); // Total loss of boiler heat due to water injection - inject steam and water Heat
-                        }
-                        else
-                        {
+                    }
+                    else
+                    {
                         Injector1WaterDelTempF = 65.0f;
                         ActualInjector1FlowRateLBpS = 0f;
                         ActualInjector1SteamUsedLBpS = 0f;
                         LiveSteamInjector1SupplementSteamUsedLBpS = 0;
 
-                        }
+                    }
 
                     // Injector #2
                     if (Injector2IsOn)
@@ -8111,44 +8109,44 @@ namespace Orts.Simulation.RollingStocks
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Off;
                     }
                     else if ((GradientBoilerLevelFraction > 0.38 && waterGlassFractionLevel > 0.52) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Midway && !Injector2LockedOut)
-                        {
-                            Injector2IsOn = true;
-                            Injector2Fraction = 0.6f;
-                        Injector2LockedOut = true;
-                            PlayInjector2SoundIfStarting();
-                        SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Minimum;
-                        }
-                    else if ((GradientBoilerLevelFraction > 0.34 && waterGlassFractionLevel > 0.50) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Maximum && !Injector2LockedOut)
-                        {
-                            Injector2IsOn = true;
-                        Injector2Fraction = 0.75f;
-                        Injector2LockedOut = true;
-                            PlayInjector2SoundIfStarting();
-                        SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Midway;
-                        }
-                    else if ((GradientBoilerLevelFraction < 0.36 || waterGlassFractionLevel < 0.51) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Off && !Injector2LockedOut)
-                        {
-                            Injector2IsOn = true;
+                    {
+                        Injector2IsOn = true;
                         Injector2Fraction = 0.6f;
                         Injector2LockedOut = true;
-                            PlayInjector2SoundIfStarting();
+                        PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Minimum;
-                        }
-
-                    else if ((GradientBoilerLevelFraction < 0.32 || waterGlassFractionLevel < 0.49) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Minimum && !Injector2LockedOut)
-                        {
-                            Injector2IsOn = true;
+                    }
+                    else if ((GradientBoilerLevelFraction > 0.34 && waterGlassFractionLevel > 0.50) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Maximum && !Injector2LockedOut)
+                    {
+                        Injector2IsOn = true;
                         Injector2Fraction = 0.75f;
                         Injector2LockedOut = true;
-                            PlayInjector2SoundIfStarting();
+                        PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Midway;
-                        }
-                    else if ((GradientBoilerLevelFraction < 0.30 || waterGlassFractionLevel < 0.48) && !Injector2LockedOut)
-                        {
-                            Injector2IsOn = true;
-                            Injector2Fraction = 1.0f;
+                    }
+                    else if ((GradientBoilerLevelFraction < 0.36 || waterGlassFractionLevel < 0.51) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Off && !Injector2LockedOut)
+                    {
+                        Injector2IsOn = true;
+                        Injector2Fraction = 0.6f;
                         Injector2LockedOut = true;
-                            PlayInjector2SoundIfStarting();
+                        PlayInjector2SoundIfStarting();
+                        SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Minimum;
+                    }
+
+                    else if ((GradientBoilerLevelFraction < 0.32 || waterGlassFractionLevel < 0.49) && SteamInjector2OperationalLevel == SteamInjector2OperationalLevels.Minimum && !Injector2LockedOut)
+                    {
+                        Injector2IsOn = true;
+                        Injector2Fraction = 0.75f;
+                        Injector2LockedOut = true;
+                        PlayInjector2SoundIfStarting();
+                        SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Midway;
+                    }
+                    else if ((GradientBoilerLevelFraction < 0.30 || waterGlassFractionLevel < 0.48) && !Injector2LockedOut)
+                    {
+                        Injector2IsOn = true;
+                        Injector2Fraction = 1.0f;
+                        Injector2LockedOut = true;
+                        PlayInjector2SoundIfStarting();
                         SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Maximum;
                     }
                 }
@@ -8497,7 +8495,7 @@ namespace Orts.Simulation.RollingStocks
                 status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Simulator.Catalog.GetString("Fuel levels"), Simulator.Catalog.GetString("coal"), Simulator.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
             }
 
-                    return status.ToString();
+            return status.ToString();
         }
 
         public override string GetDebugStatus()
