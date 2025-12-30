@@ -8072,13 +8072,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump && !WaterIsExhausted)
                 {
                     // Water pump #1 operation
-                    if (GradientBoilerLevelFraction > 0.25 && waterGlassFractionLevel > 0.60 || waterGlassFractionLevel > 0.90)  
+                    if (GradientBoilerLevelFraction > 0.55 && waterGlassFractionLevel > 0.60 || waterGlassFractionLevel > 0.90)  
                     {
                         WaterMotionPump1IsOn = false;
                         WaterMotionPump1LockedOut = true;
                         StopMotionPump1Sound();
                     }
-                    else if ((GradientBoilerLevelFraction < 0.10 || waterGlassFractionLevel < 0.45) && !WaterMotionPump1LockedOut)
+                    else if ((GradientBoilerLevelFraction < 0.40 || waterGlassFractionLevel < 0.45) && !WaterMotionPump1LockedOut)
                     {
                         WaterMotionPump1IsOn = true;
                         WaterMotionPump1LockedOut = true;
@@ -8086,13 +8086,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     }
 
                     // Water pump #2 operation
-                    if ((GradientBoilerLevelFraction < 0.2 && waterGlassFractionLevel > 0.55) || waterGlassFractionLevel > 0.85 && !WaterMotionPump2LockedOut)
+                    if ((GradientBoilerLevelFraction < 0.5 && waterGlassFractionLevel > 0.55) || waterGlassFractionLevel > 0.85 && !WaterMotionPump2LockedOut)
                     {
                         WaterMotionPump2IsOn = false;
                         WaterMotionPump2LockedOut = true;
                         StopMotionPump2Sound();
                     }
-                    else if ((GradientBoilerLevelFraction < 0.05 || waterGlassFractionLevel < 0.40) && !WaterMotionPump2LockedOut) 
+                    else if ((GradientBoilerLevelFraction < 0.35 || waterGlassFractionLevel < 0.40) && !WaterMotionPump2LockedOut) 
                     {
                         WaterMotionPump2IsOn = true;
                         WaterMotionPump2LockedOut = true;
