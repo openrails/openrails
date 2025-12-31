@@ -631,20 +631,29 @@ namespace Orts.Viewer3D
             // Sound files (.sms, .wav) can be in the ROUTES, SOUND, or TRAINS folders
             // Graphic files (.ace, .s) can be in the GLOBAL, ROUTES, or TRAINS folders
 
-            Simulator.SubscribeToFileWatcher(Simulator.GLOBALWatcher, HandleGraphicsFileChange, HandleGraphicsFileRename);
+            if (Simulator.GLOBALWatcher != null)
+            {
+                Simulator.SubscribeToFileWatcher(Simulator.GLOBALWatcher, HandleGraphicsFileChange, HandleGraphicsFileRename);
+            }
 
+            if (Simulator.ROUTESWatcher != null)
+            {
+                Simulator.SubscribeToFileWatcher(Simulator.ROUTESWatcher, HandleGraphicsFileChange, HandleGraphicsFileRename);
 
-            Simulator.SubscribeToFileWatcher(Simulator.ROUTESWatcher, HandleGraphicsFileChange, HandleGraphicsFileRename);
+                Simulator.SubscribeToFileWatcher(Simulator.ROUTESWatcher, HandleSoundFileChange, HandleSoundFileRename);
+            }
 
-            Simulator.SubscribeToFileWatcher(Simulator.ROUTESWatcher, HandleSoundFileChange, HandleSoundFileRename);
+            if (Simulator.SOUNDWatcher != null)
+            {
+                Simulator.SubscribeToFileWatcher(Simulator.SOUNDWatcher, HandleSoundFileChange, HandleSoundFileRename);
+            }
 
+            if (Simulator.TRAINSWatcher != null)
+            {
+                Simulator.SubscribeToFileWatcher(Simulator.TRAINSWatcher, HandleGraphicsFileChange, HandleGraphicsFileRename);
 
-            Simulator.SubscribeToFileWatcher(Simulator.SOUNDWatcher, HandleSoundFileChange, HandleSoundFileRename);
-
-
-            Simulator.SubscribeToFileWatcher(Simulator.TRAINSWatcher, HandleGraphicsFileChange, HandleGraphicsFileRename);
-
-            Simulator.SubscribeToFileWatcher(Simulator.TRAINSWatcher, HandleSoundFileChange, HandleSoundFileRename);
+                Simulator.SubscribeToFileWatcher(Simulator.TRAINSWatcher, HandleSoundFileChange, HandleSoundFileRename);
+            }
 
         }
 

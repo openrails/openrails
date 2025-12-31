@@ -1656,14 +1656,14 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     foreach (CabViewControlRenderer controlRenderer in controlRenderers)
                     {
-                        if (controlRenderer.Control.ACEFile != null && CABTextureManager.GetStale(controlRenderer.Control.ACEFile))
+                        if (!String.IsNullOrEmpty(controlRenderer.Control.ACEFile) && CABTextureManager.GetStale(controlRenderer.Control.ACEFile))
                         {
                             stale = true;
                             return stale;
                         }
                         else if (controlRenderer.Control is CVCFirebox fireboxControl)
                         {
-                            if (fireboxControl.FireACEFile != null && CABTextureManager.GetStale(fireboxControl.FireACEFile))
+                            if (!String.IsNullOrEmpty(fireboxControl.FireACEFile) && CABTextureManager.GetStale(fireboxControl.FireACEFile))
                             {
                                 stale = true;
                                 return stale;

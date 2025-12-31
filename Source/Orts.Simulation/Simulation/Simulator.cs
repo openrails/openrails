@@ -2310,33 +2310,38 @@ namespace Orts.Simulation
             // when hot reloading is enabled. Otherwise, that information is not needed.
             SharedSMSFileManager.TrackFileReferences = true;
 
-            GLOBALWatcher = new FileSystemWatcher(basePath + @"\GLOBAL\")
-            {
-                EnableRaisingEvents = true,
-                IncludeSubdirectories = true
-            };
+            if (Directory.Exists(basePath + @"\GLOBAL\"))
+                GLOBALWatcher = new FileSystemWatcher(basePath + @"\GLOBAL\")
+                {
+                    EnableRaisingEvents = true,
+                    IncludeSubdirectories = true
+                };
 
-            ROUTESWatcher = new FileSystemWatcher(basePath + @"\ROUTES\")
-            {
-                EnableRaisingEvents = true,
-                IncludeSubdirectories = true
-            };
+            if (Directory.Exists(basePath + @"\ROUTES\"))
+                ROUTESWatcher = new FileSystemWatcher(basePath + @"\ROUTES\")
+                {
+                    EnableRaisingEvents = true,
+                    IncludeSubdirectories = true
+                };
 
-            SOUNDWatcher = new FileSystemWatcher(basePath + @"\SOUND\")
-            {
-                EnableRaisingEvents = true,
-                IncludeSubdirectories = true
-            };
+            if (Directory.Exists(basePath + @"\SOUND\"))
+                SOUNDWatcher = new FileSystemWatcher(basePath + @"\SOUND\")
+                {
+                    EnableRaisingEvents = true,
+                    IncludeSubdirectories = true
+                };
 
-            TRAINSWatcher = new FileSystemWatcher(basePath + @"\TRAINS\")
-            {
-                EnableRaisingEvents = true,
-                IncludeSubdirectories = true
-            };
+            if (Directory.Exists(basePath + @"\TRAINS\"))
+                TRAINSWatcher = new FileSystemWatcher(basePath + @"\TRAINS\")
+                {
+                    EnableRaisingEvents = true,
+                    IncludeSubdirectories = true
+                };
 
             // Train files (.eng, .wag, .inc) can be in the TRAINS folder
 
-            SubscribeToFileWatcher(TRAINSWatcher, HandleTrainsFileChange, HandleTrainsFileRename);
+            if (TRAINSWatcher != null)
+                SubscribeToFileWatcher(TRAINSWatcher, HandleTrainsFileChange, HandleTrainsFileRename);
         }
 
         /// <summary>
