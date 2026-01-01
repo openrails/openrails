@@ -1614,7 +1614,10 @@ will be determined by a number of factors, and principal amongst them are the fo
 CabForward, CabCentre, Vertical, Sloping. Default = Horizontal
 ``ORTSBoilerAngle`` - Angle of boiler to horizontal, typically for Sloping boilers on steep inclines. (UoM Degree)
 
-To display the changing water level with gradient in the Cab, use ``BOILER_WATER_GRADE``.
+To display the changing water level with gradient in the Cab, use ``BOILER_WATER_GRADE`` in place of 
+``BOILER_WATER`` in the CVF file. For example,
+
+"``Type ( BOILER_WATER_GRADE GAUGE )``"
 
 Steam Water Injectors
 .....................
@@ -1624,7 +1627,7 @@ Water injectors are typically modelled by default, and sizes and injection rates
 If desired the user may customise some of the default values by using the following parameters:
 
 ``ORTSInjectorTypes ( x, y )`` - will allow the user to set up a combination of exhaust or live steam injectors for the 
-locomotive. Use 0 = Live steam and 1 = Exhaust steam in either of the x or y positions. Note if ORTSInjectorTypes is not 
+locomotive. Use 0 = Live steam and 1 = Exhaust steam in either of the x or y positions. Note if ``ORTSInjectorTypes`` is not 
 present then InjectorTypes will be used if it is present in ENG file.
 
 ``ORTSInjectorSize ( x, y )`` - the size of each injector can be indicated in this parameter. The values will be in 
