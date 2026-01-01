@@ -635,7 +635,7 @@ namespace Orts.Simulation.RollingStocks
             DPThrottleController = (MSTSNotchController)ThrottleController.Clone();
 
             // need to test for Dynamic brake problem on 3DTS and SLI
-            if (DynamicBrakeController.IsValid())
+            if (DynamicBrakeController != null && DynamicBrakeController.IsValid())
             {
                 if (DynamicBrakeController.NotchCount() <= 3)
                 {
@@ -1603,6 +1603,8 @@ namespace Orts.Simulation.RollingStocks
                 ThrottleController?.SetValue(ThrottleController.InitialValue);
                 DynamicBrakeController?.SetValue(DynamicBrakeController.InitialValue);
             }
+
+            SteamHeatController?.SetValue(SteamHeatController.InitialValue);
 
             TrainBrakeController.Initialize(reinitialize);
             if (!TrainBrakeController.IsValid())

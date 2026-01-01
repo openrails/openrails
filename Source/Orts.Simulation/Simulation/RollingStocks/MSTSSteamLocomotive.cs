@@ -1507,6 +1507,24 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             base.Initialize(reinitialize);
 
+            if (reinitialize && Train != null)
+            {
+                CutoffController?.SetValue(Train.MUReverserPercent / 100);
+            }
+            else
+            {
+                CutoffController?.SetValue(CutoffController.InitialValue);
+            }
+
+            Injector1Controller?.SetValue(Injector1Controller.InitialValue);
+            Injector2Controller?.SetValue(Injector2Controller.InitialValue);
+            BlowerController?.SetValue(BlowerController.InitialValue);
+            DamperController?.SetValue(DamperController.InitialValue);
+            FiringRateController?.SetValue(FiringRateController.InitialValue);
+            FireboxDoorController?.SetValue(FireboxDoorController.InitialValue);
+            SmallEjectorController?.SetValue(SmallEjectorController.InitialValue);
+            LargeEjectorController?.SetValue(LargeEjectorController.InitialValue);
+
             SteamInjector1OperationalLevel = SteamInjector1OperationalLevels.Off;
             SteamInjector2OperationalLevel = SteamInjector2OperationalLevels.Off;
 
