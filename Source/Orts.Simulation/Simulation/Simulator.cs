@@ -2456,6 +2456,26 @@ namespace Orts.Simulation
         }
 
         /// <summary>
+        /// Sets the stale data flag for ALL assets managed by the simulator to the given bool
+        /// (default true)
+        /// </summary>
+        public void SetAllStale(bool stale = true)
+        {
+            CarManager.SetAllStale(stale);
+
+            // Unlike other shared object types, data is not shared between all instances of train car objects
+            // Need to manually propagate the stale flag to all instances of train cars by iterating through all trains
+            HashSet<string> staleCars = CarManager.LoadedCars.Keys.Where(c => CarManager.LoadedCars[c].StaleData).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+
+            foreach (Train train in Trains)
+                foreach (TrainCar car in train.Cars)
+                    if (staleCars.Contains(car.WagFilePath, StringComparer.InvariantCultureIgnoreCase))
+                        car.StaleData = true;
+                    else
+                        car.StaleData = false;
+        }
+
+        /// <summary>
         /// Class TrainList extends class List<Train> with extra search methods
         /// </summary>
 
