@@ -225,9 +225,9 @@ namespace Orts.Simulation.RollingStocks
 
         // Carriage Steam Heating Parameters
         public float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
-        public Interpolator SteamHeatPressureToTemperaturePSItoF;
+        public Interpolator SaturatedSteamHeatPressureToTemperaturePSItoF;
         public Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
-        public Interpolator SteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
+        public Interpolator SaturatedSteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
         public bool IsSteamHeatingBoilerFitted = false;   // Flag to indicate when steam heat boiler van is fitted
         public float CalculatedCarHeaterSteamUsageLBpS;
 
@@ -1624,9 +1624,9 @@ namespace Orts.Simulation.RollingStocks
                 IsSteamHeatFitted = true;
             }
 
-            SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
+            SaturatedSteamHeatPressureToTemperaturePSItoF = SteamTable.SaturatedSteamHeatPressureToTemperatureInterpolatorPSItoF();
             SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
-            SteamHeatPSItoBTUpLB = SteamTable.SteamHeatInterpolatorPSItoBTUpLB();
+            SaturatedSteamHeatPSItoBTUpLB = SteamTable.SaturatedSteamHeatInterpolatorPSItoBTUpLB();
 
             // Check to see if water scoop elements have been configured
             if (WaterScoopFillElevationM == 0)
