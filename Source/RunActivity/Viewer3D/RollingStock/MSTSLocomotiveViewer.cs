@@ -902,12 +902,12 @@ namespace Orts.Viewer3D.RollingStock
     /// </summary>
     public static class CABTextureManager
     {
-        private static Dictionary<string, SharedTexture> DayTextures = new Dictionary<string, SharedTexture>(StringComparer.InvariantCultureIgnoreCase);
-        private static Dictionary<string, SharedTexture> NightTextures = new Dictionary<string, SharedTexture>(StringComparer.InvariantCultureIgnoreCase);
-        private static Dictionary<string, SharedTexture> LightTextures = new Dictionary<string, SharedTexture>(StringComparer.InvariantCultureIgnoreCase);
-        private static Dictionary<string, Texture2D[]> PDayTextures = new Dictionary<string, Texture2D[]>(StringComparer.InvariantCultureIgnoreCase);
-        private static Dictionary<string, Texture2D[]> PNightTextures = new Dictionary<string, Texture2D[]>(StringComparer.InvariantCultureIgnoreCase);
-        private static Dictionary<string, Texture2D[]> PLightTextures = new Dictionary<string, Texture2D[]>(StringComparer.InvariantCultureIgnoreCase);
+        private static Dictionary<string, SharedTexture> DayTextures = new Dictionary<string, SharedTexture>();
+        private static Dictionary<string, SharedTexture> NightTextures = new Dictionary<string, SharedTexture>();
+        private static Dictionary<string, SharedTexture> LightTextures = new Dictionary<string, SharedTexture>();
+        private static Dictionary<string, Texture2D[]> PDayTextures = new Dictionary<string, Texture2D[]>();
+        private static Dictionary<string, Texture2D[]> PNightTextures = new Dictionary<string, Texture2D[]>();
+        private static Dictionary<string, Texture2D[]> PLightTextures = new Dictionary<string, Texture2D[]>();
 
         /// <summary>
         /// Loads a texture, day night and cablight
@@ -920,7 +920,8 @@ namespace Orts.Viewer3D.RollingStock
             if (string.IsNullOrEmpty(fileName))
                 return false;
 
-            fileName = Path.GetFullPath(fileName); // Use resolved path, without any 'up one level' ("..\\") calls
+            // Use resolved path, without any 'up one level' ("..\\") calls
+            fileName = Path.GetFullPath(fileName).ToLowerInvariant();
 
             bool stale = GetStale(fileName);
 
@@ -1187,7 +1188,7 @@ namespace Orts.Viewer3D.RollingStock
         /// <returns>bool indicating if the given texture is marked as stale</returns>
         public static bool GetStale(string texPath)
         {
-            texPath = Path.GetFullPath(texPath); // Use resolved path, without any 'up one level' ("..\\") calls
+            texPath = texPath;
 
             bool stale = (DayTextures.ContainsKey(texPath) && DayTextures[texPath].StaleData) ||
                 (NightTextures.ContainsKey(texPath) && NightTextures[texPath].StaleData) ||

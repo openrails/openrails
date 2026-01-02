@@ -23,6 +23,12 @@
 //#define DEBUG_LIGHT_CONE
 //#define DEBUG_LIGHT_CONE_FULL
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using LibGit2Sharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -33,11 +39,6 @@ using Orts.Viewer3D.Processes;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
 using ORTS.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 
 namespace Orts.Viewer3D
 {
@@ -228,28 +229,36 @@ namespace Orts.Viewer3D
 
             // Calculate XNA matrix for shape file objects by offsetting from car's location
             // The new List<int> is intentional, this allows the dictionary to be changed while iterating
-            int maxDepth = trainCarShape.Hierarchy.Max();
-            foreach (int index in new List<int>(ShapeXNATranslations.Keys))
+            if (trainCarShape.Hierarchy.Count() > 0)
             {
-                Matrix res = trainCarShape.XNAMatrices[index];
-                int hIndex = trainCarShape.Hierarchy[index];
-
-                int i = 0;
-
-                // Transform the matrix repeatedly for all of its parents
-                while (hIndex > -1 && hIndex < trainCarShape.Hierarchy.Length && i < maxDepth)
+                int maxDepth = trainCarShape.Hierarchy.Max();
+                foreach (int index in new List<int>(ShapeXNATranslations.Keys))
                 {
-                    res = res * trainCarShape.XNAMatrices[hIndex];
-                    // Prevent potential infinite loop due to faulty hierarchy definition
-                    if (hIndex != trainCarShape.Hierarchy[hIndex])
-                        hIndex = trainCarShape.Hierarchy[hIndex];
-                    else
-                        break;
+                    Matrix res = trainCarShape.XNAMatrices[index];
+                    int hIndex = trainCarShape.Hierarchy[index];
 
-                    i++;
+                    int i = 0;
+
+                    // Transform the matrix repeatedly for all of its parents
+                    while (hIndex > -1 && hIndex < trainCarShape.Hierarchy.Length && i < maxDepth)
+                    {
+                        res = res * trainCarShape.XNAMatrices[hIndex];
+                        // Prevent potential infinite loop due to faulty hierarchy definition
+                        if (hIndex != trainCarShape.Hierarchy[hIndex])
+                            hIndex = trainCarShape.Hierarchy[hIndex];
+                        else
+                            break;
+
+                        i++;
+                    }
+
+                    ShapeXNATranslations[index] = res * xnaDTileTranslation;
                 }
-
-                ShapeXNATranslations[index] = res * xnaDTileTranslation;
+            }
+            else
+            {
+                foreach (int index in new List<int>(ShapeXNATranslations.Keys))
+                    ShapeXNATranslations[index] = trainCarShape.XNAMatrices[0] * xnaDTileTranslation;
             }
 
             float objectRadius = 20; // Even more arbitrary.

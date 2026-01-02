@@ -76,12 +76,12 @@ namespace Orts.Viewer3D
         public World World { get; private set; }
         private SoundSource ViewerSounds { get; set; }
 
-        // Hot reloading: Lists of updated files for file monitoring purposes
-        private HashSet<string> TextureUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-        private HashSet<string> ShapeUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-        private HashSet<string> SoundUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-        private HashSet<string> IncludeUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-        private HashSet<string> WaveUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        // Hot reloading: Lists of updated files (in lowercase) for file monitoring purposes
+        private HashSet<string> TextureUpdates = new HashSet<string>();
+        private HashSet<string> ShapeUpdates = new HashSet<string>();
+        private HashSet<string> SoundUpdates = new HashSet<string>();
+        private HashSet<string> IncludeUpdates = new HashSet<string>();
+        private HashSet<string> WaveUpdates = new HashSet<string>();
         /// <summary>
         /// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
         /// </summary>
@@ -213,8 +213,7 @@ namespace Orts.Viewer3D
 
         public List<TRPFile> TRPs; // Track profile file(s)
         // Dictionary associating a specific shape file path (string) with the track profile index to be used for that shape
-        // Shape file locations are to be matched ignoring case for simplicity
-        public Dictionary<string, int> TrackProfileIndicies = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        public Dictionary<string, int> TrackProfileIndicies = new Dictionary<string, int>();
 
         enum VisibilityState
         {
@@ -1012,7 +1011,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void HandleGraphicsFileChange(object sender, FileSystemEventArgs e)
         {
-            SortGraphicsFileUpdates(new HashSet<string> { e.FullPath });
+            SortGraphicsFileUpdates(new HashSet<string> { e.FullPath.ToLowerInvariant() });
         }
 
         /// <summary>
@@ -1021,7 +1020,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void HandleGraphicsFileRename(object sender, RenamedEventArgs e)
         {
-            SortGraphicsFileUpdates(new HashSet<string> { e.OldFullPath, e.FullPath });
+            SortGraphicsFileUpdates(new HashSet<string> { e.OldFullPath.ToLowerInvariant(), e.FullPath.ToLowerInvariant() });
         }
 
         /// <summary>
@@ -1034,7 +1033,7 @@ namespace Orts.Viewer3D
 
             foreach (string path in paths)
             {
-                string ext = Path.GetExtension(path).ToLowerInvariant();
+                string ext = Path.GetExtension(path);
 
                 if (ext == ".ace" || ext == ".dds" || ext == ".png" || ext == ".jpg" || ext == ".jpeg")
                 {
@@ -1109,7 +1108,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void HandleSoundFileChange(object sender, FileSystemEventArgs e)
         {
-            SortSoundFileUpdates(new HashSet<string> { e.FullPath });
+            SortSoundFileUpdates(new HashSet<string> { e.FullPath.ToLowerInvariant() });
         }
 
         /// <summary>
@@ -1118,7 +1117,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void HandleSoundFileRename(object sender, RenamedEventArgs e)
         {
-            SortSoundFileUpdates(new HashSet<string> { e.OldFullPath, e.FullPath });
+            SortSoundFileUpdates(new HashSet<string> { e.OldFullPath.ToLowerInvariant(), e.FullPath.ToLowerInvariant() });
         }
 
         /// <summary>
@@ -1131,7 +1130,7 @@ namespace Orts.Viewer3D
 
             foreach (string path in paths)
             {
-                string ext = Path.GetExtension(path).ToLowerInvariant();
+                string ext = Path.GetExtension(path);
 
                 if (ext == ".sms")
                 {

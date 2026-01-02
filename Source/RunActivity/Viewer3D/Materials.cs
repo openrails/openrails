@@ -40,8 +40,8 @@ namespace Orts.Viewer3D
     {
         readonly Viewer Viewer;
         readonly GraphicsDevice GraphicsDevice;
-        Dictionary<string, SharedTexture> Textures = new Dictionary<string, SharedTexture>(StringComparer.InvariantCultureIgnoreCase);
-        Dictionary<string, bool> TextureMarks = new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase);
+        Dictionary<string, SharedTexture> Textures = new Dictionary<string, SharedTexture>();
+        Dictionary<string, bool> TextureMarks = new Dictionary<string, bool>();
 
         [CallOnThread("Render")]
         internal SharedTextureManager(Viewer viewer, GraphicsDevice graphicsDevice)
@@ -63,7 +63,8 @@ namespace Orts.Viewer3D
             if (path == null || path == "")
                 return defaultTexture;
 
-            path = Path.GetFullPath(path).ToLowerInvariant(); // Use resolved path, without any 'up one level' ("..\\") calls
+            // Use resolved path, without any 'up one level' ("..\\") calls
+            path = Path.GetFullPath(path).ToLowerInvariant();
 
             if (!Textures.ContainsKey(path) || Textures[path].StaleData)
             {
@@ -397,10 +398,10 @@ namespace Orts.Viewer3D
                 if (textureName.Contains('\0'))
                 {
                     string[] dualPath = textureName.Split('\0');
-                    textureName = Path.GetFullPath(dualPath[0]) + '\0' + Path.GetFullPath(dualPath[1]);
+                    textureName = Path.GetFullPath(dualPath[0]).ToLowerInvariant() + '\0' + Path.GetFullPath(dualPath[1]).ToLowerInvariant();
                 }
                 else
-                    textureName = Path.GetFullPath(textureName);
+                    textureName = Path.GetFullPath(textureName).ToLowerInvariant();
             }
 
             var materialKey = (materialName, textureName, options, mipMapBias, effect);
@@ -603,7 +604,7 @@ namespace Orts.Viewer3D
 
                 foreach (string matPath in matPaths)
                 {
-                    if (!Materials[matKey].StaleData && texPaths.Contains(matPath, StringComparer.InvariantCultureIgnoreCase))
+                    if (!Materials[matKey].StaleData && texPaths.Contains(matPath))
                     {
                         // Found a match to an affected texture; mark material as stale so it gets reloaded
                         Materials[matKey].StaleData = true;

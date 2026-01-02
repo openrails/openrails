@@ -38,8 +38,8 @@ namespace Orts.Formats.Msts
         public List<string> LightViews = new List<string>();    // Light CAB Views - by GeorgeS
         public CabViewControls CabViewControls;                 // Controls in CAB - by GeorgeS
 
-        // Hot reloading: List of .inc files referenced by this sms file
-        public HashSet<string> FilesReferenced = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        // Hot reloading: List of .inc file paths (in lowercase) referenced by this cvf file
+        public HashSet<string> FilesReferenced = new HashSet<string>();
 
         public CabViewFile(string filePath, string basePath, bool trackReferences = false)
         {
@@ -64,9 +64,9 @@ namespace Orts.Formats.Msts
                             if (File.Exists(tstFileName1024))
                                 name = name1024;
 
-                            TwoDViews.Add(Path.GetFullPath(Path.Combine(path, name)));
-                            NightViews.Add(Path.GetFullPath(Path.Combine(path, Path.Combine("NIGHT", name))));
-                            LightViews.Add(Path.GetFullPath(Path.Combine(path, Path.Combine("CABLIGHT", name))));
+                            TwoDViews.Add(Path.GetFullPath(Path.Combine(path, name)).ToLowerInvariant());
+                            NightViews.Add(Path.GetFullPath(Path.Combine(path, Path.Combine("NIGHT", name))).ToLowerInvariant());
+                            LightViews.Add(Path.GetFullPath(Path.Combine(path, Path.Combine("CABLIGHT", name))).ToLowerInvariant());
                         }),
                         new STFReader.TokenProcessor("cabviewcontrols", ()=>{ CabViewControls = new CabViewControls(stf, basePath); }),
                         new STFReader.TokenProcessor("ortscabviewcontrols", ()=>{ 
@@ -76,7 +76,7 @@ namespace Orts.Formats.Msts
                     });}),
                 });
                 if (trackReferences)
-                    FilesReferenced = stf.FileNames;
+                    FilesReferenced = stf.FileNames.Select(p => p.ToLowerInvariant()).ToHashSet();
             }
 		}
 
@@ -545,7 +545,7 @@ namespace Orts.Formats.Msts
         }
         protected void ParseGraphic(STFReader stf, string basepath)
         {
-            ACEFile = Path.GetFullPath(Path.Combine(basepath, stf.ReadStringBlock(null)));
+            ACEFile = Path.GetFullPath(Path.Combine(basepath, stf.ReadStringBlock(null))).ToLowerInvariant();
         }
         protected void ParseStyle(STFReader stf)
         {
@@ -852,7 +852,7 @@ namespace Orts.Formats.Msts
 
         protected void ParseFireACEFile(STFReader stf, string basepath)
         {
-            FireACEFile = Path.GetFullPath(Path.Combine(basepath, stf.ReadStringBlock(null)));
+            FireACEFile = Path.GetFullPath(Path.Combine(basepath, stf.ReadStringBlock(null))).ToLowerInvariant();
         }
 
     }

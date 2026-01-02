@@ -423,7 +423,7 @@ namespace Orts.Simulation.RollingStocks
                     Parse(stf.Tree.ToLower(), stf);
                 }
                 if (Simulator.Settings.EnableHotReloading)
-                    FilesReferenced = stf.FileNames;
+                    FilesReferenced = stf.FileNames.Select(p => p.ToLowerInvariant()).ToHashSet();
             }
 
             var wagonFolderSlash = Path.GetDirectoryName(WagFilePath) + @"\";
@@ -4720,7 +4720,7 @@ public void SetTensionStiffness(float a, float b)
     /// </summary>
     public class CarManager
     {
-        public static Dictionary<string, MSTSWagon> LoadedCars = new Dictionary<string, MSTSWagon>(StringComparer.InvariantCultureIgnoreCase);
+        public static Dictionary<string, MSTSWagon> LoadedCars = new Dictionary<string, MSTSWagon>();
 
         /// <summary>
         /// Sets the stale data flag for ALL loaded cars to the given bool
