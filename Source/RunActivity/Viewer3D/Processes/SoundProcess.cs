@@ -431,19 +431,19 @@ namespace Orts.Viewer3D.Processes
                                 foreach (ORTSTrigger trigger in stream.Triggers)
                                     if (trigger.SoundCommand is ORTSSoundPlayCommand soundPlayCommand)
                                         foreach (string file in soundPlayCommand.Files)
-                                            files.Add(ORTSPaths.GetFileFromFolders(pathArray, file)); // Full file path usually isn't given in the stream, has to be constructed
+                                            files.Add(ORTSPaths.GetFileFromFolders(pathArray, file)?.ToLowerInvariant()); // Full file path usually isn't given in the stream, has to be constructed
 
                             // Some sources are just one sound file, check for this as well
                             if (source.WavFolder != null && source.WavFileName != null)
-                                files.Add(Path.GetFullPath(Path.Combine(source.WavFolder, source.WavFileName)));
+                                files.Add(Path.GetFullPath(Path.Combine(source.WavFolder, source.WavFileName)).ToLowerInvariant());
 
                             string soundManager = "";
                             if (source.SMSFolder != null && source.SMSFileName != null)
-                                soundManager = Path.GetFullPath(Path.Combine(source.SMSFolder, source.SMSFileName));
+                                soundManager = Path.GetFullPath(Path.Combine(source.SMSFolder, source.SMSFileName)).ToLowerInvariant();
 
                             foreach (string sound in files)
                             {
-                                if (!source.StaleData && wavPaths.Contains(sound, StringComparer.InvariantCultureIgnoreCase))
+                                if (!source.StaleData && wavPaths.Contains(sound))
                                 {
                                     source.StaleData = true;
                                     baseSource.StaleData = true;
@@ -508,8 +508,6 @@ namespace Orts.Viewer3D.Processes
             // We need to iterate all of the SoundSource objects to check if stale .sms files are used
             bool found = false;
 
-            HashSet<string> staleSMSs = SharedSMSFileManager.SharedSMSFiles.Keys.Where(s => SharedSMSFileManager.SharedSMSFiles[s].StaleData).ToHashSet();
-
             lock (SoundSources)
             {
                 foreach (List<SoundSourceBase> baseSources in SoundSources.Values)
@@ -533,9 +531,9 @@ namespace Orts.Viewer3D.Processes
                         {
                             if (source.SMSFolder != null && source.SMSFileName != null)
                             {
-                                string soundManager = Path.GetFullPath(Path.Combine(source.SMSFolder, source.SMSFileName));
+                                string soundManager = Path.GetFullPath(Path.Combine(source.SMSFolder, source.SMSFileName)).ToLowerInvariant();
 
-                                if (!source.StaleData && staleSMSs.Contains(soundManager, StringComparer.InvariantCultureIgnoreCase))
+                                if (!source.StaleData && SharedSMSFileManager.SharedSMSFiles.ContainsKey(soundManager) && SharedSMSFileManager.SharedSMSFiles[soundManager].StaleData)
                                 {
                                     source.StaleData = true;
                                     baseSource.StaleData = true;

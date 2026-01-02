@@ -50,8 +50,8 @@ namespace Orts.Viewer3D
     {
         readonly Viewer Viewer;
 
-        Dictionary<string, SharedShape> Shapes = new Dictionary<string, SharedShape>(StringComparer.InvariantCultureIgnoreCase);
-        Dictionary<string, bool> ShapeMarks = new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase);
+        Dictionary<string, SharedShape> Shapes = new Dictionary<string, SharedShape>();
+        Dictionary<string, bool> ShapeMarks = new Dictionary<string, bool>();
         SharedShape EmptyShape;
 
         [CallOnThread("Render")]
@@ -140,8 +140,7 @@ namespace Orts.Viewer3D
                 if (shapeKey.Contains('\0'))
                     shapeFile = shapeKey.Split('\0')[0];
 
-                if (!Shapes[shapeKey].StaleData && (sPaths.Contains(Shapes[shapeKey].FilePath, StringComparer.InvariantCultureIgnoreCase) ||
-                    sPaths.Contains(shapeFile, StringComparer.InvariantCultureIgnoreCase)))
+                if (!Shapes[shapeKey].StaleData && (sPaths.Contains(Shapes[shapeKey].FilePath) || sPaths.Contains(shapeFile)))
                 {
                     // Mark shape as stale so it gets reloaded
                     Shapes[shapeKey].StaleData = true;
@@ -2145,7 +2144,7 @@ namespace Orts.Viewer3D
             }
             Animations = sFile.shape.animations;
 
-            ImageNames = new List<string>(sFile.shape.images.ConvertAll(img => Path.GetFileNameWithoutExtension(img)));
+            ImageNames = new List<string>(sFile.shape.images.ConvertAll(img => Path.GetFileNameWithoutExtension(img).ToLowerInvariant()));
 
 #if DEBUG_SHAPE_HIERARCHY
             var debugShapeHierarchy = new StringBuilder();

@@ -737,7 +737,7 @@ namespace Orts.Viewer3D
                 return;
 
             // Use resolved path, without any 'up one level' ("..\\") calls
-            smsFilePath = Path.GetFullPath(smsFilePath);
+            smsFilePath = Path.GetFullPath(smsFilePath).ToLowerInvariant();
 
             SMSFolder = Path.GetDirectoryName(smsFilePath);
             SMSFileName = Path.GetFileName(smsFilePath);
@@ -788,7 +788,7 @@ namespace Orts.Viewer3D
                 return;
 
             // Use resolved path, without any 'up one level' ("..\\") calls
-            wavFilePath = Path.GetFullPath(wavFilePath);
+            wavFilePath = Path.GetFullPath(wavFilePath).ToLowerInvariant();
 
             WavFolder = Path.GetDirectoryName(wavFilePath);
             WavFileName = Path.GetFileName(wavFilePath);

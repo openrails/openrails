@@ -31,7 +31,7 @@ namespace Orts.Formats.Msts
     /// </summary>
     public class SharedSMSFileManager
     {
-        public static Dictionary<string, SoundManagmentFile> SharedSMSFiles = new Dictionary<string, SoundManagmentFile>(StringComparer.InvariantCultureIgnoreCase);
+        public static Dictionary<string, SoundManagmentFile> SharedSMSFiles = new Dictionary<string, SoundManagmentFile>();
 
         public static int SwitchSMSNumber;
         public static int CurveSMSNumber;
@@ -44,7 +44,8 @@ namespace Orts.Formats.Msts
 
         public static SoundManagmentFile Get(string path)
         {
-            path = Path.GetFullPath(path); // Use resolved path, without any 'up one level' ("..\\") calls
+            // Use resolved path, without any 'up one level' ("..\\") calls
+            path = Path.GetFullPath(path).ToLowerInvariant();
 
             if (!SharedSMSFiles.ContainsKey(path) || SharedSMSFiles[path].StaleData)
             {
@@ -117,8 +118,8 @@ namespace Orts.Formats.Msts
 		public Tr_SMS Tr_SMS;
 
         public bool StaleData = false;
-        // Hot reloading: List of .inc files referenced by this sms file
-        public HashSet<string> FilesReferenced = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        // Hot reloading: List of .inc file paths (in lowercase) referenced by this cvf file
+        public HashSet<string> FilesReferenced = new HashSet<string>();
 
 		public SoundManagmentFile( string filePath )
 		{
@@ -133,7 +134,7 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("tr_sms", ()=>{ Tr_SMS = new Tr_SMS(stf); }),
                 });
                 if (SharedSMSFileManager.TrackFileReferences)
-                    FilesReferenced = stf.FileNames;
+                    FilesReferenced = stf.FileNames.Select(p => p.ToLowerInvariant()).ToHashSet();
             }
         }
 

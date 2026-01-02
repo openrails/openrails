@@ -73,10 +73,10 @@ namespace Orts.Simulation
         public float FileChangedDelayS = 1.0f; // Time to wait after files are updated before processing updates
         public DateTime FileUpdateTime; // The REAL world time after which file updates can be processed
 
-        // Hot reloading: Lists of updated files for file monitoring purposes
-        private HashSet<string> TrainsetUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-        private HashSet<string> IncludeUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-        private HashSet<string> CabviewUpdates = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        // Hot reloading: Lists of updated files (in lowercase) for file monitoring purposes
+        private HashSet<string> TrainsetUpdates = new HashSet<string>();
+        private HashSet<string> IncludeUpdates = new HashSet<string>();
+        private HashSet<string> CabviewUpdates = new HashSet<string>();
 
         public bool Paused = true;          // start off paused, set to true once the viewer is fully loaded and initialized
         public float GameSpeed = 1;
@@ -2365,7 +2365,7 @@ namespace Orts.Simulation
         /// </summary>
         public void HandleTrainsFileChange(object sender, FileSystemEventArgs e)
         {
-            SortTrainsFileUpdates(new HashSet<string> { e.FullPath });
+            SortTrainsFileUpdates(new HashSet<string> { e.FullPath.ToLowerInvariant() });
         }
 
         /// <summary>
@@ -2374,7 +2374,7 @@ namespace Orts.Simulation
         /// </summary>
         public void HandleTrainsFileRename(object sender, RenamedEventArgs e)
         {
-            SortTrainsFileUpdates(new HashSet<string> { e.OldFullPath, e.FullPath });
+            SortTrainsFileUpdates(new HashSet<string> { e.OldFullPath.ToLowerInvariant(), e.FullPath.ToLowerInvariant() });
         }
 
         /// <summary>
@@ -2387,7 +2387,7 @@ namespace Orts.Simulation
 
             foreach (string path in paths)
             {
-                string ext = Path.GetExtension(path).ToLowerInvariant();
+                string ext = Path.GetExtension(path);
 
                 if (ext == ".eng" || ext == ".wag")
                 {
@@ -2426,11 +2426,9 @@ namespace Orts.Simulation
 
                 // Unlike other shared object types, data is not shared between all instances of train car objects
                 // Need to manually propagate the stale cab flag to all instances of train cars by iterating through all trains
-                HashSet<string> staleCabs = CarManager.LoadedCars.Keys.Where(c => CarManager.LoadedCars[c].StaleCab).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
-
                 foreach (Train train in Trains)
                     foreach (TrainCar car in train.Cars)
-                        if (!car.StaleCab && staleCabs.Contains(car.WagFilePath, StringComparer.InvariantCultureIgnoreCase))
+                        if (!car.StaleCab && CarManager.LoadedCars.ContainsKey(car.WagFilePath) && CarManager.LoadedCars[car.WagFilePath].StaleCab)
                             car.StaleCab = true;
 
                 CabviewUpdates.Clear();
@@ -2441,11 +2439,9 @@ namespace Orts.Simulation
 
                 // Unlike other shared object types, data is not shared between all instances of train car objects
                 // Need to manually propagate the stale flag to all instances of train cars by iterating through all trains
-                HashSet<string> staleCars = CarManager.LoadedCars.Keys.Where(c => CarManager.LoadedCars[c].StaleData).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
-
                 foreach (Train train in Trains)
                     foreach (TrainCar car in train.Cars)
-                        if (!car.StaleData && staleCars.Contains(car.WagFilePath, StringComparer.InvariantCultureIgnoreCase))
+                        if (!car.StaleData && CarManager.LoadedCars.ContainsKey(car.WagFilePath) && CarManager.LoadedCars[car.WagFilePath].StaleData)
                             car.StaleData = true;
 
                 TrainsetUpdates.Clear();
@@ -2464,14 +2460,10 @@ namespace Orts.Simulation
 
             // Unlike other shared object types, data is not shared between all instances of train car objects
             // Need to manually propagate the stale flag to all instances of train cars by iterating through all trains
-            HashSet<string> staleCars = CarManager.LoadedCars.Keys.Where(c => CarManager.LoadedCars[c].StaleData).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
-
             foreach (Train train in Trains)
                 foreach (TrainCar car in train.Cars)
-                    if (staleCars.Contains(car.WagFilePath, StringComparer.InvariantCultureIgnoreCase))
-                        car.StaleData = true;
-                    else
-                        car.StaleData = false;
+                    if (CarManager.LoadedCars.ContainsKey(car.WagFilePath))
+                        car.StaleData = CarManager.LoadedCars[car.WagFilePath].StaleData;
         }
 
         /// <summary>

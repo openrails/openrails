@@ -250,7 +250,7 @@ namespace Orts.Parsers.Msts
         public string FileName { get; private set; }
         /// <summary>Set of ALL file names that have been parsed by this reader, especially including include files
         /// </summary>
-        public HashSet<string> FileNames { get; private set; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        public HashSet<string> FileNames { get; private set; } = new HashSet<string>();
         /// <summary>Line Number property for the file being parsed - for reporting purposes
         /// </summary>
         public int LineNumber { get; private set; }
