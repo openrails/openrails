@@ -1194,6 +1194,29 @@ namespace Orts.Viewer3D
             }
         }
 
+        /// <summary>
+        /// Sets the stale data flag for ALL assets managed by the viewer to the given bool
+        /// (default true)
+        /// </summary>
+        public void SetAllStale(bool stale = true)
+        {
+            TextureManager.SetAllStale(stale);
+
+            MaterialManager.SetAllStale(stale);
+
+            ShapeManager.SetAllStale(stale);
+
+            SharedSMSFileManager.SetAllStale(stale);
+
+            SoundProcess.SetAllStale(stale);
+
+            foreach (TrainCar car in World.Trains.Cars.Keys)
+            {
+                car.StaleCab = stale;
+                car.StaleViewer = stale;
+            }
+        }
+
         [CallOnThread("Updater")]
         void HandleUserInput(ElapsedTime elapsedTime)
         {
@@ -1416,6 +1439,14 @@ namespace Orts.Viewer3D
                 Simulator.Settings.SuppressConfirmations = suppressConfirmationsEntry;
                 Settings.SuppressConfirmations = suppressConfirmationsEntry;
                 Settings.Save();
+            }
+
+            // Hot reloading: User can manually force all files to stale, causing a reload of everything
+            if (UserInput.IsPressed(UserCommand.DebugForceReload))
+            {
+                SetAllStale(true);
+
+                Simulator.SetAllStale(true);
             }
 
             //ALT-F10 : display request stop info for player train - to be restored later when user setting can be defined
