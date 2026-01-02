@@ -1807,6 +1807,15 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
             }
 
+            // Check User entered boiler parameters are valid
+            float tempBoilerParameterCheckM = BoilerCrownCoverageHeightM + BoilerCrownHeightM + WaterGlassLengthM;
+
+            if (tempBoilerParameterCheckM > BoilerDiameterM / 2)
+            {
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceWarning("The sum of Boiler Crown Height, Coverage Height and Water Glass Length {0} have exceeded boiler radius {1}.  This needs to be checked.", FormatStrings.FormatVeryShortDistanceDisplay(tempBoilerParameterCheckM, IsMetric), FormatStrings.FormatVeryShortDistanceDisplay(BoilerDiameterM / 2, IsMetric));
+            }
+
             // Calculate "ideal" water level on level gradient
             ReferenceBoilerLevelFraction = (BoilerCrownCoverageHeightM + BoilerCrownHeightM + (BoilerDiameterM / 2.0f)) / BoilerDiameterM;
 
