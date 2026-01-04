@@ -727,9 +727,9 @@ namespace Orts.Simulation.RollingStocks
 
         // Safety Valve parameters
         public bool SafetyIsOn;
-        bool safety2IsOn = false; // Safety valve #2 is on and opertaing
-        bool safety3IsOn = false; // Safety valve #3 is on and opertaing
-        bool safety4IsOn = false; // Safety valve #4 is on and opertaing
+        bool Safety2IsOn = false; // Safety valve #2 is on and opertaing
+        bool Safety3IsOn = false; // Safety valve #3 is on and opertaing
+        bool Safety4IsOn = false; // Safety valve #4 is on and opertaing
         float SafetyValveDropPSI = 4.0f;      // Pressure drop before Safety valve turns off, normally around 4 psi - First safety valve normally operates between MaxBoilerPressure, and MaxBoilerPressure - 4, ie Max Boiler = 200, cutoff = 196.  
         float SafetyValveBoilerHeatOutBTUpS; // Heat removed by blowing of safety valves.
         float SafetyValveStartPSI = 0.1f;   // Set safety valve to just over max pressure - allows for safety valve not to operate in AI firing
@@ -4038,9 +4038,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             SafetyValves4SteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(MaxBoilerPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
 
             SafetyValves1SteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsage1LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
-            SafetyValves2SteamVolumeM3pS = safety2IsOn ? Kg.FromLb(SafetyValveUsage2LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
-            SafetyValves3SteamVolumeM3pS = safety3IsOn ? Kg.FromLb(SafetyValveUsage3LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
-            SafetyValves4SteamVolumeM3pS = safety4IsOn ? Kg.FromLb(SafetyValveUsage4LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+            SafetyValves2SteamVolumeM3pS = Safety2IsOn ? Kg.FromLb(SafetyValveUsage2LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+            SafetyValves3SteamVolumeM3pS = Safety3IsOn ? Kg.FromLb(SafetyValveUsage3LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+            SafetyValves4SteamVolumeM3pS = Safety4IsOn ? Kg.FromLb(SafetyValveUsage4LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
             //  SafetyValvesSteamVolumeM3pS = SafetyIsOn ? 5.0f : 0;
             SafetyValvesParticleDurationS = 3.0f;
             SafetyValvesParticleDurationS = MathHelper.Clamp(SafetyValvesParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 3.0f);
@@ -4985,19 +4985,19 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // Calculate rate for safety valve 2
                     if (BoilerPressurePSI > SafetyValveOpen2Psi)
                     {
-                        safety2IsOn = true; // turn safey 2 on
+                        Safety2IsOn = true; // turn safey 2 on
                         SafetyValveUsage2LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
                     }
                     else
                     {
                         if (BoilerPressurePSI < SafetyValveClose1Psi)
                         {
-                            safety2IsOn = false; // turn safey 2 off
+                            Safety2IsOn = false; // turn safey 2 off
                             SafetyValveUsage2LBpS = 0.0f; // if safety valve closed, then zero discharge rate
                         }
                         else
                         {
-                            if (safety2IsOn)
+                            if (Safety2IsOn)
                             {
                                 SafetyValveUsage2LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
                             }
@@ -5011,19 +5011,19 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // Calculate rate for safety valve 3
                     if (BoilerPressurePSI > SafetyValveOpen3Psi)
                     {
-                        safety3IsOn = true; // turn safey 3 on
+                        Safety3IsOn = true; // turn safey 3 on
                         SafetyValveUsage3LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
                     }
                     else
                     {
                         if (BoilerPressurePSI < SafetyValveClose3Psi)
                         {
-                            safety3IsOn = false; // turn safey 3 off
+                            Safety3IsOn = false; // turn safey 3 off
                             SafetyValveUsage3LBpS = 0.0f; // if safety valve closed, then zero discharge rate
                         }
                         else
                         {
-                            if (safety3IsOn)
+                            if (Safety3IsOn)
                             {
                                 SafetyValveUsage3LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
                             }
@@ -5038,19 +5038,19 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // Calculate rate for safety valve 4
                     if (BoilerPressurePSI > SafetyValveOpen4Psi)
                     {
-                        safety4IsOn = true; // turn safey 4 on
+                        Safety4IsOn = true; // turn safey 4 on
                         SafetyValveUsage4LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
                     }
                     else
                     {
                         if (BoilerPressurePSI < SafetyValveClose4Psi)
                         {
-                            safety4IsOn = false; // turn safey 4 off
+                            Safety4IsOn = false; // turn safey 4 off
                             SafetyValveUsage4LBpS = 0.0f; // if safety valve closed, then zero discharge rate
                         }
                         else
                         {
-                            if (safety4IsOn)
+                            if (Safety4IsOn)
                             {
                                 SafetyValveUsage4LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
                             }

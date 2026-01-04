@@ -436,7 +436,7 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var drawer in SafetyValves3)
                 drawer.SetOutput(car.SafetyValves3SteamVelocityMpS, car.SafetyValves3SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
 
-            foreach (var drawer in SafetyValves1)
+            foreach (var drawer in SafetyValves4)
                 drawer.SetOutput(car.SafetyValves4SteamVelocityMpS, car.SafetyValves4SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
 
             foreach (var drawer in Stack)
