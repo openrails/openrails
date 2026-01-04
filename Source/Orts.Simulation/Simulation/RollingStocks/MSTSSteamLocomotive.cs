@@ -261,9 +261,6 @@ namespace Orts.Simulation.RollingStocks
         bool HasSuperheater = false;  // Flag to indicate whether locomotive is superheated steam type
         bool IsSuperSet = false;    // Flag to indicate whether superheating is reducing cylinder condenstation
         bool IsSaturated = false;     // Flag to indicate locomotive is saturated steam type
-        bool safety2IsOn = false; // Safety valve #2 is on and opertaing
-        bool safety3IsOn = false; // Safety valve #3 is on and opertaing
-        bool safety4IsOn = false; // Safety valve #4 is on and opertaing
         bool IsFixGeared = false;
         bool IsSelectGeared = false;
         bool IsCritTELimit = false; // Flag to advise if critical TE is exceeded
@@ -287,7 +284,6 @@ namespace Orts.Simulation.RollingStocks
         public float MaxLocoTenderWaterMassKG = 1;         // Maximum read from Eng file - this value must be non-zero, if not defined in ENG file, can cause NaN errors
 
         // Tender
-
         public bool HasTenderCoupled = true;
 
         float BlowdownSteamUsageLBpS;
@@ -336,7 +332,6 @@ namespace Orts.Simulation.RollingStocks
         float FireHeatLossPercent;  // Percentage loss of heat due to too much or too little air for combustion
         float FlueTempK = 775;      // Initial FlueTemp (best @ 475)
         float MaxFlueTempK;         // FlueTemp at full boiler performance
-        public bool SafetyIsOn;
         public readonly SmoothedData SmokeColor = new SmoothedData(2);
 
         // eng file configuration parameters
@@ -371,10 +366,8 @@ namespace Orts.Simulation.RollingStocks
         public float GrateCombustionRateLBpFt2 { get; protected set; }
         float ORTSMaxFiringRateKGpS;          // OR equivalent of above
         float DisplayMaxFiringRateKGpS;     // Display value of MaxFiringRate
-        public float SafetyValveUsageLBpS;
-        float SafetyValveBoilerHeatOutBTUpS; // Heat removed by blowing of safety valves.
+
         float BoilerHeatOutSVAIBTUpS;
-        float SafetyValveDropPSI = 4.0f;      // Pressure drop before Safety valve turns off, normally around 4 psi - First safety valve normally operates between MaxBoilerPressure, and MaxBoilerPressure - 4, ie Max Boiler = 200, cutoff = 196.
         float EvaporationAreaM2;
         float SuperheatAreaM2 = 0.0f;      // Heating area of superheater
         float SuperheatKFactor = 15000.0f;     // Factor used to calculate superheat temperature - guesstimate
@@ -429,7 +422,6 @@ namespace Orts.Simulation.RollingStocks
         public float TotalFrictionForceN;
         public float TrainLoadKg;
         public float LocomotiveCouplerForceN;
-
 
         // precomputed values
         float CylinderSweptVolumeFT3pFT;     // Volume of steam Cylinder
@@ -501,10 +493,8 @@ namespace Orts.Simulation.RollingStocks
 
         public float MaxTenderOilMassL;
         float DamperBurnEffect;             // Effect of the Damper control Used in manual firing)
-        float SafetyValveStartPSI = 0.1f;   // Set safety valve to just over max pressure - allows for safety valve not to operate in AI firing
         float BoilerWaterInputLB = 0.0f; // Water input into boiler from injectors and pumps
         const float WaterDensityAt100DegC1BarKGpM3 = 954.8f;
-
 
         // Steam Ejector
         float TempEjectorSmallSteamConsumptionLbpS;
@@ -680,7 +670,6 @@ namespace Orts.Simulation.RollingStocks
         float DrvWheelRevRpS;       // number of revolutions of the drive wheel per minute based upon speed.
         float PistonSpeedFtpMin;      // Piston speed of locomotive
 
-
         float Cylinder1CrankAngleRad;
         float Cylinder2CrankAngleRad;
         float Cylinder3CrankAngleRad;
@@ -735,6 +724,15 @@ namespace Orts.Simulation.RollingStocks
         float CombWindN;     // Temporary parameter to store combined Curve values of locomotive and tender
 
         float cutoff;
+
+        // Safety Valve parameters
+        public bool SafetyIsOn;
+        bool safety2IsOn = false; // Safety valve #2 is on and opertaing
+        bool safety3IsOn = false; // Safety valve #3 is on and opertaing
+        bool safety4IsOn = false; // Safety valve #4 is on and opertaing
+        float SafetyValveDropPSI = 4.0f;      // Pressure drop before Safety valve turns off, normally around 4 psi - First safety valve normally operates between MaxBoilerPressure, and MaxBoilerPressure - 4, ie Max Boiler = 200, cutoff = 196.  
+        float SafetyValveBoilerHeatOutBTUpS; // Heat removed by blowing of safety valves.
+        float SafetyValveStartPSI = 0.1f;   // Set safety valve to just over max pressure - allows for safety valve not to operate in AI firing
         float NumSafetyValves;  // Number of safety valves fitted to locomotive - typically 1 to 4
         float SafetyValveSizeIn;    // Size of the safety value - all will be the same size.
         float SafetyValveSizeDiaIn2; // Area of the safety valve - impacts steam discharge rate - is the space when the valve lifts
@@ -743,6 +741,9 @@ namespace Orts.Simulation.RollingStocks
         float SafetyValveUsage2LBpS; // Usage rate for safety valve #2
         float SafetyValveUsage3LBpS; // Usage rate for safety valve #3
         float SafetyValveUsage4LBpS; // Usage rate for safety valve #4
+        public float TotalSafetyValveUsageLBpS; // Total steam usage of safety valves
+
+        // Geared Locomotive parameters
         float MaxSteamGearPistonRateFtpM;   // Max piston rate for a geared locomotive, such as a Shay
         float SteamGearRatio;   // Gear ratio for a geared locomotive, such as a Shay  
         float SteamGearRatioLow;   // Gear ratio for a geared locomotive, such as a Shay
@@ -803,8 +804,14 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         public float Cylinders1SteamVolumeM3pS;
         public float Cylinders2SteamVelocityMpS;
         public float Cylinders2SteamVolumeM3pS;
-        public float SafetyValvesSteamVelocityMpS;
-        public float SafetyValvesSteamVolumeM3pS;
+        public float SafetyValves1SteamVelocityMpS;
+        public float SafetyValves1SteamVolumeM3pS;
+        public float SafetyValves2SteamVelocityMpS;
+        public float SafetyValves2SteamVolumeM3pS;
+        public float SafetyValves3SteamVelocityMpS;
+        public float SafetyValves3SteamVolumeM3pS;
+        public float SafetyValves4SteamVelocityMpS;
+        public float SafetyValves4SteamVolumeM3pS;
         public float Cylinders11SteamVolumeM3pS;
         public float Cylinders12SteamVolumeM3pS;
         public float Cylinders21SteamVolumeM3pS;
@@ -4025,9 +4032,16 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // Safety Valves Steam Effects
 
-            SafetyValvesSteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(MaxBoilerPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
-            //SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
-            SafetyValvesSteamVolumeM3pS = SafetyIsOn ? 5.0f : 0;
+            SafetyValves1SteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(MaxBoilerPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
+            SafetyValves2SteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(MaxBoilerPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
+            SafetyValves3SteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(MaxBoilerPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
+            SafetyValves4SteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(MaxBoilerPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
+
+            SafetyValves1SteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsage1LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+            SafetyValves2SteamVolumeM3pS = safety2IsOn ? Kg.FromLb(SafetyValveUsage2LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+            SafetyValves3SteamVolumeM3pS = safety3IsOn ? Kg.FromLb(SafetyValveUsage3LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+            SafetyValves4SteamVolumeM3pS = safety4IsOn ? Kg.FromLb(SafetyValveUsage4LBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+            //  SafetyValvesSteamVolumeM3pS = SafetyIsOn ? 5.0f : 0;
             SafetyValvesParticleDurationS = 3.0f;
             SafetyValvesParticleDurationS = MathHelper.Clamp(SafetyValvesParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 3.0f);
 
@@ -4963,7 +4977,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 if (SafetyIsOn)
                 {
                     // Determine how many safety valves are in operation and set Safety Valve discharge rate
-                    SafetyValveUsageLBpS = 0.0f;  // Set to zero initially
+                    TotalSafetyValveUsageLBpS = 0.0f;  // Set to zero initially
 
                     // Calculate rate for safety valve 1
                     SafetyValveUsage1LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
@@ -5047,16 +5061,16 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         }
                     }
 
-                    SafetyValveUsageLBpS = SafetyValveUsage1LBpS + SafetyValveUsage2LBpS + SafetyValveUsage3LBpS + SafetyValveUsage4LBpS;   // Sum all the safety valve discharge rates together
-                    BoilerMassLB -= elapsedClockSeconds * SafetyValveUsageLBpS;
-                    BoilerHeatBTU -= elapsedClockSeconds * SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
-                    TotalSteamUsageLBpS += SafetyValveUsageLBpS;
-                    BoilerHeatOutBTUpS += SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
-                    SafetyValveBoilerHeatOutBTUpS = SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
+                    TotalSafetyValveUsageLBpS = SafetyValveUsage1LBpS + SafetyValveUsage2LBpS + SafetyValveUsage3LBpS + SafetyValveUsage4LBpS;   // Sum all the safety valve discharge rates together
+                    BoilerMassLB -= elapsedClockSeconds * TotalSafetyValveUsageLBpS;
+                    BoilerHeatBTU -= elapsedClockSeconds * TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
+                    TotalSteamUsageLBpS += TotalSafetyValveUsageLBpS;
+                    BoilerHeatOutBTUpS += TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
+                    SafetyValveBoilerHeatOutBTUpS = TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
                 }
                 else
                 {
-                    SafetyValveUsageLBpS = 0.0f;
+                    TotalSafetyValveUsageLBpS = 0.0f;
                 }
 
                 #endregion
@@ -5082,17 +5096,17 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (SafetyIsOn)
                 {
-                    SafetyValveUsageLBpS = MaxSafetyValveDischargeLbspS;   // For the AI fireman use the maximum possible safety valve steam volume
-                    BoilerMassLB -= elapsedClockSeconds * SafetyValveUsageLBpS;
-                    BoilerHeatBTU -= elapsedClockSeconds * SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
-                    TotalSteamUsageLBpS += SafetyValveUsageLBpS;
-                    BoilerHeatOutBTUpS += SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
-                    BoilerHeatOutSVAIBTUpS = SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Use this value to adjust the burn rate in AI mode if safety valves operate, main usage value used for display values
-                    SafetyValveBoilerHeatOutBTUpS = SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
+                    TotalSafetyValveUsageLBpS = MaxSafetyValveDischargeLbspS;   // For the AI fireman use the maximum possible safety valve steam volume
+                    BoilerMassLB -= elapsedClockSeconds * TotalSafetyValveUsageLBpS;
+                    BoilerHeatBTU -= elapsedClockSeconds * TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
+                    TotalSteamUsageLBpS += TotalSafetyValveUsageLBpS;
+                    BoilerHeatOutBTUpS += TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
+                    BoilerHeatOutSVAIBTUpS = TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Use this value to adjust the burn rate in AI mode if safety valves operate, main usage value used for display values
+                    SafetyValveBoilerHeatOutBTUpS = TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
                 }
                 else
                 {
-                    SafetyValveUsageLBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                    TotalSafetyValveUsageLBpS = 0.0f; // if safety valve closed, then zero discharge rate
                 }
 
                 #endregion
@@ -8652,7 +8666,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         Simulator.Catalog.GetString("Comprsr"),
                         FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
                         Simulator.Catalog.GetString("SafetyV"),
-                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TotalSafetyValveUsageLBpS)), IsMetric),
                         Simulator.Catalog.GetString("CylCock"),
                         FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
                         Simulator.Catalog.GetString("Genertr"),
@@ -8681,7 +8695,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         Simulator.Catalog.GetString("Comprsr"),
                         FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
                         Simulator.Catalog.GetString("SafetyV"),
-                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TotalSafetyValveUsageLBpS)), IsMetric),
                         Simulator.Catalog.GetString("CylCock"),
                         FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
                         Simulator.Catalog.GetString("Genertr"),
@@ -8714,7 +8728,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Simulator.Catalog.GetString("Ejector"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EjectorTotalSteamConsumptionLbpS)), IsMetric),
                     Simulator.Catalog.GetString("SafetyV"),
-                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TotalSafetyValveUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("CylCock"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
                     Simulator.Catalog.GetString("Genertr"),
@@ -8745,7 +8759,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Simulator.Catalog.GetString("Ejector"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EjectorTotalSteamConsumptionLbpS)), IsMetric),
                     Simulator.Catalog.GetString("SafetyV"),
-                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TotalSafetyValveUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("CylCock"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
                     Simulator.Catalog.GetString("Genertr"),
