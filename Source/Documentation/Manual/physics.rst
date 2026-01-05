@@ -1651,6 +1651,8 @@ display if OR detects the use of this parameter.
 
 To display the back pressure in the Cab, use ``BACK_PR``.
 
+Sound effects on the steam locomotive can be varied by using the volume control parameter ``BackPressureControlled``.
+
 
 Locomotive Types
 ................
