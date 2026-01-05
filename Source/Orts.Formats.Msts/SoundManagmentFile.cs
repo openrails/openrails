@@ -66,9 +66,9 @@ namespace Orts.Formats.Msts
         {
             foreach (SoundManagmentFile sms in SharedSMSFiles.Values)
                 sms.StaleData = stale;
-        }
+    }
 
-        /// <summary>
+	/// <summary>
         /// Sets the stale data flag for the sound files in the given set of paths,
         /// with an optional set of include files to also mark sound files as stale
         /// </summary>
@@ -305,7 +305,7 @@ namespace Orts.Formats.Msts
 
     public class VolumeCurve
     {
-        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled, WheelRpMControlled, CarDistanceTrackControlled, CarTunnelDistanceControlled };
+        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled, WheelRpMControlled, CarDistanceTrackControlled, CarTunnelDistanceControlled, BackPressureControlled };
 
         public Controls Control = Controls.None;
         public float Granularity = 1.0f;
@@ -334,6 +334,7 @@ namespace Orts.Formats.Msts
                 case "wheelrpmcontrolled": Control = Controls.WheelRpMControlled; break;
                 case "cardistancetrackcontrolled": Control = Controls.CarDistanceTrackControlled; break;
                 case "cartunneldistancecontrolled": Control = Controls.CarTunnelDistanceControlled; break;
+                case "backpressurecontrolled": Control = Controls.BackPressureControlled; break;
                 default: STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type); stf.SkipRestOfBlock(); return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {
