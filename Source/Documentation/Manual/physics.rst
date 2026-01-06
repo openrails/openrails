@@ -1651,6 +1651,8 @@ display if OR detects the use of this parameter.
 
 To display the back pressure in the Cab, use ``BACK_PR``.
 
+Sound effects on the steam locomotive can be varied by using the volume control parameter ``BackPressureControlled``.
+
 
 Locomotive Types
 ................
@@ -2484,9 +2486,9 @@ OR supports the following special visual effects in a steam locomotive:
   turbo-generator is not fitted to the locomotive it is recommended that this
   effect is left out of the effects section which will ensure that it is not
   displayed in OR.
-- Safety valves (named ``SafetyValvesFX``) -- represents the discharge of the
-  steam valves if the maximum boiler pressure is exceeded. It will appear
-  whenever the safety valve operates.
+- Safety valves (named ``SafetyValvesFX, SafetyValves2FX, SafetyValves3FX, SafetyValves4FX``) 
+-- represents the discharge of the steam valves if the maximum boiler pressure is exceeded. 
+They will appear whenever the relevant safety valve operates.
 - Whistle (named ``WhistleFX``) -- represents the steam discharge from the
   whistle.
 - Injectors (named ``Injectors1FX`` and ``Injectors2FX``) -- represents the
