@@ -1,0 +1,55 @@
+﻿<UserControl x:Class="Orts.TimetableEditor.Views.Table"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Orts.TimetableEditor.Views"
+             xmlns:ViewModel="clr-namespace:Orts.TimetableEditor.ViewModel"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.DataContext>
+        <ViewModel:TimetableViewModel/>
+    </UserControl.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <WrapPanel>
+            <Button Width="40" Height="40" Command="{Binding AddRow}" ToolTip="Add Row">
+                <Image Width="32" Height="32" Source="/Images/RowAdd.png"/>
+            </Button>
+            <Button Width="40" Height="40" Command="{Binding InsertRow}">
+                <Image Width="32" Height="32" Source="/Images/RowInsert.png"/>
+            </Button>
+            <Button Width="40" Height="40" Command="{Binding DeleteRow}">
+                <Image Width="32" Height="32" Source="/Images/RowDelete.png"/>
+            </Button>
+            <Button x:Name="AddColButton" Width="40" Height="40" Command="{Binding AddCol}">
+                <Image Width="32" Height="32" Source="/Images/ColumnAdd.png"/>
+            </Button>
+            <Button Width="40" Height="40" Command="{Binding InsertCol}">
+                <Image Width="32" Height="32" Source="/Images/ColumnInsert.png"/>
+            </Button>
+            <Button Width="40" Height="40" Command="{Binding DeleteCol}">
+                <Image Width="32" Height="32" Source="/Images/ColumnDelete.png"/>
+            </Button>
+            <TextBlock Margin="10 0 0 0" Text="{Binding CurrentColumnIndexText}" Width="20" TextAlignment="Right" VerticalAlignment="Center"/>
+            <TextBlock Margin="0 0 10 0" Text="{Binding CurrentRowIndex}" Width="20" VerticalAlignment="Center"/>
+            <Button Width="40" Height="40" Command="{Binding EditStations}" Margin="3 0">
+                <Image Width="32" Height="32" Source="/Images/Station.png"/>
+            </Button>
+            <Button Width="40" Height="40" Command="{Binding EditTrain}" Margin="3 0">
+                <Image Width="32" Height="32" Source="/Images/train.png"/>
+            </Button>
+            <Button Width="40" Height="40" Command="{Binding Dispose}" Margin="3 0">
+                <Image Width="32" Height="32" Source="/Images/Dispose_32x32.png"/>
+            </Button>
+        </WrapPanel>
+        <DataGrid x:Name="dataGrid" ItemsSource="{Binding Timetable}" AutoGenerateColumns="True" CanUserAddRows="False" Grid.Row="1" SelectionUnit="Cell" CanUserSortColumns="False" SelectedCellsChanged="dataGrid_SelectedCellsChanged" FrozenColumnCount="2">
+            <DataGrid.InputBindings>
+                <KeyBinding Key="V" Modifiers="Control" Command="{Binding Paste}"/>
+            </DataGrid.InputBindings>
+        </DataGrid>
+    </Grid>
+</UserControl>
