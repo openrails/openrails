@@ -1,11 +1,11 @@
-﻿<Window x:Class="TimeTableEditor.Views.DisposeView"
+﻿<Window x:Class="Orts.TimetableEditor.Views.DisposeView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TimeTableEditor.Views"
-        xmlns:ViewModel="clr-namespace:TimeTableEditor.ViewModel"
-        xmlns:Converters="clr-namespace:TimeTableEditor.Converters"
+        xmlns:local="clr-namespace:Orts.TimetableEditor.Views"
+        xmlns:ViewModel="clr-namespace:Orts.TimetableEditor.ViewModel"
+        xmlns:Converters="clr-namespace:Orts.TimetableEditor.Converters"
         mc:Ignorable="d"
         Title="DisposeView" Height="450" Width="800" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
     <Window.DataContext>

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace TimeTableEditor.Model
+namespace Orts.TimetableEditor.Model
 {
     public class DisposeParameter : BasicClass
     {

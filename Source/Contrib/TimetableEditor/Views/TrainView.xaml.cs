@@ -11,10 +11,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using TimeTableEditor.Model;
-using TimeTableEditor.ViewModel;
+using Orts.TimetableEditor.Model;
+using Orts.TimetableEditor.ViewModel;
 
-namespace TimeTableEditor.Views
+namespace Orts.TimetableEditor.Views
 {
     /// <summary>
     /// Interaktionslogik für TrainView.xaml

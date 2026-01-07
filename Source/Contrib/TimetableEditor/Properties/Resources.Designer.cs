@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TimetableEditor.Properties {
+namespace Orts.TimetableEditor.Properties {
     using System;
     
     

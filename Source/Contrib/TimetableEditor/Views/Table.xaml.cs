@@ -12,9 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using TimeTableEditor.ViewModel;
+using Orts.TimetableEditor.ViewModel;
 
-namespace TimeTableEditor.Views
+namespace Orts.TimetableEditor.Views
 {
     /// <summary>
     /// Interaktionslogik für Table.xaml
@@ -31,7 +31,7 @@ namespace TimeTableEditor.Views
             if (dataGrid.SelectedCells.Count > 0)
             {
                 DataGridCellInfo firstcell = dataGrid.SelectedCells[0];
-                var viewModel = this.DataContext as TimeTableViewModel;
+                var viewModel = this.DataContext as TimetableViewModel;
                 viewModel.CurrentColumnIndex = firstcell.Column.DisplayIndex;
                 viewModel.CurrentRowIndex = dataGrid.Items.IndexOf(firstcell.Item);
             }

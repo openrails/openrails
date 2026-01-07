@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TimeTableEditor.Model
+namespace Orts.TimetableEditor.Model
 {
-    public class TimeTableParameter : BasicClass
+    public class TimetableParameter : BasicClass
     {
         private string _ParameterName;
         private string _ParameterValue;
@@ -17,7 +17,7 @@ namespace TimeTableEditor.Model
         private string _selectedItem;
         public MyICommand SetValue { get; set; }
         public ObservableCollection<string> Items { get; set; }
-        public TimeTableParameter()
+        public TimetableParameter()
         {
             Items = new ObservableCollection<string>();
             SetValue = new MyICommand(OnSetValue, CanSetValue);

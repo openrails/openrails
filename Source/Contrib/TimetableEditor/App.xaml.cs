@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace TimeTableEditor
+namespace Orts.TimetableEditor
 {
     /// <summary>
     /// Interaktionslogik für "App.xaml"

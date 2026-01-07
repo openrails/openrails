@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows;
 
-namespace TimeTableEditor.Converters
+namespace Orts.TimetableEditor.Converters
 {
     public class BooleanToVisibilityConverter : IValueConverter
     {

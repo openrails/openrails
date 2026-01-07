@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace TimeTableEditor.ViewModel
+namespace Orts.TimetableEditor.ViewModel
 {
     public class OpenSaveViewModel : INotifyPropertyChanged
     {

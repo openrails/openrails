@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TimeTableEditor.Views
+namespace Orts.TimetableEditor.Views
 {
     /// <summary>
     /// Interaktionslogik für MainView.xaml

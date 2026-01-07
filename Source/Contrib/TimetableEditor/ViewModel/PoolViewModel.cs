@@ -4,12 +4,12 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TimeTableEditor.Model;
+using Orts.TimetableEditor.Model;
 using System.IO;
 using System.Windows;
-using TimeTableEditor.Views;
+using Orts.TimetableEditor.Views;
 
-namespace TimeTableEditor.ViewModel
+namespace Orts.TimetableEditor.ViewModel
 {
     public class PoolViewModel : BasicClass
     {

@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using TimeTableEditor.Model;
-using TimeTableEditor.Views;
+using Orts.TimetableEditor.Model;
+using Orts.TimetableEditor.Views;
 
-namespace TimeTableEditor.ViewModel
+namespace Orts.TimetableEditor.ViewModel
 {
     public class StationParamsViewModel : BasicClass
     {
@@ -17,7 +17,7 @@ namespace TimeTableEditor.ViewModel
         public ObservableCollection<string> PossibleCommands { get; set; }
         private Station selectedStation;
         private Visibility commandsVisible;
-        private TimeTableCommand selectedCommand;
+        private TimetableCommand selectedCommand;
         private string selectedPossibleCommand;
 
         public MyICommand OK_Button {  get; set; }
@@ -63,7 +63,7 @@ namespace TimeTableEditor.ViewModel
             }
         }
 
-        public TimeTableCommand SelectedCommand
+        public TimetableCommand SelectedCommand
         {
             get
             {
@@ -117,7 +117,7 @@ namespace TimeTableEditor.ViewModel
         {
             if(selectedPossibleCommand!="OTHER")
             {
-                TimeTableCommand newcmd = new TimeTableCommand();
+                TimetableCommand newcmd = new TimetableCommand();
                 newcmd.Name = SelectedPossibleCommand;
                 if (newcmd.Name == "$stoptime")
                 {
@@ -133,7 +133,7 @@ namespace TimeTableEditor.ViewModel
                 inp.ShowDialog();
                 if(inp.DialogResult==true)
                 {
-                    TimeTableCommand newcmd = new TimeTableCommand();
+                    TimetableCommand newcmd = new TimetableCommand();
                     newcmd.Name = inp.Input.Text;
                     if (inp.HasValue.IsChecked == true)
                     {

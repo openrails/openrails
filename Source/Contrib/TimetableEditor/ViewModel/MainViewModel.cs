@@ -5,22 +5,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using TimeTableEditor.Views;
-using TimeTableEditor.ViewModel;
+using Orts.TimetableEditor.Views;
+using Orts.TimetableEditor.ViewModel;
 using System.ComponentModel;
-using TimeTableEditor.Model;
+using Orts.TimetableEditor.Model;
 using System.IO;
 using System.IO.Compression;
 using System.Windows;
 using System.Data;
 using System.IO.Packaging;
 
-namespace TimeTableEditor.ViewModel
+namespace Orts.TimetableEditor.ViewModel
 {
     public class MainViewModel : BasicClass
     {
         public ObservableCollection<TabItem> Tabs { get; set; }
-        public ObservableCollection<TimeTableViewModel> Tables { get; set; }
+        public ObservableCollection<TimetableViewModel> Tables { get; set; }
         public ObservableCollection<string> AllTrains { get; set; }
         public ObservableCollection<string> PoolTrains { get; set; }
         public ObservableCollection<string> ConsForZip { get; set; }
@@ -32,7 +32,7 @@ namespace TimeTableEditor.ViewModel
         public MainViewModel()
         {
             Tabs = new ObservableCollection<TabItem>();
-            Tables = new ObservableCollection<TimeTableViewModel>();
+            Tables = new ObservableCollection<TimetableViewModel>();
             AllTrains = new ObservableCollection<string>();
             PoolTrains = new ObservableCollection<string>();
             ConsistsAndPaths = new ConsistsAndPaths();
@@ -53,10 +53,10 @@ namespace TimeTableEditor.ViewModel
             }
         }
 
-        public void NewTimeTable(string tdbfilename, string routepath)
+        public void NewTimetable(string tdbfilename, string routepath)
         {
-            TimeTableViewModel viewModel = new TimeTableViewModel();
-            viewModel.newTimeTable(tdbfilename, routepath);
+            TimetableViewModel viewModel = new TimetableViewModel();
+            viewModel.newTimetable(tdbfilename, routepath);
             viewModel.ConsAndPaths = ConsistsAndPaths;
             Tables.Add(viewModel);
             Table table = new Table();
@@ -65,11 +65,11 @@ namespace TimeTableEditor.ViewModel
             SelectedTabIndex = Tabs.Count - 1;
         }
 
-        public void LoadTimeTable(string tdbfilename, string routepath, string timetablefile)
+        public void LoadTimetable(string tdbfilename, string routepath, string timetablefile)
         {
             RoutePath=routepath;
-            TimeTableViewModel viewModel = new TimeTableViewModel();
-            viewModel.LoadTimeTable(tdbfilename , routepath , timetablefile);
+            TimetableViewModel viewModel = new TimetableViewModel();
+            viewModel.LoadTimetable(tdbfilename , routepath , timetablefile);
             viewModel.ConsAndPaths = ConsistsAndPaths;
             Tables.Add(viewModel);
             Table table = new Table();
@@ -79,12 +79,12 @@ namespace TimeTableEditor.ViewModel
             SelectedTabIndex = Tabs.Count - 1;
         }
 
-        public void SaveTimeTable(string filename)
+        public void SaveTimetable(string filename)
         {
-            Tables[SelectedTabIndex].SaveTimeTable(filename);
+            Tables[SelectedTabIndex].SaveTimetable(filename);
         }
 
-        public void SaveTimeTablelist(string filename)
+        public void SaveTimetablelist(string filename)
         {
             using (var writer = new StreamWriter(filename))
             {
@@ -202,7 +202,7 @@ namespace TimeTableEditor.ViewModel
             string RouteName = RouteNameArray[RouteNameArray.Length-1];
             ConsForZip.Clear();
             PathsForZip.Clear();
-            foreach (TimeTableViewModel tvm in Tables)
+            foreach (TimetableViewModel tvm in Tables)
             {
                 tvm.GetUsedConsists(ConsForZip);
                 tvm.GetUsedPaths(PathsForZip);

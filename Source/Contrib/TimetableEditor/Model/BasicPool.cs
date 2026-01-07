@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TimeTableEditor.Model
+namespace Orts.TimetableEditor.Model
 {
     public class BasicPool : BasicClass
     {

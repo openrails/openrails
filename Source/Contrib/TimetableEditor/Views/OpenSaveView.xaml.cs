@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace TimeTableEditor.Views
+namespace Orts.TimetableEditor.Views
 {
     /// <summary>
     /// Interaktionslogik für OpenSaveView.xaml

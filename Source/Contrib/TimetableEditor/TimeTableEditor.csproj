@@ -3,7 +3,7 @@
     <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
     <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>TimetableEditor</RootNamespace>
+    <RootNamespace>Orts.TimetableEditor</RootNamespace>
     <AssemblyName>Contrib.TimetableEditor</AssemblyName>
     <ApplicationIcon>..\..\ORTS.ico</ApplicationIcon>
     <UseWindowsForms>true</UseWindowsForms>

@@ -13,13 +13,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using TimeTableEditor.ViewModel;
+using Orts.TimetableEditor.ViewModel;
 using System.IO;
-using TimeTableEditor.Model;
-using TimeTableEditor.Views;
+using Orts.TimetableEditor.Model;
+using Orts.TimetableEditor.Views;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace TimeTableEditor
+namespace Orts.TimetableEditor
 {
     /// <summary>
     /// Interaktionslogik für MainWindow.xaml
@@ -54,7 +54,7 @@ namespace TimeTableEditor
             consistpath = consistpath + "\\" + "Trains\\Consists";            
         }
 
-        private void Menu_NewTimeTable(object sender, RoutedEventArgs e)
+        private void Menu_NewTimetable(object sender, RoutedEventArgs e)
         {
             if (RoutePath == null || RoutePath == "")
             {
@@ -64,28 +64,28 @@ namespace TimeTableEditor
                 {
                     RoutePath = Path.GetDirectoryName(openFileDialog.FileName);
                     tdbfilename = openFileDialog.FileName;
-                    mainViewModel.NewTimeTable(tdbfilename, RoutePath);
+                    mainViewModel.NewTimetable(tdbfilename, RoutePath);
                     GetConsistsPath();
                     mainViewModel.ConsistsAndPaths.ConsistsPath = consistpath;
                     mainViewModel.ConsistsAndPaths.PathsPath = RoutePath + "\\Paths";
                     Menu_Save.IsEnabled = true;
                     MenuItem_Pools.IsEnabled = true;
-                    Menu_ZipTimeTable.IsEnabled = true;
+                    Menu_ZipTimetable.IsEnabled = true;
                 }
             }
             else
             {
-                mainViewModel.NewTimeTable(tdbfilename,RoutePath);
+                mainViewModel.NewTimetable(tdbfilename,RoutePath);
 
             }
         }
 
-        private void Menu_LoadTimeTableList(object sender, RoutedEventArgs e)
+        private void Menu_LoadTimetableList(object sender, RoutedEventArgs e)
         {
             if(RoutePath==null || RoutePath=="")
             {
                 OpenFileDialog openFileDialog = new OpenFileDialog();
-                openFileDialog.Filter = "OpenRails TimeTableList|*.timetablelist-or";
+                openFileDialog.Filter = "Open Rails Timetable List|*.timetablelist-or";
                 if(openFileDialog.ShowDialog() == true)
                 {
                     string path = Path.GetDirectoryName(openFileDialog.FileName);
@@ -109,25 +109,25 @@ namespace TimeTableEditor
                         {
                             if(!timetable.StartsWith("#") && timetable!="")
                             {
-                                mainViewModel.LoadTimeTable(tdbfilename, RoutePath, RoutePath + "\\activities\\openrails\\" + timetable.Trim());
+                                mainViewModel.LoadTimetable(tdbfilename, RoutePath, RoutePath + "\\activities\\openrails\\" + timetable.Trim());
                             }
                         }
                         Menu_Save.IsEnabled = true;
                         Menu_SaveList.IsEnabled = true;
                         Menu_CloseTT.IsEnabled = true;
                         MenuItem_Pools.IsEnabled = true;
-                        Menu_ZipTimeTable.IsEnabled = true;
+                        Menu_ZipTimetable.IsEnabled = true;
                     }
                 }
             }
         }
 
-        private void Menu_LoadTimeTable(object sender, RoutedEventArgs e)
+        private void Menu_LoadTimetable(object sender, RoutedEventArgs e)
         {
             if (RoutePath == null || RoutePath == "")
             {
                 OpenFileDialog openFileDialog = new OpenFileDialog();
-                openFileDialog.Filter = "OpenRails TimeTable|*.timetable-or;*.timetable_or";
+                openFileDialog.Filter = "Open Rails Timetable|*.timetable-or;*.timetable_or";
                 if (openFileDialog.ShowDialog() == true)
                 {
                     string path = Path.GetDirectoryName(openFileDialog.FileName);
@@ -144,7 +144,7 @@ namespace TimeTableEditor
                             }
                         }
                         GetConsistsPath();
-                        mainViewModel.LoadTimeTable(tdbfilename, RoutePath, openFileDialog.FileName);
+                        mainViewModel.LoadTimetable(tdbfilename, RoutePath, openFileDialog.FileName);
                         mainViewModel.ConsistsAndPaths.ConsistsPath = consistpath;
                         mainViewModel.ConsistsAndPaths.PathsPath = RoutePath + "\\Paths";
                         mainViewModel.LoadPoolTrains(path);
@@ -153,7 +153,7 @@ namespace TimeTableEditor
                     Menu_SaveList.IsEnabled = true;
                     Menu_CloseTT.IsEnabled = true;
                     MenuItem_Pools.IsEnabled = true;
-                    Menu_ZipTimeTable.IsEnabled = true;
+                    Menu_ZipTimetable.IsEnabled = true;
                 }
             }
             else
@@ -170,17 +170,17 @@ namespace TimeTableEditor
                 osv.ShowDialog();
                 if(osv.DialogResult==true)
                 {
-                    mainViewModel.LoadTimeTable(tdbfilename, RoutePath, RoutePath + "\\activities\\openrails\\" + osvm.SelectedFileName);
+                    mainViewModel.LoadTimetable(tdbfilename, RoutePath, RoutePath + "\\activities\\openrails\\" + osvm.SelectedFileName);
                     Menu_Save.IsEnabled=true;
                     Menu_SaveList.IsEnabled = true;
                     Menu_CloseTT.IsEnabled = true;
                     MenuItem_Pools.IsEnabled = true;
-                    Menu_ZipTimeTable.IsEnabled = true;
+                    Menu_ZipTimetable.IsEnabled = true;
                 }
             }            
         }
 
-        private void Menu_SaveTimeTable(object sender, RoutedEventArgs e)
+        private void Menu_SaveTimetable(object sender, RoutedEventArgs e)
         {
             OpenSaveViewModel osvm = new OpenSaveViewModel();
             osvm.SetModus("Save");
@@ -215,12 +215,12 @@ namespace TimeTableEditor
                 }
                 if(can)
                 {
-                    mainViewModel.SaveTimeTable(RoutePath + "\\activities\\openrails\\" + osvm.Filename);
+                    mainViewModel.SaveTimetable(RoutePath + "\\activities\\openrails\\" + osvm.Filename);
                 }
             }
         }
 
-        private void Menu_CloseTimeTable(object sender, RoutedEventArgs e)
+        private void Menu_CloseTimetable(object sender, RoutedEventArgs e)
         {
             if(mainViewModel.SelectedTabIndex>-1)
             {
@@ -246,13 +246,13 @@ namespace TimeTableEditor
                         Menu_SaveList.IsEnabled = false;
                         Menu_CloseTT.IsEnabled = false;
                         MenuItem_Pools.IsEnabled = false;
-                        Menu_ZipTimeTable.IsEnabled = false;
+                        Menu_ZipTimetable.IsEnabled = false;
                     }
                 }
             }
         }
 
-        private void Menu_SaveTimeTableList(object sender, RoutedEventArgs e)
+        private void Menu_SaveTimetableList(object sender, RoutedEventArgs e)
         {
             OpenSaveViewModel osvm = new OpenSaveViewModel();
             osvm.SetModus("Save");
@@ -275,7 +275,7 @@ namespace TimeTableEditor
                 }
                 if(can)
                 {
-                    mainViewModel.SaveTimeTablelist(RoutePath + "\\activities\\openrails\\" + osvm.Filename + ".timetablelist-or");
+                    mainViewModel.SaveTimetablelist(RoutePath + "\\activities\\openrails\\" + osvm.Filename + ".timetablelist-or");
                 }
             }
         }
@@ -392,7 +392,7 @@ namespace TimeTableEditor
             }
         }
 
-        private void Menu_Zip_TimeTable(object sender, RoutedEventArgs e)
+        private void Menu_Zip_Timetable(object sender, RoutedEventArgs e)
         {
             // This function is not complete yet. Therefore it is hidden in the menu
             mainViewModel.GetUsedPathsAndCons();

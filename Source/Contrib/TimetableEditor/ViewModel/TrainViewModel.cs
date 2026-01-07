@@ -8,10 +8,10 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using TimeTableEditor.Model;
+using Orts.TimetableEditor.Model;
 using System.Text.RegularExpressions;
 
-namespace TimeTableEditor.ViewModel
+namespace Orts.TimetableEditor.ViewModel
 {
     public class TrainViewModel : BasicClass
     {
@@ -36,13 +36,13 @@ namespace TimeTableEditor.ViewModel
         private bool _AheadCommand;
         private bool _PoolCommand;
         private string _SelectedPossibleCommand;
-        private TimeTableCommand _SelectedCommand;
+        private TimetableCommand _SelectedCommand;
 
         public ObservableCollection<DataFile> TrainPathsSorted { get; set; }
         public ObservableCollection<DataFile> ConsistsSorted { get; set; }
         public ObservableCollection<Consist> Con { get; set; }
         public ObservableCollection<string> AvailableTrains {  get; set; }
-        public ObservableCollection<TimeTableCommand> Commands { get; set; }
+        public ObservableCollection<TimetableCommand> Commands { get; set; }
         public ObservableCollection<string> PossibleCommands { get; set; }
         public ObservableCollection<string> PoolTrains { get; set; }
         public MyICommand AddConsist { get; set; }
@@ -57,7 +57,7 @@ namespace TimeTableEditor.ViewModel
             ConsistsSorted = new ObservableCollection<DataFile>();
             Con = new ObservableCollection<Consist>();
             AvailableTrains = new ObservableCollection<string>();
-            Commands = new ObservableCollection<TimeTableCommand>();
+            Commands = new ObservableCollection<TimetableCommand>();
             PossibleCommands = new ObservableCollection<string>();
             PoolTrains = new ObservableCollection<string>();
             //PoolTrains.Add("dummy");
@@ -285,7 +285,7 @@ namespace TimeTableEditor.ViewModel
                 }
                 Commands.Clear();
                 PossibleCommands.Clear();
-                TimeTableCommand staticCommand = new TimeTableCommand();
+                TimetableCommand staticCommand = new TimetableCommand();
                 staticCommand.newCommand("$static", AvailableTrains, PoolTrains);
                 Commands.Add(staticCommand);
             }
@@ -368,7 +368,7 @@ namespace TimeTableEditor.ViewModel
                 AddCommand.RaiseCanExecuteChanged();
             }
         }
-        public TimeTableCommand SelectedCommand
+        public TimetableCommand SelectedCommand
         {
             get
             {
@@ -503,7 +503,7 @@ namespace TimeTableEditor.ViewModel
             if (scon.Contains("$static"))
             {
                 ModusStatic = true;
-                TimeTableCommand cmd = Commands[0];
+                TimetableCommand cmd = Commands[0];
                 cmd.newCommand(reg[1], AvailableTrains, PoolTrains);
             }
             else
@@ -512,7 +512,7 @@ namespace TimeTableEditor.ViewModel
                 StartTime= reg[0];
                 for(int i = 1; i<reg.Length; i++)
                 {
-                    TimeTableCommand cmd = new TimeTableCommand();
+                    TimetableCommand cmd = new TimetableCommand();
                     cmd.newCommand(reg[i], AvailableTrains, PoolTrains);
                     if(cmd.Name=="$pool")
                     {
@@ -544,7 +544,7 @@ namespace TimeTableEditor.ViewModel
             {
                 ret += StartTime;
             }
-            foreach (TimeTableCommand cmd in Commands)
+            foreach (TimetableCommand cmd in Commands)
             {
                 ret += cmd.GetCommandString();
             }
@@ -598,7 +598,7 @@ namespace TimeTableEditor.ViewModel
 
         private void OnAddCommand()
         {
-            TimeTableCommand cmd = new TimeTableCommand();
+            TimetableCommand cmd = new TimetableCommand();
             cmd.Name = SelectedPossibleCommand.ToString();
             cmd.newCommand(SelectedPossibleCommand.ToString(),AvailableTrains,PoolTrains);
             Commands.Add(cmd);

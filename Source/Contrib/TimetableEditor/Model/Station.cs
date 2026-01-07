@@ -8,17 +8,17 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace TimeTableEditor.Model
+namespace Orts.TimetableEditor.Model
 {
     public class Station : BasicClass
     {
         private string _Name;
 
-        public ObservableCollection<TimeTableCommand> Commands { get; set; }
+        public ObservableCollection<TimetableCommand> Commands { get; set; }
 
         public Station()
         {
-            Commands = new ObservableCollection<TimeTableCommand>();            
+            Commands = new ObservableCollection<TimetableCommand>();            
         }
 
         public string Name 
@@ -43,7 +43,7 @@ namespace TimeTableEditor.Model
                 for (int i = 1; i < statarray.Length; i++)
                 {
                     statarray[i] = "$" + statarray[i];
-                    TimeTableCommand cmd = new TimeTableCommand();
+                    TimetableCommand cmd = new TimetableCommand();
                     cmd.newCommand(statarray[i]);
                     Commands.Add(cmd);
                 }                
@@ -59,7 +59,7 @@ namespace TimeTableEditor.Model
         public string Stationstring()
         {
             string str = "";
-            foreach(TimeTableCommand cmd in Commands)
+            foreach(TimetableCommand cmd in Commands)
             {
                 str = str + " " + cmd.Name;
                 if(cmd.HasValue)

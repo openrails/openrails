@@ -8,9 +8,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace TimeTableEditor.Model
+namespace Orts.TimetableEditor.Model
 {
-    public class TimeTableCommand : BasicClass
+    public class TimetableCommand : BasicClass
     {
         private string _Name;
         private string _Value;
@@ -20,23 +20,23 @@ namespace TimeTableEditor.Model
         private bool _CanHaveParameters;
         private bool _HasParameters;
         private string _selectedItem;
-        private TimeTableParameter _selectedParameter;
+        private TimetableParameter _selectedParameter;
         private string _selectedPossibleParameter;
 
         public MyICommand SetValue { get; set; }
         public MyICommand AddParameter { get; set; }
         public MyICommand RemoveParameter { get; set; }
 
-        public ObservableCollection<TimeTableParameter> Parameters { get; set; }
+        public ObservableCollection<TimetableParameter> Parameters { get; set; }
         public ObservableCollection<string> Items { get; set; }
         public ObservableCollection<string> AvailableTrains { get; set; }
         public ObservableCollection<string> PoolTrains { get; set; }
         public ObservableCollection<string> PossibleParameters { get; set; }
         public ObservableCollection<string> PossibleParameterValues { get; set; }
 
-        public TimeTableCommand() 
-        { 
-            Parameters = new ObservableCollection<TimeTableParameter>();
+        public TimetableCommand()
+        {
+            Parameters = new ObservableCollection<TimetableParameter>();
             Items = new ObservableCollection<string>();
             AvailableTrains = new ObservableCollection<string>();
             PoolTrains = new ObservableCollection<string>();
@@ -68,16 +68,16 @@ namespace TimeTableEditor.Model
                     PossibleParameters.Add("");
                     PossibleParameters.Add("/direction");
                 }
-                if(Name=="$static")
+                if (Name == "$static")
                 {
                     PossibleParameters.Add("");
                     PossibleParameters.Add("/pool");
                     PossibleParameters.Add("/ahead");
                 }
-                if(Name=="$forms")
+                if (Name == "$forms")
                 {
                     PossibleParameters.Add("");
-                    
+
                 }
             }
         }
@@ -111,7 +111,7 @@ namespace TimeTableEditor.Model
                 return _used;
             }
             set
-            { 
+            {
                 _used = value;
                 OnPropertyChanged(nameof(Used));
             }
@@ -160,7 +160,7 @@ namespace TimeTableEditor.Model
             }
         }
 
-        public TimeTableParameter SelectedParameter
+        public TimetableParameter SelectedParameter
         {
             get
             {
@@ -188,7 +188,7 @@ namespace TimeTableEditor.Model
             }
         }
 
-        private void SetParameterItems(TimeTableParameter parameter)
+        private void SetParameterItems(TimetableParameter parameter)
         {
             if (parameter.ParameterName == "/pool")
             {
@@ -216,10 +216,10 @@ namespace TimeTableEditor.Model
         {
             string[] para = Regex.Split(cmd, @"(?=[/])");
             PossibleParameters.Clear();
-            for(int i = 0;i<para.Length;i++)
+            for (int i = 0; i < para.Length; i++)
             {
-                para[i]=para[i].Trim();
-            }            
+                para[i] = para[i].Trim();
+            }
             if (para[0].Contains("="))
             {
                 string[] valname = para[0].Split('=');
@@ -230,27 +230,27 @@ namespace TimeTableEditor.Model
             {
                 Name = para[0];
             }
-            if(Name=="$create" ||  Name=="$pool")
+            if (Name == "$create" || Name == "$pool")
             {
                 CanHaveParameters = true;
-                if(Value==null)
+                if (Value == null)
                 {
                     Value = "";
                 }
-                if(Name=="$pool")
+                if (Name == "$pool")
                 {
                     Items = PoolTrains;
                 }
             }
-            if(Name=="$static")
+            if (Name == "$static")
             {
-                CanHaveParameters=true;
+                CanHaveParameters = true;
             }
             if (para.Length > 1)
             {
-                for(int i=1; i<para.Length;i++)
+                for (int i = 1; i < para.Length; i++)
                 {
-                    TimeTableParameter parameter = new TimeTableParameter();
+                    TimetableParameter parameter = new TimetableParameter();
                     parameter.newParameter(para[i]);
                     SetParameterItems(parameter);
                     Parameters.Add(parameter);
@@ -261,13 +261,13 @@ namespace TimeTableEditor.Model
         public string GetCommandString()
         {
             string ret = " " + Name;
-            if(Value!=null)
+            if (Value != null)
             {
                 ret += "=" + Value;
             }
             if (Parameters.Count > 0)
             {
-                foreach (TimeTableParameter parameter in Parameters)
+                foreach (TimetableParameter parameter in Parameters)
                 {
                     ret += parameter.GetParameterString();
                 }
@@ -287,7 +287,7 @@ namespace TimeTableEditor.Model
 
         private void OnAddParameter()
         {
-            TimeTableParameter para = new TimeTableParameter();
+            TimetableParameter para = new TimetableParameter();
             para.ParameterName = SelectedPossibleParameter;
             SetParameterItems(para);
             Parameters.Add(para);

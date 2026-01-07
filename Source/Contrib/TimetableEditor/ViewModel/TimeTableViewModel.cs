@@ -10,13 +10,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using TimeTableEditor.Views;
-using TimeTableEditor.Model;
+using Orts.TimetableEditor.Views;
+using Orts.TimetableEditor.Model;
 using System.Windows.Documents;
 
-namespace TimeTableEditor.ViewModel
+namespace Orts.TimetableEditor.ViewModel
 {
-    public class TimeTableViewModel : BasicClass
+    public class TimetableViewModel : BasicClass
     {
         private DataTable timetable;
         private char delimiter;
@@ -56,7 +56,7 @@ namespace TimeTableEditor.ViewModel
         public MyICommand EditTrain { get; set; }
         public MyICommand Paste {  get; set; }
         public MyICommand Dispose { get; set; }
-        public TimeTableViewModel()
+        public TimetableViewModel()
         {
             StationFiles = new ObservableCollection<string>();
             Stations = new ObservableCollection<string>();
@@ -78,10 +78,10 @@ namespace TimeTableEditor.ViewModel
             Paste = new MyICommand(OnPaste, CanPaste);
             Dispose = new MyICommand(OnDispose, CanDispose);
 
-            TimeTable = new DataTable();
+            Timetable = new DataTable();
         }
 
-        public DataTable TimeTable
+        public DataTable Timetable
         {
             get
             {
@@ -90,7 +90,7 @@ namespace TimeTableEditor.ViewModel
             set
             {
                 timetable = value;
-                OnPropertyChanged(nameof(TimeTable));
+                OnPropertyChanged(nameof(Timetable));
             }
         }
 
@@ -104,7 +104,7 @@ namespace TimeTableEditor.ViewModel
             {
                 currentRow = value;
                 OnPropertyChanged(nameof(CurrentRow));
-                MessageBox.Show(TimeTable.Rows.IndexOf(CurrentRow).ToString());
+                MessageBox.Show(Timetable.Rows.IndexOf(CurrentRow).ToString());
             }
         }
 
@@ -310,7 +310,7 @@ namespace TimeTableEditor.ViewModel
             }
         }
 
-        public void newTimeTable(string tdbfilename, string routepath)
+        public void newTimetable(string tdbfilename, string routepath)
         {
             RoutePath = routepath;
             activityPath = routePath + "\\" + "Activities\\OpenRails";
@@ -344,7 +344,7 @@ namespace TimeTableEditor.ViewModel
             stationsView.ShowDialog();
         }
 
-        public void LoadTimeTable(string tdbfilename, string routepath, string timetablefile)
+        public void LoadTimetable(string tdbfilename, string routepath, string timetablefile)
         {            
             RoutePath=routepath;
             activityPath = routePath + "\\" + "Activities\\OpenRails";
@@ -363,36 +363,36 @@ namespace TimeTableEditor.ViewModel
                     delimiter = '\t';
                     headers = getheader.Split(delimiter);
                 }
-                TimeTable.Columns.Add("_");
+                Timetable.Columns.Add("_");
                 foreach (string header in headers)
                 {
-                    TimeTable.Columns.Add(header);
+                    Timetable.Columns.Add(header);
                 }
-                DataRow frow = TimeTable.NewRow();
+                DataRow frow = Timetable.NewRow();
                 frow[0] = "";
                 for(int i=0; i<headers.Length; i++)
                 {
                     frow[i+1] = headers[i];
                 }
-                TimeTable.Rows.Add(frow);
+                Timetable.Rows.Add(frow);
                 while (!reader.EndOfStream)
                 {
-                    string line = (TimeTable.Rows.Count + 1).ToString() + delimiter + reader.ReadLine();
+                    string line = (Timetable.Rows.Count + 1).ToString() + delimiter + reader.ReadLine();
                     string[] row = line.Split(delimiter);
-                    DataRow dr = TimeTable.NewRow();
+                    DataRow dr = Timetable.NewRow();
                     for (int i = 0; i < headers.Length; i++)
                     {
                         dr[i] = row[i];
                     }
-                    TimeTable.Rows.Add(dr);
+                    Timetable.Rows.Add(dr);
                 }
             }
             renumberColumns();
             renumberRows();
             int cn = 0;
             int rn = 0;
-            DataRow rowt = TimeTable.Rows[0];
-            for (int c = 0; c < TimeTable.Columns.Count; c++)
+            DataRow rowt = Timetable.Rows[0];
+            for (int c = 0; c < Timetable.Columns.Count; c++)
             {
                 if (rowt[c].ToString() == "#comment")
                 {
@@ -400,19 +400,19 @@ namespace TimeTableEditor.ViewModel
                     break;
                 }
             }
-            for (int r = 0; r < TimeTable.Rows.Count; r++)
+            for (int r = 0; r < Timetable.Rows.Count; r++)
             {
-                if (TimeTable.Rows[r][1].ToString()=="#comment")
+                if (Timetable.Rows[r][1].ToString()=="#comment")
                 {
                     rn = r;
                     break;
                 }
             }
-            rowt = TimeTable.Rows[rn];
+            rowt = Timetable.Rows[rn];
             TTName = rowt[cn].ToString();            
         }
 
-        public void SaveTimeTable(string filename)
+        public void SaveTimetable(string filename)
         {
             if(delimiter=='\0')
             {
@@ -420,13 +420,13 @@ namespace TimeTableEditor.ViewModel
             }
             using (var writer = new StreamWriter(filename))
             {
-                for (int r=0; r < TimeTable.Rows.Count;r++)
+                for (int r=0; r < Timetable.Rows.Count;r++)
                 {
-                    DataRow row = TimeTable.Rows[r];
-                    for(int c=1;c< TimeTable.Columns.Count;c++)
+                    DataRow row = Timetable.Rows[r];
+                    for(int c=1;c< Timetable.Columns.Count;c++)
                     {
                         writer.Write(row[c]);
-                        if(c< TimeTable.Columns.Count-1)
+                        if(c< Timetable.Columns.Count-1)
                         {
                             writer.Write(delimiter);
                         }
@@ -495,21 +495,21 @@ namespace TimeTableEditor.ViewModel
 
         public void renumberColumns()
         {
-            for (int i = 0; i < TimeTable.Columns.Count; i++)
+            for (int i = 0; i < Timetable.Columns.Count; i++)
             {
-                TimeTable.Columns[i].ColumnName = TimeTable.Columns[i].ColumnName + "_";
+                Timetable.Columns[i].ColumnName = Timetable.Columns[i].ColumnName + "_";
             }
-            for (int i = 0; i < TimeTable.Columns.Count; i++)
+            for (int i = 0; i < Timetable.Columns.Count; i++)
             {
                 if (i < 26)
                 {
-                    TimeTable.Columns[i].ColumnName = coltitle(i);
+                    Timetable.Columns[i].ColumnName = coltitle(i);
                 }
                 else
                 {
                     string n1 = coltitle(i / 26);
                     string n2 = coltitle(i % 26);
-                    TimeTable.Columns[i].ColumnName = n1 + n2;
+                    Timetable.Columns[i].ColumnName = n1 + n2;
                 }
             }
         }
@@ -586,20 +586,20 @@ namespace TimeTableEditor.ViewModel
 
         private void renumberRows()
         {
-            TimeTable.Columns[0].ReadOnly = false;
-            for (int i = 0; i < TimeTable.Rows.Count; i++)
+            Timetable.Columns[0].ReadOnly = false;
+            for (int i = 0; i < Timetable.Rows.Count; i++)
             {
-                DataRow row = TimeTable.Rows[i];
+                DataRow row = Timetable.Rows[i];
                 row[0]=(i+1).ToString();
             }
-            TimeTable.Columns[0].ReadOnly = true;
+            Timetable.Columns[0].ReadOnly = true;
         }
 
         public void GetAllTrains(ObservableCollection<string> alltrains)
         {
             bool start = false;
-            DataRow row = TimeTable.Rows[0];
-            for(int i=1;i<TimeTable.Columns.Count;i++)
+            DataRow row = Timetable.Rows[0];
+            for(int i=1;i<Timetable.Columns.Count;i++)
             {
                 if(start)
                 {
@@ -614,12 +614,12 @@ namespace TimeTableEditor.ViewModel
 
         public void GetUsedConsists(ObservableCollection<string> ConsForZip)
         {
-            for (int r=1; r<TimeTable.Rows.Count; r++)
+            for (int r=1; r<Timetable.Rows.Count; r++)
             {
-                DataRow row =TimeTable.Rows[r];
+                DataRow row =Timetable.Rows[r];
                 if (row[1].ToString() == "#consist")
                 {
-                    for(int c=2;c<TimeTable.Columns.Count;c++)
+                    for(int c=2;c<Timetable.Columns.Count;c++)
                     {
                         if (row[c].ToString().Contains("+"))
                         {
@@ -644,12 +644,12 @@ namespace TimeTableEditor.ViewModel
 
         public void GetUsedPaths(ObservableCollection<string> PathsForZip)
         {
-            for (int r=1; r<TimeTable.Rows.Count;r++)
+            for (int r=1; r<Timetable.Rows.Count;r++)
             {
-                DataRow row = TimeTable.Rows[r];
+                DataRow row = Timetable.Rows[r];
                 if (row[1].ToString() == "#path")
                 {
-                    for(int c=2;c<TimeTable.Columns.Count;c++)
+                    for(int c=2;c<Timetable.Columns.Count;c++)
                     {
                         string pat = row[c].ToString().Trim();
                         if(pat!="" && PathsForZip.IndexOf(pat)==-1)
@@ -752,49 +752,49 @@ namespace TimeTableEditor.ViewModel
 
         private void OnStationsOk()
         {
-            TimeTable.Columns.Add("_");
-            TimeTable.Columns[0].ReadOnly = true;
-            TimeTable.Columns.Add("A");
-            TimeTable.Columns.Add("B");
-            TimeTable.Columns.Add("C");
-            DataRow dataRow = TimeTable.NewRow();
-            dataRow[0] = (TimeTable.Rows.Count+1).ToString();
+            Timetable.Columns.Add("_");
+            Timetable.Columns[0].ReadOnly = true;
+            Timetable.Columns.Add("A");
+            Timetable.Columns.Add("B");
+            Timetable.Columns.Add("C");
+            DataRow dataRow = Timetable.NewRow();
+            dataRow[0] = (Timetable.Rows.Count+1).ToString();
             dataRow[3] = "#comment";
-            TimeTable.Rows.Add(dataRow);
-            dataRow = TimeTable.NewRow();
-            dataRow[0]= (TimeTable.Rows.Count + 1).ToString();
+            Timetable.Rows.Add(dataRow);
+            dataRow = Timetable.NewRow();
+            dataRow[0]= (Timetable.Rows.Count + 1).ToString();
             dataRow[1] = "#comment";
             dataRow[3] = TTName;
-            TimeTable.Rows.Add(dataRow);
-            dataRow = TimeTable.NewRow();
-            dataRow[0]= (TimeTable.Rows.Count + 1).ToString();
+            Timetable.Rows.Add(dataRow);
+            dataRow = Timetable.NewRow();
+            dataRow[0]= (Timetable.Rows.Count + 1).ToString();
             dataRow[1] = "#path";
-            TimeTable.Rows.Add(dataRow);
-            dataRow = TimeTable.NewRow();
-            dataRow[0] = (TimeTable.Rows.Count + 1).ToString();
+            Timetable.Rows.Add(dataRow);
+            dataRow = Timetable.NewRow();
+            dataRow[0] = (Timetable.Rows.Count + 1).ToString();
             dataRow[1] = "#consist";
-            TimeTable.Rows.Add(dataRow);
-            dataRow = TimeTable.NewRow();
-            dataRow[0] = (TimeTable.Rows.Count + 1).ToString();
+            Timetable.Rows.Add(dataRow);
+            dataRow = Timetable.NewRow();
+            dataRow[0] = (Timetable.Rows.Count + 1).ToString();
             dataRow[1] = "#comment";
-            TimeTable.Rows.Add(dataRow);
-            dataRow = TimeTable.NewRow();
-            dataRow[0]= (TimeTable.Rows.Count + 1).ToString();
-            TimeTable.Rows.Add(dataRow);
+            Timetable.Rows.Add(dataRow);
+            dataRow = Timetable.NewRow();
+            dataRow[0]= (Timetable.Rows.Count + 1).ToString();
+            Timetable.Rows.Add(dataRow);
             foreach (string station in Stations)
             {
-                dataRow = TimeTable.NewRow();
-                dataRow[0] = (TimeTable.Rows.Count + 1).ToString();
+                dataRow = Timetable.NewRow();
+                dataRow[0] = (Timetable.Rows.Count + 1).ToString();
                 dataRow[1] = station;
-                TimeTable.Rows.Add(dataRow);
+                Timetable.Rows.Add(dataRow);
             }
-            dataRow = TimeTable.NewRow();
-            dataRow[0]= (TimeTable.Rows.Count + 1).ToString();
-            TimeTable.Rows.Add(dataRow);
-            dataRow = TimeTable.NewRow();
-            dataRow[0] = (TimeTable.Rows.Count + 1).ToString();
+            dataRow = Timetable.NewRow();
+            dataRow[0]= (Timetable.Rows.Count + 1).ToString();
+            Timetable.Rows.Add(dataRow);
+            dataRow = Timetable.NewRow();
+            dataRow[0] = (Timetable.Rows.Count + 1).ToString();
             dataRow[1] = "#dispose";
-            TimeTable.Rows.Add(dataRow);
+            Timetable.Rows.Add(dataRow);
         }
         private bool CanStationsOk()
         {
@@ -814,8 +814,8 @@ namespace TimeTableEditor.ViewModel
 
         private void OnAddRow()
         {
-            DataRow dataRow = TimeTable.NewRow();
-            TimeTable.Rows.Add();
+            DataRow dataRow = Timetable.NewRow();
+            Timetable.Rows.Add();
             renumberRows();
         }
         private bool CanAddRow()
@@ -824,8 +824,8 @@ namespace TimeTableEditor.ViewModel
         }
         private void OnInsertRow()
         {
-            DataRow dataRow = TimeTable.NewRow();
-            TimeTable.Rows.InsertAt(dataRow, CurrentRowIndex);
+            DataRow dataRow = Timetable.NewRow();
+            Timetable.Rows.InsertAt(dataRow, CurrentRowIndex);
             renumberRows();
         }
         private bool CanInsertRow()
@@ -841,7 +841,7 @@ namespace TimeTableEditor.ViewModel
         {
             if (MessageBox.Show("Delete current Row?", "Delete Row", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
-                TimeTable.Rows[CurrentRowIndex].Delete();
+                Timetable.Rows[CurrentRowIndex].Delete();
                 renumberRows();
             }
         }
@@ -857,12 +857,12 @@ namespace TimeTableEditor.ViewModel
         private void OnAddCol()
         {
             DataTable old;
-            TimeTable.Columns.Add("");
+            Timetable.Columns.Add("");
             renumberColumns();
-            old = TimeTable;           
-            TimeTable = null;
-            TimeTable = old;
-            OnPropertyChanged(nameof(TimeTable));
+            old = Timetable;           
+            Timetable = null;
+            Timetable = old;
+            OnPropertyChanged(nameof(Timetable));
         }
         private bool CanAddCol()
         {
@@ -871,12 +871,12 @@ namespace TimeTableEditor.ViewModel
         private void OnInsertCol()
         {
             DataTable old;
-            TimeTable.Columns.Add("").SetOrdinal(CurrentColumnIndex);
+            Timetable.Columns.Add("").SetOrdinal(CurrentColumnIndex);
             renumberColumns();
-            old = TimeTable;
-            TimeTable = null;
-            TimeTable = old;
-            OnPropertyChanged(nameof(TimeTable));
+            old = Timetable;
+            Timetable = null;
+            Timetable = old;
+            OnPropertyChanged(nameof(Timetable));
         }
         private bool CanInsertCol()
         {
@@ -887,12 +887,12 @@ namespace TimeTableEditor.ViewModel
             if (MessageBox.Show("Delete current column?", "Delete Column", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 DataTable old;
-                TimeTable.Columns.Remove(TimeTable.Columns[CurrentColumnIndex]);
+                Timetable.Columns.Remove(Timetable.Columns[CurrentColumnIndex]);
                 renumberColumns();
-                old = TimeTable;
-                TimeTable = null;
-                TimeTable = old;
-                OnPropertyChanged(nameof(TimeTable));
+                old = Timetable;
+                Timetable = null;
+                Timetable = old;
+                OnPropertyChanged(nameof(Timetable));
             }
         }
         private bool CanDeleteCol()
@@ -903,7 +903,7 @@ namespace TimeTableEditor.ViewModel
         private void OnEditStations()
         {
             StationParamsViewModel stParams = new StationParamsViewModel();
-            foreach(DataRow row in TimeTable.Rows)
+            foreach(DataRow row in Timetable.Rows)
             {
                 if (!row[1].ToString().StartsWith("#") && row[1].ToString()!="")
                 {
@@ -919,7 +919,7 @@ namespace TimeTableEditor.ViewModel
             {
                 foreach(Station station in stParams.Stations)
                 {
-                    foreach(DataRow row in TimeTable.Rows)
+                    foreach(DataRow row in Timetable.Rows)
                     {
                         if(!row[1].ToString().StartsWith("#") && row[1].ToString()!="")
                         {
@@ -967,12 +967,12 @@ namespace TimeTableEditor.ViewModel
             model.sortPaths();
             model.PoolTrains = PoolTrains;
             TrainView trains = new TrainView();
-            for (int r = 0; r < TimeTable.Rows.Count; r++)
+            for (int r = 0; r < Timetable.Rows.Count; r++)
             {
                 if(r==0)
                 {
-                    model.TrainName = TimeTable.Rows[r][CurrentColumnIndex].ToString();
-                    model.GetAvailableCons(TimeTable.Rows[r], TimeTable.Columns.Count, CurrentColumnIndex);
+                    model.TrainName = Timetable.Rows[r][CurrentColumnIndex].ToString();
+                    model.GetAvailableCons(Timetable.Rows[r], Timetable.Columns.Count, CurrentColumnIndex);
                     if(OtherTrains.Count>0)
                     {
                         foreach(string tr in OtherTrains)
@@ -981,21 +981,21 @@ namespace TimeTableEditor.ViewModel
                         }
                     }
                 }
-                if (TimeTable.Rows[r][1].ToString() == "#comment")
+                if (Timetable.Rows[r][1].ToString() == "#comment")
                 {
-                    model.Comment = TimeTable.Rows[r][CurrentColumnIndex].ToString();
+                    model.Comment = Timetable.Rows[r][CurrentColumnIndex].ToString();
                 }
-                if (TimeTable.Rows[r][1].ToString()=="#path")
+                if (Timetable.Rows[r][1].ToString()=="#path")
                 {
-                    model.ChosenTrainPath = TimeTable.Rows[r][CurrentColumnIndex].ToString();
+                    model.ChosenTrainPath = Timetable.Rows[r][CurrentColumnIndex].ToString();
                 }
-                if (TimeTable.Rows[r][1].ToString()=="#consist")
+                if (Timetable.Rows[r][1].ToString()=="#consist")
                 {
-                    model.ConsistToList(TimeTable.Rows[r][CurrentColumnIndex].ToString());                  
+                    model.ConsistToList(Timetable.Rows[r][CurrentColumnIndex].ToString());                  
                 }
-                if (TimeTable.Rows[r][1].ToString() == "#start")
+                if (Timetable.Rows[r][1].ToString() == "#start")
                 { 
-                    model.StartConsist(TimeTable.Rows[r][CurrentColumnIndex].ToString());
+                    model.StartConsist(Timetable.Rows[r][CurrentColumnIndex].ToString());
                 }
             }
             trains.DataContext = model;
@@ -1003,9 +1003,9 @@ namespace TimeTableEditor.ViewModel
             if(trains.DialogResult==true)
             {
                 bool firstcomment = true;
-                for(int r=0; r<TimeTable.Rows.Count;r++)
+                for(int r=0; r<Timetable.Rows.Count;r++)
                 {
-                    if (TimeTable.Rows[r][1].ToString()=="#consist")
+                    if (Timetable.Rows[r][1].ToString()=="#consist")
                     {
                         string con = "";
                         foreach(Consist consist in model.Con)
@@ -1016,24 +1016,24 @@ namespace TimeTableEditor.ViewModel
                             }
                             con = con + consist.GetConsist().Trim();
                         }
-                        TimeTable.Rows[r][CurrentColumnIndex] = con;
+                        Timetable.Rows[r][CurrentColumnIndex] = con;
                     }
-                    if (TimeTable.Rows[r][1].ToString()=="#start")
+                    if (Timetable.Rows[r][1].ToString()=="#start")
                     {
-                        TimeTable.Rows[r][CurrentColumnIndex] = model.GetStartString().Trim();
+                        Timetable.Rows[r][CurrentColumnIndex] = model.GetStartString().Trim();
                     }
-                    if (TimeTable.Rows[r][1].ToString()=="#path")
+                    if (Timetable.Rows[r][1].ToString()=="#path")
                     {
-                        TimeTable.Rows[r][CurrentColumnIndex] = model.ChosenTrainPath.Trim();
+                        Timetable.Rows[r][CurrentColumnIndex] = model.ChosenTrainPath.Trim();
                     }
-                    if (TimeTable.Rows[r][1].ToString()=="#comment" && firstcomment)
+                    if (Timetable.Rows[r][1].ToString()=="#comment" && firstcomment)
                     {
-                        TimeTable.Rows[r][CurrentColumnIndex] = model.Comment.Trim();
+                        Timetable.Rows[r][CurrentColumnIndex] = model.Comment.Trim();
                         firstcomment = false;
                     }
                     if (r==0)
                     {
-                        TimeTable.Rows[r][CurrentColumnIndex] = model.TrainName.Trim();
+                        Timetable.Rows[r][CurrentColumnIndex] = model.TrainName.Trim();
                     }
                 }
             }
@@ -1044,7 +1044,7 @@ namespace TimeTableEditor.ViewModel
             bool res = false;
             if(CurrentColumnIndex > 2)
             {
-                DataRow dataRow = TimeTable.Rows[0];
+                DataRow dataRow = Timetable.Rows[0];
                 if (!dataRow[CurrentColumnIndex].ToString().StartsWith("#"))
                 {
                     res = true;
@@ -1063,7 +1063,7 @@ namespace TimeTableEditor.ViewModel
                 string[] cols = lines[i].Split('\t');
                 columns = cols.Length;
             }
-            if (CurrentColumnIndex + columns > TimeTable.Columns.Count || CurrentRowIndex + rows > TimeTable.Rows.Count)
+            if (CurrentColumnIndex + columns > Timetable.Columns.Count || CurrentRowIndex + rows > Timetable.Rows.Count)
             {
                 MessageBox.Show("Not enough room for data. Paste canceled");
             }
@@ -1074,7 +1074,7 @@ namespace TimeTableEditor.ViewModel
                     string[] cols = lines[r].Split('\t');
                     for (int c = 0; c < cols.Count(); c++)
                     {
-                        DataRow dataRow = TimeTable.Rows[CurrentRowIndex + r];
+                        DataRow dataRow = Timetable.Rows[CurrentRowIndex + r];
                         dataRow[currentColumnIndex + c] = cols[c].Trim();
                     }
                 }
@@ -1107,11 +1107,11 @@ namespace TimeTableEditor.ViewModel
             dispvm.PoolTrains = PoolTrains;
             DisposeView disp = new DisposeView();
             disp.DataContext = dispvm;
-            for (int r = 0; r < TimeTable.Rows.Count; r++)
+            for (int r = 0; r < Timetable.Rows.Count; r++)
             {
                 if(r==0)
                 {
-                    dispvm.GetAvailableCons(TimeTable.Rows[r], TimeTable.Columns.Count, CurrentColumnIndex);
+                    dispvm.GetAvailableCons(Timetable.Rows[r], Timetable.Columns.Count, CurrentColumnIndex);
                     if (OtherTrains.Count > 0)
                     {
                         foreach (string tr in OtherTrains)
@@ -1120,9 +1120,9 @@ namespace TimeTableEditor.ViewModel
                         }
                     }
                 }
-                if (TimeTable.Rows[r][1].ToString() == "#dispose")
+                if (Timetable.Rows[r][1].ToString() == "#dispose")
                 {
-                    dispvm.ParseDispose(TimeTable.Rows[r][CurrentColumnIndex].ToString());
+                    dispvm.ParseDispose(Timetable.Rows[r][CurrentColumnIndex].ToString());
                 }
             }
             disp.ShowDialog();
@@ -1133,7 +1133,7 @@ namespace TimeTableEditor.ViewModel
             bool res = false;
             if (CurrentColumnIndex > 2)
             {
-                DataRow dataRow = TimeTable.Rows[0];
+                DataRow dataRow = Timetable.Rows[0];
                 if (!dataRow[CurrentColumnIndex].ToString().StartsWith("#"))
                 {
                     res = true;
