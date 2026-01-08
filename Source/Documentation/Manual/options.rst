@@ -639,6 +639,10 @@ pressing ``<F12>`` a file with the name dump.csv is generated in the
 configured Open Rails logging folder (placed on the Desktop by default).
 This file can be used for later analysis.
 
+A *Logging interval* of 0 (zero) dumps data for each frame (i.e. logs at the frame rate).
+This is intended for analyzing system and graphics performance.
+Larger intervals are better for looking at train performance.
+
 .. _options-system:
 
 System Options
