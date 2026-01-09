@@ -183,7 +183,7 @@ namespace Orts.Viewer3D.Popups
                             if (!String.IsNullOrEmpty(text))
                             {
 
-                                if (Owner.Viewer.ActivityEventsWebpage.isConnectionOpen)
+                                if ((Owner.Viewer.ActivityEventsWebpage != null) && (Owner.Viewer.ActivityEventsWebpage.isConnectionOpen))
                                 {
                                     Owner.Viewer.ActivityEventsWebpage.handleSendActivityEvent(e.ParsedObject.Name, text);
                                     Activity.IsActivityResumed = true;
@@ -243,7 +243,7 @@ namespace Orts.Viewer3D.Popups
                         var text = Activity.MsgFromNewPlayer;
                         if (!String.IsNullOrEmpty(text))
                         {
-                            if (Owner.Viewer.ActivityEventsWebpage.isConnectionOpen)
+                            if ((Owner.Viewer.ActivityEventsWebpage != null) && (Owner.Viewer.ActivityEventsWebpage.isConnectionOpen))
                             {
                                 Owner.Viewer.ActivityEventsWebpage.handleSendActivityEvent(e.ParsedObject.Name, text);
                                 Activity.IsActivityResumed = true;
