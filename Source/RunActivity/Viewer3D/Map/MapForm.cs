@@ -297,9 +297,12 @@ namespace Orts.Viewer3D.Debugging
             {
                 string name = "Map_" + mapViewer.Name;
 
-                int X = this.Bounds.X;
-                int Y = this.Bounds.Y;
-                Viewer.Settings.GetProperty(name).SetValue(Viewer.Settings, new int[] { X, Y, Size.Width, Size.Height }, null);
+                bool useRestoreBounds = this.WindowState == FormWindowState.Minimized || this.WindowState == FormWindowState.Maximized;
+                int posX = useRestoreBounds ? this.RestoreBounds.X : this.Bounds.X;
+                int posY = useRestoreBounds ? this.RestoreBounds.Y : this.Bounds.Y;
+                int width = useRestoreBounds ? this.RestoreBounds.Width : this.Bounds.Width;
+                int height = useRestoreBounds ? this.RestoreBounds.Height : this.Bounds.Height;
+                Viewer.Settings.GetProperty(name).SetValue(Viewer.Settings, new int[] { posX, posY, width, height }, null);
                 Viewer.Settings.Save(name);
             }
         }
