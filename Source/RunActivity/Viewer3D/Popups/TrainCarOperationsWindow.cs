@@ -35,6 +35,10 @@ using System.IO;
 using System.Linq;
 using static Orts.Viewer3D.Popups.TrainCarOperationsWindow;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Viewer3D.RollingStock;
+using Orts.MultiPlayer;
+using Orts.Viewer3D;
+using System.Diagnostics;
 using ORTS.Scripting.Api;
 
 namespace Orts.Viewer3D.Popups
@@ -176,6 +180,12 @@ namespace Orts.Viewer3D.Popups
             outf.Write(Location.Width);
             outf.Write(Location.Height);
 
+            // rwf-rr: temporary fix for bug 2121985
+            if (SelectedCarPosition >= Owner.Viewer.PlayerTrain.Cars.Count)
+            {
+                Trace.TraceWarning("TrainCarOperationsWindow.SelectedCarPosition {0} out of range [0..{1}]", SelectedCarPosition, Owner.Viewer.PlayerTrain.Cars.Count - 1);
+                SelectedCarPosition = Owner.Viewer.PlayerTrain.Cars.Count - 1;
+            }
             outf.Write(SelectedCarPosition);
             outf.Write(Owner.Viewer.FrontCamera.IsCameraFront);
         }
@@ -618,6 +628,13 @@ namespace Orts.Viewer3D.Popups
                     LastRowVisible = false;
                     Layout();
                     updateLayoutSize();
+
+                    // rwf-rr: potential partial fix for bug 2121985
+                    // if (trainCarViewer.CouplerChanged && CarPosition >= Owner.Viewer.PlayerTrain.Cars.Count)
+                    // {
+                    //     SelectedCarPosition = CarPosition = Owner.Viewer.PlayerTrain.Cars.Count - 1;
+                    //     LastCarIDSelected = PlayerTrain.Cars[SelectedCarPosition].CarID;
+                    // }
                 }
                 if (OldPositionHeight != Vbox.Position.Height)
                 {
