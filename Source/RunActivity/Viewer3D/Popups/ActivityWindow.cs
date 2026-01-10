@@ -185,9 +185,12 @@ namespace Orts.Viewer3D.Popups
 
                                 if ((Owner.Viewer.ActivityEventsWebpage != null) && (Owner.Viewer.ActivityEventsWebpage.isConnectionOpen))
                                 {
-                                    Owner.Viewer.ActivityEventsWebpage.handleSendActivityEvent(e.ParsedObject.Name, text);
-                                    Activity.IsActivityResumed = true;
-                                    ResumeActivity();
+                                    if (Owner.Viewer.ActivityEventsWebpage.isInitHandled)
+                                    {
+                                        Owner.Viewer.ActivityEventsWebpage.handleSendActivityEvent(e.ParsedObject.Name, text);
+                                        Activity.IsActivityResumed = true;
+                                        ResumeActivity();
+                                    }
                                 }
                                 else
                                 {
@@ -245,9 +248,12 @@ namespace Orts.Viewer3D.Popups
                         {
                             if ((Owner.Viewer.ActivityEventsWebpage != null) && (Owner.Viewer.ActivityEventsWebpage.isConnectionOpen))
                             {
-                                Owner.Viewer.ActivityEventsWebpage.handleSendActivityEvent(e.ParsedObject.Name, text);
-                                Activity.IsActivityResumed = true;
-                                ResumeActivity();
+                                if (Owner.Viewer.ActivityEventsWebpage.isInitHandled)
+                                {
+                                    Owner.Viewer.ActivityEventsWebpage.handleSendActivityEvent(e.ParsedObject.Name, text);
+                                    Activity.IsActivityResumed = true;
+                                    ResumeActivity();
+                                }
                             }
                             else
                             {

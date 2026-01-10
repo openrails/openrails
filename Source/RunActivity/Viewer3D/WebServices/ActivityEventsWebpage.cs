@@ -32,6 +32,7 @@ namespace Orts.Viewer3D.WebServices
         private readonly Viewer Viewer;
 
         private int ConnectionCnt = 0;
+        private bool InitHandled = false;
 
         private bool BeepToBeDone = false;
         private readonly SoundPlayer SoundPlayerBeep;
@@ -91,6 +92,7 @@ namespace Orts.Viewer3D.WebServices
         {
             Trace.TraceInformation("ActivityEventsWebpage, client connected");
             ConnectionCnt++;
+            InitHandled = false;
 
             HeaderPrev = "";
             TextPrev = "";
@@ -110,6 +112,7 @@ namespace Orts.Viewer3D.WebServices
         }
 
         public bool isConnectionOpen => ConnectionCnt > 0;
+        public bool isInitHandled => InitHandled;
 
         /// <inheritdoc />
         protected override Task OnMessageReceivedAsync(IWebSocketContext context, byte[] rxBuffer, IWebSocketReceiveResult result)
@@ -122,24 +125,23 @@ namespace Orts.Viewer3D.WebServices
                 BeepToBeDone = (bool)eventsReceived.Data;
             }
 
+            InitHandled = true;
+
             return Task.CompletedTask;
         }
 
         public async Task BroadcastEvent(EventsSend EventsSend)
         {
-            if (isConnectionOpen)
+            try
             {
-                try
-                {
-                    string jsonSend = JsonConvert.SerializeObject(EventsSend);
-                    await BroadcastAsync(jsonSend).ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    Trace.TraceInformation(
-                        "ActivityEventsWebpage.BroadcastEvent, Json serialize or Broadcast error:");
-                    Trace.WriteLine(e);
-                }
+                string jsonSend = JsonConvert.SerializeObject(EventsSend);
+                await BroadcastAsync(jsonSend).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                Trace.TraceInformation(
+                    "ActivityEventsWebpage.BroadcastEvent, Json serialize or Broadcast error:");
+                Trace.WriteLine(e);
             }
         }
 
