@@ -5407,12 +5407,17 @@ the tables below.
 .. index::
    single: DoesBrakeCutPower
    single: BrakeCutsPowerAtBrakeCylinderPressure
+   single: ORTSBrakeCutsPowerAtBrakePipePressure
+   single: ORTSBrakeRestoresPowerAtBrakePipePressure
    single: OrtsEmergencyBrakeCutsDynamicBrake
 
-Other parameters in the Engine section of the ENG file are used by the TCS:
+Other parameters in the Engine section of the ENG file are used for traction-braking interlock:
 
-- ``DoesBrakeCutPower( x )`` sets whether applying brake on the locomotive cuts the traction (1 for enabled, 0 for disabled)
+- ``DoesBrakeCutPower( x )`` sets whether applying brake on the locomotive cuts the traction for air brake system (1 for enabled, 0 for disabled)
+- ``ORTSDoesVacuumBrakeCutPower( x )`` sets whether applying brake on the locomotive cuts the traction for vacuum brake system (1 for enabled, 0 for disabled)
 - ``BrakeCutsPowerAtBrakeCylinderPressure( x )`` sets the minimum pressure in the brake cylinder that cuts the traction (by default 4 PSI)
+- ``ORTSBrakeCutsPowerAtBrakePipePressure( x )`` sets the maximum pressure in the brake pipe that cuts the traction
+- ``ORTSBrakeRestoresPowerAtBrakePipePressure( x )`` sets the minimum pressure in the brake pipe that restores the traction
 - ``OrtsEmergencyBrakeCutsDynamicBrake`` sets whether an emergency braking disables dynamic brakes
 
 
