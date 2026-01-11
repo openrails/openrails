@@ -103,7 +103,7 @@ function handleMessage(json) {
     }
 
     const header = document.createElement("label");
-    header.innerHTML = json.Header + ":<BR>";
+    header.innerHTML = "<BR>" + json.Header + ":<BR>";
     document.body.appendChild(header);
 
     const textArea = document.createElement('textarea');
