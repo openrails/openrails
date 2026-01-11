@@ -1,0 +1,55 @@
+﻿<Window x:Class="Orts.TimetableEditor.Views.StationsView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Orts.TimetableEditor.Views"
+        xmlns:ViewModel="clr-namespace:Orts.TimetableEditor.ViewModel"
+        mc:Ignorable="d"
+        Title="StationsView" Height="450" Width="800" ResizeMode="NoResize" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <ViewModel:TimetableViewModel/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="200"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="22"/>
+            <RowDefinition Height="300"/>
+            <RowDefinition Height="22"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="Stationfiles"/>
+        <TextBlock Text="Stations" Grid.Column="1"/>
+        <ListBox Grid.Row="1" ItemsSource="{Binding StationFiles}" SelectedItem="{Binding SelectedStationFile}"/>
+        <ListBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Stations}" SelectedItem="{Binding SelectedStation}"/>
+        <WrapPanel Grid.Row="1" Grid.Column="2" Visibility="{Binding ShowNewStationsButton}">
+            <TextBlock Text="Choose a stationfile or create a new one" TextWrapping="Wrap"/>
+            <Button Content="create New" Command="{Binding NewStationFile}"/>
+        </WrapPanel>
+        <StackPanel Grid.Column="2" Grid.Row="1" Visibility="{Binding ShowAdjustStationsButtons}">
+            <Button Width="40" Height="40" Command="{Binding MoveStationUp}" Margin="0 40 0 0">
+                <Image Width="32" Height="32" Source="/Images/Move_Up_32x32.png"/>
+            </Button>
+            <Button Width="40" Height="40" Command="{Binding MoveStationDown}">
+                <Image Width="32" Height="32" Source="/Images/Move_Down_32x32.png"/>
+            </Button>
+            <WrapPanel Margin="0 40 0 0">
+                <TextBlock Text="Filename "/>
+                <TextBox Text="{Binding TTFileName, UpdateSourceTrigger=PropertyChanged}" Width="170"/>
+            </WrapPanel>
+            <Button Content="Save" Width="70" Height="25" Margin="0 5 0 0" Command="{Binding SaveNewStationFile}"/>
+        </StackPanel>
+        <WrapPanel Grid.Row="2" Grid.ColumnSpan="3" HorizontalAlignment="Center">
+            <TextBlock Text="Timetable name "/>
+            <TextBox Text="{Binding TTName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Width="100"/>
+        </WrapPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.ColumnSpan="3" HorizontalAlignment="Center">
+            <Button Width="50" Content="OK" Height="25" Margin="40 0" Click="OK_Click" Command="{Binding StationsOK}"/>
+            <Button Width="50" Content="Cancel" Height="25" Margin="40 0" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
