@@ -164,6 +164,9 @@ If you choose to develop your own pages, please consider sharing them with the O
   Even on another display like for instance a tablet. It has more or less the same functionality, more details
   to be found :ref:`here <train-operations-monitor>`.
 
+- When running an activity the Activity Events page shows the briefing of the activity and the event messages one by one on this page. 
+  Normally when this web page is not open, event messages popup in the OR window. Halting OR until the popup message is dismissed by a mouseclick.
+
 .. _web-server-api:
 
 Application Programming Interfaces (APIs)
