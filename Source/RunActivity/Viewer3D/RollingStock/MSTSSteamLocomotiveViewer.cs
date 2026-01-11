@@ -69,7 +69,10 @@ namespace Orts.Viewer3D.RollingStock
         List<ParticleEmitterViewer> Injectors2 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Compressor = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Generator = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> SafetyValves = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SafetyValves1 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SafetyValves2 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SafetyValves3 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SafetyValves4 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Stack = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Whistle = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> SmallEjector = new List<ParticleEmitterViewer>();
@@ -170,7 +173,13 @@ namespace Orts.Viewer3D.RollingStock
                     car.GeneratorSteamEffects = true;
                 }
                 else if (emitter.Key.ToLowerInvariant() == "safetyvalvesfx")
-                    SafetyValves.AddRange(emitter.Value);
+                    SafetyValves1.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "safetyvalves2fx")
+                    SafetyValves2.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "safetyvalves3fx")
+                    SafetyValves3.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "safetyvalves4fx")
+                    SafetyValves4.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "stackfx")
                     Stack.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "whistlefx")
@@ -420,11 +429,18 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var drawer in Generator)
                 drawer.SetOutputVelocity(car.GeneratorSteamVelocityMpS, car.GeneratorParticleDurationS);
 
-            float volumePerSafetyValve = car.SafetyValvesSteamVolumeM3pS / SafetyValves.Count;
+            foreach (var drawer in SafetyValves1)
+                drawer.SetOutputVolumetric(car.SafetyValves1SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
 
-            foreach (var drawer in SafetyValves)
-                drawer.SetOutputVolumetric(volumePerSafetyValve, car.SafetyValvesParticleDurationS);
-            
+            foreach (var drawer in SafetyValves2)
+                drawer.SetOutputVolumetric(car.SafetyValves2SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
+
+            foreach (var drawer in SafetyValves3)
+                drawer.SetOutputVolumetric(car.SafetyValves3SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
+
+            foreach (var drawer in SafetyValves4)
+                drawer.SetOutputVolumetric(car.SafetyValves4SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
+
             foreach (var drawer in Stack)
             {
                 Color_Value = car.SmokeColor.SmoothedValue;

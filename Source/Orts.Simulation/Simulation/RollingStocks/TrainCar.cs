@@ -149,6 +149,8 @@ namespace Orts.Simulation.RollingStocks
             return new Interpolator(SteamUsageLbpH, FuelUsageGalukpH);
         }
 
+        public float BackPressurePSIG; // Back pressure in steam cylinder for sound system
+
         public float MainSteamHeatPipeOuterDiaM = Me.FromIn(2.4f); // Steel pipe OD = 1.9" + 0.5" insulation (0.25" either side of pipe)
         public float MainSteamHeatPipeInnerDiaM = Me.FromIn(1.50f); // Steel pipe ID = 1.5"
         public float CarConnectSteamHoseOuterDiaM = Me.FromIn(2.05f); // Rubber hose OD = 2.05"
