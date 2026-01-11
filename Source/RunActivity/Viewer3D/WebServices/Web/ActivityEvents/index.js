@@ -65,16 +65,6 @@ function createSocket() {
             createSocket();
         }, 1000);
     };
-
-    /*
-    setTimeout(function () {
-        // close the socket if no webSocket established after 3 seconds
-        // otherwise it will wait with the reconnect after a timeout of 2 minutes
-        if (webSocket.readyState != 1) {
-            webSocket.close();
-        }
-    }, 3000);
-    */
 }
 
 function handleMessage(json) {
@@ -89,6 +79,7 @@ function handleMessage(json) {
             document.body.removeChild(document.body.firstChild);
         }
 
+        // beep checkbox
         const checkboxDiv = document.createElement('div');
         checkboxDiv.id = "checkboxDiv";
         checkboxDiv.title = json.BeepHelpTranslated;
@@ -104,7 +95,9 @@ function handleMessage(json) {
             handleBeepCheckbox(event.currentTarget.checked);
         })
         beepCheckbox.checked = localStorage.getItem(storageBeepKey) == "true" ? true : false;
-        checkboxDiv.appendChild(beepCheckbox);
+        if (json.BeepHelpTranslated.length > 0) {
+            checkboxDiv.appendChild(beepCheckbox);
+        }
 
         sendMessage("beep", beepCheckbox.checked);
     }

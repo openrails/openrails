@@ -178,8 +178,16 @@ namespace Orts.Viewer3D.WebServices
                     Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header != null &&
                     Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Briefing.Length > 0)
                 {
-                    handleSend("init", Viewer.Catalog.GetString("Briefing"), Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Briefing,
+                    var header = Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header;
+                    handleSend("init", 
+                        Viewer.Catalog.GetString("Activity") + ": " + header.Name, 
+                        header.Description + "\n\n" +
+                        Viewer.Catalog.GetString("Activity Briefing") + ":\n\n" + header.Briefing,
                         Viewer.Catalog.GetString("Beep"), Viewer.Catalog.GetString("When checked 'beep' to be heard when a new Activity Event message appears"));
+                }
+                else
+                {
+                    handleSend("init", Viewer.Catalog.GetString("Open Rails not started for a specific Actvity"), "Hence this page will be left empty", "", "");
                 }
             }
         }
