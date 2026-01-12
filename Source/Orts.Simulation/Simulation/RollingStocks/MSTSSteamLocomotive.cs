@@ -3368,6 +3368,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     tractiveforcethrottle = throttle;
                 }
 
+                if (!IsRackRailwayAdhesion)
                 UpdateSteamTractiveForce(elapsedClockSeconds, tractiveforcethrottle, i);
 
                 SteamDrvWheelWeightLbs += Kg.ToLb(SteamEngines[i].AttachedAxle.WheelWeightKg / SteamEngines[i].AttachedAxle.NumWheelsetAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
