@@ -35,7 +35,6 @@ namespace Orts.Viewer3D.RollingStock
             Car = car;
             Viewer = viewer;
 
-            Car.StaleViewer = false;
         }
 
         public abstract void HandleUserInput(ElapsedTime elapsedTime);
@@ -57,24 +56,6 @@ namespace Orts.Viewer3D.RollingStock
 
         [CallOnThread("Loader")]
         internal abstract void Mark();
-
-        /// <summary>
-        /// Checks this car viewer for stale directly-referenced textures and sets the stale data flag if any textures are stale
-        /// </summary>
-        /// <returns>bool indicating if this viewer changed from fresh to stale</returns>
-        public virtual bool CheckStaleTextures()
-        {
-            if (!Car.StaleViewer)
-            {
-                if (lightDrawer != null && lightDrawer.CheckStale())
-                    Car.StaleViewer = true;
-
-                return Car.StaleViewer;
-            }
-            return false;
-        }
-        public virtual bool CheckStaleShapes() { return false; }
-        public virtual bool CheckStaleSounds() { return false; }
 
 
         public float[] Velocity = new float[] { 0, 0, 0 };

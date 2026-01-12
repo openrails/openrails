@@ -48,6 +48,7 @@ using Orts.Simulation.RollingStocks.Coupling;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -97,11 +98,6 @@ namespace Orts.Simulation.RollingStocks
         public readonly Simulator Simulator;
         public readonly string WagFilePath;
         public string RealWagFilePath; //we are substituting missing remote cars in MP, so need to remember this
-
-        public bool StaleData = true; // Hot reloading: Indicates this train car has gone stale and needs to be reloaded
-        public bool StaleViewer = true; // Hot reloading: Indicates the VIEWER for this train car has gone stale and needs to be reloaded
-        public bool StaleCab = true; // Hot reloading: Indicates a cabview for this train car (as a locomotive) has gone stale and needs to be reloaded
-        public HashSet<string> FilesReferenced = new HashSet<string>(); // Hot reloading: List of .inc file paths (in lowercase) referenced by this car
 
         public static int DbfEvalTravellingTooFast;//Debrief eval
         public static int DbfEvalTravellingTooFastSnappedBrakeHose;//Debrief eval
@@ -675,6 +671,9 @@ namespace Orts.Simulation.RollingStocks
         public float BrakeShoeForceN;
         public float FrictionBrakeBlendingMaxForceN; // This is the maximum force for the friction barke when it is blended with the dynamic brake
 
+        public bool IsRackRailway = false;
+        public bool CogWheelFitted;
+
         // Sum of all the forces acting on a Traincar in the direction of driving.
         // MotiveForceN and GravityForceN act to accelerate the train. The others act to brake the train.
         public float TotalForceN; // 
@@ -816,12 +815,9 @@ namespace Orts.Simulation.RollingStocks
 
         public CarTunnelInfoData CarTunnelData;
 
-        public virtual void Initialize(bool reinitialize = false)
+        public virtual void Initialize()
         {
             BrakeSystem.Initialize();
-            // If car has been initialized previously, brake system needs additional initialization steps
-            if (reinitialize)
-                Train?.UnconditionalInitializeBrakes(false);
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
 
             // Check Brake Shoe Friction parameters
@@ -1249,7 +1245,8 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             // Only apply slide, and advanced brake friction, if advanced adhesion is selected, simplecontrolphysics is not set, and it is a Player train
-            else if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
+            // Rack stock with cog wheel fitted will not skid
+            else if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && !(CogWheelFitted && IsRackRailway))
             {
                 // Determine whether car is experiencing a wheel slip during braking
                 if (!BrakeSkidWarning && AbsSpeedMpS > 0.01)
@@ -2390,8 +2387,8 @@ public string GetCurveDirection()
         public TrainCar(Simulator simulator, string wagFile)
         {
             Simulator = simulator;
-            WagFilePath = Path.GetFullPath(wagFile).ToLowerInvariant();
-            RealWagFilePath = Path.GetFullPath(wagFile).ToLowerInvariant();
+            WagFilePath = wagFile;
+            RealWagFilePath = wagFile;
         }
 
         // Game save
@@ -3086,6 +3083,9 @@ public string GetCurveDirection()
             m.Up = up;
             m.Backward = fwd;
 
+            // Update whether track is rack or not
+            UpdateRackRailDetection(traveler);
+
             // Update gravity force when position is updated, but before any secondary motion is added
             UpdateGravity(m);
 
@@ -3140,6 +3140,20 @@ public string GetCurveDirection()
 
         #region Traveller-based updates
         public float CurrentCurveRadiusM;
+
+        public void UpdateRackRailDetection(Traveller traveller)
+        {
+            if (this is MSTSWagon wagon)
+            {
+                var thisSection = traveller.GetCurrentSection();
+
+                if (thisSection != null && Simulator.TSectionDat.TrackShapes.ContainsKey(thisSection.ShapeIndex))
+                {
+                    TrackShape thisShape = Simulator.TSectionDat.TrackShapes[thisSection.ShapeIndex];
+                    IsRackRailway |= thisShape.RackShape;
+                }
+            }
+        }
 
         internal void UpdateTilting(Traveller traveller,  float elapsedTimeS, float speedMpS, int direction)
         {

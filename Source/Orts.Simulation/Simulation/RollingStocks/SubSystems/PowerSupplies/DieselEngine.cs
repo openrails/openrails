@@ -102,7 +102,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case "engine(ortsdieselengines":
                     stf.MustMatch("(");
                     int count = stf.ReadInt(0);
-                    DEList.Clear(); // Remove any existing diesel engines to prevent errors
                     for (int i = 0; i < count; i++)
                     {
                         string setting = stf.ReadString().ToLower();
@@ -159,14 +158,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Initialize()
         {
-            Initialize(false);
-        }
-
-        public void Initialize(bool reinitialize)
-        {
             foreach (DieselEngine de in DEList)
             {
-                de.Initialize(reinitialize);
+                de.Initialize();
             }
         }
 
@@ -1004,16 +998,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Initialize()
         {
-            Initialize(false);
-        }
-
-        public void Initialize(bool reinitialize)
-        {
-            if (reinitialize && ThrottleRPMTab != null)
-            {
-                RealRPM = ThrottleRPMTab[Locomotive.ThrottlePercent];
-            }    
-            else if (!Simulator.Settings.NoDieselEngineStart)
+            if (!Simulator.Settings.NoDieselEngineStart)
             {
                 RealRPM = IdleRPM;
                 State = DieselEngineState.Running;

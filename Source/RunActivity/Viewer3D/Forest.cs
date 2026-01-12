@@ -406,7 +406,7 @@ namespace Orts.Viewer3D
     [CallOnThread("Render")]
     public class ForestMaterial : Material
     {
-        readonly SharedTexture TreeTexture;
+        readonly Texture2D TreeTexture;
         IEnumerator<EffectPass> ShaderPasses;
 
         [CallOnThread("Loader")]
@@ -459,22 +459,6 @@ namespace Orts.Viewer3D
         public override Texture2D GetShadowTexture()
         {
             return TreeTexture;
-        }
-
-        /// <summary>
-        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
-        /// </summary>
-        /// <returns>bool indicating if this material changed from fresh to stale</returns>
-        public override bool CheckStale()
-        {
-            if (!StaleData)
-            {
-                StaleData = TreeTexture.StaleData;
-
-                return StaleData;
-            }
-            else
-                return false;
         }
 
         public override void Mark()

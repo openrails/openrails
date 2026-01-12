@@ -210,7 +210,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         float OldValue;
 
-        public float InitialValue { get; set; }
         public float CurrentValue { get; set; }
         public float MinimumValue { get; set; }
         public float MaximumValue { get; set; }
@@ -252,7 +251,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             FullServReductionPSI = controller.FullServReductionPSI;
             MinReductionPSI = controller.MinReductionPSI;
 
-            InitialValue = controller.InitialValue;
             CurrentValue = controller.CurrentValue;
             MinimumValue = controller.MinimumValue;
             MaximumValue = controller.MaximumValue;
@@ -334,7 +332,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     MinimumValue = stf.ReadFloat(STFReader.UNITS.None, null);
                     MaximumValue = stf.ReadFloat(STFReader.UNITS.None, null);
                     StepSize = stf.ReadFloat(STFReader.UNITS.None, null);
-                    InitialValue = stf.ReadFloat(STFReader.UNITS.None, null);
+                    CurrentValue = stf.ReadFloat(STFReader.UNITS.None, null);
                     string token = stf.ReadItem(); // s/b numnotches
                     if (string.Compare(token, "NumNotches", true) != 0) // handle error in gp38.eng where extra parameter provided before NumNotches statement 
                         stf.ReadItem();
@@ -374,7 +372,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
         }
 
-        public void Initialize(bool reinitialize = false)
+        public void Initialize()
         {
             if (!Activated)
             {
@@ -391,10 +389,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     mstsController.DynamicBrakeBlendingTable = DynamicBrakeBlendingTable;
                     Script = mstsController as BrakeController;
                 }
-
-                // Only set controller to initial value on first initialization, not reinitialization
-                if (!reinitialize)
-                    CurrentValue = IntermediateValue = InitialValue;
 
                 Script.AttachToHost(this);
 

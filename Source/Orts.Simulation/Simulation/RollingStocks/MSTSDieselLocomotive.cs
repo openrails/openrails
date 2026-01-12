@@ -460,16 +460,16 @@ namespace Orts.Simulation.RollingStocks
             DieselEngines.Copy(locoCopy.DieselEngines);
         }
 
-        public override void Initialize(bool reinitialize = false)
+        public override void Initialize()
         {
-            DieselEngines.Initialize(reinitialize);
+            DieselEngines.Initialize();
 
             if (DieselEngines[0].GearBox != null)
             {
                 GearBoxController = new MSTSNotchController(DieselEngines[0].GearBox.NumOfGears + 1);
             }
 
-            base.Initialize(reinitialize);
+            base.Initialize();
 
             // Initialise water level in steam heat boiler
             if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0 && IsSteamHeatFitted)

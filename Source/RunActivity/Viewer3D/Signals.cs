@@ -697,7 +697,7 @@ namespace Orts.Viewer3D
     public class SignalLightMaterial : Material
     {
         readonly SceneryShader SceneryShader;
-        readonly SharedTexture Texture;
+        readonly Texture2D Texture;
 
         public SignalLightMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
@@ -731,21 +731,6 @@ namespace Orts.Viewer3D
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.BlendState = BlendState.Opaque;
-        }
-
-        /// <summary>
-        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
-        /// </summary>
-        /// <returns>bool indicating if this material changed from fresh to stale</returns>
-        public override bool CheckStale()
-        {
-            if (!StaleData)
-            {
-                StaleData = Texture.StaleData;
-                return StaleData;
-            }
-            else
-                return false;
         }
 
         public override void Mark()

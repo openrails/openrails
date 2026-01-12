@@ -208,7 +208,6 @@
             this.pbMstsEnvironments = new System.Windows.Forms.PictureBox();
             this.pbActivityWeatherRandomization = new System.Windows.Forms.PictureBox();
             this.pbActivityRandomization = new System.Windows.Forms.PictureBox();
-            this.pbEnableHotReloading = new System.Windows.Forms.PictureBox();
             this.pbCorrectQuestionableBrakingParameters = new System.Windows.Forms.PictureBox();
             this.pbShowShapeWarnings = new System.Windows.Forms.PictureBox();
             this.label27 = new System.Windows.Forms.Label();
@@ -217,7 +216,6 @@
             this.label13 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.numericActRandomizationLevel = new System.Windows.Forms.NumericUpDown();
-            this.checkEnableHotReloading = new System.Windows.Forms.CheckBox();
             this.checkCorrectQuestionableBrakingParams = new System.Windows.Forms.CheckBox();
             this.label16 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
@@ -319,7 +317,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbMstsEnvironments)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbActivityWeatherRandomization)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbActivityRandomization)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbEnableHotReloading)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCorrectQuestionableBrakingParameters)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbShowShapeWarnings)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).BeginInit();
@@ -2630,7 +2627,6 @@
             this.tabPageExperimental.Controls.Add(this.pbMstsEnvironments);
             this.tabPageExperimental.Controls.Add(this.pbActivityWeatherRandomization);
             this.tabPageExperimental.Controls.Add(this.pbActivityRandomization);
-            this.tabPageExperimental.Controls.Add(this.pbEnableHotReloading);
             this.tabPageExperimental.Controls.Add(this.pbCorrectQuestionableBrakingParameters);
             this.tabPageExperimental.Controls.Add(this.pbShowShapeWarnings);
             this.tabPageExperimental.Controls.Add(this.label27);
@@ -2639,7 +2635,6 @@
             this.tabPageExperimental.Controls.Add(this.label13);
             this.tabPageExperimental.Controls.Add(this.label12);
             this.tabPageExperimental.Controls.Add(this.numericActRandomizationLevel);
-            this.tabPageExperimental.Controls.Add(this.checkEnableHotReloading);
             this.tabPageExperimental.Controls.Add(this.checkCorrectQuestionableBrakingParams);
             this.tabPageExperimental.Controls.Add(this.label16);
             this.tabPageExperimental.Controls.Add(this.label9);
@@ -2724,18 +2719,6 @@
             this.pbActivityRandomization.Click += new System.EventHandler(this.HelpIcon_Click);
             this.pbActivityRandomization.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbActivityRandomization.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
-            // pbEnableHotReloading
-            // 
-            this.pbEnableHotReloading.Image = global::Menu.Properties.Resources.info_18;
-            this.pbEnableHotReloading.Location = new System.Drawing.Point(280, 42);
-            this.pbEnableHotReloading.Name = "pbEnableHotReloading";
-            this.pbEnableHotReloading.Size = new System.Drawing.Size(18, 18);
-            this.pbEnableHotReloading.TabIndex = 33;
-            this.pbEnableHotReloading.TabStop = false;
-            this.pbEnableHotReloading.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbEnableHotReloading.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbEnableHotReloading.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbCorrectQuestionableBrakingParameters
             // 
@@ -2836,18 +2819,6 @@
             this.numericActRandomizationLevel.Size = new System.Drawing.Size(54, 20);
             this.numericActRandomizationLevel.TabIndex = 9;
             this.toolTip1.SetToolTip(this.numericActRandomizationLevel, "0: no randomization, 1: moderate, 2: significant; 3: high (may be unrealistic)");
-            // 
-            // checkEnableHotReloading
-            // 
-            this.checkEnableHotReloading.AutoSize = true;
-            this.checkEnableHotReloading.Location = new System.Drawing.Point(304, 42);
-            this.checkEnableHotReloading.Name = "checkEnableHotReloading";
-            this.checkEnableHotReloading.Size = new System.Drawing.Size(216, 17);
-            this.checkEnableHotReloading.TabIndex = 6;
-            this.checkEnableHotReloading.Text = "Enable hot reloading of simulator files";
-            this.checkEnableHotReloading.UseVisualStyleBackColor = true;
-            this.checkEnableHotReloading.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.checkEnableHotReloading.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkCorrectQuestionableBrakingParams
             // 
@@ -3179,7 +3150,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbMstsEnvironments)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbActivityWeatherRandomization)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbActivityRandomization)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbEnableHotReloading)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbCorrectQuestionableBrakingParameters)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbShowShapeWarnings)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).EndInit();
@@ -3300,7 +3270,6 @@
         private System.Windows.Forms.RadioButton ButtonAutoSave60;
         private System.Windows.Forms.RadioButton ButtonAutoSave30;
         private System.Windows.Forms.RadioButton ButtonAutoSave15;
-        private System.Windows.Forms.CheckBox checkEnableHotReloading;
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
         private System.Windows.Forms.CheckBox checkOverspeedMonitor;
         private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;
@@ -3391,7 +3360,6 @@
         private System.Windows.Forms.PictureBox pbRailDriverOptions;
         private System.Windows.Forms.PictureBox pbDataLoggerOptions;
         private System.Windows.Forms.PictureBox pbShowShapeWarnings;
-        private System.Windows.Forms.PictureBox pbEnableHotReloading;
         private System.Windows.Forms.PictureBox pbCorrectQuestionableBrakingParameters;
         private System.Windows.Forms.PictureBox pbActivityRandomization;
         private System.Windows.Forms.PictureBox pbActivityWeatherRandomization;

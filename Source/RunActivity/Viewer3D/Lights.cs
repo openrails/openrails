@@ -23,12 +23,6 @@
 //#define DEBUG_LIGHT_CONE
 //#define DEBUG_LIGHT_CONE_FULL
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using LibGit2Sharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -39,6 +33,11 @@ using Orts.Viewer3D.Processes;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
 using ORTS.Scripting.Api;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 
 namespace Orts.Viewer3D
 {
@@ -49,8 +48,6 @@ namespace Orts.Viewer3D
         readonly TrainCarViewer CarViewer;
         readonly Material LightGlowMaterial;
         readonly Material LightConeMaterial;
-
-        public bool StaleData = false;
 
         public int TrainHeadlight;
         public bool CarIsReversed;
@@ -229,36 +226,28 @@ namespace Orts.Viewer3D
 
             // Calculate XNA matrix for shape file objects by offsetting from car's location
             // The new List<int> is intentional, this allows the dictionary to be changed while iterating
-            if (trainCarShape.Hierarchy.Count() > 0)
+            int maxDepth = trainCarShape.Hierarchy.Max();
+            foreach (int index in new List<int>(ShapeXNATranslations.Keys))
             {
-                int maxDepth = trainCarShape.Hierarchy.Max();
-                foreach (int index in new List<int>(ShapeXNATranslations.Keys))
+                Matrix res = trainCarShape.XNAMatrices[index];
+                int hIndex = trainCarShape.Hierarchy[index];
+
+                int i = 0;
+
+                // Transform the matrix repeatedly for all of its parents
+                while (hIndex > -1 && hIndex < trainCarShape.Hierarchy.Length && i < maxDepth)
                 {
-                    Matrix res = trainCarShape.XNAMatrices[index];
-                    int hIndex = trainCarShape.Hierarchy[index];
+                    res = res * trainCarShape.XNAMatrices[hIndex];
+                    // Prevent potential infinite loop due to faulty hierarchy definition
+                    if (hIndex != trainCarShape.Hierarchy[hIndex])
+                        hIndex = trainCarShape.Hierarchy[hIndex];
+                    else
+                        break;
 
-                    int i = 0;
-
-                    // Transform the matrix repeatedly for all of its parents
-                    while (hIndex > -1 && hIndex < trainCarShape.Hierarchy.Length && i < maxDepth)
-                    {
-                        res = res * trainCarShape.XNAMatrices[hIndex];
-                        // Prevent potential infinite loop due to faulty hierarchy definition
-                        if (hIndex != trainCarShape.Hierarchy[hIndex])
-                            hIndex = trainCarShape.Hierarchy[hIndex];
-                        else
-                            break;
-
-                        i++;
-                    }
-
-                    ShapeXNATranslations[index] = res * xnaDTileTranslation;
+                    i++;
                 }
-            }
-            else
-            {
-                foreach (int index in new List<int>(ShapeXNATranslations.Keys))
-                    ShapeXNATranslations[index] = trainCarShape.XNAMatrices[0] * xnaDTileTranslation;
+
+                ShapeXNATranslations[index] = res * xnaDTileTranslation;
             }
 
             float objectRadius = 20; // Even more arbitrary.
@@ -293,36 +282,6 @@ namespace Orts.Viewer3D
                 LightConeMinDotProduct = (float)Math.Cos(MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y));
                 LightConeColor = Vector4.Lerp(ActiveLightCone.Color1, ActiveLightCone.Color2, ActiveLightCone.Fade.Y);
             }
-        }
-
-        /// <summary>
-        /// Checks all light materials for stale textures and sets the stale data flag if any materials are stale
-        /// </summary>
-        /// <returns>bool indicating if this light viewer changed from fresh to stale</returns>
-        public bool CheckStale()
-        {
-            if (!StaleData)
-            {
-                if (LightGlowMaterial.StaleData || LightConeMaterial.StaleData)
-                {
-                    StaleData = true;
-                }
-                else
-                {
-                    foreach (LightPrimitive light in LightPrimitives)
-                    {
-                        if (light is LightGlowPrimitive lightGlow && lightGlow.SpecificGlowMaterial.StaleData)
-                        {
-                            StaleData = true;
-                            break;
-                        }
-                    }
-                }
-
-                return StaleData;
-            }
-            else
-                return false;
         }
 
         [CallOnThread("Loader")]
@@ -1023,13 +982,13 @@ namespace Orts.Viewer3D
 
     public class LightGlowMaterial : Material
     {
-        readonly SharedTexture LightGlowTexture;
+        readonly Texture2D LightGlowTexture;
 
         public LightGlowMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
             // TODO: This should happen on the loader thread.
-            LightGlowTexture = textureName.StartsWith(Viewer.ContentPath, StringComparison.OrdinalIgnoreCase) ? (SharedTexture)SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, textureName) : Viewer.TextureManager.Get(textureName);
+            LightGlowTexture = textureName.StartsWith(Viewer.ContentPath, StringComparison.OrdinalIgnoreCase) ? SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, textureName) : Viewer.TextureManager.Get(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1070,21 +1029,6 @@ namespace Orts.Viewer3D
         public override bool GetBlending()
         {
             return true;
-        }
-
-        /// <summary>
-        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
-        /// </summary>
-        /// <returns>bool indicating if this material changed from fresh to stale</returns>
-        public override bool CheckStale()
-        {
-            if (!StaleData)
-            {
-                StaleData = LightGlowTexture.StaleData;
-                return StaleData;
-            }
-            else
-                return false;
         }
 
         public override void Mark()

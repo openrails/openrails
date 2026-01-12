@@ -46,7 +46,7 @@ namespace Orts.Simulation.RollingStocks
             PowerSupply = new ScriptedControlCarPowerSupply(this);
         }
 
-        public override void Initialize(bool reinitialize = false)
+        public override void Initialize()
         {
             // Initialise gearbox controller
             if (ControllerNumberOfGears > 0)
@@ -59,7 +59,7 @@ namespace Orts.Simulation.RollingStocks
                 Train.HasControlCarWithGear = true;
             }
 
-            base.Initialize(reinitialize);
+            base.Initialize();
         }
 
         /// <summary>

@@ -45,8 +45,6 @@ namespace Orts.Viewer3D
         readonly float EmissionHoleM2 = 1;
         readonly ParticleEmitterPrimitive Emitter;
 
-        public bool StaleData = false;
-
         ParticleEmitterMaterial Material;
 
 #if DEBUG_EMITTER_INPUT
@@ -142,22 +140,6 @@ namespace Orts.Viewer3D
             InputCycle++;
             InputCycle %= InputCycleLimit;
 #endif
-        }
-
-        /// <summary>
-        /// Checks all particle materials for stale textures and sets the stale data flag if any materials are stale
-        /// </summary>
-        /// <returns>bool indicating if this particle emitter changed from fresh to stale</returns>
-        public bool CheckStale()
-        {
-            if (!StaleData)
-            {
-                StaleData = Material.StaleData;
-
-                return StaleData;
-            }
-            else
-                return false;
         }
 
         [CallOnThread("Loader")]
@@ -467,7 +449,7 @@ namespace Orts.Viewer3D
 
     public class ParticleEmitterMaterial : Material
     {
-        public SharedTexture Texture;
+        public Texture2D Texture;
 
         IEnumerator<EffectPass> ShaderPasses;
 
@@ -522,21 +504,6 @@ namespace Orts.Viewer3D
         public override bool GetBlending()
         {
             return true;
-        }
-
-        /// <summary>
-        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
-        /// </summary>
-        /// <returns>bool indicating if this material changed from fresh to stale</returns>
-        public override bool CheckStale()
-        {
-            if (!StaleData)
-            {
-                StaleData = Texture.StaleData;
-                return StaleData;
-            }
-            else
-                return false;
         }
 
         public override void Mark()

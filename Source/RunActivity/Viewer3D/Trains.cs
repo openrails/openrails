@@ -56,17 +56,20 @@ namespace Orts.Viewer3D
         [CallOnThread("Loader")]
         public void Load()
         {
-            if (VisibleCars.Any(c => !Cars.ContainsKey(c) || c.StaleViewer) || Cars.Keys.Any(c => !VisibleCars.Contains(c)))
+            var cancellation = Viewer.LoaderProcess.CancellationToken;
+            var visibleCars = VisibleCars;
+            var cars = Cars;
+            if (visibleCars.Any(c => !cars.ContainsKey(c)) || cars.Keys.Any(c => !visibleCars.Contains(c)))
             {
                 var newCars = new Dictionary<TrainCar, TrainCarViewer>();
-                foreach (TrainCar car in VisibleCars)
+                foreach (var car in visibleCars)
                 {
-                    if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested)
+                    if (cancellation.IsCancellationRequested)
                         break;
                     try
 					{
-						if (Cars.ContainsKey(car) && !car.StaleViewer)
-							newCars.Add(car, Cars[car]);
+						if (cars.ContainsKey(car))
+							newCars.Add(car, cars[car]);
 						else
 							newCars.Add(car, LoadCar(car));
 					}
@@ -77,9 +80,9 @@ namespace Orts.Viewer3D
                 }
                 Cars = newCars;
 				//for those cars not visible now, will unload them (to remove attached sound)
-				foreach (var car in Cars)
+				foreach (var car in cars)
 				{
-					if (!VisibleCars.Contains(car.Key))
+					if (!visibleCars.Contains(car.Key))
 					{
 						car.Value.Unload();
 					}
@@ -87,8 +90,9 @@ namespace Orts.Viewer3D
 			}
 
             // Ensure the player locomotive has a cab view loaded and anything else they need.
-            if (PlayerCar != null && Cars.ContainsKey(PlayerCar))
-                Cars[PlayerCar].LoadForPlayer();
+            cars = Cars;
+            if (PlayerCar != null && cars.ContainsKey(PlayerCar))
+                cars[PlayerCar].LoadForPlayer();
         }
 
         [CallOnThread("Loader")]
