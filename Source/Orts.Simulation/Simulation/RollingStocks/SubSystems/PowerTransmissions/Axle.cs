@@ -163,7 +163,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 return powerW;
             }
         }
-
         /// <summary>
         /// Get total axle in force
         /// </summary>
