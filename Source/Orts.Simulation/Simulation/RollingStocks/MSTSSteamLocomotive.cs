@@ -428,7 +428,6 @@ namespace Orts.Simulation.RollingStocks
         float LPCylinderSweptVolumeFT3pFT;     // Volume of LP steam Cylinder
         float CylinderCondensationFactor;  // Cylinder compensation factor for condensation in cylinder due to cutoff
         float BlowerSteamUsageFactor;
-        Interpolator BackPressureIHPtoPSI;             // back pressure in cylinders given usage - this value needs to be deprerecated
         Interpolator BackPressuretoSteamOutput;        // back pressure in cylinders given steam usage
         Interpolator CylinderSteamDensityPSItoLBpFT3;   // steam density in cylinders given pressure (could be super heated)
         Interpolator WaterDensityPSItoLBpFT3;   // water density given pressure
@@ -1090,7 +1089,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 case "engine(ortsboilerevaporationrate": BoilerEvapRateLbspFt2 = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderefficiencyrate": CylinderEfficiencyRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderinitialpressuredrop": InitialPressureDropRatioRpMtoX = new Interpolator(stf); break;
-                case "engine(ortscylinderbackpressure": BackPressureIHPtoPSI = new Interpolator(stf); break;
+                case "engine(ortscylinderbackpressure":
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("ORTSCylinderBackPressure read. This is an inaccurate and depreceated value. It is thereofre suggested that either the OR default value is used (leave the ORTSCylinderBackPressure out) or use ORTSCylinderBackPressureVsSteamoutput instead. OR default value used in this instance.");
+                    break;
                 case "engine(ortscylinderbackpressurevssteamoutput": BackPressuretoSteamOutput = new Interpolator(stf); break;
                 case "engine(ortsburnrate": NewBurnRateSteamToFuelLbspH = new Interpolator(stf); break;
                 case "engine(ortsboilerefficiency": BoilerEfficiencyGrateAreaLBpFT2toX = new Interpolator(stf); break;
@@ -1298,7 +1300,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             BoilerEvapRateLbspFt2 = locoCopy.BoilerEvapRateLbspFt2;
             CylinderEfficiencyRate = locoCopy.CylinderEfficiencyRate;
             InitialPressureDropRatioRpMtoX = new Interpolator(locoCopy.InitialPressureDropRatioRpMtoX);
-            BackPressureIHPtoPSI = new Interpolator(locoCopy.BackPressureIHPtoPSI);
             BackPressuretoSteamOutput = new Interpolator(locoCopy.BackPressuretoSteamOutput);
             NewBurnRateSteamToFuelLbspH = new Interpolator(locoCopy.NewBurnRateSteamToFuelLbspH);
             BoilerEfficiency = locoCopy.BoilerEfficiency;
@@ -2249,12 +2250,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // Assign default steam table values if table not in ENG file 
             // Back pressure increases with the speed of the locomotive, as cylinder finds it harder to exhaust all the steam.
-
-            if (BackPressureIHPtoPSI != null)
-            {
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("ORTSCylinderBackPressure read. This is an inaccurate and depreceated value. It is thereofre suggested that either the OR default value is used (leave the ORTSCylinderBackPressure out) or use ORTSCylinderBackPressureVsSteamoutput instead.");
-            }
 
             // if no user input provided then assign default values
             // the default is the "full locomotive" back pressure, it will be decreased further down if an exhaust injector is fitted
