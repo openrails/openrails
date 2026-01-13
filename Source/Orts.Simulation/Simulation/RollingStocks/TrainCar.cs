@@ -3150,7 +3150,15 @@ public string GetCurveDirection()
                 if (thisSection != null && Simulator.TSectionDat.TrackShapes.ContainsKey(thisSection.ShapeIndex))
                 {
                     TrackShape thisShape = Simulator.TSectionDat.TrackShapes[thisSection.ShapeIndex];
-                    IsRackRailway |= thisShape.RackShape;
+
+                    if (thisShape.RackShape)
+                    {
+                        IsRackRailway = true;
+                    }
+                    else
+                    {
+                        IsRackRailway = false;
+                    }
                 }
             }
         }
