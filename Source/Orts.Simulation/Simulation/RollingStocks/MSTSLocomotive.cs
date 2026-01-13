@@ -464,6 +464,7 @@ namespace Orts.Simulation.RollingStocks
         public float MSTSSpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs - MSTS parameter if used
         public float ContinuousForceTimeFactor = 1800;
         public bool AntiSlip;
+        public bool RackRailwaySlipBaseMode;
         public bool AdvancedAdhesionModel = false; // flag set depending upon adhesion model used.
         public float SanderSpeedEffectUpToMpS;
         public float SanderSpeedOfMpS = 30.0f;
@@ -1616,6 +1617,12 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Initialize()
         {
+            // Record base slip mode so that we can restore it later if needed
+            if (AntiSlip)
+            {
+            RackRailwaySlipBaseMode = true;
+            }
+
             TrainBrakeController.Initialize();
             if (!TrainBrakeController.IsValid())
             {
@@ -1669,11 +1676,6 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("LocomotiveRailDriveType set to Default value of {0}", LocomotiveRailDriveType);
-            }
-
-            if (LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack)
-            {
-                CogWheelFitted = true;
             }
 
             SaturatedSteamHeatPressureToTemperaturePSItoF = SteamTable.SaturatedSteamHeatPressureToTemperatureInterpolatorPSItoF();
@@ -2152,16 +2154,6 @@ namespace Orts.Simulation.RollingStocks
 
             var gearloco = this as MSTSDieselLocomotive;
 
-            // determine if locomotive is using rack railway adhesion system
-            if (IsRackRailway && LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack &&  CogWheelFitted)
-            {
-                IsRackRailwayAdhesion = true;
-            }
-            else
-            {
-                IsRackRailwayAdhesion = false;
-            }
-
             // Pass Gearbox commands
 
             // Note - at the moment there is only one GearBox Controller created, but a gearbox for each diesel engine is created. 
@@ -2284,7 +2276,7 @@ namespace Orts.Simulation.RollingStocks
                                     // Set gear to at start.
                                     de.GearBox.currentGearIndex = de.GearBox.NumOfGears - 1;
                                 }
-                            
+
                             }
                         }
                     }
@@ -2318,21 +2310,35 @@ namespace Orts.Simulation.RollingStocks
                                 DynamicBrakeController.CurrentValue * 100);
                     }
 
-                    // SimpleControlPhysics and if locomotive is a control car advanced adhesion will be "disabled".
-                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control) 
+                    // determine if locomotive is using rack railway adhesion system
+                    if (IsRackRailway && LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack && CogWheelFitted)
                     {
-                        AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
+                        IsRackRailwayAdhesion = true;
                     }
                     else
                     {
-                        AdvancedAdhesionModel = false; // Set flag to advise simple adhesion model is in use
+                        IsRackRailwayAdhesion = false;
                     }
 
-                    // If a rack railway locomotive using adhesion drive then disable advanced adhesion model
-                    if ( IsRackRailwayAdhesion)
+                    // If a rack railway locomotive using rack drive then disable advanced adhesion model
+                    if (IsRackRailwayAdhesion)
                     {
                         AdvancedAdhesionModel = false;
                         AntiSlip = true; // Always set AntiSlip for rack railway adhesion locomotives
+                    }
+                    else
+                    {
+                        // SimpleControlPhysics and if locomotive is a control car advanced adhesion will be "disabled".
+                        if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control)
+                        {
+                            AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
+                            AntiSlip = RackRailwaySlipBaseMode; // Set AntiSlip according to base mode setting
+                        }
+                        else
+                        {
+                            AdvancedAdhesionModel = false; // Set flag to advise simple adhesion model is in use
+                            AntiSlip = RackRailwaySlipBaseMode; // Set AntiSlip according to base mode setting
+                        }
                     }
 
                     UpdateAxles(elapsedClockSeconds);

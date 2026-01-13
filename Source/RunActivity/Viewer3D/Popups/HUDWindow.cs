@@ -1210,7 +1210,7 @@ namespace Orts.Viewer3D.Popups
                     else
                     {
                         if (mstsLocomotive.IsRackRailwayAdhesion) 
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2, Viewer.Catalog.GetString("( Rack )"));
+                            TableAddLine(table, Viewer.Catalog.GetString("( Rack )"));
                         else
                             TableAddLine(table, Viewer.Catalog.GetString("(Simple adhesion model)"));
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0:F0} N ({1:F0} kW)", mstsLocomotive.LocomotiveAxles.AxleMotiveForceN, mstsLocomotive.LocomotiveAxles.AxleMotivePowerW / 1000.0f);
