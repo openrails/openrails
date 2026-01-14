@@ -7138,7 +7138,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         protected override void UpdateTractiveForce(float elapsedClockSeconds)
         {
             float locomotivethrottle = ThrottlePercent / 100;
-            TractiveForceN = 0; // reset tractiveforceN in preparation to calculating a new value
             IndicatedHorsePowerHP = 0;
             PistonSpeedFtpMin = 0;
             MaxPowerW = 0;
@@ -7160,8 +7159,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 {
                     ApplyDirectionToTractiveForce(ref engine.RealTractiveForceN);
                 }
-
-                TractiveForceN += engine.RealTractiveForceN;
 
                 engine.AttachedAxle.DriveForceN = engine.RealTractiveForceN;
                 engine.DisplayTractiveForceN = engine.AverageTractiveForceN;
