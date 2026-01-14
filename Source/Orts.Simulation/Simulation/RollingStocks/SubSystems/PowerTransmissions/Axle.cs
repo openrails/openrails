@@ -733,7 +733,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (value > 1.0f)
                     throw new NotSupportedException("Value must be within the range of 0.0 and 1.0");
                 if (value <= 0.0f)
-                    transmissionEfficiency = 0.99f;
+                    transmissionEfficiency = 1.0f;
                 else
                     transmissionEfficiency = value;
             }
