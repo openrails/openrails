@@ -1012,7 +1012,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Nonparametric constructor of Axle class instance
         /// - sets motor parameter to null
-        /// - sets TtransmissionEfficiency to 0.99 (99%)
+        /// - sets TtransmissionEfficiency to 1.0 (100%)
         /// - sets SlipWarningThresholdPercent to 70%
         /// - sets axle DriveType to ForceDriven
         /// - updates totalInertiaKgm2 parameter
@@ -1020,7 +1020,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public Axle(TrainCar car)
         {
             Car = car;
-            transmissionEfficiency = 0.99f;
+            transmissionEfficiency = 1.0f;
             SlipWarningTresholdPercent = 70.0f;
             DriveType = AxleDriveType.ForceDriven;
             totalInertiaKgm2 = inertiaKgm2;
