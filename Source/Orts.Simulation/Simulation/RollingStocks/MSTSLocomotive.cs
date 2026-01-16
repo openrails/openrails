@@ -1235,13 +1235,6 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
-                case "engine(cogwheelfitted":
-                    var cogWheelFitted = stf.ReadIntBlock(null);
-                    if (cogWheelFitted == 1)
-                        CogWheelFitted = true;
-                    else
-                        CogWheelFitted = false;
-                    break;
                 case "engine(ortslocomotiveraildrivetype":
                     stf.MustMatch("(");
                     var locomotiveDriveType = stf.ReadString();
@@ -1428,7 +1421,6 @@ namespace Orts.Simulation.RollingStocks
             OnLineCabRadio = locoCopy.OnLineCabRadio;
             OnLineCabRadioURL = locoCopy.OnLineCabRadioURL;
             LocomotiveRailDriveType = locoCopy.LocomotiveRailDriveType;
-            CogWheelFitted = locoCopy.CogWheelFitted;
         }
 
         /// <summary>

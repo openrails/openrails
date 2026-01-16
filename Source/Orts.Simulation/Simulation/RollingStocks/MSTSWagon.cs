@@ -1576,8 +1576,14 @@ namespace Orts.Simulation.RollingStocks
                     Couplers[CouplerCountLocation].Rigid = false;
                     Couplers[CouplerCountLocation].Rigid = stf.ReadBoolBlock(true);
                     break;
-               
 
+                case "wagon(cogwheelfitted":
+                    var cogWheelFitted = stf.ReadIntBlock(null);
+                    if (cogWheelFitted == 1)
+                        CogWheelFitted = true;
+                    else
+                        CogWheelFitted = false;
+                    break;
 
                 case "wagon(adheasion":
                     stf.MustMatch("(");
@@ -1727,6 +1733,7 @@ namespace Orts.Simulation.RollingStocks
             MaxBrakeForceN = copy.MaxBrakeForceN;
             MaxBrakeShoeForceN = copy.MaxBrakeShoeForceN;
             NumberCarBrakeShoes = copy.NumberCarBrakeShoes;
+            CogWheelFitted = copy.CogWheelFitted;
             MaxHandbrakeForceN = copy.MaxHandbrakeForceN;
             FrictionBrakeBlendingMaxForceN = copy.FrictionBrakeBlendingMaxForceN;
             WindowDeratingFactor = copy.WindowDeratingFactor;
