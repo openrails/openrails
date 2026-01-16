@@ -779,6 +779,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float CurrentCurveRadiusM;
 
         /// <summary>
+        /// Gradient of Track
+        /// </summary>
+        public float CurrentElevationPercent;
+
+        /// <summary>
+        /// Gradient of Track Factor - used to reduce Adhesive force as grade increases
+        /// </summary>
+        public float TrackElevationReductionFactor;
+
+        /// <summary>
         /// Bogie Rigid Wheel Base - distance between wheel in the bogie
         /// </summary>
         public float BogieRigidWheelBaseM;
@@ -1119,13 +1129,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double slipSpeedMpS = axleSpeedMpS - TrainSpeedMpS;
             // Compute force transmitted to rail according to adhesion curves
             double axleOutForceN;
+            float gradeAngle = (float)Math.Atan(Math.Abs(CurrentElevationPercent / 100.0f));
+
             if (Axles.UsePolachAdhesion)
             {
-                axleOutForceN = Math.Sign(slipSpeedMpS) * AxleWeightN * SlipCharacteristicsPolach(slipSpeedMpS);
+                axleOutForceN = Math.Sign(slipSpeedMpS) * AxleWeightN * (float)Math.Cos(gradeAngle) * SlipCharacteristicsPolach(slipSpeedMpS);
             }
             else
             {
-                axleOutForceN = AxleWeightN * SlipCharacteristicsPacha((float)axleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
+                axleOutForceN = AxleWeightN * (float)Math.Cos(gradeAngle) * SlipCharacteristicsPacha((float)axleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
             }
 
             // Compute force produced by the engine
@@ -1154,7 +1166,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 // Ensure that axle static friction never exceeds the adhesion coefficient, so the car will start moving even when wheels are stuck
                 if (Math.Abs(slipSpeedMpS) < 0.1f)
                 {
-                    axleBrakeForceN = Math.Min(BrakeRetardForceN, Math.Max(MaximumWheelAdhesion * AxleWeightN - frictionForceN + Math.Abs(axleInForceN), 0));
+                    axleBrakeForceN = Math.Min(BrakeRetardForceN, Math.Max(MaximumWheelAdhesion * (AxleWeightN * Math.Cos(gradeAngle)) - frictionForceN + Math.Abs(axleInForceN), 0));
                     return (accelerationMpSS, axleSpeedMpS / WheelRadiusM, axleInForceN / transmissionEfficiency, axleMotiveForceN, axleBrakeForceN, frictionForceN);
                 }
             }
@@ -1324,6 +1336,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (float.IsNaN(TrainSpeedMpS)) TrainSpeedMpS = 0; // TODO: TrainSpeedMpS should always be a number, find the cause of the NaN
             if (double.IsNaN(AxleSpeedMpS)) AxleSpeedMpS = 0; // TODO: AxleSpeedMpS should always be a number, find the cause of the NaN
 
+            // Calculate factor to reduce adhesion due to track gradient
+            float gradeAngle = (float)Math.Atan(Math.Abs(CurrentElevationPercent / 100.0f));
+            TrackElevationReductionFactor = (float)Math.Cos(gradeAngle);
+            TrackElevationReductionFactor = MathHelper.Clamp(TrackElevationReductionFactor, 0, 1);
+
             bool advancedAdhesion = Car is MSTSLocomotive locomotive && locomotive.AdvancedAdhesionModel;
             advancedAdhesion &= DriveType != AxleDriveType.NotDriven; // Skip integrator for undriven axles to save CPU
             forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;
@@ -1336,7 +1353,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             else if (Axles.UsePolachAdhesion)
             {
                 Polach.Update();
-                axleStaticForceN = AxleWeightN * SlipCharacteristicsPolach(0);
+                axleStaticForceN = AxleWeightN * TrackElevationReductionFactor * SlipCharacteristicsPolach(0);
                 ComputeWheelSlipThresholdMpS();
                 WheelAdhesion = (float)SlipCharacteristicsPolach(SlipSpeedMpS);
                 MaximumWheelAdhesion = (float)SlipCharacteristicsPolach(WheelSlipThresholdMpS);
@@ -1454,7 +1471,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxleFrictionForceN = frictionForceN;
             AxleSpeedMpS = TrainSpeedMpS;
 
-            float adhesionForceN = AxleWeightN * AdhesionLimit;
+            float adhesionForceN = AxleWeightN * TrackElevationReductionFactor * AdhesionLimit;
             SlipPercent = Math.Abs(axleOutForceN) / adhesionForceN * 100;
             if (Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel)
             {
@@ -1481,7 +1498,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     // For non-driven axles, only brake skid is possible (no wheel slip). Consider wheels to be fully locked
                     AxleSpeedMpS = 0;
                     // Use the advanced adhesion coefficient
-                    adhesionForceN = AxleWeightN * SlipCharacteristicsPacha(SlipSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
+                    adhesionForceN = AxleWeightN * TrackElevationReductionFactor * SlipCharacteristicsPacha(SlipSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
                     axleOutForceN = MathHelper.Clamp(axleOutForceN, -adhesionForceN, adhesionForceN);
                 }
                 // In case of wheel skid, reduce indicated brake force
@@ -1540,7 +1557,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var wheelDistanceGaugeMM = Axle.WheelDistanceGaugeM * 1000;
                 var GNm2 = 8.40E+10;
                 // Prevent wheel load from going negative, negative wheel load would indicate wheel has lifted off rail which otherwise leads to NaN errors
-                wheelLoadN = Math.Max(Axle.AxleWeightN / (Axle.NumWheelsetAxles * 2), 0.1); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
+                wheelLoadN = Math.Max((Axle.AxleWeightN * Axle.TrackElevationReductionFactor) / (Axle.NumWheelsetAxles * 2), 0.1); // Assume two wheels per axle, and thus wheel weight will be half the value - multiple axles????
                 var wheelLoadkN = wheelLoadN / 1000;
                 var Young_ModulusMPa = 207000;
 
