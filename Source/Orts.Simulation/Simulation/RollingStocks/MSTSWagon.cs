@@ -1667,14 +1667,13 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
 
-
                 // Used for both coupler types
                 case "wagon(coupling(couplinghasrigidconnection":
                     Couplers[CouplerCountLocation].Rigid = false;
                     Couplers[CouplerCountLocation].Rigid = stf.ReadBoolBlock(true);
                     break;
 
-                case "wagon(cogwheelfitted":
+                case "wagon(ortscogwheelfitted":
                     var cogWheelFitted = stf.ReadIntBlock(null);
                     if (cogWheelFitted == 1)
                         CogWheelFitted = true;
