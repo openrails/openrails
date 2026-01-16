@@ -3266,6 +3266,7 @@ namespace Orts.Simulation.RollingStocks
                 axle.WheelRadiusM = DriverWheelRadiusM;
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
+                axle.CurrentElevationPercent = CurrentElevationPercent;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }
 

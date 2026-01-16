@@ -7279,12 +7279,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         {
             foreach (var axle in LocomotiveAxles)
             {
-                /*axle.FrictionN = DavisAN * axle.WheelWeightKg / MassKG;
-                axle.DampingNs = DavisBNSpM * axle.WheelWeightKg / MassKG;*/
                 axle.BrakeRetardForceN = BrakeRetardForceN * axle.BrakeForceFraction;
                 axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
+                axle.CurrentElevationPercent = CurrentElevationPercent;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }
             foreach (var engine in SteamEngines)
