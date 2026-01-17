@@ -1156,7 +1156,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     catch
                     {
                         if (Simulator.Settings.VerboseConfigurationMessages)
-                            STFException.TraceWarning(stf, "Assumed unknown feedwater type " + orientationType);
+                            STFException.TraceWarning(stf, "Assumed unknown boiler orientation type " + orientationType);
                     }
                     break;
                 case "engine(ortsboilerangle": BoilerAngleHorizontalRad = stf.ReadFloatBlock(STFReader.UNITS.Angle, null); break;
