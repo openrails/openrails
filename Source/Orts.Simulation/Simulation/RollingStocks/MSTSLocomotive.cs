@@ -464,7 +464,6 @@ namespace Orts.Simulation.RollingStocks
         public float MSTSSpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs - MSTS parameter if used
         public float ContinuousForceTimeFactor = 1800;
         public bool AntiSlip;
-        public bool RackRailwaySlipBaseMode;
         public bool AdvancedAdhesionModel = false; // flag set depending upon adhesion model used.
         public float SanderSpeedEffectUpToMpS;
         public float SanderSpeedOfMpS = 30.0f;
@@ -1609,11 +1608,6 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Initialize()
         {
-            // Record base slip mode so that we can restore it later if needed
-            if (AntiSlip)
-            {
-            RackRailwaySlipBaseMode = true;
-            }
 
             TrainBrakeController.Initialize();
             if (!TrainBrakeController.IsValid())
@@ -2302,6 +2296,16 @@ namespace Orts.Simulation.RollingStocks
                                 DynamicBrakeController.CurrentValue * 100);
                     }
 
+                    // SimpleControlPhysics and if locomotive is a control car advanced adhesion will be "disabled".
+                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control)
+                    {
+                        AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
+                    }
+                    else
+                    {
+                        AdvancedAdhesionModel = false; // Set flag to advise simple adhesion model is in use
+                    }
+
                     // determine if locomotive is using rack railway adhesion system
                     if (IsRackRailway && LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack && CogWheelFitted)
                     {
@@ -2310,27 +2314,6 @@ namespace Orts.Simulation.RollingStocks
                     else
                     {
                         IsRackRailwayAdhesion = false;
-                    }
-
-                    // If a rack railway locomotive using rack drive then disable advanced adhesion model
-                    if (IsRackRailwayAdhesion)
-                    {
-                        AdvancedAdhesionModel = false;
-                        AntiSlip = true; // Always set AntiSlip for rack railway adhesion locomotives
-                    }
-                    else
-                    {
-                        // SimpleControlPhysics and if locomotive is a control car advanced adhesion will be "disabled".
-                        if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control)
-                        {
-                            AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
-                            AntiSlip = RackRailwaySlipBaseMode; // Set AntiSlip according to base mode setting
-                        }
-                        else
-                        {
-                            AdvancedAdhesionModel = false; // Set flag to advise simple adhesion model is in use
-                            AntiSlip = RackRailwaySlipBaseMode; // Set AntiSlip according to base mode setting
-                        }
                     }
 
                     UpdateAxles(elapsedClockSeconds);
@@ -2804,7 +2787,7 @@ namespace Orts.Simulation.RollingStocks
                         // Simple slip control
                         // Motive force is limited to the maximum adhesive force
                         // In wheelslip situations, motive force is reduced to zero
-                        float absForceN = Math.Min(Math.Abs(axle.DriveForceN), axle.MaximumWheelAdhesion * axle.AxleWeightN);
+                        float absForceN = Math.Min(Math.Abs(axle.DriveForceN), axle.MaximumWheelAdhesion * axle.AxleGradientForceN);
                         float newForceN;
                         if (axle.DriveForceN != 0)
                         {
@@ -3256,6 +3239,7 @@ namespace Orts.Simulation.RollingStocks
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.CurrentElevationPercent = CurrentElevationPercent;
+                axle.IsRackRailwayAdhesion = IsRackRailwayAdhesion;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }
 

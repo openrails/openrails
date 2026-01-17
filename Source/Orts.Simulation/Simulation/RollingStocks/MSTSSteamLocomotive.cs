@@ -7289,6 +7289,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.CurrentElevationPercent = CurrentElevationPercent;
+                axle.IsRackRailwayAdhesion = IsRackRailwayAdhesion;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }
             foreach (var engine in SteamEngines)
@@ -7342,7 +7343,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     float TotalMomentInertia = TotalWheelMomentofInertia + RodMomentInertia;
                     axle.InertiaKgm2 = TotalMomentInertia;
 
-                    axle.DampingNs = axle.AxleWeightN / 200;
+                    axle.DampingNs = axle.AxleGradientForceN / 200;
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
                     axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
                 }
