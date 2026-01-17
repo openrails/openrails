@@ -1443,9 +1443,12 @@ namespace Orts.Viewer3D
             // Hot reloading: User can manually force all files to stale, causing a reload of everything
             if (UserInput.IsPressed(UserCommand.DebugForceReload))
             {
-                SetAllStale(true);
+                if (Simulator.Settings.EnableHotReloading)
+                {
+                    SetAllStale(true);
 
-                Simulator.SetAllStale(true);
+                    Simulator.SetAllStale(true);
+                }
             }
 
             //ALT-F10 : display request stop info for player train - to be restored later when user setting can be defined

@@ -882,8 +882,7 @@ behaviors that would not occur had the program been restarted normally.
 
 If hot reloading does fail to automatically update an asset, a manual
 reload can be activated using the "Force Reload Assets" debug command,
-default keyboard binding `<Ctrl+Alt+F5>`. This keybind is active even
-if the "enable hot reloading" option is disabled. A manual reload will cause
+default keyboard binding `<Ctrl+Alt+F5>`. A manual reload will cause
 *everything* that can be reloaded to be reloaded all at once, unlike
 hot reloading, which only reloads assets that are known to be out of
 date. While this ensures any file changes are captured in the simulator,

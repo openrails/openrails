@@ -51,7 +51,7 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
 
         Dictionary<string, SharedShape> Shapes = new Dictionary<string, SharedShape>();
-        Dictionary<string, bool> ShapeMarks = new Dictionary<string, bool>();
+        HashSet<SharedShape> MarkedShapes = new HashSet<SharedShape>();
         SharedShape EmptyShape;
 
         [CallOnThread("Render")]
@@ -87,30 +87,25 @@ namespace Orts.Viewer3D
 
         public void Mark()
         {
-            ShapeMarks.Clear();
-            foreach (var path in Shapes.Keys)
-                ShapeMarks.Add(path, false);
+            MarkedShapes.Clear();
         }
 
         public void Mark(SharedShape shape)
         {
-            foreach (var key in Shapes.Keys)
-            {
-                if (Shapes[key] == shape)
-                {
-                    ShapeMarks[key] = true;
-                    break;
-                }
-            }
+            if (shape != null)
+                MarkedShapes.Add(shape);
         }
 
         public void Sweep()
         {
-            foreach (var path in ShapeMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
-            {
-                Shapes[path].Dispose();
-                Shapes.Remove(path);
-            }
+            // If a shape isn't in the list of marked shapes, it is no longer in use
+            List<string> shapeKeys = Shapes.Keys.ToList();
+            foreach (string key in shapeKeys)
+                if (!MarkedShapes.Contains(Shapes[key]))
+                {
+                    Shapes[key].Dispose();
+                    Shapes.Remove(key);
+                }
         }
 
         /// <summary>

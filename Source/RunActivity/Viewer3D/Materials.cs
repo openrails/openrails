@@ -41,7 +41,7 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
         readonly GraphicsDevice GraphicsDevice;
         Dictionary<string, SharedTexture> Textures = new Dictionary<string, SharedTexture>();
-        Dictionary<string, bool> TextureMarks = new Dictionary<string, bool>();
+        HashSet<Texture2D> MarkedTextures = new HashSet<Texture2D>();
 
         [CallOnThread("Render")]
         internal SharedTextureManager(Viewer viewer, GraphicsDevice graphicsDevice)
@@ -249,42 +249,25 @@ namespace Orts.Viewer3D
         }
         public void Mark()
         {
-            TextureMarks.Clear();
-            foreach (var path in Textures.Keys)
-                TextureMarks.Add(path, false);
+            MarkedTextures.Clear();
         }
 
         public void Mark(Texture2D texture)
         {
-            foreach (var key in Textures.Keys)
-            {
-                if (Textures[key].Texture == texture)
-                {
-                    TextureMarks[key] = true;
-                    break;
-                }
-            }
-        }
-
-        public void Mark(SharedTexture texture)
-        {
-            foreach (var key in Textures.Keys)
-            {
-                if (Textures[key] == texture)
-                {
-                    TextureMarks[key] = true;
-                    break;
-                }
-            }
+            if (texture != null)
+                MarkedTextures.Add(texture);
         }
 
         public void Sweep()
         {
-            foreach (var path in TextureMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
-            {
-                Textures[path].Texture.Dispose();
-                Textures.Remove(path);
-            }
+            // If a texture isn't in the list of marked textures, it is no longer in use
+            List<string> textureKeys = Textures.Keys.ToList();
+            foreach (string key in textureKeys)
+                if (!MarkedTextures.Contains(Textures[key].Texture))
+                {
+                    Textures[key].Texture.Dispose();
+                    Textures.Remove(key);
+                }
         }
 
         /// <summary>
@@ -331,7 +314,7 @@ namespace Orts.Viewer3D
     {
         readonly Viewer Viewer;
         IDictionary<(string, string, int, float, Effect), Material> Materials = new Dictionary<(string, string, int, float, Effect), Material>();
-        IDictionary<(string, string, int, float, Effect), bool> MaterialMarks = new Dictionary<(string, string, int, float, Effect), bool>();
+        HashSet<Material> MarkedMaterials = new HashSet<Material>();
 
         public readonly LightConeShader LightConeShader;
         public readonly LightGlowShader LightGlowShader;
@@ -532,28 +515,23 @@ namespace Orts.Viewer3D
 
         public void Mark()
         {
-            MaterialMarks.Clear();
-            foreach (var path in Materials.Keys)
-                MaterialMarks.Add(path, false);
+            MarkedMaterials.Clear();
         }
 
         public void Mark(Material material)
         {
-            foreach (var key in Materials.Keys)
-            {
-                if (Materials[key] == material)
-                {
-                    MaterialMarks[key] = true;
-                    break;
-                }
-            }
+            if (material != null)
+                MarkedMaterials.Add(material);
         }
 
         public void Sweep()
         {
-            foreach (var path in MaterialMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
-                Materials.Remove(path);
-		}
+            // If a material isn't in the list of marked materials, it is no longer in use
+            List<(string, string, int, float, Effect)> materialKeys = Materials.Keys.ToList();
+            foreach (var key in materialKeys)
+                if (!MarkedMaterials.Contains(Materials[key]))
+                    Materials.Remove(key);
+        }
 
         public void LoadPrep()
         {
