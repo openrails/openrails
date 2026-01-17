@@ -1577,11 +1577,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
 
                 case "wagon(ortscogwheelfitted":
-                    var cogWheelFitted = stf.ReadIntBlock(null);
-                    if (cogWheelFitted == 1)
-                        CogWheelFitted = true;
-                    else
-                        CogWheelFitted = false;
+                    CogWheelFitted = stf.ReadBoolBlock(false);
                     break;
 
                 case "wagon(adheasion":

@@ -1456,7 +1456,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 WheelSlipWarningTimeS = WheelSlipTimeS = 0;
             }
         }
-        
+
         public void UpdateSimpleAdhesion(float elapsedClockSeconds)
         {
             float axleInForceN = 0;
@@ -1475,64 +1475,55 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxleFrictionForceN = frictionForceN;
             AxleSpeedMpS = TrainSpeedMpS;
 
-            if (!IsRackRailwayAdhesion)
+            // In a slip possible model wheel axle force is limited to adhesion force so that wheel slip will not occur
+            float adhesionForceN = AxleGradientForceN * AdhesionLimit;
+            SlipPercent = Math.Abs(axleOutForceN) / adhesionForceN * 100;
+            if ((Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel) || IsRackRailwayAdhesion )
             {
-                // In a slip possible model wheel axle force is limited to adhesion force so that wheel slip will not occur
-                float adhesionForceN = AxleGradientForceN * AdhesionLimit;
-                SlipPercent = Math.Abs(axleOutForceN) / adhesionForceN * 100;
-                if (Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel)
-                {
-                    // Do not allow wheelslip on steam locomotives if simple adhesion is selected
-                    SlipPercent = 0;
-                }
-                else if (SlipPercent > 100)
-                {
-                    axleOutForceN = MathHelper.Clamp(axleOutForceN, -adhesionForceN, adhesionForceN);
-                    // Simple adhesion, simple wheelslip conditions
-                    if (Car is MSTSLocomotive locomotive && !locomotive.AdvancedAdhesionModel)
-                    {
-                        if (!locomotive.AntiSlip && locomotive.SlipControlSystem != MSTSLocomotive.SlipControlType.Full) axleOutForceN *= locomotive.Adhesion1;
-                        else SlipPercent = 100;
-                    }
-                    else if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven)
-                    {
-                        // No wagon skid in simple adhesion
-                        SlipPercent = 100;
-                    }
-                    // Semi-advanced adhesion. Used in non-driven axles when advanced adhesion is enabled, to avoid running the integrator
-                    else
-                    {
-                        // For non-driven axles, only brake skid is possible (no wheel slip). Consider wheels to be fully locked
-                        AxleSpeedMpS = 0;
-                        // Use the advanced adhesion coefficient
-                        adhesionForceN = AxleGradientForceN * SlipCharacteristicsPacha(SlipSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
-                        axleOutForceN = MathHelper.Clamp(axleOutForceN, -adhesionForceN, adhesionForceN);
-                    }
-                    // In case of wheel skid, reduce indicated brake force
-                    if (((TrainSpeedMpS > 0 && axleOutForceN < 0) || (TrainSpeedMpS < 0 && axleOutForceN > 0)) && Math.Abs(axleInForceN) < BrakeRetardForceN && Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN > 0)
-                    {
-                        AxleBrakeForceN = Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN;
-                    }
-                    // Otherwise, indicate that slip is reducing motive force
-                    else
-                    {
-                        AxleMotiveForceN = axleOutForceN + Math.Sign(TrainSpeedMpS) * totalFrictionForceN;
-                    }
-                }
-                AxlePositionRad += AxleSpeedMpS / WheelRadiusM * elapsedClockSeconds;
-
-                if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(axleInForceN) < totalFrictionForceN)
-                {
-                    axleOutForceN = 0;
-                }
-                AxleForceN = axleOutForceN;
-            }
-            else
-            {
-                // Rack railway adhesion - no wheelslip modelled, force not restricted to wheel adhesion force
-                AxleForceN = axleInForceN;
+                // Do not allow wheelslip on steam locomotives if simple adhesion is selected
                 SlipPercent = 0;
             }
+            else if (SlipPercent > 100)
+            {
+                axleOutForceN = MathHelper.Clamp(axleOutForceN, -adhesionForceN, adhesionForceN);
+                // Simple adhesion, simple wheelslip conditions
+                if (Car is MSTSLocomotive locomotive && !locomotive.AdvancedAdhesionModel)
+                {
+                    if (!locomotive.AntiSlip && locomotive.SlipControlSystem != MSTSLocomotive.SlipControlType.Full) axleOutForceN *= locomotive.Adhesion1;
+                    else SlipPercent = 100;
+                }
+                else if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven)
+                {
+                    // No wagon skid in simple adhesion
+                    SlipPercent = 100;
+                }
+                // Semi-advanced adhesion. Used in non-driven axles when advanced adhesion is enabled, to avoid running the integrator
+                else
+                {
+                    // For non-driven axles, only brake skid is possible (no wheel slip). Consider wheels to be fully locked
+                    AxleSpeedMpS = 0;
+                    // Use the advanced adhesion coefficient
+                    adhesionForceN = AxleGradientForceN * SlipCharacteristicsPacha(SlipSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
+                    axleOutForceN = MathHelper.Clamp(axleOutForceN, -adhesionForceN, adhesionForceN);
+                }
+                // In case of wheel skid, reduce indicated brake force
+                if (((TrainSpeedMpS > 0 && axleOutForceN < 0) || (TrainSpeedMpS < 0 && axleOutForceN > 0)) && Math.Abs(axleInForceN) < BrakeRetardForceN && Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN > 0)
+                {
+                    AxleBrakeForceN = Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN;
+                }
+                // Otherwise, indicate that slip is reducing motive force
+                else
+                {
+                    AxleMotiveForceN = axleOutForceN + Math.Sign(TrainSpeedMpS) * totalFrictionForceN;
+                }
+            }
+            AxlePositionRad += AxleSpeedMpS / WheelRadiusM * elapsedClockSeconds;
+
+            if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(axleInForceN) < totalFrictionForceN)
+            {
+                axleOutForceN = 0;
+            }
+            AxleForceN = axleOutForceN;
         }
 
         class PolachCalculator
