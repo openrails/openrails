@@ -620,64 +620,64 @@ namespace Orts.Viewer3D.Popups
                     // Do not consider fake axles
                     if (!axle.Fake)
                     {
-                    if (!axle.Part.Bogie) // if not a bogie then check for the number of axles.
-                    {
+                        if (!axle.Part.Bogie) // if not a bogie then check for the number of axles.
+                        {
                             if (currentBogie != axle.BogieIndex)
                             {
                                 if (currentCount != 0)
-                        {
-                            whyte.Add(currentCount.ToString());
-                            currentCount = 0;
-                        }
+                                {
+                                    whyte.Add(currentCount.ToString());
+                                    currentCount = 0;
+                                }
                                 currentBogie = axle.BogieIndex;
                             }
 
-                        if (steamloco.SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
-                        {
-                            currentCount += 2;
-                            axlesCount += 1;
+                            if (steamloco.SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                            {
+                                currentCount += 2;
+                                axlesCount += 1;
 
                                 if (axlesCount >= steamloco.SteamEngines[i].AttachedAxle.NumWheelsetAxles)
                                 {
                                     if (currentCount != 0)
-                            {
-                                whyte.Add(currentCount.ToString());
-                                currentCount = 0;
+                                    {
+                                        whyte.Add(currentCount.ToString());
+                                        currentCount = 0;
                                     }
                                     currentBogie = axle.BogieIndex;
-                                axlesCount = 0;
-                                i = i + 1;
+                                    axlesCount = 0;
+                                    i = i + 1;
+                                }
                             }
                         }
-                    }
-                    else if (axle.Part.Bogie) // this is a bogie
-                    {
-                            if (PreviousAxlePart)
+                        else if (axle.Part.Bogie) // this is a bogie
                         {
-                            currentBogie = axle.BogieIndex;
-                        }
+                            if (PreviousAxlePart)
+                            {
+                                currentBogie = axle.BogieIndex;
+                            }
 
                             if (currentBogie != axle.BogieIndex)
                             {
                                 if (currentCount != 0)
-                        {
-                            whyte.Add(currentCount.ToString());
-                            currentCount = 0;
-                        }
+                                {
+                                    whyte.Add(currentCount.ToString());
+                                    currentCount = 0;
+                                }
                                 currentBogie = axle.BogieIndex;
                             }
-                        currentCount += 2;
-                    }
+                            currentCount += 2;
+                        }
 
-                    if (axle.Part.Bogie)
-                    {
-                        PreviousAxlePart = true;
+                        if (axle.Part.Bogie)
+                        {
+                            PreviousAxlePart = true;
+                        }
+                        else
+                        {
+                            PreviousAxlePart = false;
+                        }
                     }
-                    else
-                    {
-                        PreviousAxlePart = false;
-                    }
-                }
                 }
 
                 whyte.Add(currentCount.ToString());
@@ -693,14 +693,14 @@ namespace Orts.Viewer3D.Popups
                         if (currentBogie != axle.BogieIndex)
                         {
                             if (currentCount != 0)
-                    {
-                        whyte.Add(currentCount.ToString());
-                        currentCount = 0;
-                    }
+                            {
+                                whyte.Add(currentCount.ToString());
+                                currentCount = 0;
+                            }
                             currentBogie = axle.BogieIndex;
                         }
-                    currentCount += 2;
-                }
+                        currentCount += 2;
+                    }
                 }
                 whyte.Add(currentCount.ToString());
                 return String.Join("-", whyte.ToArray());
@@ -1244,7 +1244,7 @@ namespace Orts.Viewer3D.Popups
                         if (mstsLocomotive.IsRackRailwayAdhesion) 
                             TableAddLine(table, Viewer.Catalog.GetString("( Rack )"));
                         else
-                            TableAddLine(table, Viewer.Catalog.GetString("(Simple adhesion model)"));
+                        TableAddLine(table, Viewer.Catalog.GetString("(Simple adhesion model)"));
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0:F0} N ({1:F0} kW)", mstsLocomotive.LocomotiveAxles.AxleMotiveForceN, mstsLocomotive.LocomotiveAxles.AxleMotivePowerW / 1000.0f);
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Wagon Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);

@@ -2976,10 +2976,10 @@ public string GetCurveDirection()
             // expected motion, a fake axle is added at the articulated end(s)
             // of the car, attached to the car itself. This will drive the positioning
             // of the car as expected.
-                if (front)
+            if (front)
                 WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, -CarLengthM / 2.0f), 0, 0, true) { Part = Parts[0] });
 
-                if (rear)
+            if (rear)
                 WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, CarLengthM / 2.0f), 0, 0, true) { Part = Parts[0] });
 
 
@@ -3066,8 +3066,8 @@ public string GetCurveDirection()
             }
             else
             {
-            // Determine facing direction and position of train car
-            p0.FindCenterLine();
+                // Determine facing direction and position of train car
+                p0.FindCenterLine();
             }
             Vector3 fwd = new Vector3(p0.Dir[0], p0.Dir[1], -p0.Dir[2]);
             // Check if null (0-length) vector
