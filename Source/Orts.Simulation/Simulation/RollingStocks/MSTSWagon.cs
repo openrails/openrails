@@ -287,6 +287,8 @@ namespace Orts.Simulation.RollingStocks
 
         protected void ParseEffects(string lowercasetoken, STFReader stf)
         {
+            EffectData.Clear(); // Remove any existing effects
+
             stf.MustMatch("(");
             string s;
             
@@ -349,17 +351,22 @@ namespace Orts.Simulation.RollingStocks
 
         public void Load()
         {
-            if (CarManager.LoadedCars.ContainsKey(WagFilePath))
+            // If this wagon already has a viewer, the viewer will need to be reloaded
+            StaleViewer = true;
+
+            if (CarManager.LoadedCars.ContainsKey(WagFilePath) && !CarManager.LoadedCars[WagFilePath].StaleData)
             {
                 Copy(CarManager.LoadedCars[WagFilePath]);
             }
             else
             {
                 LoadFromWagFile(WagFilePath);
-                CarManager.LoadedCars.Add(WagFilePath, this);
+                CarManager.LoadedCars[WagFilePath] = this;
             }
 
             GetMeasurementUnits();
+
+            StaleData = false;
         }
 
         // Values for adjusting wagon physics due to load changes
@@ -410,6 +417,8 @@ namespace Orts.Simulation.RollingStocks
                     stf.ReadItem();
                     Parse(stf.Tree.ToLower(), stf);
                 }
+                if (Simulator.Settings.EnableHotReloading)
+                    FilesReferenced = stf.FileNames.Select(p => p.ToLowerInvariant()).ToHashSet();
             }
 
             var wagonFolderSlash = Path.GetDirectoryName(WagFilePath) + @"\";
@@ -1184,14 +1193,14 @@ namespace Orts.Simulation.RollingStocks
             IsUK = Simulator.Settings.Units == "UK";
         }
 
-        public override void Initialize()
+        public override void Initialize(bool reinitialize = false)
         {
             Pantographs.Initialize();
             Doors.Initialize();
             PassengerCarPowerSupply?.Initialize();
             LocomotiveAxles.Initialize();
 
-            base.Initialize();
+            base.Initialize(reinitialize);
                        
             if (MaxUnbalancedSuperElevationM == 0 || MaxUnbalancedSuperElevationM > 0.5) // If MaxUnbalancedSuperElevationM > 18", or equal to zero, then set a default value
             {
@@ -2064,6 +2073,15 @@ namespace Orts.Simulation.RollingStocks
 
         public override void Update(float elapsedClockSeconds)
         {
+            if (StaleData) // Something about the .eng/.wag/.inc data is out of date (we don't know what specifically)
+            {
+                // Reload the wagon, overwriting existing parameters, in order to capture updates
+                Load();
+
+                // Re-initialize the wagon to properly integrate updated data
+                Initialize(true);
+            }
+
             base.Update(elapsedClockSeconds);
 
             PassengerCarPowerSupply?.Update(elapsedClockSeconds);
@@ -4740,6 +4758,105 @@ public void SetTensionStiffness(float a, float b)
     public class CarManager
     {
         public static Dictionary<string, MSTSWagon> LoadedCars = new Dictionary<string, MSTSWagon>();
+
+        /// <summary>
+        /// Sets the stale data flag for ALL loaded cars to the given bool
+        /// (default true)
+        /// </summary>
+        public static void SetAllStale(bool stale = true)
+        {
+            foreach (MSTSWagon wagon in LoadedCars.Values)
+                wagon.StaleData = stale;
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for train cars using any of the eng/wag from the given set of paths,
+        /// with an optional set of include files to also mark sound files as stale
+        /// </summary>
+        /// <returns>bool indicating if any car changed from fresh to stale</returns>
+        public static bool MarkStale(HashSet<string> wagPaths, HashSet<string> incPaths = null)
+        {
+            bool found = false;
+
+            foreach (string wagKey in LoadedCars.Keys)
+            {
+                if (!LoadedCars[wagKey].StaleData)
+                {
+                    string ortsWagKey = Path.GetDirectoryName(wagKey) + @"\openrails\" + Path.GetFileName(wagKey);
+
+                    if (wagPaths != null && (wagPaths.Contains(wagKey) || wagPaths.Contains(ortsWagKey)))
+                    {
+                        LoadedCars[wagKey].StaleData = true;
+                        found = true;
+
+                        Trace.TraceInformation("Train car {0} was updated on disk and will be reloaded.", wagKey);
+                    }
+                    else if (incPaths != null && LoadedCars[wagKey].FilesReferenced.Count > 1)
+                    {
+                        foreach (string fileRef in LoadedCars[wagKey].FilesReferenced)
+                        {
+                            if (incPaths.Contains(fileRef))
+                            {
+                                LoadedCars[wagKey].StaleData = true;
+                                found = true;
+
+                                Trace.TraceInformation("INC file {0} used by train car {1} was updated on disk, train car will be reloaded.", fileRef, wagKey);
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Continue scanning next car, there may be multiple cars with stale include files
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for cabviews using any of the cvf from the given list of paths,
+        /// with an optional set of include files to also mark sound files as stale
+        /// </summary>
+        /// <returns>bool indicating if any car changed from fresh to stale</returns>
+        public static bool MarkCabsStale(HashSet<string> cvfPaths, HashSet<string> incPaths = null)
+        {
+            bool found = false;
+
+            foreach (string wagKey in LoadedCars.Keys)
+            {
+                if (!LoadedCars[wagKey].StaleCab && LoadedCars[wagKey] is MSTSLocomotive loco)
+                {
+                    foreach (CabView cab in loco.CabViewList)
+                    {
+                        if (cvfPaths != null && cvfPaths.Contains(cab.CVFFile.CabFilePath))
+                        {
+                            LoadedCars[wagKey].StaleCab = true;
+                            found = true;
+
+                            Trace.TraceInformation("Cabview {0} was updated on disk and will be reloaded.", cab.CVFFile.CabFilePath);
+                        }
+                        else if (incPaths != null && cab.CVFFile.FilesReferenced.Count > 0)
+                        {
+                            foreach (string fileRef in cab.CVFFile.FilesReferenced)
+                            {
+                                if (incPaths.Contains(fileRef))
+                                {
+                                    LoadedCars[wagKey].StaleCab = true;
+                                    found = true;
+
+                                    Trace.TraceInformation("INC file {0} used by cabview {1} was updated on disk, cabview will be reloaded.", fileRef, cab.CVFFile.CabFilePath);
+                                    break;
+                                }
+                            }
+                        }
+                        if (LoadedCars[wagKey].StaleCab)
+                            break;
+                    }
+                }
+                // Continue scanning next loco, there may be multiple locos with stale cabs
+            }
+
+            return found;
+        }
     }
 
     public struct ParticleEmitterData
