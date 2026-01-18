@@ -232,6 +232,12 @@ namespace Orts.Viewer3D.WebServices
         public void Save(BinaryWriter outf) 
         {
             outf.Write(TrainCarSelected);
+            // rwf-rr: temporary fix for bug 2121985
+            if (TrainCarSelectedPosition >= Viewer.PlayerTrain.Cars.Count)
+            {
+                Trace.TraceWarning("TrainCarOperationsWebpage.TrainCarSelectedPosition {0} out of range [0..{1}]", TrainCarSelectedPosition, Viewer.PlayerTrain.Cars.Count - 1);
+                TrainCarSelectedPosition = Viewer.PlayerTrain.Cars.Count - 1;
+            }
             outf.Write(TrainCarSelectedPosition);
         }
 
