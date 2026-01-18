@@ -1172,7 +1172,7 @@ namespace Orts.Viewer3D.Popups
 
                 if (HUDEngineType != TrainCar.EngineTypes.Control) // Don't display adhesion information if it is an unpowered control car.
                 {
-                    if (mstsLocomotive.AdvancedAdhesionModel)
+                    if (mstsLocomotive.AdvancedAdhesionModel && !mstsLocomotive.IsRackRailwayAdhesion)
                     {
                         var text = Viewer.Catalog.GetString("(Advanced adhesion model)");
                         if (Axles.UsePolachAdhesion == false) text += "???";
@@ -1229,7 +1229,10 @@ namespace Orts.Viewer3D.Popups
                     }
                     else
                     {
-                        TableAddLine(table, Viewer.Catalog.GetString("(Simple adhesion model)"));
+                        if (mstsLocomotive.IsRackRailwayAdhesion) 
+                            TableAddLine(table, Viewer.Catalog.GetString("( Rack )"));
+                        else
+                            TableAddLine(table, Viewer.Catalog.GetString("(Simple adhesion model)"));
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Axle out force"), "{0:F0} N ({1:F0} kW)", mstsLocomotive.LocomotiveAxles.AxleMotiveForceN, mstsLocomotive.LocomotiveAxles.AxleMotivePowerW / 1000.0f);
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Wagon Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);

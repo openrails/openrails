@@ -1156,7 +1156,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     catch
                     {
                         if (Simulator.Settings.VerboseConfigurationMessages)
-                            STFException.TraceWarning(stf, "Assumed unknown feedwater type " + orientationType);
+                            STFException.TraceWarning(stf, "Assumed unknown boiler orientation type " + orientationType);
                     }
                     break;
                 case "engine(ortsboilerangle": BoilerAngleHorizontalRad = stf.ReadFloatBlock(STFReader.UNITS.Angle, null); break;
@@ -6630,7 +6630,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
             // By default this model uses information based upon a "NYC 4-4-2 locomotive", for smaller locomotives this data is changed in the OR initialisation phase.
 
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot && !IsRackRailwayAdhesion)
             // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is in the the player train, AI locomotive will not work to this model. 
             // Don't use slip model when train is in auto pilot
             {
@@ -7133,7 +7133,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         protected override void UpdateTractiveForce(float elapsedClockSeconds)
         {
             float locomotivethrottle = ThrottlePercent / 100;
-            TractiveForceN = 0; // reset tractiveforceN in preparation to calculating a new value
             IndicatedHorsePowerHP = 0;
             PistonSpeedFtpMin = 0;
             MaxPowerW = 0;
@@ -7155,8 +7154,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 {
                     ApplyDirectionToTractiveForce(ref engine.RealTractiveForceN);
                 }
-
-                TractiveForceN += engine.RealTractiveForceN;
 
                 engine.AttachedAxle.DriveForceN = engine.RealTractiveForceN;
                 engine.DisplayTractiveForceN = engine.AverageTractiveForceN;
@@ -7282,12 +7279,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         {
             foreach (var axle in LocomotiveAxles)
             {
-                /*axle.FrictionN = DavisAN * axle.WheelWeightKg / MassKG;
-                axle.DampingNs = DavisBNSpM * axle.WheelWeightKg / MassKG;*/
                 axle.BrakeRetardForceN = BrakeRetardForceN * axle.BrakeForceFraction;
                 axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
+                axle.CurrentElevationPercent = CurrentElevationPercent;
+                axle.IsRackRailwayAdhesion = IsRackRailwayAdhesion;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }
             foreach (var engine in SteamEngines)
@@ -7341,7 +7338,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     float TotalMomentInertia = TotalWheelMomentofInertia + RodMomentInertia;
                     axle.InertiaKgm2 = TotalMomentInertia;
 
-                    axle.DampingNs = axle.AxleWeightN / 200;
+                    axle.DampingNs = axle.AxleGradientForceN / 200;
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
                     axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
                 }

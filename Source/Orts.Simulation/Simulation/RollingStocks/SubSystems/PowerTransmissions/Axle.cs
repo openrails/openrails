@@ -733,7 +733,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (value > 1.0f)
                     throw new NotSupportedException("Value must be within the range of 0.0 and 1.0");
                 if (value <= 0.0f)
-                    transmissionEfficiency = 0.99f;
+                    transmissionEfficiency = 1.0f;
                 else
                     transmissionEfficiency = value;
             }
@@ -779,6 +779,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float CurrentCurveRadiusM;
 
         /// <summary>
+        /// Gradient of Track
+        /// </summary>
+        public float CurrentElevationPercent;
+
+        /// <summary>
+        /// Force on axle due to gradient of track
+        /// </summary>
+        public float AxleGradientForceN;
+
+        /// <summary>
         /// Bogie Rigid Wheel Base - distance between wheel in the bogie
         /// </summary>
         public float BogieRigidWheelBaseM;
@@ -792,6 +802,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// Static adhesion coefficient, as given by Curtius-Kniffler formula
         /// </summary>
         public float AdhesionLimit;
+
+        /// <summary>
+        /// Indicates whether the axle is running on a rack railway
+        /// </summary>
+        public bool IsRackRailwayAdhesion;        
 
         /// <summary>
         /// Static adhesion coefficient, as given by Curtius-Kniffler formula, at zero speed, ie UMax
@@ -1012,7 +1027,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Nonparametric constructor of Axle class instance
         /// - sets motor parameter to null
-        /// - sets TtransmissionEfficiency to 0.99 (99%)
+        /// - sets TtransmissionEfficiency to 1.0 (100%)
         /// - sets SlipWarningThresholdPercent to 70%
         /// - sets axle DriveType to ForceDriven
         /// - updates totalInertiaKgm2 parameter
@@ -1020,7 +1035,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public Axle(TrainCar car)
         {
             Car = car;
-            transmissionEfficiency = 0.99f;
+            transmissionEfficiency = 1.0f;
             SlipWarningTresholdPercent = 70.0f;
             DriveType = AxleDriveType.ForceDriven;
             totalInertiaKgm2 = inertiaKgm2;
@@ -1119,13 +1134,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double slipSpeedMpS = axleSpeedMpS - TrainSpeedMpS;
             // Compute force transmitted to rail according to adhesion curves
             double axleOutForceN;
+
             if (Axles.UsePolachAdhesion)
             {
-                axleOutForceN = Math.Sign(slipSpeedMpS) * AxleWeightN * SlipCharacteristicsPolach(slipSpeedMpS);
+                axleOutForceN = Math.Sign(slipSpeedMpS) * AxleGradientForceN * SlipCharacteristicsPolach(slipSpeedMpS);
             }
             else
             {
-                axleOutForceN = AxleWeightN * SlipCharacteristicsPacha((float)axleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
+                axleOutForceN = AxleGradientForceN * SlipCharacteristicsPacha((float)axleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
             }
 
             // Compute force produced by the engine
@@ -1154,7 +1170,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 // Ensure that axle static friction never exceeds the adhesion coefficient, so the car will start moving even when wheels are stuck
                 if (Math.Abs(slipSpeedMpS) < 0.1f)
                 {
-                    axleBrakeForceN = Math.Min(BrakeRetardForceN, Math.Max(MaximumWheelAdhesion * AxleWeightN - frictionForceN + Math.Abs(axleInForceN), 0));
+                    axleBrakeForceN = Math.Min(BrakeRetardForceN, Math.Max(MaximumWheelAdhesion * AxleGradientForceN - frictionForceN + Math.Abs(axleInForceN), 0));
                     return (accelerationMpSS, axleSpeedMpS / WheelRadiusM, axleInForceN / transmissionEfficiency, axleMotiveForceN, axleBrakeForceN, frictionForceN);
                 }
             }
@@ -1324,6 +1340,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (float.IsNaN(TrainSpeedMpS)) TrainSpeedMpS = 0; // TODO: TrainSpeedMpS should always be a number, find the cause of the NaN
             if (double.IsNaN(AxleSpeedMpS)) AxleSpeedMpS = 0; // TODO: AxleSpeedMpS should always be a number, find the cause of the NaN
 
+            // Calculate factor to reduce adhesion due to track gradient
+            float gradeAngle = (float)Math.Atan(Math.Abs(CurrentElevationPercent / 100.0f));
+            AxleGradientForceN = AxleWeightN * (float)Math.Cos(gradeAngle);
+            AxleGradientForceN = MathHelper.Clamp(AxleGradientForceN, 0, AxleWeightN);
+
             bool advancedAdhesion = Car is MSTSLocomotive locomotive && locomotive.AdvancedAdhesionModel;
             advancedAdhesion &= DriveType != AxleDriveType.NotDriven; // Skip integrator for undriven axles to save CPU
             forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;
@@ -1336,7 +1357,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             else if (Axles.UsePolachAdhesion)
             {
                 Polach.Update();
-                axleStaticForceN = AxleWeightN * SlipCharacteristicsPolach(0);
+                axleStaticForceN = AxleGradientForceN * SlipCharacteristicsPolach(0);
                 ComputeWheelSlipThresholdMpS();
                 WheelAdhesion = (float)SlipCharacteristicsPolach(SlipSpeedMpS);
                 MaximumWheelAdhesion = (float)SlipCharacteristicsPolach(WheelSlipThresholdMpS);
@@ -1384,7 +1405,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
             motor?.Update(elapsedSeconds);
 
-            if (advancedAdhesion)
+            if (advancedAdhesion && !IsRackRailwayAdhesion)
             {
                 Integrate(elapsedSeconds);
 
@@ -1435,7 +1456,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 WheelSlipWarningTimeS = WheelSlipTimeS = 0;
             }
         }
-        
+
         public void UpdateSimpleAdhesion(float elapsedClockSeconds)
         {
             float axleInForceN = 0;
@@ -1454,9 +1475,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxleFrictionForceN = frictionForceN;
             AxleSpeedMpS = TrainSpeedMpS;
 
-            float adhesionForceN = AxleWeightN * AdhesionLimit;
+            // In a slip possible model wheel axle force is limited to adhesion force so that wheel slip will not occur
+            float adhesionForceN = AxleGradientForceN * AdhesionLimit;
             SlipPercent = Math.Abs(axleOutForceN) / adhesionForceN * 100;
-            if (Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel)
+            if ((Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel) || IsRackRailwayAdhesion )
             {
                 // Do not allow wheelslip on steam locomotives if simple adhesion is selected
                 SlipPercent = 0;
@@ -1481,7 +1503,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     // For non-driven axles, only brake skid is possible (no wheel slip). Consider wheels to be fully locked
                     AxleSpeedMpS = 0;
                     // Use the advanced adhesion coefficient
-                    adhesionForceN = AxleWeightN * SlipCharacteristicsPacha(SlipSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
+                    adhesionForceN = AxleGradientForceN * SlipCharacteristicsPacha(SlipSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
                     axleOutForceN = MathHelper.Clamp(axleOutForceN, -adhesionForceN, adhesionForceN);
                 }
                 // In case of wheel skid, reduce indicated brake force
@@ -1540,7 +1562,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var wheelDistanceGaugeMM = Axle.WheelDistanceGaugeM * 1000;
                 var GNm2 = 8.40E+10;
                 // Prevent wheel load from going negative, negative wheel load would indicate wheel has lifted off rail which otherwise leads to NaN errors
-                wheelLoadN = Math.Max(Axle.AxleWeightN / (Axle.NumWheelsetAxles * 2), 0.1); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
+                wheelLoadN = Math.Max(Axle.AxleGradientForceN / (Axle.NumWheelsetAxles * 2), 0.1); // Assume two wheels per axle, and thus wheel weight will be half the value - multiple axles????
                 var wheelLoadkN = wheelLoadN / 1000;
                 var Young_ModulusMPa = 207000;
 
