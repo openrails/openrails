@@ -90,7 +90,27 @@ namespace ORTS.Scripting.Api
         /// Closing authorization of the traction cut-off relay
         /// </summary>
         public bool TractionCutOffRelayClosingAuthorization() => TractionCutOffRelay.ClosingAuthorization;
-        
+
+        public override PowerSupplyState GetPowerStatus()
+        {
+            var status = base.GetPowerStatus();
+            PowerSupplyState engineStatus;
+            switch (CurrentDieselEnginesState())
+            {
+                case DieselEngineState.Running:
+                    engineStatus = PowerSupplyState.PowerOn;
+                    break;
+                case DieselEngineState.Starting:
+                    engineStatus = PowerSupplyState.PowerOnOngoing;
+                    break;
+                default:
+                    engineStatus = PowerSupplyState.PowerOff;
+                    break;
+            }
+            if (status == engineStatus) return status;
+            return PowerSupplyState.PowerOnOngoing;
+        }
+
         /// <summary>
         /// Sends an event to all diesel engines
         /// </summary>

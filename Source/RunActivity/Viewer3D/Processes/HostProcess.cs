@@ -1,4 +1,4 @@
-// COPYRIGHT 2022 by the Open Rails project.
+﻿// COPYRIGHT 2022 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -93,7 +93,7 @@ namespace Orts.Viewer3D.Processes
 
             while (true)
             {
-                Thread.Sleep(SleepTime);
+                State.Sleep(SleepTime);
                 if (State.Terminated)
                     break;
                 if (!DoHost())

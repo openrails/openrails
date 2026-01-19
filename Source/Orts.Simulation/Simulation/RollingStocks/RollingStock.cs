@@ -152,7 +152,6 @@ namespace Orts.Simulation.RollingStocks
                 public EngineClass(STFReader stf)
                 {
                     stf.MustMatch("(");
-                    stf.ReadString();
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("type", ()=>{ Type = stf.ReadStringBlock(null); }),
                     });
