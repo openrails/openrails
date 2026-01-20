@@ -7298,6 +7298,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.CurrentElevationPercent = CurrentElevationPercent;
                 axle.IsRackRailwayAdhesion = IsRackRailwayAdhesion;
+                axle.CogWheelGearFactor = CogWheelGearingFactor;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }
             foreach (var engine in SteamEngines)

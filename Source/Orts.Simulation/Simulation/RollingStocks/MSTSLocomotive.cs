@@ -119,6 +119,8 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public bool IsRackRailwayAdhesion = false;
 
+        public float CogWheelGearingFactor = 1.0f; // gearing ratio for cog wheel to axle
+
         // simulation parameters
         public bool ManualHorn = false;
         public bool TCSHorn = false;
@@ -1234,6 +1236,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
+                case "engine(ortsrackrailgearfactor": CogWheelGearingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortslocomotiveraildrivetype":
                     stf.MustMatch("(");
                     var locomotiveDriveType = stf.ReadString();
@@ -1250,7 +1253,6 @@ namespace Orts.Simulation.RollingStocks
                 default:
                     base.Parse(lowercasetoken, stf);
                     break;
-
             }
         }
 
@@ -1420,6 +1422,7 @@ namespace Orts.Simulation.RollingStocks
             OnLineCabRadio = locoCopy.OnLineCabRadio;
             OnLineCabRadioURL = locoCopy.OnLineCabRadioURL;
             LocomotiveRailDriveType = locoCopy.LocomotiveRailDriveType;
+            CogWheelGearingFactor = locoCopy.CogWheelGearingFactor;
         }
 
         /// <summary>
@@ -1662,6 +1665,13 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("LocomotiveRailDriveType set to Default value of {0}", LocomotiveRailDriveType);
+            }
+
+            if (CogWheelGearingFactor == 0 && LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack)
+            {
+                 CogWheelGearingFactor = 1.0f; // Set default value of 1:1 ratio
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("CogWheelGearingRatio set to Default value of {0}", CogWheelGearingFactor);
             }
 
             SaturatedSteamHeatPressureToTemperaturePSItoF = SteamTable.SaturatedSteamHeatPressureToTemperatureInterpolatorPSItoF();
@@ -3240,6 +3250,7 @@ namespace Orts.Simulation.RollingStocks
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.CurrentElevationPercent = CurrentElevationPercent;
                 axle.IsRackRailwayAdhesion = IsRackRailwayAdhesion;
+                axle.CogWheelGearFactor = CogWheelGearingFactor;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }
 
