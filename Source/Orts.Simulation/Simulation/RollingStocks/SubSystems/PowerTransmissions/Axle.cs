@@ -806,7 +806,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Indicates whether the axle is running on a rack railway
         /// </summary>
-        public bool IsRackRailwayAdhesion;        
+        public bool IsRackRailwayAdhesion;
+
+        /// <summary>
+        /// Gear factor to increase drive force if rack locomotive
+        /// </summary>
+        public float CogWheelGearFactor;
 
         /// <summary>
         /// Static adhesion coefficient, as given by Curtius-Kniffler formula, at zero speed, ie UMax
@@ -1460,6 +1465,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public void UpdateSimpleAdhesion(float elapsedClockSeconds)
         {
             float axleInForceN = 0;
+            if (IsRackRailwayAdhesion && CogWheelGearFactor > 0)
+
+            {
+                // In case of rack railway adhesion, increase the tractive effort due to 
+                DriveForceN *= CogWheelGearFactor;
+            }
+           
             if (DriveType == AxleDriveType.ForceDriven)
                 axleInForceN = DriveForceN * transmissionEfficiency;
             else if (DriveType == AxleDriveType.MotorDriven)
