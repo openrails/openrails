@@ -1184,7 +1184,7 @@ namespace Orts.Viewer3D.Popups
 
                 if (HUDEngineType != TrainCar.EngineTypes.Control) // Don't display adhesion information if it is an unpowered control car.
                 {
-                    if (mstsLocomotive.AdvancedAdhesionModel && !mstsLocomotive.IsRackRailwayAdhesion)
+                    if (mstsLocomotive.AdvancedAdhesionModel && !mstsLocomotive.IsRackRailway )
                     {
                         var text = Viewer.Catalog.GetString("(Advanced adhesion model)");
                         if (Axles.UsePolachAdhesion == false) text += "???";
@@ -1241,7 +1241,7 @@ namespace Orts.Viewer3D.Popups
                     }
                     else
                     {
-                        if (mstsLocomotive.IsRackRailwayAdhesion) 
+                        if (mstsLocomotive.IsRackRailway && ( mstsLocomotive.LocomotiveRailDriveType == MSTSLocomotive.LocomotiveRailDriveTypes.Rack || mstsLocomotive.LocomotiveRailDriveType == MSTSLocomotive.LocomotiveRailDriveTypes.Rack_Adhesion)) 
                             TableAddLine(table, Viewer.Catalog.GetString("( Rack )"));
                         else
                         TableAddLine(table, Viewer.Catalog.GetString("(Simple adhesion model)"));
