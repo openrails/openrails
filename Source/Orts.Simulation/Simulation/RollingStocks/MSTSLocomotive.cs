@@ -109,15 +109,13 @@ namespace Orts.Simulation.RollingStocks
         {
             Unknown,
             Rack,
+            Rack_Adhesion,
             Adhesion, // defaults to adhesion
         }
 
         public LocomotiveRailDriveTypes LocomotiveRailDriveType;
 
-        /// <summary>
-        /// Determine when Rack Railway adhesion needs to be applied
-        /// </summary>
-        public bool IsRackRailwayAdhesion = false;
+        public bool DriveCogWheelFitted = false;
 
         public float CogWheelGearingFactor = 1.0f; // gearing ratio for cog wheel to axle
 
@@ -1237,6 +1235,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
                 case "engine(ortsrackrailgearfactor": CogWheelGearingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortsdrivingcogwheelfitted": DriveCogWheelFitted = stf.ReadBoolBlock(false); break;
                 case "engine(ortslocomotiveraildrivetype":
                     stf.MustMatch("(");
                     var locomotiveDriveType = stf.ReadString();
@@ -1423,6 +1422,7 @@ namespace Orts.Simulation.RollingStocks
             OnLineCabRadioURL = locoCopy.OnLineCabRadioURL;
             LocomotiveRailDriveType = locoCopy.LocomotiveRailDriveType;
             CogWheelGearingFactor = locoCopy.CogWheelGearingFactor;
+            DriveCogWheelFitted = locoCopy.DriveCogWheelFitted;
         }
 
         /// <summary>
@@ -2314,16 +2314,6 @@ namespace Orts.Simulation.RollingStocks
                     else
                     {
                         AdvancedAdhesionModel = false; // Set flag to advise simple adhesion model is in use
-                    }
-
-                    // determine if locomotive is using rack railway adhesion system
-                    if (IsRackRailway && LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack && CogWheelFitted)
-                    {
-                        IsRackRailwayAdhesion = true;
-                    }
-                    else
-                    {
-                        IsRackRailwayAdhesion = false;
                     }
 
                     UpdateAxles(elapsedClockSeconds);
@@ -3249,7 +3239,7 @@ namespace Orts.Simulation.RollingStocks
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.CurrentElevationPercent = CurrentElevationPercent;
-                axle.IsRackRailwayAdhesion = IsRackRailwayAdhesion;
+                axle.IsRackRailway = IsRackRailway;
                 axle.CogWheelGearFactor = CogWheelGearingFactor;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }

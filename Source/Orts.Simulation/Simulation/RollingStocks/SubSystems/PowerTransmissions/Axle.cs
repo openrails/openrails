@@ -405,6 +405,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                 if (axle.DriveType != AxleDriveType.NotDriven) totalDriveWheelWeightKg += axle.WheelWeightKg;
                 totalWheelWeightKg += axle.WheelWeightKg;
+
+                // if values have not been configured in the ENG file, read from the locomotive/wagon
+                if (axle.drivingCogRead == false) axle.DrivingCogWheelFitted = locomotive != null && locomotive.DriveCogWheelFitted;
+                if (axle.brakingCogRead == false) axle.BrakingCogWheelFitted = Car.BrakeCogWheelFitted;
+
             }
             foreach (var axle in AxleList)
             {
@@ -806,12 +811,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Indicates whether the axle is running on a rack railway
         /// </summary>
-        public bool IsRackRailwayAdhesion;
+        public bool IsRackRailway;
 
         /// <summary>
         /// Gear factor to increase drive force if rack locomotive
         /// </summary>
         public float CogWheelGearFactor;
+
+        /// <summary>
+        /// Indicates that a Cog wheel is fitted to the axle set to provide better braking on rack railways
+        /// </summary>
+        public bool BrakingCogWheelFitted;
+        public bool brakingCogRead = false;
+
+        /// <summary>
+        /// Indicates that a Cog wheel is fitted to the axle set to provide better driving traction on rack railways
+        /// </summary>
+        public bool DrivingCogWheelFitted;
+        public bool drivingCogRead = false;
 
         /// <summary>
         /// Static adhesion coefficient, as given by Curtius-Kniffler formula, at zero speed, ie UMax
@@ -1062,6 +1079,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 switch (stf.ReadItem().ToLower())
                 {
+                    case "ortsbrakingcogwheelfitted":
+                        BrakingCogWheelFitted = stf.ReadBoolBlock(false);
+                        brakingCogRead = true;
+                        break;
+                    case "ortsdrivingcogwheelfitted":
+                        DrivingCogWheelFitted = stf.ReadBoolBlock(false);
+                        drivingCogRead = true;
+                        break;
                     case "ortsradius":
                         WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                         break;
@@ -1092,6 +1117,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
         public void Copy(Axle other)
         {
+            BrakingCogWheelFitted = other.BrakingCogWheelFitted;
+            DrivingCogWheelFitted = other.DrivingCogWheelFitted;
+            brakingCogRead = other.brakingCogRead;
+            drivingCogRead = other.drivingCogRead;
             WheelRadiusM = other.WheelRadiusM;
             WheelFlangeAngleRad = other.WheelFlangeAngleRad;
             NumWheelsetAxles = other.NumWheelsetAxles;
@@ -1410,7 +1439,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
             motor?.Update(elapsedSeconds);
 
-            if (advancedAdhesion && !IsRackRailwayAdhesion)
+            if (advancedAdhesion && (!IsRackRailway && ( !BrakingCogWheelFitted || !DrivingCogWheelFitted)))
             {
                 Integrate(elapsedSeconds);
 
@@ -1464,14 +1493,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public void UpdateSimpleAdhesion(float elapsedClockSeconds)
         {
-            float axleInForceN = 0;
-            if (IsRackRailwayAdhesion && CogWheelGearFactor > 0)
-
-            {
-                // In case of rack railway adhesion, increase the tractive effort due to 
-                DriveForceN *= CogWheelGearFactor;
-            }
-           
+            float axleInForceN = 0;        
             if (DriveType == AxleDriveType.ForceDriven)
                 axleInForceN = DriveForceN * transmissionEfficiency;
             else if (DriveType == AxleDriveType.MotorDriven)
@@ -1490,7 +1512,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // In a slip possible model wheel axle force is limited to adhesion force so that wheel slip will not occur
             float adhesionForceN = AxleGradientForceN * AdhesionLimit;
             SlipPercent = Math.Abs(axleOutForceN) / adhesionForceN * 100;
-            if ((Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel) || IsRackRailwayAdhesion )
+            if ((Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel) || ( IsRackRailway && DrivingCogWheelFitted) )
             {
                 // Do not allow wheelslip on steam locomotives if simple adhesion is selected
                 SlipPercent = 0;
@@ -1504,7 +1526,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     if (!locomotive.AntiSlip && locomotive.SlipControlSystem != MSTSLocomotive.SlipControlType.Full) axleOutForceN *= locomotive.Adhesion1;
                     else SlipPercent = 100;
                 }
-                else if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven)
+                else if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven || (IsRackRailway && BrakingCogWheelFitted) || (IsRackRailway && BrakingCogWheelFitted))
                 {
                     // No wagon skid in simple adhesion
                     SlipPercent = 100;

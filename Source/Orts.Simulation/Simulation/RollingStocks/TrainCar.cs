@@ -664,7 +664,7 @@ namespace Orts.Simulation.RollingStocks
         public float FrictionBrakeBlendingMaxForceN; // This is the maximum force for the friction barke when it is blended with the dynamic brake
 
         public bool IsRackRailway = false;
-        public bool CogWheelFitted;
+        public bool BrakeCogWheelFitted;
 
         // Sum of all the forces acting on a Traincar in the direction of driving.
         // MotiveForceN and GravityForceN act to accelerate the train. The others act to brake the train.
@@ -1235,7 +1235,7 @@ namespace Orts.Simulation.RollingStocks
             }
             // Only apply slide, and advanced brake friction, if advanced adhesion is selected, simplecontrolphysics is not set, and it is a Player train
             // Rack stock with cog wheel fitted will not skid
-            else if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && !(CogWheelFitted && IsRackRailway))
+            else if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && !(BrakeCogWheelFitted && IsRackRailway))
             {
                 // Determine whether car is experiencing a wheel slip during braking
                 if (!BrakeSkidWarning && AbsSpeedMpS > 0.01)

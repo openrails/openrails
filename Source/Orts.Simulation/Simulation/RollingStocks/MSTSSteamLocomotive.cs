@@ -6643,7 +6643,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
             // By default this model uses information based upon a "NYC 4-4-2 locomotive", for smaller locomotives this data is changed in the OR initialisation phase.
 
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot && !IsRackRailwayAdhesion)
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot && !IsRackRailway)
             // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is in the the player train, AI locomotive will not work to this model. 
             // Don't use slip model when train is in auto pilot
             {
@@ -7079,6 +7079,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                     SteamEngines[numberofengine].RealTractiveForceN = N.FromLbf((SteamEngines[numberofengine].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[numberofengine].AttachedAxle.WheelRadiusM))) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * MotiveForceGearRatio);
 
+                    if (IsRackRailway && LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack && DriveCogWheelFitted)
+                    {
+                        // In case of rack railway cog wheel drive, adjust tractive force by the cog wheel gearing factor
+                        SteamEngines[numberofengine].RealTractiveForceN *= CogWheelGearingFactor;
+                    }
+
                     // Force tractive effort to zero if throttle is closed, or if a geared steam locomotive in neutral gear. MEP calculation is not allowing it to go to zero
                     if (locomotivethrottle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
                     {
@@ -7167,7 +7173,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 {
                     ApplyDirectionToTractiveForce(ref engine.RealTractiveForceN);
                 }
-
+            
                 engine.AttachedAxle.DriveForceN = engine.RealTractiveForceN;
                 engine.DisplayTractiveForceN = engine.AverageTractiveForceN;
                 DisplayTractiveForceN += engine.AverageTractiveForceN;
@@ -7297,7 +7303,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.CurrentElevationPercent = CurrentElevationPercent;
-                axle.IsRackRailwayAdhesion = IsRackRailwayAdhesion;
+                axle.IsRackRailway = IsRackRailway;
                 axle.CogWheelGearFactor = CogWheelGearingFactor;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }
