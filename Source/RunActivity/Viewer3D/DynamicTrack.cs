@@ -148,6 +148,8 @@ namespace Orts.Viewer3D
             if (shapePath == "" && viewer.Simulator.TSectionDat.TrackShapes.ContainsKey(trSection.ShapeIndex))
                 shapePath = String.Concat(viewer.Simulator.BasePath, @"\Global\Shapes\", viewer.Simulator.TSectionDat.TrackShapes.Get(trSection.ShapeIndex).FileName);
 
+            shapePath = shapePath.ToLowerInvariant();
+
             if (viewer.TrackProfileIndicies.ContainsKey(shapePath))
                 viewer.TrackProfileIndicies.TryGetValue(shapePath, out trpIndex);
             else if (shapePath != "") // Haven't checked this track shape yet
@@ -174,6 +176,8 @@ namespace Orts.Viewer3D
         public static int GetBestTrackProfile(Viewer viewer, string shapePath)
         {
             int trpIndex;
+
+            shapePath = shapePath.ToLowerInvariant();
 
             if (viewer.TrackProfileIndicies.ContainsKey(shapePath))
                 viewer.TrackProfileIndicies.TryGetValue(shapePath, out trpIndex);
@@ -215,7 +219,7 @@ namespace Orts.Viewer3D
                     }
                     foreach (string image in viewer.TRPs[i].TrackProfile.Images)
                     {
-                        if (shape.ImageNames.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                        if (shape.ImageNames.Contains(image))
                             score++;
                         else // Slight bias against track profiles with extra textures defined
                             score -= 0.05f;
@@ -225,7 +229,7 @@ namespace Orts.Viewer3D
                         foreach (string image in shape.ImageNames)
                         {
                             // Strong bias against track profiles that are missing textures
-                            if (!viewer.TRPs[i].TrackProfile.Images.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                            if (!viewer.TRPs[i].TrackProfile.Images.Contains(image))
                                 score -= 0.25f;
                         }
                     }
@@ -739,7 +743,7 @@ namespace Orts.Viewer3D
             {
                 foreach (LODItem item in level.LODItems)
                 {
-                    string texFileName = Path.GetFileNameWithoutExtension(item.TexName);
+                    string texFileName = Path.GetFileNameWithoutExtension(item.TexName).ToLowerInvariant();
                     if (!Images.Contains(texFileName))
                         Images.Add(texFileName);
                 }

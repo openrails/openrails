@@ -856,6 +856,71 @@ will report errors in syntax and structure (even if these don't cause
 runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop.
 
 
+.. _options-enable-hot-reloading:
+
+Enable hot reloading of simulator files
+---------------------------------------
+
+If this option is enabled, Open Rails will monitor the GLOBAL, ROUTES,
+SOUND, and TRAINS directories of the selected content folder for any
+file changes. When a file is changed, any currently loaded assets
+which use the file will be reloaded to reflect the changes made to
+the file. While this is often associated with a short pause in the
+simulation, this is dramatically faster than closing and opening
+the simulation. In this way, hot reloading allows for rapid prototyping
+of in-development content, though serves no purpose for normal gameplay.
+
+Beware, hot reloading has limitations: Open Rails will most reliably
+notice changes saved to existing files. Renaming, moving, or creating
+a file may not trigger the desired hot reload as these changes can cause
+files to be detected as missing. Even when a file update successfully
+triggers a hot reload, Open Rails cannot tell if a file update affects
+only part of an asset or the whole thing. As a result, when anything is
+hot reloaded, *the program  rebuilds it entirely, overwriting the previous
+data*, regardless of how small of a change has been made. As a
+consequence, some systems will reset to their default state upon a
+hot reload, rather than returning to the same state as prior to the
+reload, even if no changes were made to that system. This can interfere
+with the experience of operating the train and may produce unexpected
+behaviors that would not occur had the program been restarted normally.
+
+If hot reloading does fail to automatically update an asset, a manual
+reload can be activated using the "Force Reload Assets" debug command,
+default keyboard binding `<Ctrl+Alt+F5>`. A manual reload will cause
+*everything* that can be reloaded to be reloaded all at once, unlike
+hot reloading, which only reloads assets that are known to be out of
+date. While this ensures any file changes are captured in the simulator,
+this means a manual reload will take much longer to complete than a
+hot reload will. While still faster than restarting the program,
+hot reloading is preferred over manual reloading.
+
+Similarly, Open Rails cannot tell if a file update has introduced
+any errors until it is already reading the file. This means mistakes
+in file editing can lead to instantaneously crashing Open Rails when
+hot reloading is enabled. For these reasons, it is recommended to
+*leave hot reloading disabled unless you are actively working on content
+development* and are willing to handle unusual behaviors and crashes.
+And if hot reloading is used, consider using it for small changes only,
+occasionally closing and restarting the simulation to ensure larger
+changes are captured fully and accurately.
+
+Hot reloading and manual reloading do NOT affect the following systems: (TEMPORARY LIST, THESE ARE JUST THINGS I CURRENTLY ASSUME WILL BE IMPOSSIBLE/IMPRACTICAL TO IMPLEMENT)
+
+- track database
+- track profiles
+- signal scripts and signal configurations
+- activities and timetables
+- paths, services, and traffic
+- consists
+- changing the type of an engine or wagon (eg: changing a diesel locomotive to an electric one)
+- any files outside the current simulator content folder (even if symbolic links are used to make such files appear inside the simulator folders)
+
+Changes made to any of these would either have no effect in real
+time, or would cause dramatic problems if updated in real time. If
+any of these are changed, it is still required to close and
+restart the program to see changes.
+
+
 Correct questionable braking parameters
 ---------------------------------------
 
