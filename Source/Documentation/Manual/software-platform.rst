@@ -165,7 +165,7 @@ If you choose to develop your own pages, please consider sharing them with the O
   to be found :ref:`here <train-operations-monitor>`.
 
 - When running an activity the Activity Events page shows the briefing of the activity and the event messages one by one on this page. 
-  Normally when this web page is not open, event messages popup in the OR window. Halting OR until the popup message is dismissed by a mouseclick.
+  If this web page is not open, event messages will pop up in the OR window, which halts the game until the message is dismissed by a mouse click. Use the web page to avoid this intrusive behavior.
 
 .. _web-server-api:
 
