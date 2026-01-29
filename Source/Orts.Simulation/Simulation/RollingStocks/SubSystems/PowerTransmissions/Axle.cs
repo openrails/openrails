@@ -1489,6 +1489,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 IsWheelSlip = false;
                 WheelSlipWarningTimeS = WheelSlipTimeS = 0;
             }
+
         }
 
         public void UpdateSimpleAdhesion(float elapsedClockSeconds)
@@ -1512,9 +1513,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // In a slip possible model wheel axle force is limited to adhesion force so that wheel slip will not occur
             float adhesionForceN = AxleGradientForceN * AdhesionLimit;
             SlipPercent = Math.Abs(axleOutForceN) / adhesionForceN * 100;
-            if ((Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel) || ( IsRackRailway && DrivingCogWheelFitted) )
+            bool RackRailwaySlipException = false;
+
+            if ((Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel) || DrivingCogWheelFitted ) 
             {
-                // Do not allow wheelslip on steam locomotives if simple adhesion is selected
+                // Do not allow wheelslip on steam locomotives if simple adhesion is selected, or if it is a rack axle
                 SlipPercent = 0;
             }
             else if (SlipPercent > 100)
