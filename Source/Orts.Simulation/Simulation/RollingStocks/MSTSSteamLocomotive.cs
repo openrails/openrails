@@ -3123,6 +3123,17 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     LocomotiveBackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(SteamEngines[i].CylinderSteamUsageLBpS)];
                 }
 
+                bool IsSeparateEngineRackAdhesionEnabled = false;
+
+                if (IsRackRailway && SteamEngines[i].AttachedAxle.DrivingCogWheelFitted && LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack_Adhesion)
+                {
+                    IsSeparateEngineRackAdhesionEnabled = true;
+                }
+
+                // Calculate cylinder operation only for Adhesion or Rack-Adhesion locos when not on rack section, or separate rack engine when on rack section
+                if (LocomotiveRailDriveType == LocomotiveRailDriveTypes.Adhesion || (LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack_Adhesion && !SteamEngines[i].AttachedAxle.DrivingCogWheelFitted) || IsSeparateEngineRackAdhesionEnabled)
+                {
+
                 var enginethrottle = 0.0f;
 
                 float absSpeedRefMpS = Simulator.UseAdvancedAdhesion ? Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS) : AbsTractionSpeedMpS;
@@ -3374,6 +3385,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 UpdateSteamTractiveForce(elapsedClockSeconds, tractiveforcethrottle, i);
 
                 SteamDrvWheelWeightLbs += Kg.ToLb(SteamEngines[i].AttachedAxle.WheelWeightKg / SteamEngines[i].AttachedAxle.NumWheelsetAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
+                }
 
             }
 
