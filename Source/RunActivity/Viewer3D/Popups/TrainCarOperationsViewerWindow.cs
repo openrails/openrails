@@ -31,6 +31,11 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Common.Input;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -173,6 +178,12 @@ namespace Orts.Viewer3D.Popups
             outf.Write(Location.Width);
             outf.Write(Location.Height);
 
+            // rwf-rr: temporary fix for bug 2121985
+            if (CarPosition >= Owner.Viewer.PlayerTrain.Cars.Count)
+            {
+                Trace.TraceWarning("TrainCarOperationsViewerWindow.CarPosition {0} out of range [0..{1}]", CarPosition, Owner.Viewer.PlayerTrain.Cars.Count - 1);
+                CarPosition = Owner.Viewer.PlayerTrain.Cars.Count - 1;
+            }
             outf.Write(CarPosition);
             outf.Write(ResetAllSymbols);
         }
