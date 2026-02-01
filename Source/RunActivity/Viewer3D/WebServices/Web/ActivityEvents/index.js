@@ -106,11 +106,11 @@ function handleMessage(json) {
     header.innerHTML = "<BR>" + json.Header + ":<BR>";
     document.body.appendChild(header);
 
-    const textArea = document.createElement('textarea');
-    textArea.readOnly = true;
+    const textDiv = document.createElement('div');
+    textDiv.className = "div";
     const text = document.createTextNode(json.Text);
-    textArea.appendChild(text);
-    document.body.appendChild(textArea);
+    textDiv.appendChild(text);
+    document.body.appendChild(textDiv);
 
     window.scrollTo(0, document.body.scrollHeight);
 }

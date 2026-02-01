@@ -52,6 +52,7 @@ namespace Orts.Viewer3D.WebServices
             public string BeepTranslated;
             [JsonProperty("BeepHelpTranslated")]
             public string BeepHelpTranslated;
+
             public EventsSend(string type, string header, string text, string beepTranslated, string beepHelpTranslated)
             {
                 Type = type;
@@ -74,7 +75,7 @@ namespace Orts.Viewer3D.WebServices
             public string Type { get; private set; }
 
             [JsonProperty("data")]
-            public object Data { get; set; }
+            public object Data { get; private set; }
         }
 
         public ActivityEventsWebpage(string url, Viewer viewer) :

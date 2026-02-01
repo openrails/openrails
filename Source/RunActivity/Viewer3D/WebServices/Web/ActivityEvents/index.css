@@ -21,8 +21,11 @@ along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
     text-align: right;
 }
 
-textarea {
-    white-space: pre-line; /* handle \n as newline in textarea */
+.div {
+    white-space: pre-line; /* handle \n as newline in the text */
     field-sizing: content; /* size depending on content */
+    border: 1px solid gray;
+    margin-left: 10px;
+    padding-left: 5px;
+    padding-bottom: 5px;
 }
-
