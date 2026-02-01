@@ -68,6 +68,7 @@ namespace Orts.Viewer3D
         int TileZ;
         int VisibleTileX;
         int VisibleTileZ;
+        bool StaleData = true;
 
         public SceneryDrawer(Viewer viewer)
         {
@@ -79,7 +80,7 @@ namespace Orts.Viewer3D
         {
             var cancellation = Viewer.LoaderProcess.CancellationToken;
 
-            if (TileX != VisibleTileX || TileZ != VisibleTileZ)
+            if (TileX != VisibleTileX || TileZ != VisibleTileZ || StaleData)
             {
                 TileX = VisibleTileX;
                 TileZ = VisibleTileZ;
@@ -94,6 +95,13 @@ namespace Orts.Viewer3D
                         if (cancellation.IsCancellationRequested)
                             break;
                         var tile = worldFiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
+
+                        if (tile != null && tile.StaleData)
+                        {
+                            tile.Unload();
+                            tile = null;
+                        }
+
                         if (tile == null)
                             tile = LoadWorldFile(TileX + x, TileZ + z, x == 0 && z == 0);
                         if (tile != null)
@@ -108,6 +116,8 @@ namespace Orts.Viewer3D
                 WorldFiles = newWorldFiles;
                 Viewer.tryLoadingNightTextures = true; // when Tiles loaded change you can try
                 Viewer.tryLoadingDayTextures = true; // when Tiles loaded change you can try
+
+                StaleData = false;
             }
             else if (Viewer.NightTexturesNotLoaded && !Viewer.IsBeforeNoon && Viewer.tryLoadingNightTextures)
             {
@@ -220,6 +230,47 @@ namespace Orts.Viewer3D
                 return null;
             }
         }
+
+        /// <summary>
+        /// Sets the stale data flag for ALL loaded world files to the given bool
+        /// (default true)
+        /// </summary>
+        public void SetAllStale(bool stale = true)
+        {
+            foreach (WorldFile world in WorldFiles)
+                world.StaleData = stale;
+
+            StaleData = stale;
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for scenery tiles using a world file from the given set of paths
+        /// </summary>
+        /// <returns>bool indicating if any scenery tile changed from fresh to stale</returns>
+        public bool MarkStale(HashSet<string> wPaths)
+        {
+            bool found = false;
+
+            foreach (string wPath in wPaths)
+            {
+                foreach (WorldFile worldFile in WorldFiles)
+                {
+                    if (wPath == worldFile.WorldFilePath || wPath == worldFile.ORTSWorldFilePath || wPath == worldFile.WorldFilePath + "s")
+                    {
+                        worldFile.StaleData = true;
+                        found = true;
+
+                        Trace.TraceInformation("World file {0} was updated on disk and will be reloaded.", wPath);
+                        break;
+                    }
+                }
+            }
+
+            if (found)
+                StaleData = true; // Tells the scenery viewer to reload scenery
+
+            return found;
+        }
     }
 
     [CallOnThread("Loader")]
@@ -227,25 +278,21 @@ namespace Orts.Viewer3D
     {
         const int MinimumInstanceCount = 5;
 
-        // Dynamic track objects in the world file
-        public struct DyntrackParams
-        {
-            public int isCurved;
-            public float param1;
-            public float param2;
-        }
-
         public readonly int TileX, TileZ;
-        public List<StaticShape> sceneryObjects = new List<StaticShape>();
+        public string WorldFilePath;
+        public string ORTSWorldFilePath;
+        public List<StaticShape> SceneryObjects = new List<StaticShape>();
         public List<DynamicTrackViewer> dTrackList = new List<DynamicTrackViewer>();
-        public List<ForestViewer> forestList = new List<ForestViewer>();
-        public List<RoadCarSpawner> carSpawners = new List<RoadCarSpawner>();
-        public List<TrItemLabel> sidings = new List<TrItemLabel>();
-        public List<TrItemLabel> platforms = new List<TrItemLabel>();
+        public List<ForestViewer> ForestList = new List<ForestViewer>();
+        public List<RoadCarSpawner> CarSpawners = new List<RoadCarSpawner>();
+        public List<TrItemLabel> Sidings = new List<TrItemLabel>();
+        public List<TrItemLabel> Platforms = new List<TrItemLabel>();
         public List<PickupObj> PickupList = new List<PickupObj>();
         public List<BoundingBox> BoundingBoxes = new List<BoundingBox>();
 
         readonly Viewer Viewer;
+
+        public bool StaleData = false;
 
         /// <summary>
         /// Open the specified WFile and load all the scenery objects into the viewer.
@@ -262,27 +309,27 @@ namespace Orts.Viewer3D
             var cancellation = Viewer.LoaderProcess.CancellationToken;
 
             // determine file path to the WFile at the specified tile coordinates
-            var WFileName = WorldFileNameFromTileCoordinates(tileX, tileZ);
-            var WFilePath = viewer.Simulator.RoutePath + @"\World\" + WFileName;
+            string WFileName = WorldFileNameFromTileCoordinates(tileX, tileZ);
+            WorldFilePath = Path.GetFullPath(viewer.Simulator.RoutePath + @"\World\" + WFileName).ToLowerInvariant();
 
             // if there isn't a file, then return with an empty WorldFile object
-            if (!File.Exists(WFilePath))
+            if (!File.Exists(WorldFilePath))
             {
                 if (visible)
-                    Trace.TraceWarning("World file missing - {0}", WFilePath);
+                    Trace.TraceWarning("World file missing - {0}", WorldFilePath);
                 return;
             }
 
             // read the world file 
-            var WFile = new Orts.Formats.Msts.WorldFile(WFilePath);
+            var WFile = new Orts.Formats.Msts.WorldFile(WorldFilePath);
 
             // check for existence of world file in OpenRails subfolder
 
-            WFilePath = viewer.Simulator.RoutePath + @"\World\Openrails\" + WFileName;
-            if (File.Exists(WFilePath))
+            ORTSWorldFilePath = Path.GetFullPath(viewer.Simulator.RoutePath + @"\World\OpenRails\" + WFileName).ToLowerInvariant();
+            if (File.Exists(ORTSWorldFilePath))
             {
                 // We have an OR-specific addition to world file
-                WFile.InsertORSpecificData(WFilePath, null);
+                WFile.InsertORSpecificData(ORTSWorldFilePath, null);
             }
 
 
@@ -338,7 +385,7 @@ namespace Orts.Viewer3D
                     }
                     catch (Exception e)
                     {
-                        Trace.TraceWarning("Invalid reference in World file {0} to scenery file {1} for {2}: {3}", WFilePath, shapeFilePath, worldObject.FileName, e.Message);
+                        Trace.TraceWarning("Invalid reference in World file {0} to scenery file {1} for {2}: {3}", WorldFilePath, shapeFilePath, worldObject.FileName, e.Message);
                         Trace.TraceInformation("Illegal characters in a file path are: \\ / : * ? \" < > |");
                         shapeFilePath = null;
                     }
@@ -378,7 +425,7 @@ namespace Orts.Viewer3D
                         {
                             // Superelevation is a bit over zealous and will add superelevation to junctions, needs to be removed
                             SuperElevationManager.ClearJunctionSuperElevation(viewer, trackObj, worldMatrix);
-                            sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
+                            SceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
                         }
                         else
                         {
@@ -390,7 +437,7 @@ namespace Orts.Viewer3D
                             }
                             // No superelevation, use static shapes
                             else if (!containsMovingTable)
-                                sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                                SceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                             else
                             {
                                 var found = false;
@@ -404,18 +451,18 @@ namespace Orts.Viewer3D
                                             var turntable = movingTable as Simulation.Turntable;
                                             turntable.ComputeCenter(worldMatrix);
                                             var startingY = Math.Asin(-2 * (worldObject.QDirection.A * worldObject.QDirection.C - worldObject.QDirection.B * worldObject.QDirection.D));
-                                            sceneryObjects.Add(new TurntableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, turntable, startingY));
+                                            SceneryObjects.Add(new TurntableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, turntable, startingY));
                                         }
                                         else
                                         {
                                             var transfertable = movingTable as Simulation.Transfertable;
                                             transfertable.ComputeCenter(worldMatrix);
-                                            sceneryObjects.Add(new TransfertableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, transfertable));
+                                            SceneryObjects.Add(new TransfertableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, transfertable));
                                         }
                                         break;
                                     }
                                 }
-                                if (!found) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                                if (!found) SceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                             }
                         }
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true
@@ -441,28 +488,28 @@ namespace Orts.Viewer3D
                     else if (worldObject.GetType() == typeof(ForestObj))
                     {
                         if (!(worldObject as ForestObj).IsYard)
-                            forestList.Add(new ForestViewer(viewer, (ForestObj)worldObject, worldMatrix));
+                            ForestList.Add(new ForestViewer(viewer, (ForestObj)worldObject, worldMatrix));
                     }
                     else if (worldObject.GetType() == typeof(SignalObj))
                     {
-                        sceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                        SceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                     }
                     else if (worldObject.GetType() == typeof(TransferObj))
                     {
-                        sceneryObjects.Add(new TransferShape(viewer, (TransferObj)worldObject, worldMatrix));
+                        SceneryObjects.Add(new TransferShape(viewer, (TransferObj)worldObject, worldMatrix));
                     }
                     else if (worldObject.GetType() == typeof(LevelCrossingObj))
                     {
-                        sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject));
+                        SceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(HazardObj))
                     {
                         var h = HazzardShape.CreateHazzard(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (HazardObj)worldObject);
-                        if (h != null) sceneryObjects.Add(h);
+                        if (h != null) SceneryObjects.Add(h);
                     }
                     else if (worldObject.GetType() == typeof(SpeedPostObj))
                     {
-                        sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject));
+                        SceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(CarSpawnerObj))
                     {
@@ -474,15 +521,15 @@ namespace Orts.Viewer3D
                         }
                         else
                             ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
-                        carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
+                        CarSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(SidingObj))
                     {
-                        sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject));
+                        Sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(PlatformObj))
                     {
-                        platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject));
+                        Platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(StaticObj))
                     {
@@ -496,30 +543,30 @@ namespace Orts.Viewer3D
                         var isAnimatedClock = animNodes.Exists(node => Regex.IsMatch(node.Name, @"^orts_[hmsc]hand_clock", RegexOptions.IgnoreCase));
                         if (isAnimatedClock)
                         {
-                            sceneryObjects.Add(new AnalogClockShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                            SceneryObjects.Add(new AnalogClockShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                         }
                         else if (animated)
                         {
-                            sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                            SceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                         }
                         else
                         {
-                            sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                            SceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                         }
                     }
                     else if (worldObject.GetType() == typeof(PickupObj))
                     {
                         if ((worldObject as PickupObj).PickupType == (uint)(MSTSWagon.PickupType.Container))
                         {
-                            sceneryObjects.Add(new ContainerHandlingItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
+                            SceneryObjects.Add(new ContainerHandlingItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
                         }
                         else
-                        sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
+                        SceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
                         PickupList.Add((PickupObj)worldObject);
                     }
                     else // It's some other type of object - not one of the above.
                     {
-                        sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                        SceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                     }
                 }
                 catch (Exception error)
@@ -543,7 +590,7 @@ namespace Orts.Viewer3D
                         }
                         else
                         {
-                            sceneryObjects.Add(new StaticShape(viewer,
+                            SceneryObjects.Add(new StaticShape(viewer,
                                 tempSpeedItem.IsWarning ? Viewer.SpeedpostDatFile.TempSpeedShapeNames[0] : (tempSpeedItem.IsResume ? Viewer.SpeedpostDatFile.TempSpeedShapeNames[2] : Viewer.SpeedpostDatFile.TempSpeedShapeNames[1]),
                                 tempSpeedItem.WorldPosition, ShapeFlags.None));
                         }
@@ -557,7 +604,7 @@ namespace Orts.Viewer3D
                 // Instancing collapsed multiple copies of the same model in to a single set of data (the normal model
                 // data, plus a list of position information for each copy) and then draws them in a single batch.
                 var instances = new Dictionary<string, List<StaticShape>>();
-                foreach (var shape in sceneryObjects)
+                foreach (var shape in SceneryObjects)
                 {
                     // Only allow StaticShape and StaticTrackShape instances for now.
                     if (shape.GetType() != typeof(StaticShape) && shape.GetType() != typeof(StaticTrackShape))
@@ -580,8 +627,8 @@ namespace Orts.Viewer3D
                     {
                         var sharedInstance = new SharedStaticShapeInstance(Viewer, path, instances[path]);
                         foreach (var model in instances[path])
-                            sceneryObjects.Remove(model);
-                        sceneryObjects.Add(sharedInstance);
+                            SceneryObjects.Remove(model);
+                        SceneryObjects.Add(sharedInstance);
                     }
                 }
             }
@@ -608,19 +655,113 @@ namespace Orts.Viewer3D
         [CallOnThread("Loader")]
         public void Unload()
         {
-            foreach (var obj in sceneryObjects)
+            foreach (var obj in SceneryObjects)
                 obj.Unload();
             if (Viewer.World.Sounds != null) Viewer.World.Sounds.RemoveByTile(TileX, TileZ);
+        }
+
+        /// <summary>
+        /// Checks this world file for stale shapes and sets the stale data flag if any shapes are stale
+        /// </summary>
+        /// <returns>bool indicating if this world file changed from fresh to stale</returns>
+        public bool CheckStaleShapes()
+        {
+            if (!StaleData)
+            {
+                foreach (StaticShape shape in SceneryObjects)
+                {
+                    if (shape.SharedShape.StaleData)
+                    {
+                        StaleData = true;
+                        break;
+                    }
+                }
+
+                if (!StaleData)
+                {
+                    foreach (RoadCarSpawner carSpawner in CarSpawners)
+                    {
+                        foreach (RoadCar car in carSpawner.Cars)
+                        {
+                            if (car.StaleData)
+                            {
+                                StaleData = true;
+                                break;
+                            }
+                        }
+                        if (StaleData)
+                            break;
+                    }
+                }
+
+                return StaleData;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Checks this world file for stale directly-referenced textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this world file changed from fresh to stale</returns>
+        public bool CheckStaleTextures()
+        {
+            if (!StaleData)
+            {
+                // Textures referenced directly by the world file include dynamic track textures and forest textures
+                // as opposed to textures referenced indirectly through shape files
+                foreach (DynamicTrackViewer dTrack in dTrackList)
+                {
+                    if (dTrack.CheckStale())
+                    {
+                        StaleData = true;
+                        break;
+                    }
+                }
+
+                if (!StaleData)
+                {
+                    foreach (ForestViewer forest in ForestList)
+                    {
+                        if (forest.Material.StaleData)
+                        {
+                            StaleData = true;
+                            break;
+                        }
+                    }
+                }
+
+                return StaleData;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Checks this world file for stale sounds and sets the stale data flag if any sounds are stale
+        /// </summary>
+        /// <returns>bool indicating if this world file changed from fresh to stale</returns>
+        public bool CheckStaleSounds()
+        {
+            if (!StaleData)
+            {
+                // Scenery sounds are 'owned' by the ".ws" file with the same name as the world file
+                StaleData = Viewer.SoundProcess.GetStale(WorldFilePath + "s");
+
+                return StaleData;
+            }
+            else
+                return false;
         }
 
         [CallOnThread("Loader")]
         internal void Mark()
         {
-            foreach (var shape in sceneryObjects)
+            foreach (var shape in SceneryObjects)
                 shape.Mark();
             foreach (var dTrack in dTrackList)
                 dTrack.Mark();
-            foreach (var forest in forestList)
+            foreach (var forest in ForestList)
                 forest.Mark();
         }
 
@@ -643,18 +784,18 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         public void Update(ElapsedTime elapsedTime)
         {
-            foreach (var spawner in carSpawners)
+            foreach (var spawner in CarSpawners)
                 spawner.Update(elapsedTime);
         }
 
         [CallOnThread("Updater")]
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            foreach (var shape in sceneryObjects)
+            foreach (var shape in SceneryObjects)
                 shape.PrepareFrame(frame, elapsedTime);
             foreach (var dTrack in dTrackList)
                 dTrack.PrepareFrame(frame, elapsedTime);
-            foreach (var forest in forestList)
+            foreach (var forest in ForestList)
                 forest.PrepareFrame(frame, elapsedTime);
         }
 

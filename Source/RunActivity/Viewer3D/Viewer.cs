@@ -76,12 +76,16 @@ namespace Orts.Viewer3D
         public World World { get; private set; }
         private SoundSource ViewerSounds { get; set; }
 
-        // Hot reloading: Lists of updated files (in lowercase) for file monitoring purposes
+        // Hot reloading: Sets of updated files (in lowercase) for file monitoring purposes
         private HashSet<string> TextureUpdates = new HashSet<string>();
         private HashSet<string> ShapeUpdates = new HashSet<string>();
+        private HashSet<string> ShapeDescriptorUpdates = new HashSet<string>();
         private HashSet<string> SoundUpdates = new HashSet<string>();
         private HashSet<string> IncludeUpdates = new HashSet<string>();
         private HashSet<string> WaveUpdates = new HashSet<string>();
+        private HashSet<string> WorldUpdates = new HashSet<string>();
+        private HashSet<string> TileUpdates = new HashSet<string>();
+        public bool ManualReloadQueued;
         /// <summary>
         /// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
         /// </summary>
@@ -629,6 +633,7 @@ namespace Orts.Viewer3D
         {
             // Sound files (.sms, .wav) can be in the ROUTES, SOUND, or TRAINS folders
             // Graphic files (.ace, .s) can be in the GLOBAL, ROUTES, or TRAINS folders
+            // Route files (.w) can be in the ROUTES folder
 
             if (Simulator.GLOBALWatcher != null)
             {
@@ -640,6 +645,8 @@ namespace Orts.Viewer3D
                 Simulator.SubscribeToFileWatcher(Simulator.ROUTESWatcher, HandleGraphicsFileChange, HandleGraphicsFileRename);
 
                 Simulator.SubscribeToFileWatcher(Simulator.ROUTESWatcher, HandleSoundFileChange, HandleSoundFileRename);
+
+                Simulator.SubscribeToFileWatcher(Simulator.ROUTESWatcher, HandleRouteFileChange, HandleRouteFileRename);
             }
 
             if (Simulator.SOUNDWatcher != null)
@@ -835,9 +842,13 @@ namespace Orts.Viewer3D
                 {
                     ProcessSoundFileUpdates();
                 }
-                if (TextureUpdates.Count > 0 || ShapeUpdates.Count > 0)
+                if (TextureUpdates.Count > 0 || ShapeUpdates.Count > 0 || ShapeDescriptorUpdates.Count > 0)
                 {
                     ProcessGraphicsFileUpdates();
+                }
+                if (WorldUpdates.Count > 0 || TileUpdates.Count > 0)
+                {
+                    ProcessRouteFileUpdates();
                 }
             }
 
@@ -1047,6 +1058,12 @@ namespace Orts.Viewer3D
 
                     found = true;
                 }
+                else if (ext == ".sd")
+                {
+                    ShapeDescriptorUpdates.Add(path);
+
+                    found = true;
+                }
             }
 
             if (found)
@@ -1078,6 +1095,12 @@ namespace Orts.Viewer3D
 
                 TextureUpdates.Clear();
             }
+            if (ShapeDescriptorUpdates.Count > 0)
+            {
+                // TODO: Determine if any shapes use an updated .sd file and mark those as stale
+
+                ShapeDescriptorUpdates.Clear();
+            }
             if (ShapeUpdates.Count > 0)
             {
                 staleShapes |= ShapeManager.MarkStale(ShapeUpdates);
@@ -1091,14 +1114,21 @@ namespace Orts.Viewer3D
                 foreach (TrainCarViewer car in World.Trains.Cars.Values)
                     car.CheckStaleTextures();
 
-                // TODO: See how this affects scenery
+                foreach (WorldFile world in World.Scenery.WorldFiles)
+                    world.CheckStaleTextures();
+
+                foreach (TerrainTile terrain in World.Terrain.TerrainTiles)
+                    terrain.CheckStaleTextures();
             }
             if (staleShapes)
             {
                 foreach (TrainCarViewer car in World.Trains.Cars.Values)
                     car.CheckStaleShapes();
 
-                // TODO: See how this affects scenery
+                World.RoadCars.CheckStale();
+
+                foreach (WorldFile world in World.Scenery.WorldFiles)
+                    world.CheckStaleShapes();
             }
         }
 
@@ -1189,7 +1219,75 @@ namespace Orts.Viewer3D
                 foreach (TrainCarViewer car in World.Trains.Cars.Values)
                     car.CheckStaleSounds();
 
-                // TODO: See how this affects scenery
+                foreach (WorldFile world in World.Scenery.WorldFiles)
+                    world.CheckStaleSounds();
+            }
+        }
+
+        /// <summary>
+        /// Subscriber for file updates in MSTS route directories
+        /// Accepts all file updates, which will be further sorted later on
+        /// </summary>
+        public void HandleRouteFileChange(object sender, FileSystemEventArgs e)
+        {
+            SortRouteFileUpdates(new HashSet<string> { e.FullPath.ToLowerInvariant() });
+        }
+
+        /// <summary>
+        /// Subscriber for file updates in MSTS route directories
+        /// Accepts all file updates, which will be further sorted later on
+        /// </summary>
+        public void HandleRouteFileRename(object sender, RenamedEventArgs e)
+        {
+            SortRouteFileUpdates(new HashSet<string> { e.OldFullPath.ToLowerInvariant(), e.FullPath.ToLowerInvariant() });
+        }
+
+        /// <summary>
+        /// Accepts paths to any updated file in MSTS route directories
+        /// then organizes files based on file type and use case
+        /// </summary>
+        public void SortRouteFileUpdates(HashSet<string> paths)
+        {
+            bool found = false;
+
+            foreach (string path in paths)
+            {
+                string ext = Path.GetExtension(path);
+
+                if (ext == ".w" || ext == ".ws")
+                {
+                    WorldUpdates.Add(path);
+
+                    found = true;
+                }
+                else if (ext == ".raw" || ext == ".t")
+                {
+                    TileUpdates.Add(path);
+
+                    found = true;
+                }
+            }
+
+            if (found)
+                Simulator.FileUpdateTime = DateTime.Now.AddSeconds(Simulator.FileChangedDelayS);
+        }
+
+        /// <summary>
+        /// Determines if any route assets have gone stale using the file lists from SortRouteFileUpdates()
+        /// </summary>
+        private void ProcessRouteFileUpdates()
+        {
+            if (WorldUpdates.Count > 0)
+            {
+                World.Scenery.MarkStale(WorldUpdates);
+
+                WorldUpdates.Clear();
+            }
+            if (TileUpdates.Count > 0)
+            {
+                World.Terrain.MarkStale(TileUpdates);
+
+                TileUpdates.Clear();
             }
         }
 
@@ -1208,12 +1306,6 @@ namespace Orts.Viewer3D
             SharedSMSFileManager.SetAllStale(stale);
 
             SoundProcess.SetAllStale(stale);
-
-            foreach (TrainCar car in World.Trains.Cars.Keys)
-            {
-                car.StaleCab = stale;
-                car.StaleViewer = stale;
-            }
         }
 
         [CallOnThread("Updater")]
@@ -1445,7 +1537,11 @@ namespace Orts.Viewer3D
             {
                 if (Simulator.Settings.EnableHotReloading)
                 {
+                    ManualReloadQueued = true;
+
                     SetAllStale(true);
+
+                    World.SetAllStale(true);
 
                     Simulator.SetAllStale(true);
                 }

@@ -79,7 +79,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// True if any .wav or .sms referenced by this sound source is out of date
         /// </summary>
-        public bool StaleData;
+        public bool StaleData = false;
         /// <summary>
         /// The sound may be from a train car
         /// </summary>
@@ -3274,7 +3274,7 @@ namespace Orts.Viewer3D
 
         public void AddByTile(int TileX, int TileZ)
         {
-            string name = Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(TileX, TileZ) + "s";
+            string name = Path.GetFullPath(Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(TileX, TileZ) + "s").ToLower();
             WorldSoundFile wf = new WorldSoundFile(name, Viewer.Simulator.TDB.TrackDB.TrItemTable);
             if (wf.TR_WorldSoundFile != null)
             {
@@ -3306,7 +3306,7 @@ namespace Orts.Viewer3D
 
         public void RemoveByTile(int TileX, int TileZ)
         {
-            string name = Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(TileX, TileZ) + "s";
+            string name = Path.GetFullPath(Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(TileX, TileZ) + "s").ToLower();
             Viewer.SoundProcess.RemoveSoundSources(name);
             lock (SoundRegions)
             {

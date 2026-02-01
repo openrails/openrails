@@ -65,11 +65,21 @@ namespace Orts.Viewer3D
                         break;
                     try
 					{
-						if (Cars.ContainsKey(car) && !car.StaleViewer)
-							newCars.Add(car, Cars[car]);
-						else
-							newCars.Add(car, LoadCar(car));
-					}
+                        if (Cars.ContainsKey(car))
+                        {
+                            if (car.StaleViewer)
+                            {
+                                Cars[car].Unload();
+                                newCars.Add(car, LoadCar(car));
+                            }
+                            else
+                            {
+                                newCars.Add(car, Cars[car]);
+                            }
+                        }
+                        else
+                            newCars.Add(car, LoadCar(car));
+                    }
 					catch (Exception error) 
                     {
                         Trace.WriteLine(new FileLoadException(car.WagFilePath, error));
@@ -89,6 +99,19 @@ namespace Orts.Viewer3D
             // Ensure the player locomotive has a cab view loaded and anything else they need.
             if (PlayerCar != null && Cars.ContainsKey(PlayerCar))
                 Cars[PlayerCar].LoadForPlayer();
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for ALL loaded trains to the given bool
+        /// (default true)
+        /// </summary>
+        public void SetAllStale(bool stale = true)
+        {
+            foreach (TrainCar car in Cars.Keys)
+            {
+                car.StaleCab = stale;
+                car.StaleViewer = stale;
+            }
         }
 
         [CallOnThread("Loader")]

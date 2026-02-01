@@ -150,6 +150,26 @@ namespace Orts.Viewer3D
             vertexBuffer.SetData(vertexData.ToArray());
         }
 
+        /// <summary>
+        /// Determines if the materials associated with this water primitive are stale
+        /// </summary>
+        /// <returns>bool indicating if any data used by this water primitive is stale</returns>
+        public bool GetStale()
+        {
+            bool found = false;
+
+            foreach (Material waterMaterial in WaterLayers.Select(kvp => kvp.Value))
+            {
+                if (waterMaterial.StaleData)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            return found;
+        }
+
         [CallOnThread("Loader")]
         internal static void Mark()
         {

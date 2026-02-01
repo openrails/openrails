@@ -436,7 +436,7 @@ namespace Orts.Viewer3D.RollingStock
             car.SetUpWheels();
 
             // If we have two pantographs, 2 is the forwards pantograph, unlike when there's only one.
-            if (!(car.Flipped ^ (car.Train.IsActualPlayerTrain && Viewer.PlayerLocomotive.Flipped)) && !Pantograph1.Empty() && !Pantograph2.Empty())
+            if (!(car.Flipped ^ (car.Train != null && car.Train.IsActualPlayerTrain && Viewer.PlayerLocomotive.Flipped)) && !Pantograph1.Empty() && !Pantograph2.Empty())
                 AnimatedPart.Swap(ref Pantograph1, ref Pantograph2);
 
             Pantograph1.SetState(MSTSWagon.Pantographs[1].CommandUp);
@@ -697,13 +697,6 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // Forcibly unload this viewer if it is marked as stale
-            if (Car.StaleViewer)
-            {
-                Unload();
-                return;
-            }
-
             Pantograph1.UpdateState(MSTSWagon.Pantographs[1].CommandUp, elapsedTime);
             Pantograph2.UpdateState(MSTSWagon.Pantographs[2].CommandUp, elapsedTime);
             if (MSTSWagon.Pantographs.List.Count > 2) Pantograph3.UpdateState(MSTSWagon.Pantographs[3].CommandUp, elapsedTime);
@@ -1609,8 +1602,6 @@ namespace Orts.Viewer3D.RollingStock
         /// <returns>bool indicating if this viewer changed from fresh to stale</returns>
         public override bool CheckStaleSounds()
         {
-            bool found = false;
-
             if (!Car.StaleViewer)
             {
                 Car.StaleViewer = Viewer.SoundProcess.GetStale(this);

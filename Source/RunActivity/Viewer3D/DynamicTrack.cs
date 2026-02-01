@@ -41,6 +41,8 @@ namespace Orts.Viewer3D
         public WorldPosition WorldPosition;
         public DynamicTrackPrimitive Primitive;
 
+        bool StaleData = false;
+
         public DynamicTrackViewer(Viewer viewer)
         {
             Viewer = viewer;
@@ -127,6 +129,34 @@ namespace Orts.Viewer3D
                 }
                 lodIndex++;
             }
+        }
+
+        /// <summary>
+        /// Checks this dynamic track object for stale materials and sets the stale data flag if any materials are stale
+        /// </summary>
+        /// <returns>bool indicating if this dynamic track changed from fresh to stale</returns>
+        public bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                foreach (LOD lod in Primitive.TrProfile.LODs)
+                {
+                    foreach (LODItem lodItem in lod.LODItems)
+                    {
+                        if (lodItem.LODMaterial.StaleData)
+                        {
+                            StaleData = true;
+                            break;
+                        }
+                    }
+                    if (StaleData)
+                        break;
+                }
+
+                return StaleData;
+            }
+            else
+                return false;
         }
 
         [CallOnThread("Loader")]

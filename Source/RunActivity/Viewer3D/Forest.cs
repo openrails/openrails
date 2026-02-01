@@ -32,7 +32,7 @@ namespace Orts.Viewer3D
     {
         readonly Viewer Viewer;
         readonly WorldPosition Position;
-        readonly Material Material;
+        public readonly Material Material;
         readonly ForestPrimitive Primitive;
 
         public float MaximumCenterlineOffset = 0.0f;

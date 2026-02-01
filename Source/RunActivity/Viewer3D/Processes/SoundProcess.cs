@@ -493,9 +493,9 @@ namespace Orts.Viewer3D.Processes
                         }
                     }
                 }
-                
-                return found;
             }
+
+            return found;
         }
 
         /// <summary>
