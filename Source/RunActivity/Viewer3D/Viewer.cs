@@ -272,6 +272,14 @@ namespace Orts.Viewer3D
         public static double DbfEvalIniAutoPilotTimeS = 0;//Debrief eval
         public static bool DbfEvalAutoPilot = false;//DebriefEval
         public bool IsFormationReversed; //Avoid flickering when reversal using TrainCarOperations window
+        public int CameraOutsideFrontPosition { get; set; }
+        public int CameraOutsideRearPosition { get; set; }
+        public bool CameraF9Reference { get; set; }
+        public bool FirstLoop { get; set; } = false;
+        public bool IsDownCameraChanged { get; set; }
+        public bool IsCameraPositionUpdated { get; set; } = false;
+        public bool CameraFrontUpdated { get; set; }
+        public bool CameraRearUpdated { get; set; }
 
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.

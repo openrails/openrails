@@ -432,7 +432,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 SelectedNumberOfAxles = 0;
                 foreach (TrainCar tc in Locomotive.Train.Cars)
                 {
-                    SelectedNumberOfAxles += tc.WheelAxles.Count;
+                    SelectedNumberOfAxles += tc.WheelAxles.Sum(w => w.Fake ? 0 : 1);
                 }
             }
         }

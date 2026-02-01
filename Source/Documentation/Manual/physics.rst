@@ -1595,6 +1595,65 @@ ii) Cylinder Cocks Exhaust - the exhaust out of the cylinder drainage cocks,
 The following CAB controls have been defined, ``STEAM_BOOSTER_AIR``, ``STEAM_BOOSTER_IDLE``,
  ``STEAM_BOOSTER_LATCH``, ``STEAM_BOOSTER_PRESSURE``.
 
+Boiler Water and Water Gauge
+............................
+
+The management of boiler water on a steam locomotive is important for maintaining steam productions as 
+well as ensuring that water levels do not drop far enough to expose the firebox crown and the fusible plugs.
+
+The Water Glass is the primary indication used by the fireman to manage boiler water levels, however as the 
+locomotive goes up and down grades, the water level will appear to significantly change. The amount of variation 
+will be determined by a number of factors, and principal amongst them are the following.
+
+``ORTSBoilerLength`` - length of the boiler (UoM distance)
+``ORTSWaterGaugeGlassHeight`` - length of the water gauge (UoM Distance)
+``ORTSBoilerDiameter`` - diameter of the boiler (UoM Distance)
+``ORTSBoilerCrownHeight`` - Height of boiler crown above centre line of the boiler (UoM Distance)
+``ORTSBoilerCrownCoverageHeight`` - Amount of water required to cover the crown (UoM Distance)
+``ORTSteamLocomotiveBoilerOrientation`` - indicates the boiler orientation, valid values are Horizontal, 
+CabForward, CabCentre, Vertical, Sloping. Default = Horizontal
+``ORTSBoilerAngle`` - Angle of boiler to horizontal, typically for Sloping boilers on steep inclines. (UoM Degree)
+
+To display the changing water level with gradient in the Cab, use ``BOILER_WATER_GRADE`` in place of 
+``BOILER_WATER`` in the CVF file. For example,
+
+"``Type ( BOILER_WATER_GRADE GAUGE )``"
+
+Steam Water Injectors
+.....................
+
+Water injectors are typically modelled by default, and sizes and injection rates will be calculated automatically by OR.
+
+If desired the user may customise some of the default values by using the following parameters:
+
+``ORTSInjectorTypes ( x, y )`` - will allow the user to set up a combination of exhaust or live steam injectors for the 
+locomotive. Use 0 = Live steam and 1 = Exhaust steam in either of the x or y positions. Note if ``ORTSInjectorTypes`` is not 
+present then InjectorTypes will be used if it is present in ENG file.
+
+``ORTSInjectorSize ( x, y )`` - the size of each injector can be indicated in this parameter. The values will be in 
+mm, and typically should not be greater then 19mm. (UoM Distance)
+
+
+Locomotive Back Pressure
+........................
+
+OR calculates a default back pressure value for the exhaust steam emitted from the cylinder.
+
+The user may customise the default value where appropriate values are known, ie from test reports, etc.
+
+To customise the backpressure curve use:
+
+``ORTSCylinderBackPressureVsSteamOutput ( x, y )`` - where x = series of cylinder steam usage rates in lb/h, and y = back 
+pressure in psig.
+
+Note: The older parameter ``ortscylinderbackpressure`` is inaccurate and no longer supported in OR. An error message will 
+display if OR detects the use of this parameter.
+
+To display the back pressure in the Cab, use ``BACK_PR``.
+
+Sound effects on the steam locomotive can be varied by using the volume control parameter ``BackPressureControlled``.
+
+
 Locomotive Types
 ................
 
@@ -2427,9 +2486,9 @@ OR supports the following special visual effects in a steam locomotive:
   turbo-generator is not fitted to the locomotive it is recommended that this
   effect is left out of the effects section which will ensure that it is not
   displayed in OR.
-- Safety valves (named ``SafetyValvesFX``) -- represents the discharge of the
-  steam valves if the maximum boiler pressure is exceeded. It will appear
-  whenever the safety valve operates.
+- Safety valves (named ``SafetyValvesFX, SafetyValves2FX, SafetyValves3FX, SafetyValves4FX``) 
+-- represents the discharge of the steam valves if the maximum boiler pressure is exceeded. 
+They will appear whenever the relevant safety valve operates.
 - Whistle (named ``WhistleFX``) -- represents the steam discharge from the
   whistle.
 - Injectors (named ``Injectors1FX`` and ``Injectors2FX``) -- represents the
@@ -5348,11 +5407,13 @@ the tables below.
 .. index::
    single: DoesBrakeCutPower
    single: BrakeCutsPowerAtBrakeCylinderPressure
+   single: OrtsEmergencyBrakeCutsDynamicBrake
 
-Two other parameters in the Engine section of the ENG file are used by the TCS:
+Other parameters in the Engine section of the ENG file are used by the TCS:
 
 - ``DoesBrakeCutPower( x )`` sets whether applying brake on the locomotive cuts the traction (1 for enabled, 0 for disabled)
 - ``BrakeCutsPowerAtBrakeCylinderPressure( x )`` sets the minimum pressure in the brake cylinder that cuts the traction (by default 4 PSI)
+- ``OrtsEmergencyBrakeCutsDynamicBrake`` sets whether an emergency braking disables dynamic brakes
 
 
 Train Derailment

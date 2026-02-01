@@ -359,6 +359,12 @@ namespace Orts.Viewer3D.Processes
         internal void Stop()
         {
             Game.WatchdogProcess.Unregister(WatchdogToken);
+
+            // these run in the Renderer thread, and thus cannot be disposed in GameStateViewer3D
+            if (Program.MapForm != null)
+                Program.MapForm.Dispose();
+            if (Program.SoundDebugForm != null)
+                Program.SoundDebugForm.Dispose();
         }
 
         static void SwapFrames(ref RenderFrame frame1, ref RenderFrame frame2)
