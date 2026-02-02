@@ -3057,6 +3057,8 @@ public string GetCurveDirection()
             // Check if null (0-length) vector
             if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
                 fwd.Normalize();
+            else // If calculation fails, force set forward vector to prevent NaN errors
+                fwd.X = 1; 
             Vector3 side = Vector3.Cross(Vector3.Up, fwd);
             // Check if null (0-length) vector
             if (!(side.X == 0 && side.Y == 0 && side.Z == 0))
