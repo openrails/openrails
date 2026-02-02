@@ -85,48 +85,7 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("esd_ortssoundfilename", ()=>{ ESD_SoundFileName = stf.ReadStringBlock(null); }),
                     new STFReader.TokenProcessor("esd_ortsbellanimationfps", ()=>{ ESD_CustomAnimationFPS = stf.ReadFloatBlock(STFReader.UNITS.Frequency, null); }),
                     new STFReader.TokenProcessor("esd_ortscustomanimationfps", ()=>{ ESD_CustomAnimationFPS = stf.ReadFloatBlock(STFReader.UNITS.Frequency, null); }),
-                    new STFReader.TokenProcessor("esd_ortstexturereplacement", ()=>{ ParseReplacementStrings(stf, ref ESD_TextureReplacement); }),
-                    new STFReader.TokenProcessor("esd_ortsshaderreplacement", ()=>{
-                        stf.MustMatch("(");
-                        // Allow for multiple pairs of replaced and replacement values
-                        while (!stf.EndOfBlock())
-                        {
-                            int replacedIdx = stf.ReadInt(-1);
-                            string replacement = stf.ReadString();
-                            // Add pair of values so long as we haven't reached the end of block
-                            if (!string.IsNullOrEmpty(replacement) && !ESD_ShaderReplacement.ContainsKey(replacedIdx))
-                                ESD_ShaderReplacement.Add(replacedIdx, replacement);
-                        }
-                    }),
-                    new STFReader.TokenProcessor("esd_ortsmatrixrename", ()=>{ ParseReplacementStrings(stf, ref ESD_MatrixRename); }),
-                    new STFReader.TokenProcessor("esd_ortsmatrixparent", ()=>{ ParseReplacementStrings(stf, ref ESD_MatrixParent); }),
-                    new STFReader.TokenProcessor("esd_ortsmatrixtranslation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Distance, stf, ref ESD_MatrixTranslation); }),
-                    new STFReader.TokenProcessor("esd_ortsmatrixscale", ()=>{ ParseMatrixOverride(STFReader.UNITS.None, stf, ref ESD_MatrixScale); }),
-                    new STFReader.TokenProcessor("esd_ortsmatrixrotation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Angle, stf, ref ESD_MatrixRotation); }),
-                    new STFReader.TokenProcessor("esd_ortsobjectvisibility", ()=>{
-                        stf.MustMatch("(");
-                        // Allow for multiple pairs of replaced and replacement values
-                        while (!stf.EndOfBlock())
-                        {
-                            string matName = stf.ReadString();
-                            bool setting = stf.ReadInt(1) != 0;
-                            // Add pair of values so long as we haven't reached the end of block
-                            if (!string.IsNullOrEmpty(matName) && !ESD_ObjectVisibility.ContainsKey(matName))
-                                ESD_ObjectVisibility.Add(matName, setting);
-                        }
-                    }),
-                    new STFReader.TokenProcessor("esd_ortslodoverride", ()=>{
-                        stf.MustMatch("(");
-                        // Allow for multiple pairs of replaced and replacement values
-                        while (!stf.EndOfBlock())
-                        {
-                            int replacedIdx = stf.ReadInt(null);
-                            float replacement = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                            // Add pair of values so long as we haven't reached the end of block
-                            if (replacement != 0 && !ESD_LODOverride.ContainsKey(replacedIdx))
-                                ESD_LODOverride.Add(replacedIdx, replacement);
-                        }
-                    }),
+                    new STFReader.TokenProcessor("esd_ortsshapedataoverrides", ()=>{ ParseShapeOverrides(stf); }),
                 });
 
                 // Store set of all matrices that got modified
@@ -171,6 +130,56 @@ namespace Orts.Formats.Msts
             public Dictionary<string, bool> ESD_ObjectVisibility = new Dictionary<string, bool>();
             // Dictionary of <LOD index, LOD distance>
             public Dictionary<int, float> ESD_LODOverride = new Dictionary<int, float>();
+
+            // Parse all parameters related to overriding shape data (inside the ESD_ORTSShapeDataOverrides block)
+            protected void ParseShapeOverrides(STFReader stf)
+            {
+                stf.MustMatch("(");
+                stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("texturereplacement", ()=>{ ParseReplacementStrings(stf, ref ESD_TextureReplacement); }),
+                    new STFReader.TokenProcessor("shaderreplacement", ()=>{
+                        stf.MustMatch("(");
+                        // Allow for multiple pairs of replaced and replacement values
+                        while (!stf.EndOfBlock())
+                        {
+                            int replacedIdx = stf.ReadInt(-1);
+                            string replacement = stf.ReadString();
+                            // Add pair of values so long as we haven't reached the end of block
+                            if (!string.IsNullOrEmpty(replacement) && !ESD_ShaderReplacement.ContainsKey(replacedIdx))
+                                ESD_ShaderReplacement.Add(replacedIdx, replacement);
+                        }
+                    }),
+                    new STFReader.TokenProcessor("matrixrename", ()=>{ ParseReplacementStrings(stf, ref ESD_MatrixRename); }),
+                    new STFReader.TokenProcessor("matrixparent", ()=>{ ParseReplacementStrings(stf, ref ESD_MatrixParent); }),
+                    new STFReader.TokenProcessor("matrixtranslation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Distance, stf, ref ESD_MatrixTranslation); }),
+                    new STFReader.TokenProcessor("matrixscale", ()=>{ ParseMatrixOverride(STFReader.UNITS.None, stf, ref ESD_MatrixScale); }),
+                    new STFReader.TokenProcessor("matrixrotation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Angle, stf, ref ESD_MatrixRotation); }),
+                    new STFReader.TokenProcessor("objectvisibility", ()=>{
+                        stf.MustMatch("(");
+                        // Allow for multiple pairs of replaced and replacement values
+                        while (!stf.EndOfBlock())
+                        {
+                            string matName = stf.ReadString();
+                            bool setting = stf.ReadInt(1) != 0;
+                            // Add pair of values so long as we haven't reached the end of block
+                            if (!string.IsNullOrEmpty(matName) && !ESD_ObjectVisibility.ContainsKey(matName))
+                                ESD_ObjectVisibility.Add(matName, setting);
+                        }
+                    }),
+                    new STFReader.TokenProcessor("lodoverride", ()=>{
+                        stf.MustMatch("(");
+                        // Allow for multiple pairs of replaced and replacement values
+                        while (!stf.EndOfBlock())
+                        {
+                            int replacedIdx = stf.ReadInt(null);
+                            float replacement = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                            // Add pair of values so long as we haven't reached the end of block
+                            if (replacement != 0 && !ESD_LODOverride.ContainsKey(replacedIdx))
+                                ESD_LODOverride.Add(replacedIdx, replacement);
+                        }
+                    }),
+                });
+            }
 
             // Handle parameters concerning replacement of string values
             protected void ParseReplacementStrings(STFReader stf, ref Dictionary<string, string> renamePairs)
