@@ -51,7 +51,7 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
 
         Dictionary<string, SharedShape> Shapes = new Dictionary<string, SharedShape>();
-        Dictionary<string, bool> ShapeMarks = new Dictionary<string, bool>();
+        HashSet<SharedShape> MarkedShapes = new HashSet<SharedShape>();
         SharedShape EmptyShape;
 
         [CallOnThread("Render")]
@@ -70,16 +70,16 @@ namespace Orts.Viewer3D
                 return EmptyShape;
 
             path = path.ToLowerInvariant();
-            if (!Shapes.ContainsKey(path))
+            if (!Shapes.ContainsKey(path) || Shapes[path].StaleData)
             {
                 try
                 {
-                    Shapes.Add(path, new SharedShape(Viewer, path));
+                    Shapes[path] = new SharedShape(Viewer, path);
                 }
                 catch (Exception error)
                 {
                     Trace.WriteLine(new FileLoadException(path, error));
-                    Shapes.Add(path, EmptyShape);
+                    Shapes[path] = EmptyShape;
                 }
             }
             return Shapes[path];
@@ -87,30 +87,99 @@ namespace Orts.Viewer3D
 
         public void Mark()
         {
-            ShapeMarks.Clear();
-            foreach (var path in Shapes.Keys)
-                ShapeMarks.Add(path, false);
+            MarkedShapes.Clear();
         }
 
         public void Mark(SharedShape shape)
         {
-            foreach (var key in Shapes.Keys)
-            {
-                if (Shapes[key] == shape)
-                {
-                    ShapeMarks[key] = true;
-                    break;
-                }
-            }
+            if (shape != null)
+                MarkedShapes.Add(shape);
         }
 
         public void Sweep()
         {
-            foreach (var path in ShapeMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+            // If a shape isn't in the list of marked shapes, it is no longer in use
+            List<string> shapeKeys = Shapes.Keys.ToList();
+            foreach (string key in shapeKeys)
+                if (!MarkedShapes.Contains(Shapes[key]))
+                {
+                    Shapes[key].Dispose();
+                    Shapes.Remove(key);
+                }
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for ALL shared shapes to the given bool
+        /// (default true)
+        /// </summary>
+        public void SetAllStale(bool stale = true)
+        {
+            foreach (SharedShape shape in Shapes.Values)
+                shape.StaleData = stale;
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for shapes using a shape file from the given set of paths
+        /// </summary>
+        /// <returns>bool indicating if any shape changed from fresh to stale</returns>
+        public bool MarkStale(HashSet<string> sPaths)
+        {
+            // The same shape file may be used by multiple shared shapes, need to iterate to check each shared shape
+            bool found = false;
+
+            foreach (string shapeKey in Shapes.Keys)
             {
-                Shapes[path].Dispose();
-                Shapes.Remove(path);
+                string shapeFile = shapeKey;
+
+                // Shapes specify a shape location and a texture location, only check against the shape location
+                if (shapeKey.Contains('\0'))
+                    shapeFile = shapeKey.Split('\0')[0];
+
+                if (!Shapes[shapeKey].StaleData && (sPaths.Contains(Shapes[shapeKey].FilePath) || sPaths.Contains(shapeFile)))
+                {
+                    // Mark shape as stale so it gets reloaded
+                    Shapes[shapeKey].StaleData = true;
+                    found = true;
+
+                    Trace.TraceInformation("Shape file {0} was updated on disk and will be reloaded.", shapeFile);
+                }
+                // Continue scanning, there may be multiple matching shapes
             }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Checks all shapes for stale materials and sets the stale data flag if any materials are stale
+        /// </summary>
+        /// <returns>bool indicating if any shape changed from fresh to stale</returns>
+        public bool CheckStale()
+        {
+            // The same materials may be used by multiple shared shapes, need to iterate to check each shared shape
+            bool found = false;
+
+            foreach (SharedShape shape in Shapes.Values)
+            {
+                if (!shape.StaleData)
+                {
+                    foreach (Material material in shape.Materials)
+                    {
+                        if (material.StaleData)
+                        {
+                            // Found a match to an affected material; mark shape as stale so it gets reloaded
+                            shape.StaleData = true;
+                            found = true;
+
+                            Trace.TraceInformation("Texture used by shape file {0} was updated on disk, shape will be reloaded.", shape.FilePath);
+
+                            break;
+                        }
+                    }
+                }
+                // Continue scanning, there may be multiple shapes with stale materials
+            }
+
+            return found;
         }
 
         [CallOnThread("Updater")]
@@ -149,6 +218,19 @@ namespace Orts.Viewer3D
             Viewer = viewer;
             Location = position;
             Flags = flags;
+
+            if (path != null)
+            {
+                // Use resolved path, without any 'up one level' ("..\\") calls
+                if (path.Contains('\0'))
+                {
+                    string[] dualPath = path.Split('\0');
+                    path = Path.GetFullPath(dualPath[0]) + '\0' + Path.GetFullPath(dualPath[1]);
+                }
+                else
+                    path = Path.GetFullPath(path);
+            }
+
             SharedShape = Viewer.ShapeManager.Get(path);
         }
 
@@ -1966,11 +2048,13 @@ namespace Orts.Viewer3D
 
         // This data is common to all instances of the shape
         public List<string> MatrixNames = new List<string>();
+        public List<Material> Materials = new List<Material>();
         public List<string> ImageNames; // Names of textures without paths or file extensions
         public Matrix[] Matrices = new Matrix[0];  // the original natural pose for this shape - shared by all instances
         public animations Animations;
         public LodControl[] LodControls;
         public bool HasNightSubObj;
+        public bool StaleData = false;
         public int RootSubObjectIndex = 0;
         //public bool negativeBogie = false;
         public string SoundFileName = "";
@@ -2055,7 +2139,7 @@ namespace Orts.Viewer3D
             }
             Animations = sFile.shape.animations;
 
-            ImageNames = new List<string>(sFile.shape.images.ConvertAll(img => Path.GetFileNameWithoutExtension(img)));
+            ImageNames = new List<string>(sFile.shape.images.ConvertAll(img => Path.GetFileNameWithoutExtension(img).ToLowerInvariant()));
 
 #if DEBUG_SHAPE_HIERARCHY
             var debugShapeHierarchy = new StringBuilder();
@@ -2313,6 +2397,8 @@ namespace Orts.Viewer3D
                     {
                         material = sharedShape.Viewer.MaterialManager.Load("Scenery", null, (int)options);
                     }
+
+                    sharedShape.Materials.Add(material);
 
 #if DEBUG_SHAPE_HIERARCHY
                     debugShapeHierarchy.AppendFormat("        Primitive {0,-2}: pstate={1,-2} vstate={2,-2} lstate={3,-2} matrix={4,-2}", primitiveIndex, primitive.prim_state_idx, primitiveState.ivtx_state, vertexState.LightCfgIdx, vertexState.imatrix);

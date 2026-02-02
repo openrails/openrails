@@ -249,10 +249,9 @@ namespace Orts.Viewer3D.RollingStock
                 ? new PoseableShape(viewer, wagonFolderSlash + car.MainShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster)
                 : new PoseableShape(viewer, null, car.WorldPosition);
 
-            // This insection initialises the MSTS style freight animation - can either be for a coal load, which will adjust with usage, or a static animation, such as additional shape.
+            // This section initializes the MSTS style freight animation - can either be for a coal load, which will adjust with usage, or a static animation, such as additional shape.
             if (car.FreightShapeFileName != null)
             {
-                
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
 
@@ -437,7 +436,7 @@ namespace Orts.Viewer3D.RollingStock
             car.SetUpWheels();
 
             // If we have two pantographs, 2 is the forwards pantograph, unlike when there's only one.
-            if (!(car.Flipped ^ (car.Train.IsActualPlayerTrain && Viewer.PlayerLocomotive.Flipped)) && !Pantograph1.Empty() && !Pantograph2.Empty())
+            if (!(car.Flipped ^ (car.Train != null && car.Train.IsActualPlayerTrain && Viewer.PlayerLocomotive.Flipped)) && !Pantograph1.Empty() && !Pantograph2.Empty())
                 AnimatedPart.Swap(ref Pantograph1, ref Pantograph2);
 
             Pantograph1.SetState(MSTSWagon.Pantographs[1].CommandUp);
@@ -890,7 +889,7 @@ namespace Orts.Viewer3D.RollingStock
 
             foreach (var p in Car.Parts)
             {
-                if (p.iMatrix <= 0)
+                if (p.iMatrix <= 0 || p.iMatrix >= TrainCarShape.SharedShape.Matrices.Count())
                     continue;
 
                 Matrix m = Matrix.Identity;
@@ -1520,6 +1519,97 @@ namespace Orts.Viewer3D.RollingStock
                 return;
             }
             Viewer.SoundProcess.AddSoundSource(this, new SoundSource(Viewer, MSTSWagon, path));
+        }
+
+        /// <summary>
+        /// Checks this wagon viewer for stale shapes and sets the stale data flag if any shapes are stale
+        /// </summary>
+        /// <returns>bool indicating if this viewer changed from fresh to stale</returns>
+        public override bool CheckStaleShapes()
+        {
+            if (!Car.StaleViewer)
+            {
+                // Wagons can use a variety of shapes, need to check if any of these are out of date
+                if ((TrainCarShape != null && TrainCarShape.SharedShape.StaleData) ||
+                    (FreightShape != null && FreightShape.SharedShape.StaleData) ||
+                    (InteriorShape != null && InteriorShape.SharedShape.StaleData) ||
+                    (FrontCouplerShape != null && FrontCouplerShape.SharedShape.StaleData) ||
+                    (FrontCouplerOpenShape != null && FrontCouplerOpenShape.SharedShape.StaleData) ||
+                    (FrontAirHoseShape != null && FrontAirHoseShape.SharedShape.StaleData) ||
+                    (FrontAirHoseDisconnectedShape != null && FrontAirHoseDisconnectedShape.SharedShape.StaleData) ||
+                    (RearCouplerShape != null && RearCouplerShape.SharedShape.StaleData) ||
+                    (RearCouplerOpenShape != null && RearCouplerOpenShape.SharedShape.StaleData) ||
+                    (RearAirHoseShape != null && RearAirHoseShape.SharedShape.StaleData) ||
+                    (RearAirHoseDisconnectedShape != null && RearAirHoseDisconnectedShape.SharedShape.StaleData))
+                {
+                    Car.StaleViewer = true;
+                }
+                else if (FreightAnimations != null)
+                {
+                    foreach (FreightAnimationViewer animation in FreightAnimations.Animations)
+                    {
+                        if (animation.FreightShape != null && animation.FreightShape.SharedShape.StaleData)
+                        {
+                            Car.StaleViewer = true;
+
+                            break;
+                        }
+                    }
+                }
+
+                return Car.StaleViewer;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Checks this wagon viewer for stale directly-referenced textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this viewer changed from fresh to stale</returns>
+        public override bool CheckStaleTextures()
+        {
+            if (!Car.StaleViewer)
+            {
+                // Textures referenced directly by the viewer include light textures and particle textures
+                // as opposed to textures referenced indirectly through shape files
+                if (!base.CheckStaleTextures())
+                {
+                    foreach (List<ParticleEmitterViewer> emitters in ParticleDrawers.Values)
+                    {
+                        foreach (ParticleEmitterViewer emitter in emitters)
+                        {
+                            if (emitter.CheckStale())
+                            {
+                                Car.StaleViewer = true;
+                                break;
+                            }
+                        }
+                        if (Car.StaleViewer)
+                            break;
+                    }
+                }
+
+                return Car.StaleViewer;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Checks this wagon viewer for stale sounds and sets the stale data flag if any sounds are stale
+        /// </summary>
+        /// <returns>bool indicating if this viewer changed from fresh to stale</returns>
+        public override bool CheckStaleSounds()
+        {
+            if (!Car.StaleViewer)
+            {
+                Car.StaleViewer = Viewer.SoundProcess.GetStale(this);
+
+                return Car.StaleViewer;
+            }
+            else
+                return false;
         }
 
         internal override void Mark()

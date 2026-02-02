@@ -24,7 +24,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Common;
@@ -41,8 +40,8 @@ namespace Orts.Viewer3D
     {
         readonly Viewer Viewer;
         readonly GraphicsDevice GraphicsDevice;
-        Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
-        Dictionary<string, bool> TextureMarks = new Dictionary<string, bool>();
+        Dictionary<string, SharedTexture> Textures = new Dictionary<string, SharedTexture>();
+        HashSet<Texture2D> MarkedTextures = new HashSet<Texture2D>();
 
         [CallOnThread("Render")]
         internal SharedTextureManager(Viewer viewer, GraphicsDevice graphicsDevice)
@@ -51,12 +50,12 @@ namespace Orts.Viewer3D
             GraphicsDevice = graphicsDevice;
         }
 
-        public Texture2D Get(string path, bool required = false)
+        public SharedTexture Get(string path, bool required = false)
         {
-            return (Get(path, SharedMaterialManager.MissingTexture, required));
+            return Get(path, SharedMaterialManager.MissingTexture, required);
         }
 
-        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false)
+        public SharedTexture Get(string path, SharedTexture defaultTexture, bool required = false)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
@@ -64,8 +63,10 @@ namespace Orts.Viewer3D
             if (path == null || path == "")
                 return defaultTexture;
 
-            path = path.ToLowerInvariant();
-            if (!Textures.ContainsKey(path))
+            // Use resolved path, without any 'up one level' ("..\\") calls
+            path = Path.GetFullPath(path).ToLowerInvariant();
+
+            if (!Textures.ContainsKey(path) || Textures[path].StaleData)
             {
                 try
                 {
@@ -103,13 +104,13 @@ namespace Orts.Viewer3D
                         }
                         else
                         {
-                            Texture2D missing()
+                            SharedTexture missing()
                             {
                                 if (required)
                                     Trace.TraceWarning("Missing texture {0} replaced with default texture", path);
                                 return defaultTexture;
                             }
-                            Texture2D invalid()
+                            SharedTexture invalid()
                             {
                                 if (required)
                                     Trace.TraceWarning("Invalid texture {0} replaced with default texture", path);
@@ -150,8 +151,8 @@ namespace Orts.Viewer3D
                         return defaultTexture;
                     }
 
-                    Textures.Add(path, texture);
-                    return texture;
+                    Textures[path] = new SharedTexture(texture, false);
+                    return Textures[path];
                 }
                 catch (InvalidDataException error)
                 {
@@ -248,30 +249,57 @@ namespace Orts.Viewer3D
         }
         public void Mark()
         {
-            TextureMarks.Clear();
-            foreach (var path in Textures.Keys)
-                TextureMarks.Add(path, false);
+            MarkedTextures.Clear();
         }
 
         public void Mark(Texture2D texture)
         {
-            foreach (var key in Textures.Keys)
-            {
-                if (Textures[key] == texture)
-                {
-                    TextureMarks[key] = true;
-                    break;
-                }
-            }
+            if (texture != null)
+                MarkedTextures.Add(texture);
         }
 
         public void Sweep()
         {
-            foreach (var path in TextureMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+            // If a texture isn't in the list of marked textures, it is no longer in use
+            List<string> textureKeys = Textures.Keys.ToList();
+            foreach (string key in textureKeys)
+                if (!MarkedTextures.Contains(Textures[key].Texture))
+                {
+                    Textures[key].Texture.Dispose();
+                    Textures.Remove(key);
+                }
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for ALL textures to the given bool
+        /// (default true)
+        /// </summary>
+        public void SetAllStale (bool stale = true)
+        {
+            foreach (SharedTexture texture in Textures.Values)
+                texture.StaleData = stale;
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for the textures in the given set of paths
+        /// </summary>
+        /// <returns>bool indicating if any texture changed from fresh to stale</returns>
+        public bool MarkStale(HashSet<string> texPaths)
+        {
+            bool found = false;
+
+            foreach (string texPath in texPaths)
             {
-                Textures[path].Dispose();
-                Textures.Remove(path);
+                if (Textures.ContainsKey(texPath) && !Textures[texPath].StaleData)
+                {
+                    Textures[texPath].StaleData = true;
+                    found = true;
+
+                    Trace.TraceInformation("Texture file {0} was updated on disk and will be reloaded.", texPath);
+                }
             }
+
+            return found;
         }
 
         [CallOnThread("Updater")]
@@ -286,7 +314,7 @@ namespace Orts.Viewer3D
     {
         readonly Viewer Viewer;
         IDictionary<(string, string, int, float, Effect), Material> Materials = new Dictionary<(string, string, int, float, Effect), Material>();
-        IDictionary<(string, string, int, float, Effect), bool> MaterialMarks = new Dictionary<(string, string, int, float, Effect), bool>();
+        HashSet<Material> MarkedMaterials = new HashSet<Material>();
 
         public readonly LightConeShader LightConeShader;
         public readonly LightGlowShader LightGlowShader;
@@ -299,9 +327,9 @@ namespace Orts.Viewer3D
         public readonly DebugShader DebugShader;
         public readonly CabShader CabShader;
 
-        public static Texture2D MissingTexture;
-        public static Texture2D DefaultSnowTexture;
-        public static Texture2D DefaultDMSnowTexture;
+        public static SharedTexture MissingTexture;
+        public static SharedTexture DefaultSnowTexture;
+        public static SharedTexture DefaultDMSnowTexture;
 
         [CallOnThread("Render")]
         public SharedMaterialManager(Viewer viewer)
@@ -336,23 +364,31 @@ namespace Orts.Viewer3D
             CabShader = new CabShader(viewer.RenderProcess.GraphicsDevice, Vector4.One, Vector4.One, Vector3.One, Vector3.One);
 
             // TODO: This should happen on the loader thread.
-            MissingTexture = SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
+            MissingTexture = new SharedTexture(SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp")), false);
 
             // Managing default snow textures
             var defaultSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultSnow.ace";
             DefaultSnowTexture = Viewer.TextureManager.Get(defaultSnowTexturePath);
             var defaultDMSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultDMSnow.ace";
             DefaultDMSnowTexture = Viewer.TextureManager.Get(defaultDMSnowTexturePath);
-
         }
 
         public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null)
         {
             if (textureName != null)
-                textureName = textureName.ToLower();
+            {
+                // Use resolved path, without any 'up one level' ("..\\") calls
+                if (textureName.Contains('\0'))
+                {
+                    string[] dualPath = textureName.Split('\0');
+                    textureName = Path.GetFullPath(dualPath[0]).ToLowerInvariant() + '\0' + Path.GetFullPath(dualPath[1]).ToLowerInvariant();
+                }
+                else
+                    textureName = Path.GetFullPath(textureName).ToLowerInvariant();
+            }
 
             var materialKey = (materialName, textureName, options, mipMapBias, effect);
-            if (!Materials.ContainsKey(materialKey))
+            if (!Materials.ContainsKey(materialKey) || Materials[materialKey].StaleData)
             {
                 switch (materialName)
                 {
@@ -479,28 +515,23 @@ namespace Orts.Viewer3D
 
         public void Mark()
         {
-            MaterialMarks.Clear();
-            foreach (var path in Materials.Keys)
-                MaterialMarks.Add(path, false);
+            MarkedMaterials.Clear();
         }
 
         public void Mark(Material material)
         {
-            foreach (var key in Materials.Keys)
-            {
-                if (Materials[key] == material)
-                {
-                    MaterialMarks[key] = true;
-                    break;
-                }
-            }
+            if (material != null)
+                MarkedMaterials.Add(material);
         }
 
         public void Sweep()
         {
-            foreach (var path in MaterialMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
-                Materials.Remove(path);
-		}
+            // If a material isn't in the list of marked materials, it is no longer in use
+            List<(string, string, int, float, Effect)> materialKeys = Materials.Keys.ToList();
+            foreach (var key in materialKeys)
+                if (!MarkedMaterials.Contains(Materials[key]))
+                    Materials.Remove(key);
+        }
 
         public void LoadPrep()
         {
@@ -514,6 +545,72 @@ namespace Orts.Viewer3D
                 Viewer.World.MSTSSky.LoadPrep();
                 sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
             }
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for ALL materials to the given bool
+        /// (default true)
+        /// </summary>
+        public void SetAllStale(bool stale = true)
+        {
+            foreach (Material material in Materials.Values)
+                material.StaleData = stale;
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for materials using any of the textures from the given set of paths
+        /// </summary>
+        /// <returns>bool indicating if any material changed from fresh to stale</returns>
+        public bool MarkStale(HashSet<string> texPaths)
+        {
+            // The key for each material is a tuple that includes much more than just the texture name
+            // Need to iterate manually to check each material for the updated texture
+            bool found = false;
+
+            foreach (var matKey in Materials.Keys)
+            {
+                if (Materials[matKey].StaleData || matKey.Item2 == null)
+                    continue;
+
+                string[] matPaths;
+
+                // Some materials have multiple textures, separated by '\0' in the key
+                if (matKey.Item2.Contains('\0'))
+                    matPaths = matKey.Item2.Split('\0');
+                else
+                    matPaths = new string[] { matKey.Item2 };
+
+                foreach (string matPath in matPaths)
+                {
+                    if (!Materials[matKey].StaleData && texPaths.Contains(matPath))
+                    {
+                        // Found a match to an affected texture; mark material as stale so it gets reloaded
+                        Materials[matKey].StaleData = true;
+                        found = true;
+
+                        break;
+                    }
+                }
+                // Continue scanning next material, there may be multiple matching materials
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Checks all materials for stale textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if any material changed from fresh to stale</returns>
+        public bool CheckStale()
+        {
+            bool found = false;
+
+            foreach (Material material in Materials.Values)
+                if (!material.StaleData && material.CheckStale())
+                    found = true;
+                // Continue scanning next material, there may be multiple materials with stale textures
+
+            return found;
         }
 
 
@@ -611,10 +708,46 @@ namespace Orts.Viewer3D
         }
     }
 
+    public class SharedTexture
+    {
+        public bool StaleData;
+        private Texture2D _texture;
+        public Texture2D Texture
+        {
+            get
+            {
+                return _texture;
+            }
+            set
+            {
+                _texture = value;
+                StaleData = false;
+            }
+        }
+
+        public SharedTexture (Texture2D texture, bool staleData = false)
+        {
+            Texture = texture;
+            StaleData = staleData;
+        }
+
+        public static implicit operator Texture2D (SharedTexture texture)
+        {
+            return texture?.Texture;
+        }
+
+        public static implicit operator SharedTexture (Texture2D texture)
+        {
+            return new SharedTexture(texture, false);
+        }
+    }
+
     public abstract class Material
     {
         public readonly Viewer Viewer;
         public readonly string Key;
+
+        public bool StaleData = false;
 
         protected Material(Viewer viewer, string key)
         {
@@ -628,6 +761,8 @@ namespace Orts.Viewer3D
                 return GetType().Name;
             return String.Format("{0}({1})", GetType().Name, Key);
         }
+
+        public virtual bool CheckStale() { return false; }
 
         public virtual void SetState(GraphicsDevice graphicsDevice, Material previousMaterial) { }
         public virtual void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix) { }
@@ -760,9 +895,9 @@ namespace Orts.Viewer3D
     {
         readonly SceneryMaterialOptions Options;
         readonly float MipMapBias;
-        protected Texture2D Texture;
+        protected SharedTexture Texture;
         private readonly string TexturePath;
-        protected Texture2D NightTexture;
+        protected SharedTexture NightTexture;
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
         IEnumerator<EffectPass> ShaderPassesDarkShade;
         IEnumerator<EffectPass> ShaderPassesFullBright;
@@ -815,8 +950,8 @@ namespace Orts.Viewer3D
             var texture = SharedMaterialManager.MissingTexture;
             if (Texture != SharedMaterialManager.MissingTexture && Texture != null) texture = Texture;
             else if (NightTexture != SharedMaterialManager.MissingTexture && NightTexture != null) texture = NightTexture;
-            if (texture.Tag != null && texture.Tag.GetType() == typeof(Orts.Formats.Msts.AceInfo))
-                AceAlphaBits = ((Orts.Formats.Msts.AceInfo)texture.Tag).AlphaBits;
+            if (texture.Texture.Tag != null && texture.Texture.Tag.GetType() == typeof(Orts.Formats.Msts.AceInfo))
+                AceAlphaBits = ((Orts.Formats.Msts.AceInfo)texture.Texture.Tag).AlphaBits;
             else
                 AceAlphaBits = 0;
 
@@ -1059,6 +1194,21 @@ namespace Orts.Viewer3D
 
         }
 
+        /// <summary>
+        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this material changed from fresh to stale</returns>
+        public override bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                StaleData = Texture.StaleData || NightTexture.StaleData;
+                return StaleData;
+            }
+            else
+                return false;
+        }
+
         public override void Mark()
         {
             Viewer.TextureManager.Mark(Texture);
@@ -1242,7 +1392,7 @@ namespace Orts.Viewer3D
             if (ScreenRenderer != null)
             {
                 var originalRenderTargets = graphicsDevice.GetRenderTargets();
-                graphicsDevice.SetRenderTarget(Texture as RenderTarget2D);
+                graphicsDevice.SetRenderTarget(Texture.Texture as RenderTarget2D);
                 ScreenRenderer.ControlView.SpriteBatch.Begin();
                 ScreenRenderer.Draw(graphicsDevice);
                 ScreenRenderer.ControlView.SpriteBatch.End();

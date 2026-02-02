@@ -75,6 +75,17 @@ namespace Orts.Viewer3D
         public Simulator Simulator { get; private set; }
         public World World { get; private set; }
         private SoundSource ViewerSounds { get; set; }
+
+        // Hot reloading: Sets of updated files (in lowercase) for file monitoring purposes
+        private HashSet<string> TextureUpdates = new HashSet<string>();
+        private HashSet<string> ShapeUpdates = new HashSet<string>();
+        private HashSet<string> ShapeDescriptorUpdates = new HashSet<string>();
+        private HashSet<string> SoundUpdates = new HashSet<string>();
+        private HashSet<string> IncludeUpdates = new HashSet<string>();
+        private HashSet<string> WaveUpdates = new HashSet<string>();
+        private HashSet<string> WorldUpdates = new HashSet<string>();
+        private HashSet<string> TileUpdates = new HashSet<string>();
+        public bool ManualReloadQueued;
         /// <summary>
         /// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
         /// </summary>
@@ -208,8 +219,7 @@ namespace Orts.Viewer3D
 
         public List<TRPFile> TRPs; // Track profile file(s)
         // Dictionary associating a specific shape file path (string) with the track profile index to be used for that shape
-        // Shape file locations are to be matched ignoring case for simplicity
-        public Dictionary<string, int> TrackProfileIndicies = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        public Dictionary<string, int> TrackProfileIndicies = new Dictionary<string, int>();
 
         enum VisibilityState
         {
@@ -326,6 +336,9 @@ namespace Orts.Viewer3D
             UpdaterProcess = game.UpdaterProcess;
             LoaderProcess = game.LoaderProcess;
             SoundProcess = game.SoundProcess;
+
+            if (Simulator.Settings.EnableHotReloading)
+                EstablishFileWatchers();
 
             WellKnownCameras = new List<Camera>();
             WellKnownCameras.Add(CabCamera = new CabCamera(this));
@@ -496,10 +509,10 @@ namespace Orts.Viewer3D
             InitializeAutomaticTrackSounds();
 
             TextureManager = new SharedTextureManager(this, GraphicsDevice);
-
-            AdjustCabHeight(DisplaySize.X, DisplaySize.Y); // needs TextureManager
-
             MaterialManager = new SharedMaterialManager(this);
+
+            AdjustCabHeight(DisplaySize.X, DisplaySize.Y); // needs TextureManager and MaterialManager
+
             ShapeManager = new SharedShapeManager(this);
             SignalTypeDataManager = new SignalTypeDataManager(this);
 
@@ -612,6 +625,44 @@ namespace Orts.Viewer3D
             ActivityCommand.Receiver = ActivityWindow;  // and therefore shared by all sub-classes
             UseCameraCommand.Receiver = this;
             MoveCameraCommand.Receiver = this;
+        }
+
+
+        /// <summary>
+        /// Add subscribers for FileSystemWatcher events throughout the viewer side of the program
+        /// </summary>
+        private void EstablishFileWatchers()
+        {
+            // Sound files (.sms, .wav) can be in the ROUTES, SOUND, or TRAINS folders
+            // Graphic files (.ace, .s) can be in the GLOBAL, ROUTES, or TRAINS folders
+            // Route files (.w) can be in the ROUTES folder
+
+            if (Simulator.GLOBALWatcher != null)
+            {
+                Simulator.SubscribeToFileWatcher(Simulator.GLOBALWatcher, HandleGraphicsFileChange, HandleGraphicsFileRename);
+            }
+
+            if (Simulator.ROUTESWatcher != null)
+            {
+                Simulator.SubscribeToFileWatcher(Simulator.ROUTESWatcher, HandleGraphicsFileChange, HandleGraphicsFileRename);
+
+                Simulator.SubscribeToFileWatcher(Simulator.ROUTESWatcher, HandleSoundFileChange, HandleSoundFileRename);
+
+                Simulator.SubscribeToFileWatcher(Simulator.ROUTESWatcher, HandleRouteFileChange, HandleRouteFileRename);
+            }
+
+            if (Simulator.SOUNDWatcher != null)
+            {
+                Simulator.SubscribeToFileWatcher(Simulator.SOUNDWatcher, HandleSoundFileChange, HandleSoundFileRename);
+            }
+
+            if (Simulator.TRAINSWatcher != null)
+            {
+                Simulator.SubscribeToFileWatcher(Simulator.TRAINSWatcher, HandleGraphicsFileChange, HandleGraphicsFileRename);
+
+                Simulator.SubscribeToFileWatcher(Simulator.TRAINSWatcher, HandleSoundFileChange, HandleSoundFileRename);
+            }
+
         }
 
         public void ChangeToPreviousFreeRoamCamera()
@@ -735,7 +786,7 @@ namespace Orts.Viewer3D
             float cabTextureInverseRatio = -1;
             bool _isNightTexture;
             var cabTexture = CABTextureManager.GetTexture(cabTextureFileName, false, false, out _isNightTexture, false);
-            if (cabTexture != SharedMaterialManager.MissingTexture)
+            if (cabTexture != SharedMaterialManager.MissingTexture.Texture)
             {
                 cabTextureInverseRatio = (float)cabTexture.Height / cabTexture.Width;
                 // if square cab texture files with dimension of at least 1024 pixels are used, they are considered as stretched 4 : 3 ones
@@ -785,6 +836,23 @@ namespace Orts.Viewer3D
         {
             RealTime += elapsedRealTime;
             var elapsedTime = new ElapsedTime(Simulator.GetElapsedClockSeconds(elapsedRealTime), elapsedRealTime);
+
+            // Mark assets as stale if there are updated files to process, and no files have been updated recently
+            if (DateTime.Compare(Simulator.FileUpdateTime, DateTime.Now) < 0)
+            {
+                if (SoundUpdates.Count > 0 || WaveUpdates.Count > 0 || IncludeUpdates.Count > 0)
+                {
+                    ProcessSoundFileUpdates();
+                }
+                if (TextureUpdates.Count > 0 || ShapeUpdates.Count > 0 || ShapeDescriptorUpdates.Count > 0)
+                {
+                    ProcessGraphicsFileUpdates();
+                }
+                if (WorldUpdates.Count > 0 || TileUpdates.Count > 0)
+                {
+                    ProcessRouteFileUpdates();
+                }
+            }
 
             // auto save
             if (Simulator.Settings.AutoSaveActive && RealTime > AutoSaveDueAt && !Simulator.Paused)
@@ -948,6 +1016,298 @@ namespace Orts.Viewer3D
             {
                 Trace.WriteLine(new FileLoadException(smsFilePath, error));
             }
+        }
+
+        /// <summary>
+        /// Subscriber for file updates in graphics-containing MSTS installation directories
+        /// Accepts all file updates, which will be further sorted later on
+        /// </summary>
+        public void HandleGraphicsFileChange(object sender, FileSystemEventArgs e)
+        {
+            SortGraphicsFileUpdates(new HashSet<string> { e.FullPath.ToLowerInvariant() });
+        }
+
+        /// <summary>
+        /// Subscriber for file updates in graphics-containing MSTS installation directories
+        /// Accepts all file updates, which will be further sorted later on
+        /// </summary>
+        public void HandleGraphicsFileRename(object sender, RenamedEventArgs e)
+        {
+            SortGraphicsFileUpdates(new HashSet<string> { e.OldFullPath.ToLowerInvariant(), e.FullPath.ToLowerInvariant() });
+        }
+
+        /// <summary>
+        /// Accepts paths to any updated file in graphics-containing MSTS installation directories
+        /// then organizes files based on file type and use case
+        /// </summary>
+        public void SortGraphicsFileUpdates(HashSet<string> paths)
+        {
+            bool found = false;
+
+            foreach (string path in paths)
+            {
+                string ext = Path.GetExtension(path);
+
+                if (ext == ".ace" || ext == ".dds" || ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+                {
+                    TextureUpdates.Add(path);
+
+                    found = true;
+                }
+                else if (ext == ".s")
+                {
+                    ShapeUpdates.Add(path);
+
+                    found = true;
+                }
+                else if (ext == ".sd")
+                {
+                    ShapeDescriptorUpdates.Add(path);
+
+                    found = true;
+                }
+            }
+
+            if (found)
+                Simulator.FileUpdateTime = DateTime.Now.AddSeconds(Simulator.FileChangedDelayS);
+        }
+
+        /// <summary>
+        /// Determines if any engines or wagons have gone stale using the file lists from SortGraphicsFileUpdates()
+        /// </summary>
+        private void ProcessGraphicsFileUpdates()
+        {
+            bool staleTextures = false;
+            bool staleMaterials = false;
+            bool staleShapes = false;
+
+            if (TextureUpdates.Count > 0)
+            {
+                staleTextures |= TextureManager.MarkStale(TextureUpdates);
+
+                // Any materials using out of date textures must be considered out of date as well
+                if (staleTextures)
+                    staleMaterials |= MaterialManager.CheckStale();
+
+                staleMaterials |= MaterialManager.MarkStale(TextureUpdates);
+
+                // Any shapes using out of date materials must be considered out of date as well
+                if (staleMaterials)
+                    staleShapes |= ShapeManager.CheckStale();
+
+                TextureUpdates.Clear();
+            }
+            if (ShapeDescriptorUpdates.Count > 0)
+            {
+                // TODO: Determine if any shapes use an updated .sd file and mark those as stale
+
+                ShapeDescriptorUpdates.Clear();
+            }
+            if (ShapeUpdates.Count > 0)
+            {
+                staleShapes |= ShapeManager.MarkStale(ShapeUpdates);
+
+                ShapeUpdates.Clear();
+            }
+
+            // If any textures, materials, or shapes went stale then trains may need to be reloaded
+            if (staleTextures || staleMaterials)
+            {
+                foreach (TrainCarViewer car in World.Trains.Cars.Values)
+                    car.CheckStaleTextures();
+
+                foreach (WorldFile world in World.Scenery.WorldFiles)
+                    world.CheckStaleTextures();
+
+                foreach (TerrainTile terrain in World.Terrain.TerrainTiles)
+                    terrain.CheckStaleTextures();
+            }
+            if (staleShapes)
+            {
+                foreach (TrainCarViewer car in World.Trains.Cars.Values)
+                    car.CheckStaleShapes();
+
+                World.RoadCars.CheckStale();
+
+                foreach (WorldFile world in World.Scenery.WorldFiles)
+                    world.CheckStaleShapes();
+            }
+        }
+
+        /// <summary>
+        /// Subscriber for file updates in sound-containing MSTS installation directories
+        /// Accepts all file updates, which will be further sorted later on
+        /// </summary>
+        public void HandleSoundFileChange(object sender, FileSystemEventArgs e)
+        {
+            SortSoundFileUpdates(new HashSet<string> { e.FullPath.ToLowerInvariant() });
+        }
+
+        /// <summary>
+        /// Subscriber for file updates in sound-containing MSTS installation directories
+        /// Accepts all file updates, which will be further sorted later on
+        /// </summary>
+        public void HandleSoundFileRename(object sender, RenamedEventArgs e)
+        {
+            SortSoundFileUpdates(new HashSet<string> { e.OldFullPath.ToLowerInvariant(), e.FullPath.ToLowerInvariant() });
+        }
+
+        /// <summary>
+        /// Accepts paths to any updated file in sound-containingd MSTS installation directories
+        /// then organizes files based on file type and use case
+        /// </summary>
+        public void SortSoundFileUpdates(HashSet<string> paths)
+        {
+            bool found = false;
+
+            foreach (string path in paths)
+            {
+                string ext = Path.GetExtension(path);
+
+                if (ext == ".sms")
+                {
+                    SoundUpdates.Add(path);
+
+                    found = true;
+                }
+                else if (ext == ".inc")
+                {
+                    IncludeUpdates.Add(path);
+
+                    found = true;
+                }
+                else if (ext == ".wav")
+                {
+                    WaveUpdates.Add(path);
+
+                    found = true;
+                }
+            }
+
+            if (found)
+                Simulator.FileUpdateTime = DateTime.Now.AddSeconds(Simulator.FileChangedDelayS);
+        }
+
+        /// <summary>
+        /// Determines if any engines or wagons have gone stale using the file lists from SortSoundFileUpdates()
+        /// </summary>
+        private void ProcessSoundFileUpdates()
+        {
+            bool staleSounds = false;
+            bool staleSoundManagers = false;
+
+            if (WaveUpdates.Count > 0)
+            {
+                // Note: This call will also mark any sms files using affected wave files as out of date
+                staleSounds |= SoundProcess.MarkStale(WaveUpdates);
+
+                WaveUpdates.Clear();
+            }
+            if (SoundUpdates.Count > 0 || IncludeUpdates.Count > 0)
+            {
+                staleSoundManagers |= SharedSMSFileManager.MarkStale(SoundUpdates, IncludeUpdates);
+
+                // Any sound sources using out of date SMS must be considered out of date as well
+                if (staleSoundManagers)
+                    staleSounds |= SoundProcess.CheckStale();
+
+                SoundUpdates.Clear();
+                IncludeUpdates.Clear();
+            }
+
+            // If any sounds went stale than trains may need to be reloaded
+            if (staleSounds)
+            {
+                foreach (TrainCarViewer car in World.Trains.Cars.Values)
+                    car.CheckStaleSounds();
+
+                foreach (WorldFile world in World.Scenery.WorldFiles)
+                    world.CheckStaleSounds();
+            }
+        }
+
+        /// <summary>
+        /// Subscriber for file updates in MSTS route directories
+        /// Accepts all file updates, which will be further sorted later on
+        /// </summary>
+        public void HandleRouteFileChange(object sender, FileSystemEventArgs e)
+        {
+            SortRouteFileUpdates(new HashSet<string> { e.FullPath.ToLowerInvariant() });
+        }
+
+        /// <summary>
+        /// Subscriber for file updates in MSTS route directories
+        /// Accepts all file updates, which will be further sorted later on
+        /// </summary>
+        public void HandleRouteFileRename(object sender, RenamedEventArgs e)
+        {
+            SortRouteFileUpdates(new HashSet<string> { e.OldFullPath.ToLowerInvariant(), e.FullPath.ToLowerInvariant() });
+        }
+
+        /// <summary>
+        /// Accepts paths to any updated file in MSTS route directories
+        /// then organizes files based on file type and use case
+        /// </summary>
+        public void SortRouteFileUpdates(HashSet<string> paths)
+        {
+            bool found = false;
+
+            foreach (string path in paths)
+            {
+                string ext = Path.GetExtension(path);
+
+                if (ext == ".w" || ext == ".ws")
+                {
+                    WorldUpdates.Add(path);
+
+                    found = true;
+                }
+                else if (ext == ".raw" || ext == ".t")
+                {
+                    TileUpdates.Add(path);
+
+                    found = true;
+                }
+            }
+
+            if (found)
+                Simulator.FileUpdateTime = DateTime.Now.AddSeconds(Simulator.FileChangedDelayS);
+        }
+
+        /// <summary>
+        /// Determines if any route assets have gone stale using the file lists from SortRouteFileUpdates()
+        /// </summary>
+        private void ProcessRouteFileUpdates()
+        {
+            if (WorldUpdates.Count > 0)
+            {
+                World.Scenery.MarkStale(WorldUpdates);
+
+                WorldUpdates.Clear();
+            }
+            if (TileUpdates.Count > 0)
+            {
+                World.Terrain.MarkStale(TileUpdates);
+
+                TileUpdates.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for ALL assets managed by the viewer to the given bool
+        /// (default true)
+        /// </summary>
+        public void SetAllStale(bool stale = true)
+        {
+            TextureManager.SetAllStale(stale);
+
+            MaterialManager.SetAllStale(stale);
+
+            ShapeManager.SetAllStale(stale);
+
+            SharedSMSFileManager.SetAllStale(stale);
+
+            SoundProcess.SetAllStale(stale);
         }
 
         [CallOnThread("Updater")]
@@ -1172,6 +1532,21 @@ namespace Orts.Viewer3D
                 Simulator.Settings.SuppressConfirmations = suppressConfirmationsEntry;
                 Settings.SuppressConfirmations = suppressConfirmationsEntry;
                 Settings.Save();
+            }
+
+            // Hot reloading: User can manually force all files to stale, causing a reload of everything
+            if (UserInput.IsPressed(UserCommand.DebugForceReload))
+            {
+                if (Simulator.Settings.EnableHotReloading)
+                {
+                    ManualReloadQueued = true;
+
+                    SetAllStale(true);
+
+                    World.SetAllStale(true);
+
+                    Simulator.SetAllStale(true);
+                }
             }
 
             //ALT-F10 : display request stop info for player train - to be restored later when user setting can be defined
