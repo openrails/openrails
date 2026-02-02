@@ -18,7 +18,6 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation;
 using ORTS.Common;
 using System;
@@ -183,38 +182,51 @@ namespace Orts.Viewer3D.Popups
                             var text = e.ParsedObject.Outcomes.DisplayMessage;
                             if (!String.IsNullOrEmpty(text))
                             {
-                                if (Activity.ReopenActivityWindow)
+
+                                if ((Owner.Viewer.ActivityEventsWebpage != null) && (Owner.Viewer.ActivityEventsWebpage.isConnectionOpen))
                                 {
-                                    ComposeMenu(e.ParsedObject.Name, text);
-                                    if (Activity.IsActivityResumed)
+                                    if (Owner.Viewer.ActivityEventsWebpage.isInitHandled)
                                     {
+                                        Owner.Viewer.ActivityEventsWebpage.handleSendActivityEvent(e.ParsedObject.Name, text);
+                                        Activity.IsActivityResumed = true;
                                         ResumeActivity();
-                                        CloseMenu();
                                     }
-                                    else
-                                    {
-                                        Owner.Viewer.Simulator.Paused = true;
-                                        ResumeMenu();
-                                        PopupTime = DateTime.Now;
-                                    }
-                                    Visible = Owner.Viewer.HelpWindow.ActivityUpdated = true;
                                 }
                                 else
                                 {
-                                    // Only needs updating the first time through
-                                    if (!Owner.Viewer.Simulator.Paused && Visible == false)
+                                    if (Activity.ReopenActivityWindow)
                                     {
-                                        Owner.Viewer.Simulator.Paused = e.ParsedObject.ORTSContinue < 0 ? true : false;
-                                        if (e.ParsedObject.ORTSContinue != 0)
+                                        ComposeMenu(e.ParsedObject.Name, text);
+                                        if (Activity.IsActivityResumed)
                                         {
-                                            ComposeMenu(e.ParsedObject.Name, text);
-                                            if (e.ParsedObject.ORTSContinue < 0) ResumeMenu();
-                                            else NoPauseMenu();
+                                            ResumeActivity();
+                                            CloseMenu();
                                         }
-                                        PopupTime = DateTime.Now;
+                                        else
+                                        {
+                                            Owner.Viewer.Simulator.Paused = true;
+                                            ResumeMenu();
+                                            PopupTime = DateTime.Now;
+                                        }
                                         Visible = Owner.Viewer.HelpWindow.ActivityUpdated = true;
                                     }
-                                }                              
+                                    else
+                                    {
+                                        // Only needs updating the first time through
+                                        if (!Owner.Viewer.Simulator.Paused && Visible == false)
+                                        {
+                                            Owner.Viewer.Simulator.Paused = e.ParsedObject.ORTSContinue < 0 ? true : false;
+                                            if (e.ParsedObject.ORTSContinue != 0)
+                                            {
+                                                ComposeMenu(e.ParsedObject.Name, text);
+                                                if (e.ParsedObject.ORTSContinue < 0) ResumeMenu();
+                                                else NoPauseMenu();
+                                            }
+                                            PopupTime = DateTime.Now;
+                                            Visible = Owner.Viewer.HelpWindow.ActivityUpdated = true;
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
@@ -234,36 +246,48 @@ namespace Orts.Viewer3D.Popups
                         var text = Activity.MsgFromNewPlayer;
                         if (!String.IsNullOrEmpty(text))
                         {
-                            if (Activity.ReopenActivityWindow)
+                            if ((Owner.Viewer.ActivityEventsWebpage != null) && (Owner.Viewer.ActivityEventsWebpage.isConnectionOpen))
                             {
-                                ComposeActualPlayerTrainMenu(Owner.Viewer.PlayerTrain.Name, text);
-                                if (Activity.IsActivityResumed)
+                                if (Owner.Viewer.ActivityEventsWebpage.isInitHandled)
                                 {
+                                    Owner.Viewer.ActivityEventsWebpage.handleSendActivityEvent(e.ParsedObject.Name, text);
+                                    Activity.IsActivityResumed = true;
                                     ResumeActivity();
-                                    CloseMenu();
-                                }
-                                else
-                                {
-                                    Owner.Viewer.Simulator.Paused = true;
-                                    ResumeMenu();
-                                    PopupTime = DateTime.Now;
                                 }
                             }
                             else
                             {
-                                // Only needs updating the first time through
-                                if (!Owner.Viewer.Simulator.Paused && Visible == false)
+                                if (Activity.ReopenActivityWindow)
                                 {
                                     ComposeActualPlayerTrainMenu(Owner.Viewer.PlayerTrain.Name, text);
-                                    NoPauseMenu();
-                                    PopupTime = DateTime.Now;
+                                    if (Activity.IsActivityResumed)
+                                    {
+                                        ResumeActivity();
+                                        CloseMenu();
+                                    }
+                                    else
+                                    {
+                                        Owner.Viewer.Simulator.Paused = true;
+                                        ResumeMenu();
+                                        PopupTime = DateTime.Now;
+                                    }
                                 }
-                                else if (Owner.Viewer.Simulator.Paused)
+                                else
                                 {
-                                    ResumeMenu();
+                                    // Only needs updating the first time through
+                                    if (!Owner.Viewer.Simulator.Paused && Visible == false)
+                                    {
+                                        ComposeActualPlayerTrainMenu(Owner.Viewer.PlayerTrain.Name, text);
+                                        NoPauseMenu();
+                                        PopupTime = DateTime.Now;
+                                    }
+                                    else if (Owner.Viewer.Simulator.Paused)
+                                    {
+                                        ResumeMenu();
+                                    }
                                 }
+                                Visible = true;
                             }
-                            Visible = true;
                         }
                         else
                         {
