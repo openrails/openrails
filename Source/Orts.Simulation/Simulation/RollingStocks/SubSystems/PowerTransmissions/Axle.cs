@@ -19,19 +19,20 @@
 //#define DEBUG_ADHESION
 
 using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using Microsoft.Xna.Framework;
-using ORTS.Common;
+using MonoGame.Framework.Utilities.Deflate;
+using Orts.Formats.OR;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
+using ORTS.Common;
 using SharpDX.Direct2D1;
 using SharpDX.Direct3D9;
-using Orts.Formats.OR;
+using static Orts.Simulation.RollingStocks.MSTSLocomotive;
 using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
-using MonoGame.Framework.Utilities.Deflate;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -830,6 +831,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool DrivingCogWheelFitted;
         public bool drivingCogRead = false;
 
+        public enum LocomotiveAxleDriveRailTypes
+        {
+            Unknown,
+            Rack_Free, // Rack locomotive with free wheeling adhesion (supporting) wheels
+            Rack_Fixed, // Rack locomotive with fixed (non free wheeling) adhesion wheels
+            Rack_Adhesion, // Rack locomotive with seperate drives for rack and adhesion axles
+            Adhesion // Adhesion only locomotive axle
+        }
+
+        public LocomotiveAxleDriveRailTypes LocomotiveAxleDriveRailType;
+
         /// <summary>
         /// Static adhesion coefficient, as given by Curtius-Kniffler formula, at zero speed, ie UMax
         /// </summary>
@@ -1109,6 +1121,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             if (part != "") AnimatedParts.Add(part);
                         }
                         break;
+                    case "locomotiveaxledriverailtype":
+                        stf.MustMatch("(");
+                        var locomotiveDriveType = stf.ReadString();
+                        //                        Trace.TraceInformation("Locomotive Rail Drive Type: " + locomotiveDriveType);
+                        //                       Trace.TraceInformation("Known Types: " + string.Join(", ", Enum.GetNames(typeof(LocomotiveRailDriveTypes))));
+
+                        try
+                        {
+                            LocomotiveAxleDriveRailType = (LocomotiveAxleDriveRailTypes)Enum.Parse(typeof(LocomotiveAxleDriveRailTypes), locomotiveDriveType);
+                        }
+                        catch
+                        {
+                            /*                            if (Simulator.Settings.VerboseConfigurationMessages)
+                                                            STFException.TraceWarning(stf, "Assumed unknown Locomotive drive type " + locomotiveDriveType);
+                            */
+                            LocomotiveAxleDriveRailType = LocomotiveAxleDriveRailTypes.Unknown;
+                        }
+                        break;
+
                     case "(":
                         stf.SkipRestOfBlock();
                         break;
@@ -1127,6 +1158,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             InertiaKgm2 = other.InertiaKgm2;
             WheelWeightKg = other.WheelWeightKg;
             AxleWeightN = other.AxleWeightN;
+            LocomotiveAxleDriveRailType = other.LocomotiveAxleDriveRailType;
             AnimatedParts.Clear();
             AnimatedParts.AddRange(other.AnimatedParts);
         }
