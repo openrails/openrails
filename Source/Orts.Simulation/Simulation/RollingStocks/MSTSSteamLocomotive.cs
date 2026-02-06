@@ -2046,7 +2046,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-                if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster || SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Rack)
+                if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
                     if (SteamEngineType == SteamEngineTypes.Compound)
                     {
@@ -7209,6 +7209,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             //TODO - identify the maximum value for display?? 
             PistonSpeedFtpMin = SteamEngines[0].PistonSpeedFtpMin;
 
+
+         //   Trace.TraceInformation("STE {0} TF {1} MaxForce {2} Speed {3}", absStartTractiveEffortN, Math.Abs(TractiveForceN), MaxForceN, AbsTractionSpeedMpS);
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (AbsTractionSpeedMpS < 1.0)
             {
