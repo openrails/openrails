@@ -373,6 +373,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         if (axle.WheelRadiusM <= 0) axle.WheelRadiusM = locomotive.DriverWheelRadiusM;
                     }
 
+                    // Set default type of axle rail traction selected
+                    if (axle.LocomotiveAxleRailTractionType == LocomotiveAxleRailTractionTypes.Unknown)
+                    {
+                        axle.LocomotiveAxleRailTractionType = LocomotiveAxleRailTractionTypes.Adhesion;
+
+                        if ( locomotive.Simulator.Settings.VerboseConfigurationMessages)
+                            Trace.TraceInformation("LocomotiveAxleRailDriveType set to Default value of {0}", axle.LocomotiveAxleRailTractionType);
+                    }
+
                     // set the wheel slip threshold times for different types of locomotives
                     // Because of the irregular force around the wheel for a steam engine during a revolution, "response" time for warnings needs to be lower
                     if (locomotive.EngineType == TrainCar.EngineTypes.Steam)
@@ -814,6 +823,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool IsRackRailway;
 
         /// <summary>
+        /// Indicates whether the axle is operating on a rack railway
+        /// </summary>
+        public bool IsRackRailwayOperational;
+
+        /// <summary>
         /// Gear factor to increase drive force if rack locomotive
         /// </summary>
         public float CogWheelGearFactor;
@@ -829,6 +843,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         public bool DrivingCogWheelFitted;
         public bool drivingCogRead = false;
+
+        /// <summary>
+        /// Indicates the type of traction that the axle has with the track, which determines the method of calculating 
+        /// the drive force and adhesion limit for the axle
+        /// </summary>
+        public enum LocomotiveAxleRailTractionTypes
+        {
+            Rack,           // axle has may have a cog wheel, but is not necessarily running on a rack railway
+            Rack_Adhesion,  // axles has a cog wheel and adhesion wheels on same axle
+            Adhesion,       // defaults to adhesion
+            Unknown
+        }
+
+        public LocomotiveAxleRailTractionTypes LocomotiveAxleRailTractionType;
+
 
         /// <summary>
         /// Static adhesion coefficient, as given by Curtius-Kniffler formula, at zero speed, ie UMax
@@ -1109,6 +1138,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             if (part != "") AnimatedParts.Add(part);
                         }
                         break;
+                    case "locomotiveaxlerailtractiontype":
+                     //   stf.MustMatch("(");
+                        var locomotiveTractionType = stf.ReadStringBlock("");
+                        try
+                        {
+                            LocomotiveAxleRailTractionType = (LocomotiveAxleRailTractionTypes)Enum.Parse(typeof(LocomotiveAxleRailTractionTypes), locomotiveTractionType);
+                        }
+                        catch
+                        {
+                                STFException.TraceWarning(stf, "Assumed unknown Locomotive drive type " + locomotiveTractionType);
+                        }
+                        break;
                     case "(":
                         stf.SkipRestOfBlock();
                         break;
@@ -1127,6 +1168,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             InertiaKgm2 = other.InertiaKgm2;
             WheelWeightKg = other.WheelWeightKg;
             AxleWeightN = other.AxleWeightN;
+            LocomotiveAxleRailTractionType = other.LocomotiveAxleRailTractionType;
             AnimatedParts.Clear();
             AnimatedParts.AddRange(other.AnimatedParts);
         }
@@ -1439,7 +1481,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
             motor?.Update(elapsedSeconds);
 
-            if (advancedAdhesion && (!IsRackRailway && ( !BrakingCogWheelFitted || !DrivingCogWheelFitted)))
+            if (advancedAdhesion && !IsRackRailwayOperational)
             {
                 Integrate(elapsedSeconds);
 
@@ -1458,7 +1500,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 UpdateSimpleAdhesion(elapsedSeconds);
             }
-            if (SlipPercent > (Car is MSTSLocomotive loco && loco.SlipControlSystem == MSTSLocomotive.SlipControlType.Full && Math.Abs(DriveForceN) > BrakeRetardForceN ? (200 - SlipWarningTresholdPercent) : 100))
+            if ((SlipPercent > (Car is MSTSLocomotive loco && loco.SlipControlSystem == MSTSLocomotive.SlipControlType.Full && Math.Abs(DriveForceN) > BrakeRetardForceN ? (200 - SlipWarningTresholdPercent) : 100)) && LocomotiveAxleRailTractionType != LocomotiveAxleRailTractionTypes.Rack)
             {
                 // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
                 IsWheelSlip = IsWheelSlipWarning = true;
@@ -1470,7 +1512,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
                 WheelSlipTimeS += elapsedSeconds;
             }
-            else if (SlipPercent > SlipWarningTresholdPercent)
+            else if (SlipPercent > SlipWarningTresholdPercent && LocomotiveAxleRailTractionType != LocomotiveAxleRailTractionTypes.Rack)
             {
                 // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
                 IsWheelSlipWarning = true;
@@ -1513,7 +1555,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // In a slip possible model wheel axle force is limited to adhesion force so that wheel slip will not occur
             float adhesionForceN = AxleGradientForceN * AdhesionLimit;
             SlipPercent = Math.Abs(axleOutForceN) / adhesionForceN * 100;
-            bool RackRailwaySlipException = false;
 
             if ((Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel) || DrivingCogWheelFitted ) 
             {
@@ -1529,7 +1570,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     if (!locomotive.AntiSlip && locomotive.SlipControlSystem != MSTSLocomotive.SlipControlType.Full) axleOutForceN *= locomotive.Adhesion1;
                     else SlipPercent = 100;
                 }
-                else if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven || (IsRackRailway && BrakingCogWheelFitted) || (IsRackRailway && BrakingCogWheelFitted))
+                else if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven || (IsRackRailway && BrakingCogWheelFitted))
                 {
                     // No wagon skid in simple adhesion
                     SlipPercent = 100;

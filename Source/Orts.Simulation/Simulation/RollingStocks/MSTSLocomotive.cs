@@ -65,6 +65,7 @@ using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using static Orts.Simulation.RollingStocks.MSTSLocomotive;
+using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
@@ -104,16 +105,6 @@ namespace Orts.Simulation.RollingStocks
             Sound,
             ContinuousSound
         }
-
-        public enum LocomotiveRailDriveTypes
-        {
-            Unknown,
-            Rack,
-            Rack_Adhesion,
-            Adhesion, // defaults to adhesion
-        }
-
-        public LocomotiveRailDriveTypes LocomotiveRailDriveType;
 
         public bool DriveCogWheelFitted = false;
 
@@ -1237,19 +1228,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
                 case "engine(ortsrackrailgearfactor": CogWheelGearingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsdrivingcogwheelfitted": DriveCogWheelFitted = stf.ReadBoolBlock(false); break;
-                case "engine(ortslocomotiveraildrivetype":
-                    stf.MustMatch("(");
-                    var locomotiveDriveType = stf.ReadString();
-                    try
-                    {
-                        LocomotiveRailDriveType = (LocomotiveRailDriveTypes)Enum.Parse(typeof(LocomotiveRailDriveTypes), locomotiveDriveType);
-                    }
-                    catch
-                    {
-                        if (Simulator.Settings.VerboseConfigurationMessages)
-                            STFException.TraceWarning(stf, "Assumed unknown Locomotive drive type " + locomotiveDriveType);
-                    }
-                    break;
+
                 default:
                     base.Parse(lowercasetoken, stf);
                     break;
@@ -1421,7 +1400,6 @@ namespace Orts.Simulation.RollingStocks
             MultiPositionControllers = locoCopy.CloneMPC(this);
             OnLineCabRadio = locoCopy.OnLineCabRadio;
             OnLineCabRadioURL = locoCopy.OnLineCabRadioURL;
-            LocomotiveRailDriveType = locoCopy.LocomotiveRailDriveType;
             CogWheelGearingFactor = locoCopy.CogWheelGearingFactor;
             DriveCogWheelFitted = locoCopy.DriveCogWheelFitted;
         }
@@ -1657,22 +1635,6 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 IsSteamHeatFitted = true;
-            }
-
-            // Type of rail drive selected
-            if (LocomotiveRailDriveType == LocomotiveRailDriveTypes.Unknown)
-            {
-                LocomotiveRailDriveType = LocomotiveRailDriveTypes.Adhesion;
-
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("LocomotiveRailDriveType set to Default value of {0}", LocomotiveRailDriveType);
-            }
-
-            if (CogWheelGearingFactor == 0 && LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack)
-            {
-                 CogWheelGearingFactor = 1.0f; // Set default value of 1:1 ratio
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("CogWheelGearingRatio set to Default value of {0}", CogWheelGearingFactor);
             }
 
             SaturatedSteamHeatPressureToTemperaturePSItoF = SteamTable.SaturatedSteamHeatPressureToTemperatureInterpolatorPSItoF();
@@ -1981,8 +1943,25 @@ namespace Orts.Simulation.RollingStocks
                 MaxTrackSanderSteamConsumptionForwardLbpS = 300f / 3600f; // Default value - 300lbs/hr - this value is un confirmed at this stage.
             }
 
+            bool notDrivenAxle = false;
+
+            for (int i = 0; i < LocomotiveAxles.Count; i++)
+            {
+                var axle = LocomotiveAxles[i];
+
+                if (CogWheelGearingFactor == 0 && axle.LocomotiveAxleRailTractionType == LocomotiveAxleRailTractionTypes.Rack)
+                {
+                    CogWheelGearingFactor = 1.0f; // Set default value of 1:1 ratio
+
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("CogWheelGearingRatio set to Default value of {0}", CogWheelGearingFactor);
+                }
+            }
+
             base.Initialize();
             if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;
+
+
 
         }
 
@@ -2936,7 +2915,6 @@ namespace Orts.Simulation.RollingStocks
                         {
                             WheelslipState = Wheelslip.Occurring;
                             Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
-                            Trace.TraceInformation("Display Wheelslip#1 - CarID {0} WheelSlip {1}", CarID, HuDIsWheelSlip);
                         }
                     }
                     else
@@ -2965,8 +2943,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         WheelslipState = Wheelslip.Occurring;
                         Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
-                        Trace.TraceInformation("Display Wheelslip#2");
-                    }
+                                            }
                     if ((!WheelSlip) && (WheelslipState != Wheelslip.None))
                     {
                         WheelslipState = Wheelslip.None;
