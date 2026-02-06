@@ -66,26 +66,27 @@
  *  LocomotiveViewer - provides basic animation for running gear, wipers, etc
  * 
  */
-using Microsoft.Xna.Framework;
-using Orts.Common;
-using Orts.Formats.Msts;
-using Orts.Parsers.Msts;
-using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks.SubSystems.Controllers;
-using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
-using ORTS.Common;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using Event = Orts.Common.Event;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Microsoft.Xna.Framework;
+using Orts.Common;
+using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using Orts.Simulation;
-using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
-using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
-using SharpDX.Direct3D9;
+using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
+using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using ORTS.Common;
+using SharpDX.Direct3D9;
 using static Orts.Simulation.RollingStocks.MSTSSteamLocomotive;
+using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
+using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -2044,7 +2045,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-                if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster || SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Rack)
                 {
                     if (SteamEngineType == SteamEngineTypes.Compound)
                     {
@@ -2885,13 +2886,16 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 Trace.TraceInformation("Boiler Volume {0:N1} cu ft, Evap Area {1:N1} sq ft, Superheat Area {2:N1} sq ft, Max Superheat Temp {3:N1} F, Max Boiler Pressure {4:N1} psi", BoilerVolumeFT3, Me2.ToFt2(EvaporationAreaM2), Me2.ToFt2(SuperheatAreaM2), MaxSuperheatRefTempF, MaxBoilerPressurePSI);
                 Trace.TraceInformation("Boiler Evap Rate {0} , Max Boiler Output {1} lbs/h", BoilerEvapRateLbspFt2, MaxBoilerOutputLBpH);
 
-                Trace.TraceInformation("**************** Cylinder ****************");
-                Trace.TraceInformation("Num {0}, Stroke {1:N1} in, Diameter {2:N1} in, Efficiency {3:N1}, MaxIHP {4:N1}", MSTSNumCylinders, Me.ToIn(MSTSCylinderStrokeM), Me.ToIn(MSTSCylinderDiameterM), CylinderEfficiencyRate, MaxIndicatedHorsePowerHP);
-                Trace.TraceInformation("Port Opening {0}, Exhaust Point {1}, InitialSuperheatFactor {2}", CylinderPortOpeningFactor, CylinderExhaustOpenFactor, SuperheatCutoffPressureFactor);
-
                 Trace.TraceInformation("**************** Fire ****************");
                 Trace.TraceInformation("Grate - Area {0:N1} sq ft, Limit {1:N1} lb/sq ft", Me2.ToFt2(GrateAreaM2), GrateLimitLBpFt2);
                 Trace.TraceInformation("Fuel - Calorific {0} btu/lb, Max Firing Rate {1} lbs/h Max Coal Load {2} lbs", KJpKg.ToBTUpLb(FuelCalorificKJpKG), Kg.ToLb(pS.TopH(MaxFiringRateKGpS)), Kg.ToLb(MaxTenderFuelMassKG));
+
+                for (int i = 0; i < SteamEngines.Count; i++)
+                {
+                    Trace.TraceInformation("**************** Cylinder {0} ****************", i+1);
+                    Trace.TraceInformation("Num {0}, Stroke {1:N1} in, Diameter {2:N1} in, Efficiency {3:N1}, MaxIHP {4:N1}", SteamEngines[i].NumberCylinders, Me.ToIn(SteamEngines[i].CylindersStrokeM), Me.ToIn(SteamEngines[i].CylindersDiameterM), CylinderEfficiencyRate, SteamEngines[i].MaxIndicatedHorsePowerHP);
+                    Trace.TraceInformation("Port Opening {0}, Exhaust Point {1}, InitialSuperheatFactor {2}", CylinderPortOpeningFactor, CylinderExhaustOpenFactor, SuperheatCutoffPressureFactor);
+                }
 
                 Trace.TraceInformation("========================================================================================================================================================");
 
@@ -3128,168 +3132,162 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     LocomotiveBackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(SteamEngines[i].CylinderSteamUsageLBpS)];
                 }
 
-                bool IsSeparateEngineRackAdhesionEnabled = false;
-
-                if (IsRackRailway && SteamEngines[i].AttachedAxle.DrivingCogWheelFitted && LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack_Adhesion)
-                {
-                    IsSeparateEngineRackAdhesionEnabled = true;
-                }
-
                 // Calculate cylinder operation only for Adhesion or Rack-Adhesion locos when not on rack section, or separate rack engine when on rack section
-                if (LocomotiveRailDriveType == LocomotiveRailDriveTypes.Adhesion || (LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack_Adhesion && !SteamEngines[i].AttachedAxle.DrivingCogWheelFitted) || IsSeparateEngineRackAdhesionEnabled)
-                {
-
                     var enginethrottle = 0.0f;
 
                     float absSpeedRefMpS = Simulator.UseAdvancedAdhesion ? Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS) : AbsTractionSpeedMpS;
 
-                    if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)  // Booster Engine
+                {
+                    // Air pressure must be greater then 70psi to ensure sufficient supply for the Booster engine
+                    if (MainResPressurePSI < 70)
                     {
-                        UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedRefMpS, i);
+                        BoosterAirisLow = true;
                     }
-                    else if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)  // Booster Engine
+
+                    BoosterCylinderExhaustOpenFactor = SteamEngines[i].BoosterCutoff;
+
+                    // Confirm that Latch is on
+                    if (SteamBoosterLatchOn && cutoff > SteamEngines[i].BoosterThrottleCutoff)
                     {
-                        // Air pressure must be greater then 70psi to ensure sufficient supply for the Booster engine
-                        if (MainResPressurePSI < 70)
+                        if (SteamBoosterLatchedLocked == false)
                         {
-                            BoosterAirisLow = true;
+                            SteamBoosterLatchedLocked = true;
+                        }
+                    }
+                    else
+                    {
+                        if (SteamBoosterLatchedLocked == true)
+                        {
+                            SteamBoosterLatchedLocked = false;
+                        }
+                    }
+
+                    // Identify operating mode for the Booster
+                    // There are xx modes of operation for the Booster Engine as follows:
+                    // a) Booster disengaged - all air and steam supply off
+                    // b) Idle mode - air supply on and Idle valve in Idle position
+                    // c) Run mode (Gear not engaged) - booster engine starting to turn over, but no tractive force produced.
+                    // d) Run mode (Gear engaged) - booster engine producing tractive force
+
+                    // Idle mode
+                    if (SteamBoosterAirOpen && !SteamBoosterIdle && !BoosterAirisLow)
+                    {
+                        SteamBoosterRunMode = false;
+                        SteamBoosterIdleMode = true;
+                        BoosterGearsEngaged = false;
+                        BoosterGearEngageTimerS = 0;
+                        BoosterCylinderSteamExhaustOn = true;
+                        BoosterCylinderCocksOn = true;
+                        BoosterSteamFraction = 0.5f;
+                        enginethrottle = 0.0f;
+
+                        // Steam consumption based upon steam flow through choke
+
+                        // Allow time for cylinders to heat up
+                        if (!BoosterIdleHeatingTimerReset)
+                        {
+                            if (BoosterIdleHeatingTimerS > BoosterIdleHeatingTimePeriodS)
+                            {
+                                BoosterIdleHeatingTimerReset = true; // Stop Idle heating timer
+                            }
+                            BoosterIdleHeatingTimerS += elapsedClockSeconds;
+
+                            // Booster needs to be idled (heated) for approx this period of time before engaging the gears in Run mode
+                            BoosterGearEngageTimePeriodS = BoosterIdleHeatingTimePeriodS + BoosterGearSyncTimePeriodS - BoosterIdleHeatingTimerS;
                         }
 
-                        BoosterCylinderExhaustOpenFactor = SteamEngines[i].BoosterCutoff;
+                    }
+                    // Run mode - Gears not engaged
+                    else if (SteamBoosterAirOpen && SteamBoosterIdle && !BoosterAirisLow && !BoosterGearsEngaged)
+                    {
+                        SteamBoosterIdleMode = false;
+                        SteamBoosterRunMode = true;
 
-                        // Confirm that Latch is on
-                        if (SteamBoosterLatchOn && cutoff > SteamEngines[i].BoosterThrottleCutoff)
+                        BoosterCylinderSteamExhaustOn = true;
+                        BoosterCylinderCocksOn = true;
+                        BoosterSteamFraction = 0.2f;
+                        enginethrottle = 0;
+
+                        // Steam consumption based upon steam flow through choke
+
+                        if (!BoosterGearsEngaged && BoosterGearEngageTimerS > BoosterGearEngageTimePeriodS && SteamBoosterLatchedLocked && cutoff > SteamEngines[i].BoosterThrottleCutoff) // Booster gears engaged
                         {
-                            if (SteamBoosterLatchedLocked == false)
-                            {
-                                SteamBoosterLatchedLocked = true;
-                            }
-                        }
-                        else
-                        {
-                            if (SteamBoosterLatchedLocked == true)
-                            {
-                                SteamBoosterLatchedLocked = false;
-                            }
-                        }
-
-                        // Identify operating mode for the Booster
-                        // There are xx modes of operation for the Booster Engine as follows:
-                        // a) Booster disengaged - all air and steam supply off
-                        // b) Idle mode - air supply on and Idle valve in Idle position
-                        // c) Run mode (Gear not engaged) - booster engine starting to turn over, but no tractive force produced.
-                        // d) Run mode (Gear engaged) - booster engine producing tractive force
-
-                        // Idle mode
-                        if (SteamBoosterAirOpen && !SteamBoosterIdle && !BoosterAirisLow)
-                        {
-                            SteamBoosterRunMode = false;
-                            SteamBoosterIdleMode = true;
-                            BoosterGearsEngaged = false;
-                            BoosterGearEngageTimerS = 0;
-                            BoosterCylinderSteamExhaustOn = true;
-                            BoosterCylinderCocksOn = true;
-                            BoosterSteamFraction = 0.5f;
-                            enginethrottle = 0.0f;
-
-                            // Steam consumption based upon steam flow through choke
-
-                            // Allow time for cylinders to heat up
-                            if (!BoosterIdleHeatingTimerReset)
-                            {
-                                if (BoosterIdleHeatingTimerS > BoosterIdleHeatingTimePeriodS)
-                                {
-                                    BoosterIdleHeatingTimerReset = true; // Stop Idle heating timer
-                                }
-                                BoosterIdleHeatingTimerS += elapsedClockSeconds;
-
-                                // Booster needs to be idled (heated) for approx this period of time before engaging the gears in Run mode
-                                BoosterGearEngageTimePeriodS = BoosterIdleHeatingTimePeriodS + BoosterGearSyncTimePeriodS - BoosterIdleHeatingTimerS;
-                            }
-
-                        }
-                        // Run mode - Gears not engaged
-                        else if (SteamBoosterAirOpen && SteamBoosterIdle && !BoosterAirisLow && !BoosterGearsEngaged)
-                        {
-                            SteamBoosterIdleMode = false;
-                            SteamBoosterRunMode = true;
-
-                            BoosterCylinderSteamExhaustOn = true;
-                            BoosterCylinderCocksOn = true;
-                            BoosterSteamFraction = 0.2f;
-                            enginethrottle = 0;
-
-                            // Steam consumption based upon steam flow through choke
-
-                            if (!BoosterGearsEngaged && BoosterGearEngageTimerS > BoosterGearEngageTimePeriodS && SteamBoosterLatchedLocked && cutoff > SteamEngines[i].BoosterThrottleCutoff) // Booster gears engaged
-                            {
-                                BoosterGearsEngaged = true;
-                                BoosterIdleHeatingTimerReset = false;
-                                BoosterIdleHeatingTimerS = 0;
-                            }
-                            BoosterGearEngageTimerS += elapsedClockSeconds;
-                        }
-                        // Run mode - Gears engaged
-                        else if (SteamBoosterAirOpen && SteamBoosterIdle && !BoosterAirisLow && BoosterGearsEngaged)
-                        {
-                            SteamBoosterIdleMode = false;
-                            SteamBoosterRunMode = true;
-                            BoosterEngineSpeedRpM = 0.0f;
-
-                            if (SteamBoosterLatchedLocked && cutoff > SteamEngines[i].BoosterThrottleCutoff)
-                            {
-                                // Set values required for booster running
-                                enginethrottle = throttle;
-                                BoosterCylinderSteamExhaustOn = true;
-                                BoosterCylinderCocksOn = false;
-                                BoosterSteamFraction = throttle;
-                            }
-                            else // If booster is unlatched then disengage gears and drop back to "Run mode - Gears Disengaged".
-                            {
-                                BoosterGearsEngaged = false;
-                                BoosterGearEngageTimerS = 0;
-                            }
-                        }
-                        // Turn Booster off completely
-                        else if (!SteamBoosterAirOpen || BoosterAirisLow)
-                        {
-                            SteamBoosterRunMode = false;
-                            SteamBoosterIdleMode = false;
-                            BoosterCylinderSteamExhaustOn = false;
-                            BoosterCylinderCocksOn = false;
-                            enginethrottle = 0;
+                            BoosterGearsEngaged = true;
                             BoosterIdleHeatingTimerReset = false;
-                            BoosterCylinderSteamExhaustOn = false;
+                            BoosterIdleHeatingTimerS = 0;
+                        }
+                        BoosterGearEngageTimerS += elapsedClockSeconds;
+                    }
+                    // Run mode - Gears engaged
+                    else if (SteamBoosterAirOpen && SteamBoosterIdle && !BoosterAirisLow && BoosterGearsEngaged)
+                    {
+                        SteamBoosterIdleMode = false;
+                        SteamBoosterRunMode = true;
+                        BoosterEngineSpeedRpM = 0.0f;
+
+                        if (SteamBoosterLatchedLocked && cutoff > SteamEngines[i].BoosterThrottleCutoff)
+                        {
+                            // Set values required for booster running
+                            enginethrottle = throttle;
+                            BoosterCylinderSteamExhaustOn = true;
+                            BoosterCylinderCocksOn = false;
+                            BoosterSteamFraction = throttle;
+                        }
+                        else // If booster is unlatched then disengage gears and drop back to "Run mode - Gears Disengaged".
+                        {
                             BoosterGearsEngaged = false;
                             BoosterGearEngageTimerS = 0;
-                            BoosterIdleHeatingTimerS = 0;
-                            BoosterSteamFraction = 0.0f;
-                            BoosterEngineSpeedRpM = 0.0f;
-                        }
-
-                        UpdateCylinders(elapsedClockSeconds, enginethrottle, BoosterCylinderExhaustOpenFactor, absSpeedRefMpS, i);
-
-                        // Update Booster steam consumption
-                        if (SteamBoosterIdleMode)
-                        {
-                            // In Idle mode steam consumption will be calculated by steam through an orifice.
-                            // Steam Flow (lb/hr) = 24.24 x Press(BoilerPressure + Atmosphere(psi)) x ChokeDia^2 (in) - this needs to be multiplied by Num Cyls
-                            SteamBoosterPressurePSI = (BoilerPressurePSI + OneAtmospherePSI) * BoosterPressureFactor;
-                            SteamEngines[i].CylinderSteamUsageLBpS = pS.FrompH(SteamEngines[i].NumberCylinders * (24.24f * (SteamBoosterPressurePSI) * BoosterIdleChokeSizeIn * BoosterIdleChokeSizeIn));
-                            SteamEngines[i].CylinderSteamUsageLBpH = pS.TopH(SteamEngines[i].CylinderSteamUsageLBpS);
-                            HuDBoosterSteamConsumptionLbpS = SteamEngines[i].CylinderSteamUsageLBpS;
-
-                        }
-                        else
-                        {
-                            // In run mode steam consumption calculated by cylinder model
-                            HuDBoosterSteamConsumptionLbpS = SteamEngines[i].CylinderSteamUsageLBpS;
-                            SteamBoosterPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(SteamEngines[i].DriveWheelRevRpS)] * BoilerPressurePSI); // equivalent to steam chest pressure
                         }
                     }
+                    // Turn Booster off completely
+                    else if (!SteamBoosterAirOpen || BoosterAirisLow)
+                    {
+                        SteamBoosterRunMode = false;
+                        SteamBoosterIdleMode = false;
+                        BoosterCylinderSteamExhaustOn = false;
+                        BoosterCylinderCocksOn = false;
+                        enginethrottle = 0;
+                        BoosterIdleHeatingTimerReset = false;
+                        BoosterCylinderSteamExhaustOn = false;
+                        BoosterGearsEngaged = false;
+                        BoosterGearEngageTimerS = 0;
+                        BoosterIdleHeatingTimerS = 0;
+                        BoosterSteamFraction = 0.0f;
+                        BoosterEngineSpeedRpM = 0.0f;
+                    }
 
-                    // update the boiler steam values as appropriate for each locomotive engine
-                    BoilerMassLB -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS; //  Boiler mass will be reduced by cylinder steam usage
+                    UpdateCylinders(elapsedClockSeconds, enginethrottle, BoosterCylinderExhaustOpenFactor, absSpeedRefMpS, i);
+
+                    // Update Booster steam consumption
+                    if (SteamBoosterIdleMode)
+                    {
+                        // In Idle mode steam consumption will be calculated by steam through an orifice.
+                        // Steam Flow (lb/hr) = 24.24 x Press(BoilerPressure + Atmosphere(psi)) x ChokeDia^2 (in) - this needs to be multiplied by Num Cyls
+                        SteamBoosterPressurePSI = (BoilerPressurePSI + OneAtmospherePSI) * BoosterPressureFactor;
+                        SteamEngines[i].CylinderSteamUsageLBpS = pS.FrompH(SteamEngines[i].NumberCylinders * (24.24f * (SteamBoosterPressurePSI) * BoosterIdleChokeSizeIn * BoosterIdleChokeSizeIn));
+                        SteamEngines[i].CylinderSteamUsageLBpH = pS.TopH(SteamEngines[i].CylinderSteamUsageLBpS);
+                        HuDBoosterSteamConsumptionLbpS = SteamEngines[i].CylinderSteamUsageLBpS;
+
+                    }
+                    else
+                    {
+                        // In run mode steam consumption calculated by cylinder model
+                        HuDBoosterSteamConsumptionLbpS = SteamEngines[i].CylinderSteamUsageLBpS;
+                        SteamBoosterPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(SteamEngines[i].DriveWheelRevRpS)] * BoilerPressurePSI); // equivalent to steam chest pressure
+                    }
+                }
+                else if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Rack && IsRackRailway)
+                {
+                    UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedRefMpS, i);
+                }
+                else if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Rack)
+                {
+                    UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedRefMpS, i);
+                }
+
+                // update the boiler steam values as appropriate for each locomotive engine
+                BoilerMassLB -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS; //  Boiler mass will be reduced by cylinder steam usage
                     BoilerHeatBTU -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); //  Boiler Heat will be reduced by heat required to replace the cylinder steam usage, ie create steam from hot water. 
                     TotalSteamUsageLBpS += SteamEngines[i].CylinderSteamUsageLBpS;
                     BoilerHeatOutBTUpS += SteamEngines[i].CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
@@ -3389,9 +3387,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                     UpdateSteamTractiveForce(elapsedClockSeconds, tractiveforcethrottle, i);
 
-                    SteamDrvWheelWeightLbs += Kg.ToLb(SteamEngines[i].AttachedAxle.WheelWeightKg / SteamEngines[i].AttachedAxle.NumWheelsetAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
-                }
-
+                    SteamDrvWheelWeightLbs += Kg.ToLb(SteamEngines[i].AttachedAxle.WheelWeightKg / SteamEngines[i].AttachedAxle.NumWheelsetAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)        
             }
 
             // calculate total back pressure from all exhausts
@@ -6655,15 +6651,14 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
             // By default this model uses information based upon a "NYC 4-4-2 locomotive", for smaller locomotives this data is changed in the OR initialisation phase.
 
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot && !IsRackRailway)
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Rack)
             // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is in the the player train, AI locomotive will not work to this model. 
             // Don't use slip model when train is in auto pilot
             {
                 float absEngineWheelSpeedMpS = Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS);
 
-                if ((SteamEngineType == SteamEngineTypes.Compound || SteamEngineType == SteamEngineTypes.Simple) && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                if ((SteamEngineType == SteamEngineTypes.Compound || SteamEngineType == SteamEngineTypes.Simple) && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster )
                 {
-
                     float slipCutoffPressureAtmPSI;
                     float slipCylinderReleasePressureAtmPSI;
                     float slipInitialPressureAtmPSI;
@@ -7001,7 +6996,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].AverageTractiveForceN) * pS.TopH(Me.ToMi(absEngineWheelSpeedMpS))) / 375.0f;
 
                 }
-                else // typically this will be a booster or geared engine
+                else // typically this will be a booster, geared or rack engine
                 {
                     // If the steam piston is exceeding the maximum design piston rate then decrease efficiency of mep
                     if (SteamEngineType == SteamEngineTypes.Geared && SteamEngines[numberofengine].PistonSpeedFtpMin > MaxSteamGearPistonRateFtpM)
@@ -7026,6 +7021,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     }
 
                     SteamEngines[numberofengine].RealTractiveForceN = N.FromLbf( (SteamEngines[numberofengine].NumberCylinders / 2.0f) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * GearRatioAdjusted) *(Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[numberofengine].AttachedAxle.WheelRadiusM)));
+
+                    // Set rack axle TE to zero if not engaged with rack railway - this is to prevent unrealistic forces being generated if a rack
+                    // locomotive is driven on a non-rack railway, or if the rack railway is not properly aligned with the track.
+                    if (SteamEngines[numberofengine].AttachedAxle.LocomotiveAxleRailTractionType == LocomotiveAxleRailTractionTypes.Rack && !IsRackRailway)
+                    {
+                        SteamEngines[numberofengine].RealTractiveForceN = 0;
+                    }
 
                     // Force tractive effort to zero if throttle is closed, or if a geared steam locomotive in neutral gear. MEP calculation is not allowing it to go to zero
                     if (locomotivethrottle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
@@ -7091,7 +7093,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                     SteamEngines[numberofengine].RealTractiveForceN = N.FromLbf((SteamEngines[numberofengine].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[numberofengine].AttachedAxle.WheelRadiusM))) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * MotiveForceGearRatio);
 
-                    if (IsRackRailway && LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack && DriveCogWheelFitted)
+                    if (IsRackRailway && SteamEngines[numberofengine].AttachedAxle.LocomotiveAxleRailTractionType == Axle.LocomotiveAxleRailTractionTypes.Rack_Adhesion && DriveCogWheelFitted)
                     {
                         // In case of rack railway cog wheel drive, adjust tractive force by the cog wheel gearing factor
                         SteamEngines[numberofengine].RealTractiveForceN *= CogWheelGearingFactor;
@@ -7184,11 +7186,21 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 if (engine.AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
                     ApplyDirectionToTractiveForce(ref engine.RealTractiveForceN);
-                }
-            
+                }       
+
+                // Set up parameters for axle operation
                 engine.AttachedAxle.DriveForceN = engine.RealTractiveForceN;
                 engine.DisplayTractiveForceN = engine.AverageTractiveForceN;
                 DisplayTractiveForceN += engine.AverageTractiveForceN;
+
+                if ((engine.AttachedAxle.LocomotiveAxleRailTractionType == Axle.LocomotiveAxleRailTractionTypes.Rack || engine.AttachedAxle.LocomotiveAxleRailTractionType == Axle.LocomotiveAxleRailTractionTypes.Rack_Adhesion) && IsRackRailway)
+                {
+                    engine.AttachedAxle.IsRackRailwayOperational = true;
+                }
+                else
+                {
+                    engine.AttachedAxle.IsRackRailwayOperational = false;
+                }
 
                 // Set Max Power equal to max IHP
                 MaxPowerW += W.FromHp(engine.MaxIndicatedHorsePowerHP);
@@ -7339,7 +7351,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
                 }
 
-                else // normal locomotive
+                else // normal adhesion locomotive
                 {
 
                     // This next section calculates wheel inertia, which is used in adhesion module
