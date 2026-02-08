@@ -416,7 +416,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 totalWheelWeightKg += axle.WheelWeightKg;
 
                 // if values have not been configured in the ENG file, read from the locomotive/wagon
-                if (axle.drivingCogRead == false) axle.DrivingCogWheelFitted = locomotive != null && locomotive.DriveCogWheelFitted;
                 if (axle.brakingCogRead == false) axle.BrakingCogWheelFitted = Car.BrakeCogWheelFitted;
 
             }
@@ -839,21 +838,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool brakingCogRead = false;
 
         /// <summary>
-        /// Indicates that a Cog wheel is fitted to the axle set to provide better driving traction on rack railways
-        /// </summary>
-        public bool DrivingCogWheelFitted;
-        public bool drivingCogRead = false;
-
-        /// <summary>
         /// Indicates the type of traction that the axle has with the track, which determines the method of calculating 
         /// the drive force and adhesion limit for the axle
         /// </summary>
         public enum LocomotiveAxleRailTractionTypes
         {
+            Unknown,
             Rack,           // axle has may have a cog wheel, but is not necessarily running on a rack railway
             Rack_Adhesion,  // axles has a cog wheel and adhesion wheels on same axle
-            Adhesion,       // defaults to adhesion
-            Unknown
+            Adhesion       // defaults to adhesion
         }
 
         public LocomotiveAxleRailTractionTypes LocomotiveAxleRailTractionType;
@@ -1112,10 +1105,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         BrakingCogWheelFitted = stf.ReadBoolBlock(false);
                         brakingCogRead = true;
                         break;
-                    case "ortsdrivingcogwheelfitted":
-                        DrivingCogWheelFitted = stf.ReadBoolBlock(false);
-                        drivingCogRead = true;
-                        break;
                     case "ortsradius":
                         WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                         break;
@@ -1159,9 +1148,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public void Copy(Axle other)
         {
             BrakingCogWheelFitted = other.BrakingCogWheelFitted;
-            DrivingCogWheelFitted = other.DrivingCogWheelFitted;
             brakingCogRead = other.brakingCogRead;
-            drivingCogRead = other.drivingCogRead;
             WheelRadiusM = other.WheelRadiusM;
             WheelFlangeAngleRad = other.WheelFlangeAngleRad;
             NumWheelsetAxles = other.NumWheelsetAxles;
@@ -1556,7 +1543,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             float adhesionForceN = AxleGradientForceN * AdhesionLimit;
             SlipPercent = Math.Abs(axleOutForceN) / adhesionForceN * 100;
 
-            if ((Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel) || DrivingCogWheelFitted ) 
+            if ((Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel) || (IsRackRailway & ( LocomotiveAxleRailTractionType == LocomotiveAxleRailTractionTypes.Rack || LocomotiveAxleRailTractionType == LocomotiveAxleRailTractionTypes.Rack_Adhesion))) 
             {
                 // Do not allow wheelslip on steam locomotives if simple adhesion is selected, or if it is a rack axle
                 SlipPercent = 0;
