@@ -52,7 +52,7 @@ namespace Orts.Viewer3D.Popups
             base.Initialize();
             if (SwitchStates == null)
                 // TODO: This should happen on the loader thread.
-                SwitchStates = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "SwitchStates.png"));
+                SwitchStates = SharedTextureManager.LoadInternal(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "SwitchStates.png"));
         }
 
         protected override ControlLayout Layout(ControlLayout layout)

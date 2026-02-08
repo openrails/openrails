@@ -1496,7 +1496,7 @@ namespace Orts.Viewer3D.Processes
 
             virtual protected Texture2D GetTexture(Game game)
             {
-                return SharedTextureManager.Get(game.RenderProcess.GraphicsDevice, Path.Combine(game.ContentPath, "Loading.png"));
+                return SharedTextureManager.LoadInternal(game.RenderProcess.GraphicsDevice, Path.Combine(game.ContentPath, "Loading.png"));
             }
 
             public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
