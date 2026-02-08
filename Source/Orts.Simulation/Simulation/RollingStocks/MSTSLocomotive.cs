@@ -1227,7 +1227,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
                 case "engine(ortsrackrailgearfactor": CogWheelGearingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(ortsdrivingcogwheelfitted": DriveCogWheelFitted = stf.ReadBoolBlock(false); break;
 
                 default:
                     base.Parse(lowercasetoken, stf);

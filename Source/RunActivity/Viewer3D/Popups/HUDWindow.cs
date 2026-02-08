@@ -1212,7 +1212,7 @@ namespace Orts.Viewer3D.Popups
                             table.CurrentRow = row0;
                             var axle = mstsLocomotive.LocomotiveAxles[i];
 
-                            if (axle.DrivingCogWheelFitted)
+                            if (axle.LocomotiveAxleRailTractionType == Axle.LocomotiveAxleRailTractionTypes.Rack || axle.LocomotiveAxleRailTractionType == Axle.LocomotiveAxleRailTractionTypes.Rack_Adhesion)
                             {                                
                                 TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "Rack{0}", axle.HuDIsWheelSlip ? "!!!" : axle.HuDIsWheelSlipWarning ? "???" : "");
                                 TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, " ");

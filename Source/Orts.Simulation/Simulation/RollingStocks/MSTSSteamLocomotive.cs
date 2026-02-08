@@ -703,7 +703,7 @@ namespace Orts.Simulation.RollingStocks
 
         float MaxCriticalSpeedTractiveEffortLbf;  // Maximum power value @ critical speed of piston
         float DisplayCriticalSpeedTractiveEffortLbf;  // Display power value @ speed of piston
-        float absStartTractiveEffortN = 0.0f;      // Record starting tractive effort
+        float absStartTractiveForceN = 0.0f;      // Record starting tractive effort
         float TractiveEffortLbsF;           // Current sim calculated tractive effort
         float TractiveEffortFactor = 0.85f;  // factor for calculating Theoretical Tractive Effort for non-geared locomotives
         float GearedTractiveEffortFactor = 0.7f;  // factor for calculating Theoretical Tractive Effort for geared locomotives
@@ -7027,9 +7027,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // Force tractive effort to zero if throttle is closed, or if a geared steam locomotive in neutral gear. MEP calculation is not allowing it to go to zero
                     if (locomotivethrottle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
                     {
-                        TractiveForceN = 0.0f;
+                        SteamEngines[numberofengine].RealTractiveForceN = 0;
                     }
-                    TractiveForceN = MathHelper.Clamp(TractiveForceN, 0, TractiveForceN);
+                    SteamEngines[numberofengine].RealTractiveForceN = MathHelper.Clamp(SteamEngines[numberofengine].RealTractiveForceN, 0, SteamEngines[numberofengine].RealTractiveForceN);
 
                     SteamEngines[numberofengine].AttachedAxle.AxleWeightN = 9.81f * SteamEngines[numberofengine].AttachedAxle.WheelWeightKg;
                     SteamEngines[numberofengine].SteamStaticWheelForce = N.ToLbf(9.81f * SteamEngines[numberofengine].AttachedAxle.WheelWeightKg) * LocomotiveCoefficientFrictionHUD;
@@ -7088,7 +7088,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                     SteamEngines[numberofengine].RealTractiveForceN = N.FromLbf((SteamEngines[numberofengine].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[numberofengine].AttachedAxle.WheelRadiusM))) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * MotiveForceGearRatio);
 
-                    if (IsRackRailway && SteamEngines[numberofengine].AttachedAxle.LocomotiveAxleRailTractionType == Axle.LocomotiveAxleRailTractionTypes.Rack_Adhesion && DriveCogWheelFitted)
+                    if (IsRackRailway && SteamEngines[numberofengine].AttachedAxle.LocomotiveAxleRailTractionType == Axle.LocomotiveAxleRailTractionTypes.Rack_Adhesion)
                     {
                         // In case of rack railway cog wheel drive, adjust tractive force by the cog wheel gearing factor
                         SteamEngines[numberofengine].RealTractiveForceN *= CogWheelGearingFactor;
@@ -7097,9 +7097,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // Force tractive effort to zero if throttle is closed, or if a geared steam locomotive in neutral gear. MEP calculation is not allowing it to go to zero
                     if (locomotivethrottle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
                     {
-                        TractiveForceN = 0.0f;
+                        SteamEngines[numberofengine].RealTractiveForceN = 0.0f;
                     }
-                    TractiveForceN = MathHelper.Clamp(TractiveForceN, 0, TractiveForceN);
+                    SteamEngines[numberofengine].RealTractiveForceN = MathHelper.Clamp(SteamEngines[numberofengine].RealTractiveForceN, 0, SteamEngines[numberofengine].RealTractiveForceN);
 
                     // Average tractive force is calculated for display purposes as tractive force varies dramatically as the wheel rotates, and this is difficult to follow on HuD
                     SteamEngines[numberofengine].AverageTractiveForceN = AverageTractiveForce(elapsedClockSeconds, numberofengine, NumberofTractiveForceValues);
@@ -7157,6 +7157,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
         /// <summary>
         /// Averages the tractive force for the steam locomotive as tractive force varies throught the full wheel revolution
+        /// Called once, but sums relevant values for each steam engine
         /// </summary>
         protected override void UpdateTractiveForce(float elapsedClockSeconds)
         {
@@ -7166,6 +7167,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             MaxPowerW = 0;
             MaxForceN = 0;
             DisplayTractiveForceN = 0;
+
 
             // Ensure traction calculations for steam locomotives use the driver wheel speed, not the idler wheel speed
             // Idler wheels don't slip from excessive tractive effort, drivers do, we want to account for slipping wheels
@@ -7181,6 +7183,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 if (engine.AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
                     ApplyDirectionToTractiveForce(ref engine.RealTractiveForceN);
+                }
+
+                // Set tractive force to zero if throttle is closed
+                if (locomotivethrottle < 0.001)
+                {
+                    engine.RealTractiveForceN = 0;
+                    engine.AverageTractiveForceN = 0;
                 }
 
                 // Set up parameters for axle operation
@@ -7205,20 +7214,29 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 IndicatedHorsePowerHP += engine.IndicatedHorsePowerHP;
                 IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
+
+                var EngineMaximumTractiveForceN = N.FromLbf(engine.MaxTractiveEffortLbf * CylinderEfficiencyRate);
+
+            // Find the maximum TE for debug i.e. @ start and full throttle
+            if (AbsTractionSpeedMpS < 1.0)
+            {
+                    if (Math.Abs(engine.AverageTractiveForceN) > engine.absStartTractiveForceN && Math.Abs(engine.AverageTractiveForceN) < EngineMaximumTractiveForceN)
+                {
+                        // only update for first engine, as this is what is used for display purposes
+                        if (engine.Id == 1)
+                        {
+                            absStartTractiveForceN = 0;
+                        }
+
+                        engine.absStartTractiveForceN = Math.Abs(engine.AverageTractiveForceN); // update to new maximum TE
+                        engine.absStartTractiveForceN = MathHelper.Clamp(engine.absStartTractiveForceN, 0, N.FromLbf(engine.MaxTractiveEffortLbf));
+                        absStartTractiveForceN += engine.absStartTractiveForceN;
+                }
+            }
             }
             //TODO - identify the maximum value for display?? 
             PistonSpeedFtpMin = SteamEngines[0].PistonSpeedFtpMin;
 
-
-         //   Trace.TraceInformation("STE {0} TF {1} MaxForce {2} Speed {3}", absStartTractiveEffortN, Math.Abs(TractiveForceN), MaxForceN, AbsTractionSpeedMpS);
-            // Find the maximum TE for debug i.e. @ start and full throttle
-            if (AbsTractionSpeedMpS < 1.0)
-            {
-                if (Math.Abs(TractiveForceN) > absStartTractiveEffortN && Math.Abs(TractiveForceN) < MaxForceN)
-                {
-                    absStartTractiveEffortN = Math.Abs(TractiveForceN); // update to new maximum TE
-                }
-            }
             if (float.IsNaN(MotiveForceN))
                 MotiveForceN = 0;
 
@@ -7230,12 +7248,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // Set Max Velocity of locomotive
             MaxSpeedMpS = Me.FromMi(pS.FrompH(MaxLocoSpeedMpH)); // Note this is not the true max velocity of the locomotive, but  the speed at which max HP is reached
-
-            // Set tractive force to zero if throttle is closed
-            if (locomotivethrottle < 0.001)
-            {
-                TractiveForceN = 0;
-            }
         }
 
 
@@ -9312,7 +9324,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                          Simulator.Catalog.GetString("TheorTE"),
                          FormatStrings.FormatForce(N.FromLbf(DisplayMaxTractiveEffortLbf), IsMetric),
                          Simulator.Catalog.GetString("StartTE"),
-                         FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
+                         FormatStrings.FormatForce(absStartTractiveForceN, IsMetric),
                          Simulator.Catalog.GetString("TE"),
                          FormatStrings.FormatForce(MotiveForceN, IsMetric),
                          Simulator.Catalog.GetString("Draw"),
@@ -9399,7 +9411,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Simulator.Catalog.GetString("TheorTE"),
                     FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
                     Simulator.Catalog.GetString("StartTE"),
-                    FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
+                    FormatStrings.FormatForce(absStartTractiveForceN, IsMetric),
                     Simulator.Catalog.GetString("AvTE"),
                     FormatStrings.FormatForce(DisplayTractiveForceN, IsMetric),
                     Simulator.Catalog.GetString("Draw"),

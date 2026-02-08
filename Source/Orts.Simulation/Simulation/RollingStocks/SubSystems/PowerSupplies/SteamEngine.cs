@@ -274,6 +274,12 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public float LPCylindersStrokeM;
 
+        /// <summary>
+        /// Starting Tractive Force for the engine
+        /// </summary>
+        public float absStartTractiveForceN;
+
+        
         public enum AuxiliarySteamEngineTypes
         {
             Unknown,
