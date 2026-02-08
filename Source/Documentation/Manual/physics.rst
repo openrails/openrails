@@ -274,6 +274,8 @@ performance of the wheelset.
 ``NumberWheelsetAxles`` - number of axles in the wheelset.
 ``ORTSFlangeAngle`` - flange angle of the wheels in the wheelset.
 ``ORTSInertia`` - inertia of the wheels in the wheelset.
+``LocomotiveAxleRailTractionType`` - indicates the type of rail traction for the axle. 
+Valid inputs are Rack, Rack_Adhesion or Adhesion.
 
 The first model -- simple adhesion model -- is a simple tractive force
 condition-based computation. If the tractive force reaches its actual
@@ -410,6 +412,37 @@ cylinder or sometimes it has two of the cranks separated by 45 deg instead. Thes
 Rad (default) or Deg. The separations should be described around the full 360 deg of rotation, so for example, 
 a 3 cylinder locomotive would be - ORTSWheelCrankAngleDifference ( 0deg, 120deg, 240deg ).
 
+.. _physics-rack_railway:
+
+Rack Railway Operation
+----------------------
+
+Whilst the steepest adhesion track gradient is 1 in 7.2 ( 13.8% ), this gradient will significantly reduce the load 
+that can be hauled up the gradient, so often railway designers elect to add a cog wheel to the train which engages 
+a rack rail in the track, and by this method the train is able to haul itself up the hill without any wheel slippage.
+
+In regards to steam rack locomotives there are potentially three different types, as follows:
+
+a) Pure Rack Locomotive - which has wheels supporting its weight, but is driven only by a Cog wheel.
+
+b) Combined Rack and Adhesion locomotive - this type has two different steam engines, with one driving the rack cog wheel, 
+and one driving the adhesion wheels.
+
+c) Rack locomotive with driven adhesion wheels - in this variation the Cog wheel is on the same drive axle as the adhesion wheels. 
+This type of locomotive could run on adhesion tracks as well as rack tracks.
+
+To configure a rack railway operation into OR, the following parameters need to be configured into the files indicated.
+
+i) In the TSECTION.DAT file add the entry ``ORTSRackShape ( )`` into all the track shapes that have rack rails included.
+
+ii) In the Rack locomotive ENG file it will be necessary to add one or more :ref:`Steam Engines <physics-multiple-steam-engines>`
+ depending upon the type of rack locomotive being crerated.
+
+iii) It will also be necessary to define which axles are Adhesion or Rack driven. This can be done by adjusting the :ref:`Axles <physics-adhesion:>` parameters.
+
+iv) In the WAG file (for wagons only) add the entry ``ORTSBrakingCogWheelFitted`` to indicate that the cog wheel is used for braking.
+
+This configuration should eliminate all wheel slip and skids when the train is on a rack section of track.
 
 Engine -- Classes of Motive Power
 =================================
@@ -1535,6 +1568,8 @@ cylinder also tended to reach finite limits as well. These factors
 typically combined to place limits on the power of a locomotive depending
 upon the design factors used.
 
+.. _physics-multiple-steam-engines:
+
 Steam Locomotives with Multiple Engines
 .......................................
 
@@ -1547,8 +1582,8 @@ engines need to be added to the engine section of the ENG file. These should hav
 following format::
 
     ORTSSteamEngines ( x
-        Wheelset (
-           
+        Steam (
+           ..............
         )
     )
 
@@ -1561,6 +1596,7 @@ The following parameters can be used to configure the steam engine::
 ``CylinderDiameter`` - diameter of steam cylinder.
 ``MaxIndicatedHorsepower`` - maximum indicated horsepower of steam engine.
 ``AttachedAxle`` - the axle wheelset that the steam engine is attached to.
+``ExcessRodBalance`` - the weeight of the excess balance on the connecting rods
 
 To specify the engine as a Booster engine, the following additional parameters 
 can be used::
@@ -1568,8 +1604,8 @@ can be used::
 ``BoosterCutoff`` - the cutoff point for the Booster steam cylinder.
 ``BoosterThrottleCutoff`` - the locomotive cutoff point where the Booster unlatches.
 ``BoosterGearRatio`` - the gear ratio of the Booster engine.
-``AuxiliarySteamEngineType`` - by inserting "Booster" into this parameter the 
-engine is defined as a Booster engine.
+``AuxiliarySteamEngineType`` - the purpose of the steam engine can be defined by entering 
+one of Adhesion, Rack or Booster.
 
 The following steam effects are defined for the 2nd multuple engine:
 
