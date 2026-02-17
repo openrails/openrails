@@ -624,17 +624,17 @@ namespace Orts.Simulation.RollingStocks
 
                 for (int cabViewIndex = 0; cabViewIndex < CabViewList[cabIndex].CVFFile.CabViewControls.Count; cabViewIndex++)
                 {
-                    var cvc = CabViewList[cabIndex].CVFFile.CabViewControls[cabViewIndex] as CVCDiscrete;
+                    CVCDiscrete cvc = CabViewList[cabIndex].CVFFile.CabViewControls[cabViewIndex] as CVCDiscrete;
                     if (cvc != null)
                     {
-                        cvcDiscreteList.Add((CVCDiscrete)cvcDiscrete);
+                        cvcDiscreteList.Add(cvc);
                     }
                 }
 
                 for (int cabViewIndex = 0; cabViewIndex < CabViewList[cabIndex].CVFFile.CabViewControls.Count; cabViewIndex++)
                 {
-                    var cvc = CabViewList[cabIndex].CVFFile.CabViewControls[cabViewIndex];
-                    if (cvc is CVCDiscrete)
+                    CVCDiscrete cvc = CabViewList[cabIndex].CVFFile.CabViewControls[cabViewIndex];
+                    if (cvc != null)
                     {
                         double smallestSize = double.MaxValue;
                         CVCDiscrete cvcDiscreteSmallest = null;
