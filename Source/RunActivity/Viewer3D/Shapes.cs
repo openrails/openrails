@@ -153,7 +153,7 @@ namespace Orts.Viewer3D
         /// Checks all shapes for stale materials and sets the stale data flag if any materials are stale
         /// </summary>
         /// <returns>bool indicating if any shape changed from fresh to stale</returns>
-        public bool CheckStale()
+        public bool CheckStaleMaterials()
         {
             // The same materials may be used by multiple shared shapes, need to iterate to check each shared shape
             bool found = false;
@@ -174,6 +174,36 @@ namespace Orts.Viewer3D
 
                             break;
                         }
+                    }
+                }
+                // Continue scanning, there may be multiple shapes with stale materials
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Checks all shapes for a stale shape descriptor and sets the stale data flag if the shape descriptor is stale
+        /// </summary>
+        /// <returns>bool indicating if any shape changed from fresh to stale</returns>
+        public bool CheckStaleDescriptors()
+        {
+            // The same shape descriptor may be used by multiple shared shapes, need to iterate to check each shared shape
+            bool found = false;
+
+            foreach (SharedShape shape in Shapes.Values)
+            {
+                if (!shape.StaleData)
+                {
+                    // FUTURE: Shape descriptors won't necessarily have the same name and file path as shapes
+                    string sdPath = Path.GetFullPath(shape.FilePath + "d").ToLowerInvariant();
+
+                    if (ShapeDescriptorFile.Cache.ContainsKey(sdPath) && ShapeDescriptorFile.Cache[sdPath].StaleData)
+                    {
+                        shape.StaleData = true;
+                        found = true;
+
+                        Trace.TraceInformation("Shape descriptor used by shape file {0} was updated on disk, shape will be reloaded.", shape.FilePath);
                     }
                 }
                 // Continue scanning, there may be multiple shapes with stale materials

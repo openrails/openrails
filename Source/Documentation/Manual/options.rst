@@ -863,21 +863,22 @@ Enable hot reloading of simulator files
 
 If this option is enabled, Open Rails will monitor the GLOBAL, ROUTES,
 SOUND, and TRAINS directories of the selected content folder for any
-file changes. When a file is changed, any currently loaded assets
-which use the file will be reloaded to reflect the changes made to
-the file. While this is often associated with a short pause in the
-simulation, this is dramatically faster than closing and opening
+file changes. When a file is changed, any currently loaded trains,
+scenery, or terrain which use the file will be reloaded to reflect
+the changes made to the file. By reloading only the files that
+have changed, this is dramatically faster than closing and opening
 the simulation. In this way, hot reloading allows for rapid prototyping
-of in-development content, though serves no purpose for normal gameplay.
+of in-development content, though is not recommended for normal gameplay.
 
-Beware, hot reloading has limitations: Open Rails will most reliably
-notice changes saved to existing files. Renaming, moving, or creating
-a file may not trigger the desired hot reload as these changes can cause
-files to be detected as missing. Even when a file update successfully
-triggers a hot reload, Open Rails cannot tell if a file update affects
-only part of an asset or the whole thing. As a result, when anything is
-hot reloaded, *the program  rebuilds it entirely, overwriting the previous
-data*, regardless of how small of a change has been made. As a
+Before using hot reloading, note the feature has some limitations:
+Open Rails will most reliably notice changes saved to existing files.
+Renaming, moving, or creating a file may not trigger the desired hot
+reload as these changes can cause files to be detected as missing.
+Even when a file update successfully triggers a hot reload, Open Rails
+cannot tell if a file update affects only part of an asset or the whole
+thing. As a result, when any train, scenery tile, or terrain tile is
+hot reloaded, *the program  rebuilds it entirely, overwriting the
+previous data*, regardless of how small of a change has been made. As a
 consequence, some systems will reset to their default state upon a
 hot reload, rather than returning to the same state as prior to the
 reload, even if no changes were made to that system. This can interfere
@@ -894,7 +895,7 @@ this means a manual reload will take much longer to complete than a
 hot reload will. While still faster than restarting the program,
 hot reloading is preferred over manual reloading.
 
-Similarly, Open Rails cannot tell if a file update has introduced
+Furthermore, Open Rails cannot tell if a file update has introduced
 any errors until it is already reading the file. This means mistakes
 in file editing can lead to instantaneously crashing Open Rails when
 hot reloading is enabled. For these reasons, it is recommended to
@@ -904,16 +905,26 @@ And if hot reloading is used, consider using it for small changes only,
 occasionally closing and restarting the simulation to ensure larger
 changes are captured fully and accurately.
 
-Hot reloading and manual reloading do NOT affect the following systems: (TEMPORARY LIST, THESE ARE JUST THINGS I CURRENTLY ASSUME WILL BE IMPOSSIBLE/IMPRACTICAL TO IMPLEMENT)
+Hot reloading and manual reloading work with these systems:
+ 
+- engine and wagon files + include files (with some limitations)
+- shapes and shape descriptors
+- textures
+- sounds and audio files
+- cab views
+- world files
+- terrain tiles and terrain textures
 
-- track database
-- track profiles
-- signal scripts and signal configurations
+Note that this means there are an assortment of systems that hot
+reloading and manual reloading do NOT affect:
+
+- tracks and track markers
+- signals
 - activities and timetables
 - paths, services, and traffic
 - consists
 - changing the type of an engine or wagon (eg: changing a diesel locomotive to an electric one)
-- any files outside the current simulator content folder (even if symbolic links are used to make such files appear inside the simulator folders)
+- any files outside the current simulator content folder (this means symbolic links can prevent hot reloading from functioning, use manual reloading in that case)
 
 Changes made to any of these would either have no effect in real
 time, or would cause dramatic problems if updated in real time. If

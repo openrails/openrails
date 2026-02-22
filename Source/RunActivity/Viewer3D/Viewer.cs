@@ -1093,13 +1093,14 @@ namespace Orts.Viewer3D
 
                 // Any shapes using out of date materials must be considered out of date as well
                 if (staleMaterials)
-                    staleShapes |= ShapeManager.CheckStale();
+                    staleShapes |= ShapeManager.CheckStaleMaterials();
 
                 TextureUpdates.Clear();
             }
             if (ShapeDescriptorUpdates.Count > 0)
             {
-                // TODO: Determine if any shapes use an updated .sd file and mark those as stale
+                if (ShapeDescriptorFile.MarkStale(ShapeDescriptorUpdates))
+                    staleShapes |= ShapeManager.CheckStaleDescriptors();
 
                 ShapeDescriptorUpdates.Clear();
             }
@@ -1304,6 +1305,8 @@ namespace Orts.Viewer3D
             MaterialManager.SetAllStale(stale);
 
             ShapeManager.SetAllStale(stale);
+
+            ShapeDescriptorFile.SetAllStale(stale);
 
             SharedSMSFileManager.SetAllStale(stale);
 
