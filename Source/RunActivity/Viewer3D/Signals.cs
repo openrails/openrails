@@ -721,7 +721,7 @@ namespace Orts.Viewer3D
                 foreach (var item in renderItems)
                 {
                     SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    SceneryShader.SetMatrix(item.XNAMatrix);
                     pass.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
@@ -779,7 +779,7 @@ namespace Orts.Viewer3D
                     var slp = item.RenderPrimitive as SignalLightPrimitive;
                     SceneryShader.ZBias = MathHelper.Lerp(slp.GlowIntensityDay, slp.GlowIntensityNight, NightEffect);
                     SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    SceneryShader.SetMatrix(item.XNAMatrix);
                     pass.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }

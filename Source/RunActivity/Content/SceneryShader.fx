@@ -21,63 +21,81 @@
 //                 S C E N E R Y   O B J E C T   S H A D E R                  //
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////    G L O B A L   V A L U E S    ///////////////////////////
-
-float4x4 World;         // model -> world [max number of bones]
-float4x4 View;          // world -> view
-float4x4 Projection;    // view -> projection
-float4x4 ShadowMatrices[4]; // world -> light view -> light projection -> shadow map projection
-float4   ShadowMapLimit;
-float4   ZBias_Lighting;  // x = z-bias, y = diffuse (not unlit), z = specular, w = step(1, z)
-float4   Fog;  // rgb = color of fog; a = reciprocal of distance from camera, everything is
-			   // normal color; FogDepth = FogStart, i.e. FogEnd = 2 * FogStart.
-float    ZFar;
-float2   Overcast;      // Lower saturation & brightness when overcast. x = FullBrightness, y = HalfBrightness
-float3   ViewerPos;     // Viewer's world coordinates.
-float    ImageTextureIsNight;
-float    NightColorModifier;
-float    HalfNightColorModifier;
-float    VegetationAmbientModifier;
-float    SignalLightIntensity;
-float4   EyeVector;
-float3   SideVector;
-float    ReferenceAlpha;
-float	 OverlayScale;
-
-float    BonesCount;
-
 // Keep these in sync with the values defined in RenderProcess.cs
 #define MAX_LIGHTS 20 // must not be less than 2
 #define CLEARCOAT
 #define MAX_MORPH_TARGETS 8
 
-float4   BaseColorFactor; // glTF linear color multiplier
-float    NormalScale;
-float3   EmissiveFactor; // glTF linear emissive multiplier
-float    ClearcoatFactor;
-float    ClearcoatRoughnessFactor;
-float    ClearcoatNormalScale;
-float3   OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
-float4   TextureCoordinates1; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
-float4   TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
-float4   TextureCoordinates3; // x: specular, y: specular-color, zw: unused
-float    TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic, 4: roughnessMetallicOcclusion + normal (RG) 2 channel separate, 5: occlusionRoughnessMetallic + normal (RG) 2 channel separate
-bool     HasNormals; // 0: no, 1: yes
-bool     HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
-int      MorphConfig[9]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. 6: if the model has skin, set to 1. All: set to -1 if not available. 7: targets count. 8: attributes count.
-float    MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
+////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-float4   SpecularFactor; // xyz: color, w: factor
-float    IorFactor; // ((ior - 1) / (ior + 1))^2 precalculated
+cbuffer PerFrameVS
+{
+    float4x4 View; // world -> view
+    float4x4 Projection; // view -> projection
+    float3 ViewerPos; // Viewer's world coordinates.
+    float4 EyeVector;
+    float3 SideVector;
+    float3 LightDirection0; // The sun/moon direction, copy of LightDirections[0], but provided separately for easier access in VSForest.
+};
 
-int		NumLights; // The number of the lights used
-float	LightTypes[MAX_LIGHTS]; // 0: directional, 1: point, 2: spot, 3: headlight
-float3	LightPositions[MAX_LIGHTS];
-float3	LightDirections[MAX_LIGHTS];
-float3	LightColorIntensities[MAX_LIGHTS]; // pre-multiplied by intensity
-float	LightRangesRcp[MAX_LIGHTS];
-float	LightInnerConeCos[MAX_LIGHTS];
-float	LightOuterConeCos[MAX_LIGHTS];
+cbuffer PerFramePS
+{
+    float4x4 ShadowMatrices[4]; // world -> light view -> light projection -> shadow map projection
+    float4 ShadowMapLimit;
+    float4 Fog; // rgb = color of fog; a = reciprocal of distance from camera, everything is normal color
+    float2 Overcast; // Lower saturation & brightness when overcast. x = FullBrightness, y = HalfBrightness
+    float NightColorModifier;
+    float HalfNightColorModifier;
+    float LightTypes[MAX_LIGHTS]; // 0: directional, 1: point, 2: spot, 3: headlight
+    float3 LightPositions[MAX_LIGHTS];
+    float3 LightDirections[MAX_LIGHTS];
+    float3 LightColorIntensities[MAX_LIGHTS]; // pre-multiplied by intensity
+    float LightRangesRcp[MAX_LIGHTS];
+    float LightInnerConeCos[MAX_LIGHTS];
+    float LightOuterConeCos[MAX_LIGHTS];
+    float NumLights; // The number of the lights used
+    float ZFar;
+};
+
+// PS only
+cbuffer PerMaterial
+{
+    float ImageTextureIsNight;
+    float VegetationAmbientModifier;
+    float ReferenceAlpha;
+    float OverlayScale;
+
+    float4 BaseColorFactor; // glTF linear color multiplier
+    float3 OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
+    float NormalScale;
+    float3 EmissiveFactor; // glTF linear emissive multiplier
+    float ClearcoatFactor;
+    float ClearcoatRoughnessFactor;
+    float ClearcoatNormalScale;
+    bool HasNormals; // 0: no, 1: yes
+    bool HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
+    float4 SpecularFactor; // xyz: color, w: factor
+    float IorFactor; // ((ior - 1) / (ior + 1))^2 precalculated//};
+
+// VS and PS
+//cbuffer PerObject
+//{
+    float4x4 World; // model -> world [max number of bones]
+    float4 ZBias_Lighting; // x = z-bias, y = diffuse (not unlit), z = specular, w = step(1, z) // zBias is PerDraw, Lighting could be PerMaterial
+    int MorphConfig[8]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. All: set to -1 if not available. 6: targets count. 7: attributes count.
+    float MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
+    float4   TextureCoordinates1; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
+    float4   TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
+    float4   TextureCoordinates3; // x: specular, y: specular-color, zw: unused
+    float TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic, 4: roughnessMetallicOcclusion + normal (RG) 2 channel separate, 5: occlusionRoughnessMetallic + normal (RG) 2 channel separate
+    float SignalLightIntensity;
+    float BonesCount;
+};
+
+
+
+
+
 
 static const float M_PI = 3.141592653589793;
 static const float RECIPROCAL_PI = 0.31830988618;
@@ -243,7 +261,7 @@ void _VSNormalProjection(in float3 InNormal, in float4x4 WorldTransform, inout f
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// For VSForest() it is calculated in Shaders.cs eyeVector.SetValue(), the sun direction is uploaded to this shader negated, to conform with glTF lights extension
-	OutNormal_Light.w = dot(OutNormal_Light.xyz, -LightDirections[0]) * 0.5 + 0.5; // [0] is always the sun/moon
+	OutNormal_Light.w = dot(OutNormal_Light.xyz, -LightDirection0) * 0.5 + 0.5; // [0] is always the sun/moon
 }
 
 void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
@@ -412,7 +430,7 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
 {
     VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR)0;
 
-    float4x4 worldTransform = MorphConfig[6] == 1 ? _VSSkinTransform(In.Joints, In.Weights) : World;
+    float4x4 worldTransform = BonesCount > 0 ? _VSSkinTransform(In.Joints, In.Weights) : World;
 
     Out.Position = In.Position;
     float3 normal = In.Normal;
@@ -422,20 +440,20 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
     Out.TexCoords.zw = In.TexCoordsPbr;
 
     [unroll(MAX_MORPH_TARGETS)]
-    for (int i = 0; i < MorphConfig[7]; i++)
+    for (int i = 0; i < MorphConfig[6]; i++)
     {
         if (MorphConfig[0] != -1)
-            Out.Position.xyz += In.MorphTargets[MorphConfig[8] * i + MorphConfig[0]].xyz * MorphWeights[i];
+            Out.Position.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[0]].xyz * MorphWeights[i];
         if (MorphConfig[1] != -1)
-            normal.xyz += In.MorphTargets[MorphConfig[8] * i + MorphConfig[1]].xyz * MorphWeights[i];
+            normal.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[1]].xyz * MorphWeights[i];
         if (MorphConfig[2] != -1)
-            tangent.xyz += In.MorphTargets[MorphConfig[8] * i + MorphConfig[2]].xyz * MorphWeights[i];
+            tangent.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[2]].xyz * MorphWeights[i];
         if (MorphConfig[3] != -1)
-            Out.TexCoords.xy += In.MorphTargets[MorphConfig[8] * i + MorphConfig[3]].xy * MorphWeights[i];
+            Out.TexCoords.xy += In.MorphTargets[MorphConfig[7] * i + MorphConfig[3]].xy * MorphWeights[i];
         if (MorphConfig[4] != -1)
-            Out.TexCoords.zw += In.MorphTargets[MorphConfig[8] * i + MorphConfig[4]].xy * MorphWeights[i];
+            Out.TexCoords.zw += In.MorphTargets[MorphConfig[7] * i + MorphConfig[4]].xy * MorphWeights[i];
         if (MorphConfig[5] != -1)
-            Out.Color += In.MorphTargets[MorphConfig[8] * i + MorphConfig[5]] * MorphWeights[i];
+            Out.Color += In.MorphTargets[MorphConfig[7] * i + MorphConfig[5]] * MorphWeights[i];
     }
 
     _VSNormalProjection(normal, worldTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
@@ -540,7 +558,7 @@ float _PSGetAmbientEffect(in VERTEX_OUTPUT In)
 
 float3 _PSGetShadowEffectMoments(in VERTEX_OUTPUT In)
 {
-    float depth = In.RelPosition.w;
+	float depth = In.RelPosition.w;
     
     uint index = 3;
     if (depth < ShadowMapLimit.x)
@@ -910,7 +928,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float roughnessSq = alphaRoughness * alphaRoughness;
 	
         metallic = clamp(metallic * OcclusionFactor.z, 0.0, 1.0);
-        
+	
         float3 specularColorFactor = SpecularFactor.xyz;
         float specularFactor = SpecularFactor.w;
         if (TextureCoordinates3.x)
@@ -968,7 +986,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
             float clearcoatAlphaRoughness = clearcoatRoughness * clearcoatRoughness;
             clearcoatRoughnessSq = clearcoatAlphaRoughness * clearcoatAlphaRoughness;
 
-		    // TODO: implement clearcoat texturepacking for being able to check whether the clearcoat normal is the same as the base normal
+		// TODO: implement clearcoat texturepacking for being able to check whether the clearcoat normal is the same as the base normal
             float3 clearcoatNormalSample = ClearcoatNormalTexture.Sample(ClearcoatNormalSampler, _PSUV(In.TexCoords, TextureCoordinates2.z)).rgb;
             clearcoatNormal = _PSGetNormal(In, ClearcoatNormalScale, clearcoatNormalSample, isFrontFace, TextureCoordinates2.z != -1);
             clearcoatNdotV = abs(dot(clearcoatNormal, v)) + 0.001;

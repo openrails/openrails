@@ -436,6 +436,7 @@ namespace Orts.Viewer3D
         public bool IsScreenChanged { get; internal set; }
         ShadowMapMaterial ShadowMapMaterial;
         SceneryShader SceneryShader;
+        ShadowMapShader ShadowMapShader;
         Vector3 SolarDirection;
         Camera Camera;
         Vector3 CameraLocation;
@@ -558,6 +559,8 @@ namespace Orts.Viewer3D
                 ShadowMapMaterial = (ShadowMapMaterial)viewer.MaterialManager.Load("ShadowMap");
             if (SceneryShader == null)
                 SceneryShader = viewer.MaterialManager.SceneryShader;
+            if (ShadowMapShader == null)
+                ShadowMapShader = viewer.MaterialManager.ShadowMapShader;
 
             // Ensure that the first light is always the sun/moon, because the ambient and shadow effects will be calculated based on the first light.
             if (SolarDirection.Y > -0.05)
@@ -854,6 +857,8 @@ namespace Orts.Viewer3D
         {
             if (logging) Console.WriteLine("    {0} {{", shadowMapIndex);
 
+            ShadowMapShader?.SetPerShadowMap(ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+
             // Prepare renderer for drawing the shadow map.
             graphicsDevice.SetRenderTarget(ShadowMapRenderTarget, shadowMapIndex);
             graphicsDevice.Clear(ClearOptions.DepthBuffer | ClearOptions.Target, Color.White, 1, 0);
@@ -964,6 +969,8 @@ namespace Orts.Viewer3D
             if (Game.Settings.DynamicShadows && RenderProcess.ShadowMapCount > 0)
                 SceneryShader?.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
 
+            SceneryShader?.SetPerFrame(ref XNACameraView, ref XNACameraProjection);
+
             var renderItems = RenderItemsSequence;
             renderItems.Clear();
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
@@ -1036,6 +1043,8 @@ namespace Orts.Viewer3D
 
         void DrawSequencesDistantMountains(GraphicsDevice graphicsDevice, bool logging)
         {
+            SceneryShader?.SetPerFrame(ref XNACameraView, ref Camera.XnaDistantMountainProjection);
+
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
             {
                 if (logging) Console.WriteLine("    {0} {{", (RenderPrimitiveSequence)i);

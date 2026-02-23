@@ -1004,7 +1004,7 @@ namespace Orts.Viewer3D
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.SetMatrix(item.XNAMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
 
@@ -1304,7 +1304,7 @@ namespace Orts.Viewer3D
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.SetMatrix(item.XNAMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
 
                     if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)
@@ -1314,12 +1314,9 @@ namespace Orts.Viewer3D
                         shader.TextureCoordinates3 = gltfPrimitive.TexCoords3;
                         shader.TexturePacking = gltfPrimitive.TexturePacking;
 
-                        if (gltfPrimitive.BonesTexture != null)
-                        {
                             gltfPrimitive.BonesTexture?.SetData(MemoryMarshal.Cast<Matrix, Vector4>(gltfPrimitive.RenderBonesRendered).ToArray());
-                            shader.BonesTexture = gltfPrimitive.BonesTexture;
-                            shader.BonesCount = gltfPrimitive.Joints.Length;
-                        }
+                        shader.BonesTexture = gltfPrimitive.BonesTexture;
+                        shader.BonesCount = gltfPrimitive.BonesTexture == null ? 0 : gltfPrimitive.Joints.Length;
 
                         if (gltfPrimitive.HasMorphTargets())
                             (shader.MorphConfig, shader.MorphWeights) = gltfPrimitive.GetMorphingData();
@@ -1430,16 +1427,13 @@ namespace Orts.Viewer3D
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.ShadowMapShader;
-            var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
-            shader.SetData(ref XNAViewMatrix);
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
             {
                 foreach (var item in renderItems)
                 {
-                    var wvp = item.XNAMatrix * viewproj;
-                    shader.SetData(ref wvp, item.Material.GetShadowTexture());
+                    shader.SetData(item.XNAMatrix, item.Material.GetShadowTexture());
 
                     if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)
                     {
@@ -1463,11 +1457,8 @@ namespace Orts.Viewer3D
 
         public void ApplyBlur(GraphicsDevice graphicsDevice, RenderTarget2D shadowMap, RenderTarget2D renderTarget, int shadowMapIndex)
         {
-            var wvp = Matrix.Identity;
-
             var shader = Viewer.MaterialManager.ShadowMapShader;
             shader.CurrentTechnique = shader.Techniques["ShadowMapBlur"];
-            shader.SetBlurData(ref wvp);
             if (ShaderPassesBlur == null) ShaderPassesBlur = shader.CurrentTechnique.Passes.GetEnumerator();
 
             graphicsDevice.RasterizerState = RasterizerState.CullNone;

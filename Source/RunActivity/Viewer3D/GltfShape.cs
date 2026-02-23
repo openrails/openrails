@@ -1416,8 +1416,8 @@ namespace Orts.Viewer3D
                     options |= SceneryMaterialOptions.PbrHasTexCoord1;
                 }
 
-                // Indicates what position in the target a specific vertex attribute is located at. Element [6] is set to 1 if the primitive has a skin. [7] is the targets count. [8] is the attributes count per target.
-                var morphConfig = new int[9];
+                // Indicates what position in the target a specific vertex attribute is located at. [6] is the targets count. [7] is the attributes count per target.
+                var morphConfig = new int[8];
 
                 // When having morph targets, make sure we have exactly 8 of them.
                 if ((options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
@@ -1429,10 +1429,6 @@ namespace Orts.Viewer3D
                             new VertexDeclaration(new VertexElement(0, VertexElementFormat.Byte4, VertexElementUsage.BlendIndices, 0)), vertexCount, BufferUsage.None) { Name = "JOINTS_DUMMY" }));
                         vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
                             new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.BlendWeight, 0)), vertexCount, BufferUsage.None) { Name = "WEIGHTS_DUMMY" }));
-                    }
-                    else
-                    {
-                        morphConfig[6] = 1;
                     }
 
                     vertexAttributes.AddRange(meshPrimitive.Targets
@@ -1450,8 +1446,8 @@ namespace Orts.Viewer3D
                     foreach (var (sourcePosition, targetPosition) in arrangement)
                         morphConfig[sourcePosition] = targetPosition;
 
-                    morphConfig[7] = meshPrimitive.Targets.Length;
-                    morphConfig[8] = meshPrimitive.Targets[0].Count;
+                    morphConfig[6] = meshPrimitive.Targets.Length;
+                    morphConfig[7] = meshPrimitive.Targets[0].Count;
                 }
 
                 // Remove the unused TexCoord_2, _3, etc. attributes, because they might create display artifacts.
@@ -1633,7 +1629,7 @@ namespace Orts.Viewer3D
                 }
                 MorphConfig = morphConfig;
                 MorphWeights = distanceLevel.Weights[hierarchyIndex];
-                MaxActiveMorphTargets = MorphConfig.ElementAtOrDefault(8) != 0 ? RenderProcess.MAX_MORPH_BUFFERS / MorphConfig.ElementAtOrDefault(8) : 0;
+                MaxActiveMorphTargets = MorphConfig.ElementAtOrDefault(7) != 0 ? RenderProcess.MAX_MORPH_BUFFERS / MorphConfig.ElementAtOrDefault(7) : 0;
             }
 
             /// <summary>
@@ -1680,17 +1676,17 @@ namespace Orts.Viewer3D
                             ActiveWeightIndices[smallestWeight] = i;
                     }
                 }
-                MorphConfig[7] = w;
+                MorphConfig[6] = w;
 
                 // Recompile the buffer binding and the weights from the indices
                 for (var i = 0; i < w; i++)
                 {
-                    for (var j = 0; j < MorphConfig[8]; j++)
-                        ActiveVertexBufferBindings[8 + MorphConfig[8] * i + j] = VertexBufferBindings[8 + MorphConfig[8] * ActiveWeightIndices[i] + j];
+                    for (var j = 0; j < MorphConfig[7]; j++)
+                        ActiveVertexBufferBindings[8 + MorphConfig[7] * i + j] = VertexBufferBindings[8 + MorphConfig[7] * ActiveWeightIndices[i] + j];
                     ActiveWeights[i] = MorphWeights[ActiveWeightIndices[i]];
                 }
                 // Fill up the rest of ActiveVertexBufferBindings with anything, as a padding.
-                for (var i = 8 + MorphConfig[8] * w; i < 16; i++)
+                for (var i = 8 + MorphConfig[7] * w; i < 16; i++)
                     ActiveVertexBufferBindings[i] = VertexBufferBindings[8];
 
                 return (MorphConfig, ActiveWeights);
