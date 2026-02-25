@@ -8,6 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Potential Conflicts Checker
-        uses: outsideris/potential-conflicts-checker-action@v1.1.0
+        uses: outsideris/potential-conflicts-checker-action@v0.1.0
         with:
           ghToken: ${{ secrets.GITHUB_TOKEN }}
