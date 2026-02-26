@@ -1,6 +1,6 @@
 name: Deep Cross-PR Conflict Checker
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 jobs:
@@ -17,13 +17,12 @@ jobs:
       - name: Check Line-Level Conflicts
         id: conflict_check
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          CURRENT_PR=${{ github.event.pull_request.number }}
-          
           # Get all other open PR numbers
-          OTHERS=$(gh pr list --state open --json number -q ".[].number | select(. != $CURRENT_PR)")
+          OTHERS=$(gh pr list --state open --json number -q ".[].number | select(. != ($PR_NUMBER | tonumber))")
           
           CONFLICT_LIST=""
           
@@ -36,15 +35,17 @@ jobs:
             # Perform a virtual merge test using git merge-tree
             if ! git merge-tree --write-tree HEAD pr-$pr > /dev/null 2>&1; then
               # Construct a markdown link for the conflicting PR
-              PR_LINK="https://github.com"
-              CONFLICT_LIST="$CONFLICT_LIST **[PR #$pr]($PR_LINK)**"
+              PR_LINK="https://github.com{REPO}/pull/${pr}"
+              CONFLICT_LIST="$CONFLICT_LIST\n– [PR #${pr}](${PR_LINK})"
             fi
           done
           
           # Save result to output
-          echo "conflicts<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$CONFLICT_LIST" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "conflicts<<EOF"
+            echo -e "$CONFLICT_LIST"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Comment on PR
         if: steps.conflict_check.outputs.conflicts != ''
