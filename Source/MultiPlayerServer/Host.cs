@@ -313,21 +313,21 @@ namespace MultiPlayerServer
 
             return payload.IsSingleSegment ? encoding.GetString(payload.FirstSpan)
                 : GetStringInternal(payload, encoding);
+        }
 
-            static string GetStringInternal(in ReadOnlySequence<byte> payload, Encoding encoding)
+        private static string GetStringInternal(in ReadOnlySequence<byte> payload, Encoding encoding)
+        {
+            // linearize
+            int length = checked((int)payload.Length);
+            byte[] oversized = ArrayPool<byte>.Shared.Rent(length);
+            try
             {
-                // linearize
-                int length = checked((int)payload.Length);
-                byte[] oversized = ArrayPool<byte>.Shared.Rent(length);
-                try
-                {
-                    payload.CopyTo(oversized);
-                    return encoding.GetString(oversized, 0, length);
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(oversized);
-                }
+                payload.CopyTo(oversized);
+                return encoding.GetString(oversized, 0, length);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(oversized);
             }
         }
     }
