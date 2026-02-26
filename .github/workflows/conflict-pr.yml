@@ -1,0 +1,56 @@
+name: Deep Cross-PR Conflict Checker
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-deep-conflicts:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Line-Level Conflicts
+        id: conflict_check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Get all other open PR numbers
+          OTHERS=$(gh pr list --state open --json number -q ".[].number | select(. != ($PR_NUMBER | tonumber))")
+          
+          CONFLICT_LIST=""
+          
+          for pr in $OTHERS; do
+            echo "Checking against PR #$pr..."
+            
+            # Fetch the other PR's head
+            git fetch origin pull/$pr/head:pr-$pr --quiet
+            
+            # Perform a virtual merge test using git merge-tree
+            if ! git merge-tree --write-tree HEAD pr-$pr > /dev/null 2>&1; then
+              # Construct a markdown link for the conflicting PR
+              PR_LINK="https://github.com{REPO}/pull/${pr}"
+              CONFLICT_LIST="$CONFLICT_LIST\n– [PR #${pr}](${PR_LINK})"
+            fi
+          done
+          
+          # Save result to output
+          {
+            echo "conflicts<<EOF"
+            echo -e "$CONFLICT_LIST"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR
+        if: steps.conflict_check.outputs.conflicts != ''
+        uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            ### ⚠ Potential Cross-PR Conflict Warning
+            ${{ steps.conflict_check.outputs.conflicts }}
