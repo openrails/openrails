@@ -406,7 +406,7 @@ namespace Orts.Viewer3D
     [CallOnThread("Render")]
     public class ForestMaterial : Material
     {
-        readonly SharedTexture TreeTexture;
+        readonly Texture2D TreeTexture;
         IEnumerator<EffectPass> ShaderPasses;
 
         [CallOnThread("Loader")]
@@ -469,7 +469,7 @@ namespace Orts.Viewer3D
         {
             if (!StaleData)
             {
-                StaleData = TreeTexture.StaleData;
+                StaleData = TreeTexture.Tag is TextureTag tag && tag.StaleData;
 
                 return StaleData;
             }

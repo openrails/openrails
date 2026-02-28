@@ -20,6 +20,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -181,7 +182,7 @@ namespace Orts.Viewer3D
 
     public class WaterMaterial : Material
     {
-        readonly SharedTexture WaterTexture;
+        readonly Texture2D WaterTexture;
         IEnumerator<EffectPass> ShaderPasses;
 
         public WaterMaterial(Viewer viewer, string waterTexturePath)
@@ -242,7 +243,7 @@ namespace Orts.Viewer3D
         {
             if (!StaleData)
             {
-                StaleData = WaterTexture.StaleData;
+                StaleData = WaterTexture.Tag is TextureTag tag && tag.StaleData;
                 return StaleData;
             }
             else

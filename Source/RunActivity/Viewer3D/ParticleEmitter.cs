@@ -26,6 +26,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using Orts.Simulation.RollingStocks;
+using Orts.Formats.Msts;
 
 namespace Orts.Viewer3D
 {
@@ -467,7 +468,7 @@ namespace Orts.Viewer3D
 
     public class ParticleEmitterMaterial : Material
     {
-        public SharedTexture Texture;
+        public Texture2D Texture;
 
         IEnumerator<EffectPass> ShaderPasses;
 
@@ -532,7 +533,7 @@ namespace Orts.Viewer3D
         {
             if (!StaleData)
             {
-                StaleData = Texture.StaleData;
+                StaleData = Texture.Tag is TextureTag tag && tag.StaleData;
                 return StaleData;
             }
             else

@@ -902,9 +902,9 @@ namespace Orts.Viewer3D.RollingStock
     /// </summary>
     public static class CABTextureManager
     {
-        private static Dictionary<string, SharedTexture> DayTextures = new Dictionary<string, SharedTexture>();
-        private static Dictionary<string, SharedTexture> NightTextures = new Dictionary<string, SharedTexture>();
-        private static Dictionary<string, SharedTexture> LightTextures = new Dictionary<string, SharedTexture>();
+        private static Dictionary<string, Texture2D> DayTextures = new Dictionary<string, Texture2D>();
+        private static Dictionary<string, Texture2D> NightTextures = new Dictionary<string, Texture2D>();
+        private static Dictionary<string, Texture2D> LightTextures = new Dictionary<string, Texture2D>();
         private static Dictionary<string, Texture2D[]> PDayTextures = new Dictionary<string, Texture2D[]>();
         private static Dictionary<string, Texture2D[]> PNightTextures = new Dictionary<string, Texture2D[]>();
         private static Dictionary<string, Texture2D[]> PLightTextures = new Dictionary<string, Texture2D[]>();
@@ -1159,7 +1159,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (isDark)
                 {
                     retval = LightTextures[FileName];
-                    if (retval == SharedMaterialManager.MissingTexture.Texture)
+                    if (retval == SharedMaterialManager.MissingTexture)
                         retval = hasCabLightDirectory ? NightTextures[FileName] : DayTextures[FileName];
                 }
 
@@ -1171,11 +1171,11 @@ namespace Orts.Viewer3D.RollingStock
                 // Darkness: use night texture, if available.
                 retval = NightTextures[FileName];
                 // Only use night texture as-is in this situation.
-                isNightTexture = retval != SharedMaterialManager.MissingTexture.Texture;
+                isNightTexture = retval != SharedMaterialManager.MissingTexture;
             }
 
             // No light or dark texture selected/available? Use day texture instead.
-            if (retval == SharedMaterialManager.MissingTexture.Texture)
+            if (retval == SharedMaterialManager.MissingTexture)
                 retval = DayTextures[FileName];
 
             return retval;
@@ -1188,11 +1188,9 @@ namespace Orts.Viewer3D.RollingStock
         /// <returns>bool indicating if the given texture is marked as stale</returns>
         public static bool GetStale(string texPath)
         {
-            texPath = texPath;
-
-            bool stale = (DayTextures.ContainsKey(texPath) && DayTextures[texPath].StaleData) ||
-                (NightTextures.ContainsKey(texPath) && NightTextures[texPath].StaleData) ||
-                (LightTextures.ContainsKey(texPath) && LightTextures[texPath].StaleData);
+            bool stale = (DayTextures.ContainsKey(texPath) && (DayTextures[texPath].Tag is TextureTag tag) && tag.StaleData) ||
+                (NightTextures.ContainsKey(texPath) && (NightTextures[texPath].Tag is TextureTag nightTag) && nightTag.StaleData) ||
+                (LightTextures.ContainsKey(texPath) && (LightTextures[texPath].Tag is TextureTag lightTag) && lightTag.StaleData);
 
             return stale;
         }
@@ -1543,7 +1541,7 @@ namespace Orts.Viewer3D.RollingStock
 
             var i = (_Locomotive.UsingRearCab) ? 1 : 0;
             _CabTexture = CABTextureManager.GetTexture(_Locomotive.CabViewList[i].CVFFile.TwoDViews[_Location], Dark, CabLight, out _isNightTexture, HasCabLightDirectory);
-            if (_CabTexture == SharedMaterialManager.MissingTexture.Texture)
+            if (_CabTexture == SharedMaterialManager.MissingTexture)
                 return;
 
             if (_PrevScreenSize != _Viewer.DisplaySize && _Shader != null)
@@ -1853,7 +1851,7 @@ namespace Orts.Viewer3D.RollingStock
             var dark = Viewer.MaterialManager.sunDirection.Y <= -0.085f || Viewer.Camera.IsUnderground;
 
             Texture = CABTextureManager.GetTexture(Control.ACEFile, dark, Locomotive.CabLightOn, out IsNightTexture, HasCabLightDirectory);
-            if (Texture == SharedMaterialManager.MissingTexture.Texture)
+            if (Texture == SharedMaterialManager.MissingTexture)
                 return;
 
             base.PrepareFrame(frame, elapsedTime);
@@ -1945,7 +1943,7 @@ namespace Orts.Viewer3D.RollingStock
                 var dark = Viewer.MaterialManager.sunDirection.Y <= -0.085f || Viewer.Camera.IsUnderground;
                 Texture = CABTextureManager.GetTexture(Control.ACEFile, dark, Locomotive.CabLightOn, out IsNightTexture, HasCabLightDirectory);
             }
-            if (Texture == SharedMaterialManager.MissingTexture.Texture)
+            if (Texture == SharedMaterialManager.MissingTexture)
                 return;
 
             base.PrepareFrame(frame, elapsedTime);
@@ -2191,7 +2189,7 @@ namespace Orts.Viewer3D.RollingStock
             var dark = Viewer.MaterialManager.sunDirection.Y <= -0.085f || Viewer.Camera.IsUnderground;
 
             Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, index, dark, Locomotive.CabLightOn, out IsNightTexture, HasCabLightDirectory);
-            if (Texture == SharedMaterialManager.MissingTexture.Texture)
+            if (Texture == SharedMaterialManager.MissingTexture)
                 return;
 
             base.PrepareFrame(frame, elapsedTime);

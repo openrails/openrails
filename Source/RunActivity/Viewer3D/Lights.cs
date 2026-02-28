@@ -28,7 +28,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using LibGit2Sharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -1023,13 +1022,13 @@ namespace Orts.Viewer3D
 
     public class LightGlowMaterial : Material
     {
-        readonly SharedTexture LightGlowTexture;
+        readonly Texture2D LightGlowTexture;
 
         public LightGlowMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
             // TODO: This should happen on the loader thread.
-            LightGlowTexture = textureName.StartsWith(Viewer.ContentPath, StringComparison.OrdinalIgnoreCase) ? (SharedTexture)SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, textureName) : Viewer.TextureManager.Get(textureName);
+            LightGlowTexture = textureName.StartsWith(Viewer.ContentPath, StringComparison.OrdinalIgnoreCase) ? SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, textureName) : Viewer.TextureManager.Get(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1080,7 +1079,7 @@ namespace Orts.Viewer3D
         {
             if (!StaleData)
             {
-                StaleData = LightGlowTexture.StaleData;
+                StaleData = LightGlowTexture.Tag is TextureTag tag && tag.StaleData;
                 return StaleData;
             }
             else

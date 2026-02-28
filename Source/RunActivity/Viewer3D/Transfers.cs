@@ -146,7 +146,7 @@ namespace Orts.Viewer3D
 
     public class TransferMaterial : Material
     {
-        readonly SharedTexture Texture;
+        readonly Texture2D Texture;
         IEnumerator<EffectPass> ShaderPasses;
         readonly SamplerState TransferSamplerState;
 
@@ -217,7 +217,7 @@ namespace Orts.Viewer3D
         {
             if (!StaleData)
             {
-                StaleData = Texture.StaleData;
+                StaleData = Texture.Tag is TextureTag tag && tag.StaleData;
                 return StaleData;
             }
             else

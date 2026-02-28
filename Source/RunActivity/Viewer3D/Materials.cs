@@ -26,6 +26,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Formats.Msts;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
@@ -51,7 +52,7 @@ namespace Orts.Viewer3D
 
         readonly Viewer Viewer;
         readonly GraphicsDevice GraphicsDevice;
-        Dictionary<string, SharedTexture> Textures = new Dictionary<string, SharedTexture>();
+        Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
         HashSet<Texture2D> MarkedTextures = new HashSet<Texture2D>();
 
         [CallOnThread("Render")]
@@ -64,8 +65,8 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Loads a game texture file; DO NOT use with internal data, use <see cref="LoadInternal(GraphicsDevice, string)"/> instead.
         /// </summary>
-        /// <returns>The <see cref="SharedTexture"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
-        public SharedTexture Get(string path, bool required = false)
+        /// <returns>The <see cref="Texture2D"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
+        public Texture2D Get(string path, bool required = false)
         {
             return Get(path, SharedMaterialManager.MissingTexture, required);
         }
@@ -74,7 +75,7 @@ namespace Orts.Viewer3D
         /// Loads a game texture file; DO NOT use with internal data, use <see cref="LoadInternal(GraphicsDevice, string)"/> instead.
         /// </summary>
         /// <returns>The <see cref="SharedTexture"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
-        public SharedTexture Get(string path, SharedTexture defaultTexture, bool required = false)
+        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
@@ -84,7 +85,8 @@ namespace Orts.Viewer3D
             // Use resolved path, without any 'up one level' ("..\\") calls
             path = Path.GetFullPath(path).ToLowerInvariant();
             string textureKey = path;
-            if (Textures.ContainsKey(textureKey) && !Textures[textureKey].StaleData) return Textures[textureKey];
+            if (Textures.ContainsKey(textureKey) && !((Textures[textureKey].Tag is TextureTag tag) && tag.StaleData))
+                return Textures[textureKey];
 
             // DO NOT add additional formats here without explicit approval
             // - DDS is used for newer, Open Rails-specific content
@@ -103,11 +105,11 @@ namespace Orts.Viewer3D
                             if (File.Exists(dds))
                             {
                                 DDSLib.DDSFromFile(dds, GraphicsDevice, true, out Texture2D texture);
-                                return Textures[textureKey] = new SharedTexture(texture);
+                                return Textures[textureKey] = texture;
                             }
                             if (File.Exists(ace))
                             {
-                                return Textures[textureKey] = new SharedTexture(Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, ace));
+                                return Textures[textureKey] = AceFile.Texture2DFromFile(GraphicsDevice, ace);
                             }
                             // When a texture is not found, and it is in a selector directory (e.g. "Snow"), we
                             // go up a level and try again. This repeats a fixed number of times, or until we run
@@ -134,6 +136,7 @@ namespace Orts.Viewer3D
         {
             var texture = new Texture2D(graphicsDevice, 1, 1);
             texture.SetData(new[] { Color.Magenta });
+            texture.Tag = new TextureTag();
             return texture;
         }
 
@@ -220,9 +223,9 @@ namespace Orts.Viewer3D
             // If a texture isn't in the list of marked textures, it is no longer in use
             List<string> textureKeys = Textures.Keys.ToList();
             foreach (string key in textureKeys)
-                if (!MarkedTextures.Contains(Textures[key].Texture))
+                if (!MarkedTextures.Contains(Textures[key]))
                 {
-                    Textures[key].Texture.Dispose();
+                    Textures[key].Dispose();
                     Textures.Remove(key);
                 }
         }
@@ -233,8 +236,9 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetAllStale (bool stale = true)
         {
-            foreach (SharedTexture texture in Textures.Values)
-                texture.StaleData = stale;
+            foreach (Texture2D texture in Textures.Values)
+                if (texture.Tag is TextureTag tag)
+                    tag.StaleData = stale;
         }
 
         /// <summary>
@@ -247,9 +251,9 @@ namespace Orts.Viewer3D
 
             foreach (string texPath in texPaths)
             {
-                if (Textures.ContainsKey(texPath) && !Textures[texPath].StaleData)
+                if (Textures.ContainsKey(texPath) && Textures[texPath].Tag is TextureTag tag && !tag.StaleData)
                 {
-                    Textures[texPath].StaleData = true;
+                    tag.StaleData = true;
                     found = true;
 
                     Trace.TraceInformation("Texture file {0} was updated on disk and will be reloaded.", texPath);
@@ -284,9 +288,9 @@ namespace Orts.Viewer3D
         public readonly DebugShader DebugShader;
         public readonly CabShader CabShader;
 
-        public static SharedTexture MissingTexture;
-        public static SharedTexture DefaultSnowTexture;
-        public static SharedTexture DefaultDMSnowTexture;
+        public static Texture2D MissingTexture;
+        public static Texture2D DefaultSnowTexture;
+        public static Texture2D DefaultDMSnowTexture;
 
         [CallOnThread("Render")]
         public SharedMaterialManager(Viewer viewer)
@@ -664,40 +668,6 @@ namespace Orts.Viewer3D
         }
     }
 
-    public class SharedTexture
-    {
-        public bool StaleData;
-        private Texture2D _texture;
-        public Texture2D Texture
-        {
-            get
-            {
-                return _texture;
-            }
-            set
-            {
-                _texture = value;
-                StaleData = false;
-            }
-        }
-
-        public SharedTexture (Texture2D texture, bool staleData = false)
-        {
-            Texture = texture;
-            StaleData = staleData;
-        }
-
-        public static implicit operator Texture2D (SharedTexture texture)
-        {
-            return texture?.Texture;
-        }
-
-        public static implicit operator SharedTexture (Texture2D texture)
-        {
-            return new SharedTexture(texture, false);
-        }
-    }
-
     public abstract class Material
     {
         public readonly Viewer Viewer;
@@ -851,9 +821,9 @@ namespace Orts.Viewer3D
     {
         readonly SceneryMaterialOptions Options;
         readonly float MipMapBias;
-        protected SharedTexture Texture;
+        protected Texture2D Texture;
         private readonly string TexturePath;
-        protected SharedTexture NightTexture;
+        protected Texture2D NightTexture;
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
         IEnumerator<EffectPass> ShaderPassesDarkShade;
         IEnumerator<EffectPass> ShaderPassesFullBright;
@@ -907,8 +877,8 @@ namespace Orts.Viewer3D
             var texture = SharedMaterialManager.MissingTexture;
             if (Texture != SharedMaterialManager.MissingTexture && Texture != null) texture = Texture;
             else if (NightTexture != SharedMaterialManager.MissingTexture && NightTexture != null) texture = NightTexture;
-            if (texture.Texture.Tag != null && texture.Texture.Tag.GetType() == typeof(Orts.Formats.Msts.AceInfo))
-                AceAlphaBits = ((Orts.Formats.Msts.AceInfo)texture.Texture.Tag).AlphaBits;
+            if (texture.Tag is TextureTag tag)
+                AceAlphaBits = tag.AlphaBits;
             else
                 AceAlphaBits = 0;
 
@@ -1160,7 +1130,7 @@ namespace Orts.Viewer3D
         {
             if (!StaleData)
             {
-                StaleData = Texture.StaleData || NightTexture.StaleData;
+                StaleData = ((Texture.Tag is TextureTag tag) && tag.StaleData) || ((NightTexture.Tag is TextureTag nightTag) && nightTag.StaleData);
                 return StaleData;
             }
             else
@@ -1350,7 +1320,7 @@ namespace Orts.Viewer3D
             if (ScreenRenderer != null)
             {
                 var originalRenderTargets = graphicsDevice.GetRenderTargets();
-                graphicsDevice.SetRenderTarget(Texture.Texture as RenderTarget2D);
+                graphicsDevice.SetRenderTarget(Texture as RenderTarget2D);
                 ScreenRenderer.ControlView.SpriteBatch.Begin();
                 ScreenRenderer.Draw(graphicsDevice);
                 ScreenRenderer.ControlView.SpriteBatch.End();

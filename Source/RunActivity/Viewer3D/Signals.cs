@@ -697,7 +697,7 @@ namespace Orts.Viewer3D
     public class SignalLightMaterial : Material
     {
         readonly SceneryShader SceneryShader;
-        readonly SharedTexture Texture;
+        readonly Texture2D Texture;
 
         public SignalLightMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
@@ -741,7 +741,7 @@ namespace Orts.Viewer3D
         {
             if (!StaleData)
             {
-                StaleData = Texture.StaleData;
+                StaleData = Texture.Tag is TextureTag tag && tag.StaleData;
                 return StaleData;
             }
             else

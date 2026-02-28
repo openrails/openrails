@@ -599,12 +599,12 @@ namespace Orts.Viewer3D
 
     public class TerrainMaterial : Material
     {
-        readonly SharedTexture PatchTexture;
-        readonly SharedTexture PatchTextureOverlay;
+        readonly Texture2D PatchTexture;
+        readonly Texture2D PatchTextureOverlay;
         readonly float OverlayScale;
         IEnumerator<EffectPass> ShaderPasses;
 
-        public TerrainMaterial(Viewer viewer, string terrainTexture, SharedTexture defaultTexture)
+        public TerrainMaterial(Viewer viewer, string terrainTexture, Texture2D defaultTexture)
             : base(viewer, terrainTexture)
         {
             var textures = terrainTexture.Split('\0');
@@ -660,7 +660,7 @@ namespace Orts.Viewer3D
         {
             if (!StaleData)
             {
-                StaleData = PatchTexture.StaleData || PatchTextureOverlay.StaleData;
+                StaleData = ((PatchTexture.Tag is TextureTag tag) && tag.StaleData) || ((PatchTextureOverlay.Tag is TextureTag overlayTag) && overlayTag.StaleData);
                 return StaleData;
             }
             else
