@@ -1466,7 +1466,7 @@ namespace Orts.Viewer3D
 
                 if (Camera is CabCamera && locoViewer._hasCabRenderer)
                 {
-                    foreach (var controlRenderer in locoViewer._CabRenderer.ControlMap.Values)
+                    foreach (var controlRenderer in locoViewer._CabRenderer.ControlMapCvcDiscreteSorted.Values)
                     {
                         if ((Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint
                             && controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin()
