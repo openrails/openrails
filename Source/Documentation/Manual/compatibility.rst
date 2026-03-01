@@ -47,7 +47,8 @@ file and run properly. Open Rails software logs these errors in a log file on
 the user's desktop. This log file may be used to correct problems identified 
 by the Open Rails software. The parser will also correct some of the problems 
 that stumped MSTS.  For example, if a texture is missing Open Rails will 
-substitute a neutral gray texture and continue.
+substitute a neutral gray texture (or high-vis magenta texture when compiled 
+in DEBUG mode) and continue.
 
 MSTS Files Used in Whole or Part by Open Rails
 ==============================================
