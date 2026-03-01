@@ -61,11 +61,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public const float FullSuperpositionTolerance = 0.2f;
 
         // additions to manage consequences of variable weight on friction and brake forces
-        public float EmptyORTSDavis_A = -9999;
-        public float EmptyORTSDavis_B = -9999;
-        public float EmptyORTSDavis_C = -9999;
+        public float? EmptyORTSDavis_A = null;
+        public float? EmptyORTSDavis_B = null;
+        public float? EmptyORTSDavis_C = null;
         public float EmptyORTSWagonFrontalAreaM2 = -9999;
-        public float EmptyORTSDavisDragConstant = -9999;
+        public float? EmptyORTSDavisDragConstant = null;
         public float EmptyMaxBrakeForceN = -9999;
         public float EmptyMaxBrakeShoeForceN = -9999;
         public float EmptyMaxHandbrakeForceN = -9999;
@@ -984,11 +984,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public IntakePoint LinkedIntakePoint = null;
 
         // additions to manage consequences of variable weight on friction and brake forces
-        public float FullORTSDavis_A = -9999;
-        public float FullORTSDavis_B = -9999;
-        public float FullORTSDavis_C = -9999;
+        public float? FullORTSDavis_A = null;
+        public float? FullORTSDavis_B = null;
+        public float? FullORTSDavis_C = null;
         public float FullORTSWagonFrontalAreaM2 = -9999;
-        public float FullORTSDavisDragConstant = -9999;
+        public float? FullORTSDavisDragConstant = null;
         public float FullMaxBrakeForceN = -9999;
         public float FullMaxBrakeShoeForceN = -9999;
         public float FullMaxHandbrakeForceN = -9999;
@@ -1081,11 +1081,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float ZOffset = 0;
 
         // additions to manage consequences of variable weight on friction and brake forces
-        public float FullStaticORTSDavis_A = -9999;
-        public float FullStaticORTSDavis_B = -9999;
-        public float FullStaticORTSDavis_C = -9999;
+        public float? FullStaticORTSDavis_A = null;
+        public float? FullStaticORTSDavis_B = null;
+        public float? FullStaticORTSDavis_C = null;
         public float FullStaticORTSWagonFrontalAreaM2 = -9999;
-        public float FullStaticORTSDavisDragConstant = -9999;
+        public float? FullStaticORTSDavisDragConstant = null;
         public float FullStaticMaxBrakeForceN = -9999;
         public float FullStaticMaxBrakeShoeForceN = -9999;
         public float FullStaticMaxHandbrakeForceN = -9999;
