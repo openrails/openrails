@@ -1,4 +1,4 @@
-﻿Open Rails software Readme.txt - Release v1.6 - June 2025
+﻿Open Rails software Readme.txt - Release v1.6.1 - February 2026
 
 Visit our web-page at https://openrails.org for details and links.
 
@@ -14,7 +14,7 @@ This Open Rails download does not include any content - no routes, trains, activ
 
 If you have content suitable for Open Rails or Microsoft Train Simulator already in place, then you can use the Open Rails program to operate those routes and drive those trains straight away. If not, then you will need to install some models bought from a vendor or free from the community before you can use Open Rails.
 
-Use the Content button for some auto-install routes or visit the catalogue at www.openrails.org/download/explore-content
+Use the Content button for some auto-install routes or visit the catalogue at https://www.openrails.org/download/content
 
 SUPPORT
 Please send bug reports and feature requests to our Bug Tracker at https://launchpad.net/or
