@@ -238,7 +238,7 @@ namespace Orts.Viewer3D
             {
                 // glTf shape
                 if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds < MaxFrame))
-                    SetFrameWrap(AnimationKey + elapsedTime.ClockSeconds * frameRateMultiplier);
+                    SetFrameWrap(AnimationKey + elapsedTime.ClockSeconds); // * frameRateMultiplier: ignore it for glTF-s, that was probably for historical reasons
                 // In glTF multiple animations may target the same node, so we must not SetFrame(0) in the update.
             }
         }

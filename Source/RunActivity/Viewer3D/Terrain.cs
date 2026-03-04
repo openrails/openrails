@@ -501,6 +501,14 @@ namespace Orts.Viewer3D
         readonly Texture2D PatchTextureOverlay;
         readonly float OverlayScale;
         IEnumerator<EffectPass> ShaderPasses;
+        static readonly SamplerState OverlaySamplerState = new SamplerState
+        {
+            AddressU = TextureAddressMode.Wrap,
+            AddressV = TextureAddressMode.Wrap,
+            Filter = TextureFilter.Linear,
+            MipMapLevelOfDetailBias = 0
+        };
+
 
         public TerrainMaterial(Viewer viewer, string terrainTexture, Texture2D defaultTexture)
             : base(viewer, terrainTexture)
@@ -539,7 +547,8 @@ namespace Orts.Viewer3D
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
-                    graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearWrap;
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Overlay] = OverlaySamplerState;
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }

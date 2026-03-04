@@ -110,11 +110,14 @@ namespace Orts.Viewer3D
                             if (File.Exists(dds))
                             {
                                 DDSLib.DDSFromFile(dds, GraphicsDevice, true, out Texture2D texture);
+                                if (Debugger.IsAttached) texture.Name = path;
                                 return Textures[textureKey] = texture;
                             }
                             if (File.Exists(ace))
                             {
-                                return Textures[textureKey] = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, ace);
+                                var texture = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, ace);
+                                if (Debugger.IsAttached) texture.Name = path;
+                                return Textures[textureKey] = texture;
                             }
                             // When a texture is not found, and it is in a selector directory (e.g. "Snow"), we
                             // go up a level and try again. This repeats a fixed number of times, or until we run
@@ -136,7 +139,7 @@ namespace Orts.Viewer3D
                     using (var stream = File.OpenRead(path))
                     {
                         var texture = Texture2D.FromStream(GraphicsDevice, stream);
-                        //texture.Name = path; // Handy when using a graphics debugger
+                        if (Debugger.IsAttached) texture.Name = path;
                         return texture;
                     }
                 default:
@@ -426,6 +429,8 @@ namespace Orts.Viewer3D
             Texture2D clearcoatTexture, float clearcoatFactor,
             Texture2D clearcoatRoughnessTexture, float clearcoatRoughnessFactor,
             Texture2D clearcoatNormalTexture, float clearcoatNormalScale,
+            Texture2D specularTexture, float specularFactor,
+            Texture2D specularColorTexture, Vector3 specularColorFactor, float ior,
             float referenceAlpha, bool doubleSided,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
@@ -434,7 +439,9 @@ namespace Orts.Viewer3D
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoat,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatRoughness,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal)
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecular,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpeculatColor)
         {
             var materialKey = (materialName, materialUniqueId?.ToLower(), options, mipMapBias, (Effect)null);
 
@@ -452,6 +459,8 @@ namespace Orts.Viewer3D
                             clearcoatTexture, clearcoatFactor,
                             clearcoatRoughnessTexture, clearcoatRoughnessFactor,
                             clearcoatNormalTexture, clearcoatNormalScale,
+                            specularTexture, specularFactor,
+                            specularColorTexture, specularColorFactor, ior,
                             referenceAlpha, doubleSided,
                             samplerStateBaseColor,
                             samplerStateMetallicRoughness,
@@ -460,7 +469,9 @@ namespace Orts.Viewer3D
                             samplerStateEmissive,
                             samplerStateClearcoat,
                             samplerStateClearcoatRoughness,
-                            samplerStateClearcoatNormal);
+                            samplerStateClearcoatNormal,
+                            samplerStateSpecular,
+                            samplerStateSpeculatColor);
                         break;
                     default:
                         Trace.TraceInformation("Skipped unknown material type {0}", materialName);
@@ -988,7 +999,7 @@ namespace Orts.Viewer3D
                     ShaderPasses.Current.Apply();
 
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
-                    graphicsDevice.SamplerStates[0] = GetShadowTextureAddressMode();
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = GetShadowTextureAddressMode();
 
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
@@ -1088,6 +1099,8 @@ namespace Orts.Viewer3D
         protected readonly Texture2D ClearcoatTexture;
         protected readonly Texture2D ClearcoatRoughnessTexture;
         protected readonly Texture2D ClearcoatNormalTexture;
+        protected readonly Texture2D SpecularTexture;
+        protected readonly Texture2D SpecularColorTexture;
 
         // Animatable attributes
         protected Vector4 BaseColorFactor;
@@ -1099,6 +1112,9 @@ namespace Orts.Viewer3D
         protected float ClearcoatFactor;
         protected float ClearcoatRoughnessFactor;
         protected float ClearcoatNormalScale;
+        protected float SpecularFactor;
+        protected Vector3 SpecularColorFactor;
+        protected float Ior;
 
         bool EmissiveFollowsDayNightCycle;
         bool DoubleSided;
@@ -1111,18 +1127,23 @@ namespace Orts.Viewer3D
         public SamplerState SamplerStateClearcoat;
         public SamplerState SamplerStateClearcoatRoughness;
         public SamplerState SamplerStateClearcoatNormal;
+        public SamplerState SamplerStateSpecular;
+        public SamplerState SamplerStateSpecularColor;
 
         // Animation actuators:
         public void SetAlphaCutoff(float value) => DefaultAlphaCutOff = (int)(value * 255f);
         public void SetBaseColorFactor(Vector4 value) => BaseColorFactor = value;
         public void SetMetallicFactor(float value) => MetallicFactor = value;
         public void SetRoughnessFactor(float value) => RoughnessFactor = value;
-        public void SetNormalScale(float value) => NormalScale = Math.Abs(NormalScale) != 2 ? value : NormalScale;
-        public void SetOcclusionSrtength(float value) => OcclusionStrength = OcclusionStrength != 2 ? value : OcclusionStrength;
+        public void SetNormalScale(float value) => NormalScale = value;
+        public void SetOcclusionSrtength(float value) => OcclusionStrength = value;
         public void SetEmissiveFactor(Vector3 value) => EmissiveFactor = value;
         public void SetClearcoatFactor(float value) => ClearcoatFactor = value;
         public void SetClearcoatRoughnessFactor(float value) => ClearcoatRoughnessFactor = value;
-        public void SetClearcoatNormalScale(float value) => ClearcoatNormalScale = Math.Abs(ClearcoatNormalScale) != 2 ? value : ClearcoatNormalScale;
+        public void SetClearcoatNormalScale(float value) => ClearcoatNormalScale = value;
+        public void SetSpecularFactor(float value) => SpecularFactor = value;
+        public void SetSpecularColorFactor(Vector3 value) => SpecularColorFactor = value;
+        public void SetIor(float value) => Ior = value;
 
         static readonly Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState> GltfSamplerStates = new Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState>();
 
@@ -1135,6 +1156,8 @@ namespace Orts.Viewer3D
             Texture2D clearcoatTexture, float clearcoatFactor,
             Texture2D clearcoatRoughnessTexture, float clearcoatRoughnessFactor,
             Texture2D clearcoatNormalTexture, float clearcoatNormalScale,
+            Texture2D specularTexture, float specularFactor,
+            Texture2D specularColorTexture, Vector3 specularColorFactor, float ior,
             float referenceAlpha, bool doubleSided,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
@@ -1143,7 +1166,9 @@ namespace Orts.Viewer3D
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoat,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatRoughness,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal)
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecular,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecularColor)
             : base(viewer, null, options, mipMapBias)
         {
             Texture = baseColorTexture;
@@ -1163,6 +1188,11 @@ namespace Orts.Viewer3D
             ClearcoatRoughnessFactor = clearcoatRoughnessFactor;
             ClearcoatNormalTexture = clearcoatNormalTexture;
             ClearcoatNormalScale = clearcoatNormalScale;
+            SpecularTexture = specularTexture;
+            SpecularFactor = specularFactor;
+            SpecularColorTexture = specularColorTexture;
+            SpecularColorFactor = specularColorFactor;
+            Ior = ior;
 
             DefaultAlphaCutOff = (int)(referenceAlpha * 255f);
             DoubleSided = doubleSided;
@@ -1177,6 +1207,8 @@ namespace Orts.Viewer3D
             if (!GltfSamplerStates.TryGetValue(samplerStateClearcoat, out SamplerStateClearcoat)) GltfSamplerStates.Add(samplerStateClearcoat, SamplerStateClearcoat = GetNewSamplerState(samplerStateClearcoat));
             if (!GltfSamplerStates.TryGetValue(samplerStateClearcoatRoughness, out SamplerStateClearcoatRoughness)) GltfSamplerStates.Add(samplerStateClearcoatRoughness, SamplerStateClearcoatRoughness = GetNewSamplerState(samplerStateClearcoatRoughness));
             if (!GltfSamplerStates.TryGetValue(samplerStateClearcoatNormal, out SamplerStateClearcoatNormal)) GltfSamplerStates.Add(samplerStateClearcoatNormal, SamplerStateClearcoatNormal = GetNewSamplerState(samplerStateClearcoatNormal));
+            if (!GltfSamplerStates.TryGetValue(samplerStateSpecular, out SamplerStateSpecular)) GltfSamplerStates.Add(samplerStateSpecular, SamplerStateSpecular = GetNewSamplerState(samplerStateSpecular));
+            if (!GltfSamplerStates.TryGetValue(samplerStateSpecularColor, out SamplerStateSpecularColor)) GltfSamplerStates.Add(samplerStateSpecularColor, SamplerStateSpecularColor = GetNewSamplerState(samplerStateSpecularColor));
         }
 
         public override bool GetBlending() => (Options & SceneryMaterialOptions.AlphaBlendingBlend) != 0;
@@ -1230,6 +1262,13 @@ namespace Orts.Viewer3D
                 shader.ClearcoatNormalTexture = ClearcoatNormalTexture;
                 shader.ClearcoatNormalScale = ClearcoatNormalScale;
             }
+            if (SpecularFactor > 0)
+            {
+                shader.SpecularFactor = new Vector4(SpecularColorFactor, SpecularFactor);
+                shader.SpecularTexture = SpecularTexture;
+                shader.SpecularColorTexture = SpecularColorTexture;
+            }
+            shader.IorFactor = Ior;
         }
 
         // Currently isn't possible to set a glTF to anisotropic filtering, so this is a hack against the spec:
@@ -1262,6 +1301,7 @@ namespace Orts.Viewer3D
                     {
                         shader.TextureCoordinates1 = gltfPrimitive.TexCoords1;
                         shader.TextureCoordinates2 = gltfPrimitive.TexCoords2;
+                        shader.TextureCoordinates3 = gltfPrimitive.TexCoords3;
                         shader.TexturePacking = gltfPrimitive.TexturePacking;
 
                         if (gltfPrimitive.BonesTexture != null)
@@ -1289,6 +1329,11 @@ namespace Orts.Viewer3D
                         graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.ClearcoatRoughness] = SamplerStateClearcoatRoughness;
                         graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.ClearcoatNormal] = SamplerStateClearcoatNormal;
                     }
+                    if (SpecularFactor > 0)
+                    {
+                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Specular] = SamplerStateSpecular;
+                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.SpecularColor] = SamplerStateSpecularColor;
+                    }
 
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
@@ -1313,6 +1358,12 @@ namespace Orts.Viewer3D
         IEnumerator<EffectPass> ShaderPasses;
         IEnumerator<EffectPass> ShaderPassesBlur;
         VertexBuffer BlurVertexBuffer;
+        static readonly SamplerState ShadowMapSamplerState = new SamplerState
+        {
+            Filter = TextureFilter.LinearMipPoint,
+            AddressU = TextureAddressMode.Wrap,
+            AddressV = TextureAddressMode.Wrap,
+        };
 
         public enum Mode
         {
@@ -1362,6 +1413,7 @@ namespace Orts.Viewer3D
                 mode == Mode.PbrMorphed ? ShaderPassesShadowMapMorphed :
                 ShaderPassesShadowMap;
 
+            graphicsDevice.SamplerStates[1] = ShadowMapSamplerState;
             graphicsDevice.RasterizerState = mode == Mode.Blocker ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
         }
 
@@ -1399,7 +1451,7 @@ namespace Orts.Viewer3D
             }
         }
 
-        public RenderTarget2D ApplyBlur(GraphicsDevice graphicsDevice, RenderTarget2D shadowMap, RenderTarget2D renderTarget)
+        public void ApplyBlur(GraphicsDevice graphicsDevice, RenderTarget2D shadowMap, RenderTarget2D renderTarget, int shadowMapIndex)
         {
             var wvp = Matrix.Identity;
 
@@ -1415,9 +1467,9 @@ namespace Orts.Viewer3D
             ShaderPassesBlur.Reset();
             while (ShaderPassesBlur.MoveNext())
             {
-                shader.SetBlurData(renderTarget);
+                shader.SetBlurData(renderTarget, shadowMapIndex);
                 ShaderPassesBlur.Current.Apply();
-                graphicsDevice.SetRenderTarget(shadowMap);
+                graphicsDevice.SetRenderTarget(shadowMap, shadowMapIndex);
                 graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
 
                 graphicsDevice.SetRenderTarget(null);
@@ -1425,8 +1477,6 @@ namespace Orts.Viewer3D
 
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
-
-            return shadowMap;
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)

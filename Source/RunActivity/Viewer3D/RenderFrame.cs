@@ -386,8 +386,8 @@ namespace Orts.Viewer3D
         readonly Game Game;
 
         // Shared shadow map data.
-        static RenderTarget2D[] ShadowMap;
-        static RenderTarget2D[] ShadowMapRenderTarget;
+        static RenderTarget2D ShadowMap;
+        static RenderTarget2D ShadowMapRenderTarget;
         static Vector3 SteppedSolarDirection = Vector3.UnitX;
         static readonly Vector3 SunColor = Vector3.One;
         static readonly Vector3 MoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
@@ -453,17 +453,13 @@ namespace Orts.Viewer3D
 
             if (Game.Settings.DynamicShadows)
             {
-                if (ShadowMap == null)
-                {
-                    var shadowMapSize = Game.Settings.ShadowMapResolution;
-                    ShadowMap = new RenderTarget2D[RenderProcess.ShadowMapCount];
-                    ShadowMapRenderTarget = new RenderTarget2D[RenderProcess.ShadowMapCount];
-                    for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-                    {
-                        ShadowMapRenderTarget[shadowMapIndex] = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents);
-                        ShadowMap[shadowMapIndex] = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents);
-                    }
-                }
+                var shadowMapSize = Game.Settings.ShadowMapResolution;
+
+                ShadowMap = ShadowMap ?? new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize,
+                    false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents, false, RenderProcess.ShadowMapCount);
+                ShadowMapRenderTarget = ShadowMapRenderTarget ?? (!Game.Settings.ShadowMapBlur ? ShadowMap :
+                    new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize,
+                    false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents, false, RenderProcess.ShadowMapCount));
 
                 ShadowMapLightView = new Matrix[RenderProcess.ShadowMapCount];
                 ShadowMapLightProj = new Matrix[RenderProcess.ShadowMapCount];
@@ -859,7 +855,7 @@ namespace Orts.Viewer3D
             if (logging) Console.WriteLine("    {0} {{", shadowMapIndex);
 
             // Prepare renderer for drawing the shadow map.
-            graphicsDevice.SetRenderTarget(ShadowMapRenderTarget[shadowMapIndex]);
+            graphicsDevice.SetRenderTarget(ShadowMapRenderTarget, shadowMapIndex);
             graphicsDevice.Clear(ClearOptions.DepthBuffer | ClearOptions.Target, Color.White, 1, 0);
 
             // Prepare for normal (non-blocking) rendering of scenery.
@@ -913,13 +909,11 @@ namespace Orts.Viewer3D
             // Blur the shadow map.
             if (Game.Settings.ShadowMapBlur)
             {
-				ShadowMap[shadowMapIndex] = ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex]);
+				ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap, ShadowMapRenderTarget, shadowMapIndex);
 #if DEBUG_RENDER_STATE
                 DebugRenderState(graphicsDevice, ShadowMapMaterial.ToString() + " ApplyBlur()");
 #endif
             }
-            else
-                ShadowMap[shadowMapIndex] = ShadowMapRenderTarget[shadowMapIndex];
 
             if (logging) Console.WriteLine("    }");
         }
@@ -967,8 +961,8 @@ namespace Orts.Viewer3D
 
         void DrawSequences(GraphicsDevice graphicsDevice, bool logging)
         {
-            if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && SceneryShader != null)
-                SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
+            if (Game.Settings.DynamicShadows && RenderProcess.ShadowMapCount > 0)
+                SceneryShader?.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
 
             var renderItems = RenderItemsSequence;
             renderItems.Clear();

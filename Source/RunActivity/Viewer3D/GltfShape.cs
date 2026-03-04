@@ -44,6 +44,8 @@ namespace Orts.Viewer3D
             "KHR_materials_unlit",
             "KHR_materials_clearcoat",
             "KHR_materials_emissive_strength",
+            "KHR_materials_ior",
+            "KHR_materials_specular",
             "KHR_node_visibility",
             "MSFT_lod",
             "MSFT_texture_dds",
@@ -799,6 +801,13 @@ namespace Orts.Viewer3D
                             }
                         }
 
+                        bool isMatch2(ReadOnlySpan<char> matchProperty, ReadOnlySpan<char> startsWith, out int matchIndex)
+                        {
+                            matchIndex = -1;
+                            return (matchProperty.StartsWith(startsWith) && matchProperty.LastIndexOf('/') is var i2 && i2 < matchProperty.Length
+                                && int.TryParse(matchProperty.Slice(i2).ToString(), out matchIndex));
+                        }
+
                         if (isMatch("/nodes/", out var index, out var property))
                         {
                             channel.TargetNode = index;
@@ -809,27 +818,14 @@ namespace Orts.Viewer3D
                                 case "/scale": channel.Path = AnimationChannelTarget.PathEnum.scale; break;
                                 case "/weights": channel.Path = AnimationChannelTarget.PathEnum.weights; break;
                                 case "/extensions/KHR_node_visibility/visible": channel.SetTargetFloat = (f) => NodeVisibility?.SetValue(f > 0, (int)channel.TargetNode); break;
-                                default:
-                                    if (property.StartsWith("/weights/".AsSpan()) && property.LastIndexOf('/') is var i2 && i2 < property.Length
-                                        && int.TryParse(property.Slice(i2).ToString(), out var index2))
-                                    {
-                                        channel.SetTargetFloat = (f) => Shape.Weights[(int)channel.TargetNode][index2] = f;
-                                    }
-                                    break;
+                                default: if (isMatch2(property, "/weights/".AsSpan(), out var index2)) channel.SetTargetFloat = (f) => Shape.Weights[(int)channel.TargetNode][index2] = f; break;
                             }
                         }
                         else if (isMatch("/meshes/", out index, out property))
                         {
                             channel.TargetNode = Shape.Meshes[index].HierarchyIndex;
-                            if (property.SequenceEqual("/weights".AsSpan()))
-                            {
-                                channel.Path = AnimationChannelTarget.PathEnum.weights;
-                            }
-                            else if (property.StartsWith("/weights/".AsSpan()) && property.LastIndexOf('/') is var i2 && i2 < property.Length
-                                && int.TryParse(property.Slice(i2).ToString(), out var index2))
-                            {
-                                channel.SetTargetFloat = (f) => Shape.Weights[(int)channel.TargetNode][index2] = f;
-                            }
+                            if (property.SequenceEqual("/weights".AsSpan())) channel.Path = AnimationChannelTarget.PathEnum.weights;
+                            else if (isMatch2(property, "/weights/".AsSpan(), out var index2)) channel.SetTargetFloat = (f) => Shape.Weights[(int)channel.TargetNode][index2] = f;
                         }
                         else if (isMatch("/materials/", out index, out property))
                         {
@@ -846,6 +842,9 @@ namespace Orts.Viewer3D
                                 case "/extensions/KHR_materials_clearcoat/clearcoatFactor": channel.SetTargetFloat = material.SetClearcoatFactor; break;
                                 case "/extensions/KHR_materials_clearcoat/clearcoatRoughnessFactor": channel.SetTargetFloat = material.SetClearcoatRoughnessFactor; break;
                                 case "/extensions/KHR_materials_clearcoat/clearcoatNormalTexture/scale": channel.SetTargetFloat = material.SetClearcoatNormalScale; break;
+                                case "/extensions/KHR_materials_specular/specularFactor": channel.SetTargetFloat = material.SetSpecularFactor; break;
+                                case "/extensions/KHR_materials_specular/specularColorFactor": channel.SetTargetVector3 = material.SetSpecularColorFactor; break;
+                                case "/extensions/KHR_materials_ior/ior": channel.SetTargetFloat = material.SetIor; break;
                                 default: channel.SetTargetFloat = null; channel.SetTargetVector3 = null; channel.SetTargetVector4 = null; break;
                             }
                         }
@@ -1007,33 +1006,6 @@ namespace Orts.Viewer3D
                 ["WEIGHTS"] = VertexElementUsage.BlendWeight,
             };
 
-            readonly List<float> BufferValues = new List<float>();
-            void ReadBuffer(Func<BinaryReader, float> read, BinaryReader br, Accessor.TypeEnum sourceType, int seek)
-            {
-                BufferValues.Clear();
-                for (var i = 0; i < GetComponentNumber(sourceType); i++)
-                    BufferValues.Add(read(br));
-                br.BaseStream.Seek(seek, SeekOrigin.Current);
-            }
-
-            internal Vector2 ReadVector2(Func<BinaryReader, float> read, BinaryReader br, Accessor.TypeEnum sourceType, int seek)
-            {
-                ReadBuffer(read, br, sourceType, seek);
-                return new Vector2(BufferValues.ElementAtOrDefault(0), BufferValues.ElementAtOrDefault(1));
-            }
-
-            internal Vector3 ReadVector3(Func<BinaryReader, float> read, BinaryReader br, Accessor.TypeEnum sourceType, int seek)
-            {
-                ReadBuffer(read, br, sourceType, seek);
-                return new Vector3(BufferValues.ElementAtOrDefault(0), BufferValues.ElementAtOrDefault(1), BufferValues.ElementAtOrDefault(2));
-            }
-
-            internal Vector4 ReadVector4(Func<BinaryReader, float> read, BinaryReader br, Accessor.TypeEnum sourceType, int seek)
-            {
-                ReadBuffer(read, br, sourceType, seek);
-                return new Vector4(BufferValues.ElementAtOrDefault(0), BufferValues.ElementAtOrDefault(1), BufferValues.ElementAtOrDefault(2), BufferValues.ElementAtOrDefault(3));
-            }
-
             internal Texture2D GetTexture(Gltf gltf, int? textureIndex, Texture2D defaultTexture)
             {
                 if (textureIndex != null)
@@ -1070,7 +1042,11 @@ namespace Orts.Viewer3D
                                 try
                                 {
                                     using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
-                                        return Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                                    {
+                                        var texture2D = Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                                        if (Debugger.IsAttached) texture2D.Name = imagePath;
+                                        return texture2D;
+                                    }
                                 }
                                 catch
                                 {
@@ -1083,7 +1059,11 @@ namespace Orts.Viewer3D
                             try
                             {
                                 using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
-                                    return Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                                {
+                                    var texture2D = Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                                    if (Debugger.IsAttached) texture2D.Name = $"{GltfFileName}:{image.BufferView}";
+                                    return texture2D;
+                                }
                             }
                             catch
                             {
@@ -1129,6 +1109,8 @@ namespace Orts.Viewer3D
             internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, int? texCoord, int? index, Texture2D defaultTexture)
             {
                 var texture = GetTexture(gltf, index, defaultTexture);
+                if (texture == defaultTexture)
+                    texCoord = -1;
                 var sampler = gltf.Samplers?.ElementAtOrDefault(gltf.Textures?.ElementAtOrDefault(index ?? -1)?.Sampler ?? -1) ?? GltfSubObject.DefaultGltfSampler;
                 var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
                 return (texCoord ?? 0, texture, samplerState);
@@ -1226,6 +1208,7 @@ namespace Orts.Viewer3D
 
                 var texCoords1 = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
                 var texCoords2 = Vector4.Zero; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
+                var texCoords3 = Vector4.Zero; // x: specular, y: specularColor, zw: unused
 
                 MaterialNormalTextureInfo msftNormalInfo = null;
                 TextureInfo msftOrmInfo = null;
@@ -1240,12 +1223,7 @@ namespace Orts.Viewer3D
                     msftRmoInfo = ext?.RoughnessMetallicOcclusionTexture;
                     msftNormalInfo = ext?.NormalTexture;
                 }
-                // 0: occlusion (R), roughnessMetallic (GB) together, normal (RGB) separate, this is the standard
-                // 1: roughnessMetallicOcclusion together, normal (RGB) separate
-                // 2: normalRoughnessMetallic (RG+B+A) together, occlusion (R) separate
-                // 3: occlusionRoughnessMetallic together, normal (RGB) separate
-                // 4: roughnessMetallicOcclusion together, normal (RG) 2 channel separate
-                // 5: occlusionRoughnessMetallic together, normal (RG) 2 channel separate
+                /// <see cref=GltfPrimitive.TexturePacking>
                 var texturePacking =
                     msftOrmInfo != null ? msftNormalInfo != null ? 5 : 3 :
                     msftRmoInfo != null ? msftNormalInfo != null ? 4 : 1 :
@@ -1258,12 +1236,22 @@ namespace Orts.Viewer3D
                 // emissive texture is 8 bit sRGB. Needs decoding to linear in the shader.
                 // clearcoat texture is R channel only.
                 // clearcoatRoughness texture is G channel only.
-                Texture2D baseColorTexture = null, metallicRoughnessTexture = null, normalTexture = null, occlusionTexture = null, emissiveTexture = null, clearcoatTexture = null, clearcoatRoughnessTexture = null, clearcoatNormalTexture = null;
-                (TextureFilter, TextureAddressMode, TextureAddressMode) baseColorSamplerState = default, metallicRoughnessSamplerState = default, normalSamplerState = default, occlusionSamplerState = default, emissiveSamplerState = default, clearcoatSamplerState = default, clearcoatRoughnessSamplerState = default, clearcoatNormalSamplerState = default;
+                // specular strength is A channel only, linear.
+                // specularColor is storged in the RGB channels, encoded in sRGB.
+                Texture2D baseColorTexture = null, metallicRoughnessTexture = null, normalTexture = null, occlusionTexture = null, emissiveTexture = null, clearcoatTexture = null, clearcoatRoughnessTexture = null, clearcoatNormalTexture = null, specularTexture = null, specularColorTexture = null;
+                (TextureFilter, TextureAddressMode, TextureAddressMode) baseColorSamplerState = default, metallicRoughnessSamplerState = default, normalSamplerState = default, occlusionSamplerState = default, emissiveSamplerState = default, clearcoatSamplerState = default, clearcoatRoughnessSamplerState = default, clearcoatNormalSamplerState = default, specularSamplerState = default, specularColorSamplerState = default;
 
                 KHR_materials_clearcoat clearcoat = null;
                 if (material.Extensions?.TryGetValue("KHR_materials_clearcoat", out extension) ?? false)
                     clearcoat = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_clearcoat>(extension.ToString());
+
+                KHR_materials_specular specular = null;
+                if (material.Extensions?.TryGetValue("KHR_materials_specular", out extension) ?? false)
+                    specular = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_specular>(extension.ToString());
+
+                KHR_materials_ior ior = null;
+                if (material.Extensions?.TryGetValue("KHR_materials_ior", out extension) ?? false)
+                    ior = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_ior>(extension.ToString());
 
                 var emissiveStrength = 1f;
                 if (material.Extensions?.TryGetValue("KHR_materials_emissive_strength", out extension) ?? false)
@@ -1279,16 +1267,21 @@ namespace Orts.Viewer3D
                 (texCoords2.X, clearcoatTexture, clearcoatSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords2.Y, clearcoatRoughnessTexture, clearcoatRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatRoughnessTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords2.Z, clearcoatNormalTexture, clearcoatNormalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatNormalTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords3.X, specularTexture, specularSamplerState) = distanceLevel.GetTextureInfo(gltfFile, specular?.SpecularTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords3.Y, specularColorTexture, specularColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, specular?.SpecularColorTexture, SharedMaterialManager.WhiteTexture);
 
                 var baseColorFactor = MemoryMarshal.Cast<float, Vector4>(material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f })[0];
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
-                var normalScale = flipNormals * (material.NormalTexture?.Scale ?? 2f); // 2 indicates the textureInfo is missing, otherwise it gets the default 1
-                var occlusionStrength = material.OcclusionTexture?.Strength ?? 2; // 2 indicates the textureInfo is missing, otherwise it gets the default 1
+                var normalScale = flipNormals * (material.NormalTexture?.Scale ?? 1f);
+                var occlusionStrength = material.OcclusionTexture?.Strength ?? 1;
                 var emissiveFactor = MemoryMarshal.Cast<float, Vector3>(material.EmissiveFactor ?? new[] { 0f, 0f, 0f })[0] * emissiveStrength;
                 var clearcoatFactor = clearcoat?.ClearcoatFactor ?? 0;
                 var clearcoatRoughnessFactor = clearcoat?.ClearcoatRoughnessFactor ?? 0;
-                var clearcoatNormalScale = flipNormals * (clearcoat?.ClearcoatNormalTexture?.Scale ?? 2f); // 2 indicates the textureInfo is missing, otherwise it gets the default 1
+                var clearcoatNormalScale = flipNormals * (clearcoat?.ClearcoatNormalTexture?.Scale ?? 1f);
+                var specularFactor = specular?.SpecularFactor ?? 1f;
+                var specularColorFactor = MemoryMarshal.Cast<float, Vector3>(specular?.SpecularColorFactor ?? new[] { 1f, 1f, 1f })[0];
+                var iorFactor = ior?.Ior ?? 1.5f;
 
                 switch (baseColorSamplerState.Item2)
                 {
@@ -1489,6 +1482,8 @@ namespace Orts.Viewer3D
                     clearcoatTexture, clearcoatFactor,
                     clearcoatRoughnessTexture, clearcoatRoughnessFactor,
                     clearcoatNormalTexture, clearcoatNormalScale,
+                    specularTexture, specularFactor,
+                    specularColorTexture, specularColorFactor, iorFactor,
                     referenceAlpha, doubleSided,
                     baseColorSamplerState,
                     metallicRoughnessSamplerState,
@@ -1497,12 +1492,14 @@ namespace Orts.Viewer3D
                     emissiveSamplerState,
                     clearcoatSamplerState,
                     clearcoatRoughnessSamplerState,
-                    clearcoatNormalSamplerState);
+                    clearcoatNormalSamplerState,
+                    specularSamplerState,
+                    specularColorSamplerState);
 
                 if (meshPrimitive.Material != null && !shape.Materials.ContainsKey((int)meshPrimitive.Material) && sceneryMaterial is PbrMaterial pbrMaterial)
                     shape.Materials.Add((int)meshPrimitive.Material, pbrMaterial);
 
-                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords1, texCoords2, texturePacking, morphConfig) };
+                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords1, texCoords2, texCoords3, texturePacking, morphConfig) };
                 ShapePrimitives[0].SortIndex = 0;
             }
 
@@ -1542,7 +1539,14 @@ namespace Orts.Viewer3D
             /// x: baseColor, y: roughness-metallic, z: normal, w: emissive
             /// </summary>
             public readonly Vector4 TexCoords1;
+            /// <summary>
+            /// x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
+            /// </summary>
             public readonly Vector4 TexCoords2;
+            /// <summary>
+            /// x: specular, y: specular-color, zw: unused
+            /// </summary>
+            public readonly Vector4 TexCoords3;
 
             /// <summary>
             /// 0: occlusion (R), roughnessMetallic (GB) together, normal (RGB) separate, this is the standard
@@ -1556,7 +1560,7 @@ namespace Orts.Viewer3D
 
 
             public GltfPrimitive(KHR_lights_punctual light, Gltf gltfFile, GltfDistanceLevel distanceLevel, int hierarchyIndex, int[] hierarchy)
-                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Vector4.Zero, Vector4.Zero, 0, Array.Empty<int>())
+                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Vector4.Zero, Vector4.Zero, Vector4.Zero, 0, Array.Empty<int>())
             {
                 object extension = null;
                 AttachedLight = new StaticLight
@@ -1574,7 +1578,7 @@ namespace Orts.Viewer3D
                     distanceLevel.MatrixNames.Add(AttachedLight.ManagedName);
             }
 
-            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords1, Vector4 texCoords2, int texturePacking, int[] morphConfig)
+            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords1, Vector4 texCoords2, Vector4 texCoords3, int texturePacking, int[] morphConfig)
                 : base(vertexAttributes.ToArray())
             {
                 Material = material;
@@ -1586,6 +1590,7 @@ namespace Orts.Viewer3D
                 HierarchyIndex = hierarchyIndex;
                 TexCoords1 = texCoords1;
                 TexCoords2 = texCoords2;
+                TexCoords3 = texCoords3;
                 TexturePacking = texturePacking;
 
                 if (skin == null)
@@ -1778,6 +1783,19 @@ namespace Orts.Viewer3D
             public MaterialNormalTextureInfo ClearcoatNormalTexture { get; set; }
         }
 
+        public class KHR_materials_specular
+        {
+            public float SpecularFactor { get; set; }
+            public TextureInfo SpecularTexture { get; set; }
+            public float[] SpecularColorFactor { get; set; }
+            public TextureInfo SpecularColorTexture { get; set; }
+        }
+
+        public class KHR_materials_ior
+        {
+            public float Ior { get; set; }
+        }
+
         public class KHR_materials_emissive_strength
         {
             [DefaultValue(1)]
@@ -1850,7 +1868,7 @@ namespace Orts.Viewer3D
                 if (channel.Interpolation != AnimationSampler.InterpolationEnum.STEP && time1 < time2)
                     amount = MathHelper.Clamp((time - time1) / (time2 - time1), 0, 1);
 
-                // See the formula for cubic the spline: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic
+                // See the formula for the cubic spline: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic
                 channel.SetTargetVector3?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
                     ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
                     : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount));
@@ -1908,7 +1926,6 @@ namespace Orts.Viewer3D
             { "/nodes/{}/scale", PointerTypes.Vector3 },
             { "/nodes/{}/weights", PointerTypes.FloatVector },
             { "/nodes/{}/weights/{}", PointerTypes.Float },
-            { "/nodes/{}/extensions/KHR_node_visibility/visible", PointerTypes.Boolean },
 
             // Extension pointers
             { "/extensions/KHR_lights_punctual/lights/{}/color", PointerTypes.Vector3 },
@@ -1916,6 +1933,10 @@ namespace Orts.Viewer3D
             { "/extensions/KHR_lights_punctual/lights/{}/range", PointerTypes.Float },
             { "/extensions/KHR_lights_punctual/lights/{}/spot/innerConeAngle", PointerTypes.Float },
             { "/extensions/KHR_lights_punctual/lights/{}/spot/outerConeAngle", PointerTypes.Float },
+            { "/nodes/{}/extensions/KHR_node_visibility/visible", PointerTypes.Boolean },
+            { "/materials/{}/extensions/KHR_materials_specular/specularFactor", PointerTypes.Float },
+            { "/materials/{}/extensions/KHR_materials_specular/specularColorFactor", PointerTypes.Vector3 },
+            { "/materials/{}/extensions/KHR_materials_ior/ior", PointerTypes.Float },
 
         };
 
@@ -2045,6 +2066,7 @@ namespace Orts.Viewer3D
             { "UnlitTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "VertexColorTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
             { "WaterBottle".ToLower(), Matrix.CreateScale(7) * Matrix.CreateTranslation(0, 2, 0) },
+            { "XmpMetadataRoundedCube".ToLower(), Matrix.CreateScale(0.2f) },
         };
         readonly Matrix SampleModelsAdjustment;
     }
