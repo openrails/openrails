@@ -4132,7 +4132,7 @@ namespace Orts.Simulation.Physics
         /// <summary>
         /// Initializes brakes also if Speed != 0; directly used by keyboard command
         /// <\summary>
-        public void UnconditionalInitializeBrakes()
+        public void UnconditionalInitializeBrakes(bool confirm = true)
         {
             if (Simulator.Settings.SimpleControlPhysics && LeadLocomotiveIndex >= 0) // If brake and control set to simple, and a locomotive present, then set all cars to same brake system as the locomotive
             {
@@ -4172,7 +4172,7 @@ namespace Orts.Simulation.Physics
                 }
             }
 
-            if (Simulator.Confirmer != null && IsActualPlayerTrain) // As Confirmer may not be created until after a restore.
+            if (Simulator.Confirmer != null && confirm && IsActualPlayerTrain) // As Confirmer may not be created until after a restore.
                 Simulator.Confirmer.Confirm(CabControl.InitializeBrakes, CabSetting.Off);
 
             float maxPressurePSI = 90;
