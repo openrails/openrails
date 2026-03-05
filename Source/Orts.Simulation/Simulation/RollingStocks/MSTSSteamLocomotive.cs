@@ -2175,12 +2175,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                                     Trace.TraceWarning("SteamGearRatioHigh not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                             }
                             // Adjust resistance for neutral gearing
-                            GearedRetainedDavisAN = DavisAN; // remember davis a value for later
-                            NeutralGearedDavisAN = DavisAN; // Initialise neutral gear value
+                            GearedRetainedDavisAN = DavisAN.Value; // remember davis a value for later
+                            NeutralGearedDavisAN = DavisAN.Value; // Initialise neutral gear value
                             float TempDavisAAmount = N.FromLbf((DavisMechanicalResistanceFactor * Kg.ToTUS(SteamEngines[0].AttachedAxle.WheelWeightKg))); // Based upon the Davis formula for steam locomotive resistance
                             if (TempDavisAAmount > 0.5 * DavisAN)
                             {
-                                TempDavisAAmount = DavisAN * 0.5f; // If calculated mechanical resistance is greater then then 50% of the DavisA amount then set to an arbitary value of 50%.
+                                TempDavisAAmount = DavisAN.Value * 0.5f; // If calculated mechanical resistance is greater then then 50% of the DavisA amount then set to an arbitary value of 50%.
                             }
                             NeutralGearedDavisAN -= TempDavisAAmount; // Reduces locomotive resistance when in neutral gear, as mechanical resistance decreases
 
