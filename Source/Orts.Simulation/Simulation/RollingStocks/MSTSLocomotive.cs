@@ -446,6 +446,8 @@ namespace Orts.Simulation.RollingStocks
         protected float DynamicBrakePowerRampDownWpS;
         protected float DynamicBrakePowerRampDownToZeroWpS = -1;
 
+        public bool CounterPressureBrakeOn = false;
+
         public CombinedControl CombinedControlType;
         public float CombinedControlSplitPosition;
         public bool HasSmoothStruc;
