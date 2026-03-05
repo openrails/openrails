@@ -74,7 +74,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Loads a game texture file; DO NOT use with internal data, use <see cref="LoadInternal(GraphicsDevice, string)"/> instead.
         /// </summary>
-        /// <returns>The <see cref="SharedTexture"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
+        /// <returns>The <see cref="Texture2D"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
         public Texture2D Get(string path, Texture2D defaultTexture, bool required = false)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
@@ -237,7 +237,9 @@ namespace Orts.Viewer3D
         public void SetAllStale (bool stale = true)
         {
             foreach (Texture2D texture in Textures.Values)
-                if (texture.Tag is TextureTag tag)
+                if (!(texture.Tag is TextureTag tag))
+                    texture.Tag = new TextureTag(stale); // Guarantee a stale tag is added
+                else
                     tag.StaleData = stale;
         }
 
@@ -251,12 +253,22 @@ namespace Orts.Viewer3D
 
             foreach (string texPath in texPaths)
             {
-                if (Textures.ContainsKey(texPath) && Textures[texPath].Tag is TextureTag tag && !tag.StaleData)
+                if (Textures.ContainsKey(texPath))
                 {
-                    tag.StaleData = true;
-                    found = true;
+                    if (!(Textures[texPath].Tag is TextureTag tag))
+                    {
+                        Textures[texPath].Tag = new TextureTag(true); // Guarantee a stale tag is added
+                        found = true;
 
-                    Trace.TraceInformation("Texture file {0} was updated on disk and will be reloaded.", texPath);
+                        Trace.TraceInformation("Texture file {0} was updated on disk and will be reloaded.", texPath);
+                    }
+                    else if (!tag.StaleData)
+                    {
+                        tag.StaleData = true;
+                        found = true;
+
+                        Trace.TraceInformation("Texture file {0} was updated on disk and will be reloaded.", texPath);
+                    }
                 }
             }
 
