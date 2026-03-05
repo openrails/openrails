@@ -158,14 +158,12 @@ namespace Orts.Viewer3D
                 EnvironmentMapDiffuseDay = new TextureCube(Viewer.GraphicsDevice, 128, false, SurfaceFormat.ColorSRgb);
                 foreach (var face in EnvironmentMapFaces.Keys)
                 {
-                    // How to do this more efficiently?
                     using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/diffuse_{face}_0.jpg")))
+                    using (var tex = Texture2D.FromStream(Viewer.GraphicsDevice, stream))
                     {
-                        var tex = Texture2D.FromStream(Viewer.GraphicsDevice, stream);
                         var data = new Color[tex.Width * tex.Height];
                         tex.GetData(data);
                         EnvironmentMapDiffuseDay.SetData(EnvironmentMapFaces[face], data);
-                        tex.Dispose();
                     }
                 }
             }
@@ -173,7 +171,7 @@ namespace Orts.Viewer3D
             {
                 using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/brdfLUT.png")))
                 {
-                    BrdfLutTexture = Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                    BrdfLutTexture = Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream);
                 }
             }
         }
@@ -1006,7 +1004,7 @@ namespace Orts.Viewer3D
                 ["WEIGHTS"] = VertexElementUsage.BlendWeight,
             };
 
-            internal Texture2D GetTexture(Gltf gltf, int? textureIndex, Texture2D defaultTexture)
+            internal Texture2D GetTexture(Gltf gltf, int? textureIndex, Texture2D defaultTexture, bool srgbColors)
             {
                 if (textureIndex != null)
                 {
@@ -1026,6 +1024,11 @@ namespace Orts.Viewer3D
                         if (image.Uri != null)
                         {
                             var imagePath = source != null ? Path.Combine(GltfDir, Uri.UnescapeDataString(image.Uri)) : "";
+
+                            // The standard accordance must be preserved, must not load a dds texture where only a jpg or png is allowed.
+                            if (extensionFilter != null && !extensionFilter.Contains(Path.GetExtension(imagePath).ToLowerInvariant()))
+                                return defaultTexture;
+
                             if (File.Exists(imagePath))
                             {
                                 // We refuse to load textures containing "../" in their path, because although it would be possible,
@@ -1033,7 +1036,7 @@ namespace Orts.Viewer3D
                                 // the VS Code glTF Tools and the reference Khronos glTF-Sample-Viewer.
                                 var strippedImagePath = imagePath.Replace("../", "").Replace(@"..\", "").Replace("..", "");
                                 if (File.Exists(strippedImagePath))
-                                    return Viewer.TextureManager.Get(strippedImagePath, defaultTexture, false, extensionFilter);
+                                    return Viewer.TextureManager.Get(strippedImagePath, defaultTexture, srgb: srgbColors);
                                 else
                                     Trace.TraceWarning($"glTF: refusing to load texture {imagePath} in file {GltfFileName}, using \"../\" in the path is discouraged due to compatibility reasons.");
                             }
@@ -1043,7 +1046,9 @@ namespace Orts.Viewer3D
                                 {
                                     using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
                                     {
-                                        var texture2D = Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                                        var texture2D = srgbColors
+                                            ? Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream)
+                                            : Texture2D.FromStream(Viewer.GraphicsDevice, stream);
                                         if (Debugger.IsAttached) texture2D.Name = imagePath;
                                         return texture2D;
                                     }
@@ -1060,7 +1065,9 @@ namespace Orts.Viewer3D
                             {
                                 using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
                                 {
-                                    var texture2D = Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                                    var texture2D = srgbColors
+                                        ? Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream)
+                                        : Texture2D.FromStream(Viewer.GraphicsDevice, stream);
                                     if (Debugger.IsAttached) texture2D.Name = $"{GltfFileName}:{image.BufferView}";
                                     return texture2D;
                                 }
@@ -1106,21 +1113,21 @@ namespace Orts.Viewer3D
                 return TextureFilter.Linear;
             }
 
-            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, int? texCoord, int? index, Texture2D defaultTexture)
+            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, int? texCoord, int? index, Texture2D defaultTexture, bool srgb)
             {
-                var texture = GetTexture(gltf, index, defaultTexture);
+                var texture = GetTexture(gltf, index, defaultTexture, srgb);
                 if (texture == defaultTexture)
                     texCoord = -1;
                 var sampler = gltf.Samplers?.ElementAtOrDefault(gltf.Textures?.ElementAtOrDefault(index ?? -1)?.Sampler ?? -1) ?? GltfSubObject.DefaultGltfSampler;
                 var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
                 return (texCoord ?? 0, texture, samplerState);
             }
-            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, TextureInfo textureInfo, Texture2D defaultTexture)
-                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture);
+            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, TextureInfo textureInfo, Texture2D defaultTexture, bool srgb = false)
+                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture, srgb);
             internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, MaterialNormalTextureInfo textureInfo, Texture2D defaultTexture)
-                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture);
+                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture, false);
             internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, MaterialOcclusionTextureInfo textureInfo, Texture2D defaultTexture)
-                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture);
+                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture, false);
 
             internal TextureAddressMode GetTextureAddressMode(Sampler.WrapTEnum wrapEnum) => GetTextureAddressMode((Sampler.WrapSEnum)wrapEnum);
             internal TextureAddressMode GetTextureAddressMode(Sampler.WrapSEnum wrapEnum)
@@ -1232,10 +1239,11 @@ namespace Orts.Viewer3D
                 // baseColor texture is 8 bit sRGB + A. Needs decoding to linear in the shader.
                 // metallicRoughness texture: G = roughness, B = metalness, linear, may be > 8 bit.
                 // normal texture is RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
-                // occlusion texture is R channel only, = 1.0 + strength * (sampledValue - 1.0)
+                // occlusion texture is linear R channel only, = 1.0 + strength * (sampledValue - 1.0)
                 // emissive texture is 8 bit sRGB. Needs decoding to linear in the shader.
-                // clearcoat texture is R channel only.
-                // clearcoatRoughness texture is G channel only.
+                // clearcoat texture is R channel only, linear.
+                // clearcoatRoughness texture is G channel only, linear.
+                // clearcoatNormal texture is RGB linear.
                 // specular strength is A channel only, linear.
                 // specularColor is storged in the RGB channels, encoded in sRGB.
                 Texture2D baseColorTexture = null, metallicRoughnessTexture = null, normalTexture = null, occlusionTexture = null, emissiveTexture = null, clearcoatTexture = null, clearcoatRoughnessTexture = null, clearcoatNormalTexture = null, specularTexture = null, specularColorTexture = null;
@@ -1257,10 +1265,10 @@ namespace Orts.Viewer3D
                 if (material.Extensions?.TryGetValue("KHR_materials_emissive_strength", out extension) ?? false)
                     emissiveStrength = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_emissive_strength>(extension.ToString())?.EmissiveStrength ?? 1;
 
-                (texCoords1.X, baseColorTexture, baseColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords1.X, baseColorTexture, baseColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture, SharedMaterialManager.WhiteTexture, true);
                 (texCoords1.Y, metallicRoughnessTexture, metallicRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, msftRmoInfo ?? msftOrmInfo ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords1.Z, normalTexture, normalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, msftNormalInfo ?? material.NormalTexture, SharedMaterialManager.WhiteTexture);
-                (texCoords1.W, emissiveTexture, emissiveSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.EmissiveTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords1.W, emissiveTexture, emissiveSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.EmissiveTexture, SharedMaterialManager.WhiteTexture, true);
                 (texCoords2.W, occlusionTexture, occlusionSamplerState) = msftOrmInfo != null
                     ? distanceLevel.GetTextureInfo(gltfFile, msftOrmInfo, SharedMaterialManager.WhiteTexture)
                     : distanceLevel.GetTextureInfo(gltfFile, material.OcclusionTexture, SharedMaterialManager.WhiteTexture);
@@ -1268,7 +1276,7 @@ namespace Orts.Viewer3D
                 (texCoords2.Y, clearcoatRoughnessTexture, clearcoatRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatRoughnessTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords2.Z, clearcoatNormalTexture, clearcoatNormalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatNormalTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords3.X, specularTexture, specularSamplerState) = distanceLevel.GetTextureInfo(gltfFile, specular?.SpecularTexture, SharedMaterialManager.WhiteTexture);
-                (texCoords3.Y, specularColorTexture, specularColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, specular?.SpecularColorTexture, SharedMaterialManager.WhiteTexture);
+                (texCoords3.Y, specularColorTexture, specularColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, specular?.SpecularColorTexture, SharedMaterialManager.WhiteTexture, true);
 
                 var baseColorFactor = MemoryMarshal.Cast<float, Vector4>(material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f })[0];
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;

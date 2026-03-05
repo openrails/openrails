@@ -76,18 +76,12 @@ namespace Orts.Viewer3D
         /// Loads a game texture file; DO NOT use with internal data, use <see cref="LoadInternal(GraphicsDevice, string)"/> instead.
         /// </summary>
         /// <returns>The <see cref="Texture2D"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
-        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false, string[] extensionFilter = null)
+        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false, bool srgb = false)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
             if (string.IsNullOrEmpty(path)) return defaultTexture;
-
-            var ext = Path.GetExtension(path).ToLowerInvariant();
-
-            // With loading gltf textures the standard accordance must be preserved, so we must not allow to load a dds texture where a jpg and png is only allowed.
-            if (extensionFilter != null && !extensionFilter.Contains(ext))
-                return defaultTexture;
 
             var textureKey = path.ToLowerInvariant();
             if (Textures.ContainsKey(textureKey)) return Textures[textureKey];
@@ -109,7 +103,7 @@ namespace Orts.Viewer3D
                             var ace = Path.ChangeExtension(depthPath, ".ace");
                             if (File.Exists(dds))
                             {
-                                DDSLib.DDSFromFile(dds, GraphicsDevice, true, out Texture2D texture);
+                                DDSLib.DDSFromFile(dds, GraphicsDevice, true, out Texture2D texture, srgb);
                                 if (Debugger.IsAttached) texture.Name = path;
                                 return Textures[textureKey] = texture;
                             }
@@ -138,13 +132,29 @@ namespace Orts.Viewer3D
                 case ".png":
                     using (var stream = File.OpenRead(path))
                     {
-                        var texture = Texture2D.FromStream(GraphicsDevice, stream);
+                        var texture = srgb
+                            ? GetSrgbTexture(GraphicsDevice, stream)
+                            : Texture2D.FromStream(GraphicsDevice, stream);
                         if (Debugger.IsAttached) texture.Name = path;
+                        //return Textures[textureKey] = texture; // FIXME: loads a wrong texture for some glTF files.
                         return texture;
                     }
                 default:
                     Trace.TraceWarning("Ignored unsupported texture file: {0}", path);
                     return defaultTexture;
+            }
+        }
+
+        public Texture2D GetSrgbTexture(GraphicsDevice graphicsDevice, Stream stream)
+        {
+            using (var temp = Texture2D.FromStream(graphicsDevice, stream))
+            {
+                var srgbTex = new Texture2D(graphicsDevice, temp.Width, temp.Height, false, SurfaceFormat.ColorSRgb);
+                var data = new Color[temp.Width * temp.Height];
+                temp.GetData(data);
+                srgbTex.SetData(data);
+
+                return srgbTex;
             }
         }
 

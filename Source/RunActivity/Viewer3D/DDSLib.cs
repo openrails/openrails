@@ -615,11 +615,11 @@ namespace Orts.Viewer3D
         /// <param name="texture">The reference to the loaded texture.</param>
         /// <param name="streamOffset">Offset in the stream to where the DDS is located.</param>
         /// <param name="loadMipMap">If true it will load the mip-map chain for this texture.</param>
-        public static void DDSFromFile(string fileName, GraphicsDevice device, bool loadMipMap, out Texture2D texture)
+        public static void DDSFromFile(string fileName, GraphicsDevice device, bool loadMipMap, out Texture2D texture, bool srgb)
         {
             Stream stream = File.OpenRead(fileName);
             Texture tex;
-            InternalDDSFromStream(stream, device, 0, loadMipMap, out tex);
+            InternalDDSFromStream(stream, device, 0, loadMipMap, out tex, srgb);
             stream.Close();
 
             texture = tex as Texture2D;
@@ -640,11 +640,11 @@ namespace Orts.Viewer3D
         /// <param name="texture">The reference to the loaded texture.</param>
         /// <param name="streamOffset">Offset in the stream to where the DDS is located.</param>
         /// <param name="loadMipMap">If true it will load the mip-map chain for this texture.</param>
-        public static void DDSFromFile(string fileName, GraphicsDevice device, bool loadMipMap, out TextureCube texture)
+        public static void DDSFromFile(string fileName, GraphicsDevice device, bool loadMipMap, out TextureCube texture, bool srgb)
         {
             Stream stream = File.OpenRead(fileName);
             Texture tex;
-            InternalDDSFromStream(stream, device, 0, loadMipMap, out tex);
+            InternalDDSFromStream(stream, device, 0, loadMipMap, out tex, srgb);
             stream.Close();
 
             texture = tex as TextureCube;
@@ -665,11 +665,11 @@ namespace Orts.Viewer3D
         /// <param name="texture">The reference to the loaded texture.</param>
         /// <param name="streamOffset">Offset in the stream to where the DDS is located.</param>
         /// <param name="loadMipMap">If true it will load the mip-map chain for this texture.</param>
-        public static void DDSFromFile(string fileName, GraphicsDevice device, bool loadMipMap, out Texture3D texture)
+        public static void DDSFromFile(string fileName, GraphicsDevice device, bool loadMipMap, out Texture3D texture, bool srgb)
         {
             Stream stream = File.OpenRead(fileName);
             Texture tex;
-            InternalDDSFromStream(stream, device, 0, loadMipMap, out tex);
+            InternalDDSFromStream(stream, device, 0, loadMipMap, out tex, srgb);
             stream.Close();
 
             texture = tex as Texture3D;
@@ -690,10 +690,10 @@ namespace Orts.Viewer3D
         /// <param name="texture">The reference to the loaded texture.</param>
         /// <param name="streamOffset">Offset in the stream to where the DDS is located.</param>
         /// <param name="loadMipMap">If true it will load the mip-map chain for this texture.</param>
-        public static void DDSFromStream(Stream stream, GraphicsDevice device, int streamOffset, bool loadMipMap, out Texture2D texture)
+        public static void DDSFromStream(Stream stream, GraphicsDevice device, int streamOffset, bool loadMipMap, out Texture2D texture, bool srgb)
         {
             Texture tex;
-            InternalDDSFromStream(stream, device, streamOffset, loadMipMap, out tex);
+            InternalDDSFromStream(stream, device, streamOffset, loadMipMap, out tex, srgb);
             texture = tex as Texture2D;
             if (texture == null)
             {
@@ -712,10 +712,10 @@ namespace Orts.Viewer3D
         /// <param name="texture">The reference to the loaded texture.</param>
         /// <param name="streamOffset">Offset in the stream to where the DDS is located.</param>
         /// <param name="loadMipMap">If true it will load the mip-map chain for this texture.</param>
-        public static void DDSFromStream(Stream stream, GraphicsDevice device, int streamOffset, bool loadMipMap, out TextureCube texture)
+        public static void DDSFromStream(Stream stream, GraphicsDevice device, int streamOffset, bool loadMipMap, out TextureCube texture, bool srgb)
         {
             Texture tex;
-            InternalDDSFromStream(stream, device, streamOffset, loadMipMap, out tex);
+            InternalDDSFromStream(stream, device, streamOffset, loadMipMap, out tex, srgb);
 
             texture = tex as TextureCube;
             if (texture == null)
@@ -735,10 +735,10 @@ namespace Orts.Viewer3D
         /// <param name="texture">The reference to the loaded texture.</param>
         /// <param name="streamOffset">Offset in the stream to where the DDS is located.</param>
         /// <param name="loadMipMap">If true it will load the mip-map chain for this texture.</param>
-        public static void DDSFromStream(Stream stream, GraphicsDevice device, int streamOffset, bool loadMipMap, out Texture3D texture)
+        public static void DDSFromStream(Stream stream, GraphicsDevice device, int streamOffset, bool loadMipMap, out Texture3D texture, bool srgb)
         {
             Texture tex;
-            InternalDDSFromStream(stream, device, streamOffset, loadMipMap, out tex);
+            InternalDDSFromStream(stream, device, streamOffset, loadMipMap, out tex, srgb);
 
             texture = tex as Texture3D;
             if (texture == null)
@@ -788,18 +788,18 @@ namespace Orts.Viewer3D
 #endif
 
         //try to evaluate the xna compatible surface for the present data
-        private static SurfaceFormat SurfaceFormatFromLoadFormat(LoadSurfaceFormat loadSurfaceFormat, FourCC compressionFormat, uint pixelFlags, int rgbBitCount)
+        private static SurfaceFormat SurfaceFormatFromLoadFormat(LoadSurfaceFormat loadSurfaceFormat, FourCC compressionFormat, uint pixelFlags, int rgbBitCount, bool srgb)
         {
             if (loadSurfaceFormat == LoadSurfaceFormat.Unknown)
             {
                 switch (compressionFormat)
                 {
                     case FourCC.D3DFMT_DXT1:
-                        return SurfaceFormat.Dxt1;
+                        return srgb ? SurfaceFormat.Dxt1SRgb : SurfaceFormat.Dxt1;
                     case FourCC.D3DFMT_DXT3:
-                        return SurfaceFormat.Dxt3;
+                        return srgb ? SurfaceFormat.Dxt3SRgb : SurfaceFormat.Dxt3;
                     case FourCC.D3DFMT_DXT5:
-                        return SurfaceFormat.Dxt5;
+                        return srgb ? SurfaceFormat.Dxt5SRgb : SurfaceFormat.Dxt5;
                     case 0:
                         if (rgbBitCount == 8)
                         {
@@ -818,7 +818,7 @@ namespace Orts.Viewer3D
                         }
                         if (rgbBitCount == 32 || rgbBitCount == 24)
                         {
-                            return SurfaceFormat.Color;
+                            return srgb ? SurfaceFormat.ColorSRgb : SurfaceFormat.Color;
                         }
                         break;
                     default:
@@ -838,22 +838,22 @@ namespace Orts.Viewer3D
                     case LoadSurfaceFormat.Bgra5551:
                         return SurfaceFormat.Bgra5551;
                     case LoadSurfaceFormat.A8R8G8B8:
-                        return SurfaceFormat.Color;
+                        return srgb ? SurfaceFormat.ColorSRgb : SurfaceFormat.Color;
                     case LoadSurfaceFormat.Dxt1:
-                        return SurfaceFormat.Dxt1;
+                        return srgb ? SurfaceFormat.Dxt1SRgb : SurfaceFormat.Dxt1;
                     case LoadSurfaceFormat.Dxt3:
-                        return SurfaceFormat.Dxt3;
+                        return srgb ? SurfaceFormat.Dxt3SRgb : SurfaceFormat.Dxt3;
                     case LoadSurfaceFormat.Dxt5:
-                        return SurfaceFormat.Dxt5;
+                        return srgb ? SurfaceFormat.Dxt5SRgb : SurfaceFormat.Dxt5;
                     //Updated at load time to X8R8B8B8
                     case LoadSurfaceFormat.R8G8B8:
-                        return SurfaceFormat.Color;
+                        return srgb ? SurfaceFormat.ColorSRgb : SurfaceFormat.Color;
                     case LoadSurfaceFormat.X8B8G8R8:
-                        return SurfaceFormat.Color;
+                        return srgb ? SurfaceFormat.ColorSRgb : SurfaceFormat.Color;
                     case LoadSurfaceFormat.X8R8G8B8:
-                        return SurfaceFormat.Color;
+                        return srgb ? SurfaceFormat.ColorSRgb : SurfaceFormat.Color;
                     case LoadSurfaceFormat.A8B8G8R8:
-                        return SurfaceFormat.Color;
+                        return srgb ? SurfaceFormat.ColorSRgb : SurfaceFormat.Color;
                     case LoadSurfaceFormat.R32F:
                         return SurfaceFormat.Single;
                     case LoadSurfaceFormat.A32B32G32R32F:
@@ -885,9 +885,9 @@ namespace Orts.Viewer3D
         }
 
         //new cube-map texture
-        private static TextureCube GenerateNewCubeTexture(LoadSurfaceFormat loadSurfaceFormat, FourCC compressionFormat, GraphicsDevice device, int width, bool hasMipMaps, uint pixelFlags, int rgbBitCount)
+        private static TextureCube GenerateNewCubeTexture(LoadSurfaceFormat loadSurfaceFormat, FourCC compressionFormat, GraphicsDevice device, int width, bool hasMipMaps, uint pixelFlags, int rgbBitCount, bool srgb)
         {
-            SurfaceFormat surfaceFormat = SurfaceFormatFromLoadFormat(loadSurfaceFormat, compressionFormat, pixelFlags, rgbBitCount);
+            SurfaceFormat surfaceFormat = SurfaceFormatFromLoadFormat(loadSurfaceFormat, compressionFormat, pixelFlags, rgbBitCount, srgb);
 
             TextureCube tx = new TextureCube(device, width, hasMipMaps, surfaceFormat);
 
@@ -900,9 +900,9 @@ namespace Orts.Viewer3D
         }
 
         //new 2d-map texture
-        private static Texture2D GenerateNewTexture2D(LoadSurfaceFormat loadSurfaceFormat, FourCC compressionFormat, GraphicsDevice device, int width, int height, bool hasMipMaps, uint pixelFlags, int rgbBitCount)
+        private static Texture2D GenerateNewTexture2D(LoadSurfaceFormat loadSurfaceFormat, FourCC compressionFormat, GraphicsDevice device, int width, int height, bool hasMipMaps, uint pixelFlags, int rgbBitCount, bool srgb)
         {
-            SurfaceFormat surfaceFormat = SurfaceFormatFromLoadFormat(loadSurfaceFormat, compressionFormat, pixelFlags, rgbBitCount);
+            SurfaceFormat surfaceFormat = SurfaceFormatFromLoadFormat(loadSurfaceFormat, compressionFormat, pixelFlags, rgbBitCount, srgb);
 
             Texture2D tx = new Texture2D(device, width, height, hasMipMaps, surfaceFormat);
             tx.Tag = new Orts.Formats.Msts.AceInfo() { AlphaBits = XNATextureNumAlphaBits(tx) };
@@ -916,9 +916,9 @@ namespace Orts.Viewer3D
         }
 
         //new 3d-map texture
-        private static Texture3D GenerateNewTexture3D(LoadSurfaceFormat loadSurfaceFormat, FourCC compressionFormat, GraphicsDevice device, int width, int height, int depth, bool hasMipMaps, uint pixelFlags, int rgbBitCount)
+        private static Texture3D GenerateNewTexture3D(LoadSurfaceFormat loadSurfaceFormat, FourCC compressionFormat, GraphicsDevice device, int width, int height, int depth, bool hasMipMaps, uint pixelFlags, int rgbBitCount, bool srgb)
         {
-            SurfaceFormat surfaceFormat = SurfaceFormatFromLoadFormat(loadSurfaceFormat, compressionFormat, pixelFlags, rgbBitCount);
+            SurfaceFormat surfaceFormat = SurfaceFormatFromLoadFormat(loadSurfaceFormat, compressionFormat, pixelFlags, rgbBitCount, srgb);
 
             Texture3D tx = new Texture3D(device, width, height, depth, hasMipMaps, surfaceFormat);
 
@@ -931,7 +931,7 @@ namespace Orts.Viewer3D
         }
 
         //loads the data from a stream in to a texture object.
-        private static void InternalDDSFromStream(Stream stream, GraphicsDevice device, int streamOffset, bool loadMipMap, out Texture texture)
+        private static void InternalDDSFromStream(Stream stream, GraphicsDevice device, int streamOffset, bool loadMipMap, out Texture texture, bool srgb)
         {
             if (stream == null)
             {
@@ -1075,7 +1075,7 @@ namespace Orts.Viewer3D
 
             if (isCubeMap)
             {
-                TextureCube tex = GenerateNewCubeTexture(loadSurfaceFormat, compressionFormat, device, width, hasMipMaps, pixelFlags, rgbBitCount);
+                TextureCube tex = GenerateNewCubeTexture(loadSurfaceFormat, compressionFormat, device, width, hasMipMaps, pixelFlags, rgbBitCount, srgb);
 
                 int byteAcumulator = 0;
 
@@ -1209,7 +1209,7 @@ namespace Orts.Viewer3D
             }
             else if (isVolumeTexture)
             {
-                Texture3D tex = GenerateNewTexture3D(loadSurfaceFormat, compressionFormat, device, width, height, depth, hasMipMaps, pixelFlags, rgbBitCount);
+                Texture3D tex = GenerateNewTexture3D(loadSurfaceFormat, compressionFormat, device, width, height, depth, hasMipMaps, pixelFlags, rgbBitCount, srgb);
 
                 int localStreamOffset = streamOffset;
                 for (int i = 0; i < tex.LevelCount; i++)
@@ -1235,7 +1235,7 @@ namespace Orts.Viewer3D
             }
             else
             {
-                Texture2D tex = GenerateNewTexture2D(loadSurfaceFormat, compressionFormat, device, width, height, hasMipMaps, pixelFlags, rgbBitCount);
+                Texture2D tex = GenerateNewTexture2D(loadSurfaceFormat, compressionFormat, device, width, height, hasMipMaps, pixelFlags, rgbBitCount, srgb);
 
                 for (int i = 0; i < tex.LevelCount; i++)
                 {

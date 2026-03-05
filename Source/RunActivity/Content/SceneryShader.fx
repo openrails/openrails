@@ -763,14 +763,13 @@ float3 _PSLinearToSrgb(float3 color)
 
 float3 _PSRgbdToLinear(float4 value)
 {
-	return value.xyz / value.w;
+    return value.xyz / max(value.w, 0.0001);
 }
 
 float3 _PSGetIBLSpecular(float3 specularColor, float NdotV, float perceptualRoughness, float3 reflection)
 {
 	float2 val = float2(NdotV, 1.0 - perceptualRoughness);
     float3 brdf = BrdfLutTexture.Sample(LinearClampSampler, val).rgb;
-	brdf.rgb = _PSSrgbToLinear(brdf.rgb);
 
     float3 specularLight = _PSRgbdToLinear(EnvironmentMapSpecularTexture.Sample(LinearClampSampler, _PSCartesianToPolar(reflection))).rgb;
 	specularLight.rgb = _PSSrgbToLinear(specularLight.rgb);
@@ -780,7 +779,6 @@ float3 _PSGetIBLSpecular(float3 specularColor, float NdotV, float perceptualRoug
 float3 _PSGetIBLDiffuse(float3 diffuseColor, float3 n)
 {
     float3 diffuseLight = EnvironmentMapDiffuseTexture.Sample(LinearClampSampler, n).rgb; // irradiance (washed out)
-	//diffuseLight.rgb = _PSSrgbToLinear(diffuseLight.rgb); // If the image can be uploaded in sRGB texture surfaceformat, no need to convert manually
 	return diffuseLight * diffuseColor;
 }
 
@@ -841,7 +839,6 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	InGeneral.Fog = In.Tangent.w;
 
     float4 Color = ImageTexture.Sample(ImageSampler, _PSUV(In.TexCoords, TextureCoordinates1.x));
-	Color.rgb = _PSSrgbToLinear(Color.rgb);
 	// Apply the linear multipliers.
 	Color *= In.Color * BaseColorFactor;
 	// Alpha testing. Without the > 0 check glithches appear.
@@ -924,7 +921,6 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         if (TextureCoordinates3.y)
         {
             float3 specularColorSample = SpecularColorTexture.Sample(SpecularColorSampler, _PSUV(In.TexCoords, TextureCoordinates3.y)).rgb;
-            specularColorSample = _PSSrgbToLinear(specularColorSample);
             specularColorFactor *= specularColorSample;
         }
 
@@ -1077,7 +1073,6 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 
 	    // Emissive color:
         float3 emissive = EmissiveTexture.Sample(EmissiveSampler, _PSUV(In.TexCoords, TextureCoordinates1.w)).rgb;
-        emissive = _PSSrgbToLinear(emissive);
         emissive *= EmissiveFactor;
         litColor += emissive;
 
