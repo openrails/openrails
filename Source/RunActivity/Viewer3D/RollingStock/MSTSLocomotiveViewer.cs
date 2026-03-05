@@ -1178,7 +1178,6 @@ namespace Orts.Viewer3D.RollingStock
         private bool _isNightTexture;
         private bool HasCabLightDirectory = false;
         public Dictionary<(CabViewControlType, int), CabViewControlRenderer> ControlMap;
-        public Dictionary<(CabViewControlType, int), CabViewControlRenderer> ControlMapCvcDiscreteSorted;
         public string[] ActiveScreen = { "default", "default", "default", "default", "default", "default", "default", "default" };
 
         [CallOnThread("Loader")]
@@ -1211,8 +1210,6 @@ namespace Orts.Viewer3D.RollingStock
 
             #region Create Control renderers
             ControlMap = new Dictionary<(CabViewControlType, int), CabViewControlRenderer>();
-            ControlMapCvcDiscreteSorted = new Dictionary<(CabViewControlType, int), CabViewControlRenderer>();
-            Dictionary<(CabViewControlType, int), CabViewControlRenderer> controlMapCvcDiscrete = new Dictionary<(CabViewControlType, int), CabViewControlRenderer>();
             var count = new Dictionary<CabViewControlType, int>();
             var i = 0;
             foreach (var cabView in car.CabViewList)
@@ -1301,13 +1298,6 @@ namespace Orts.Viewer3D.RollingStock
                             cvdr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(cvdr);
                             if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvdr);
-                            if (!ControlMapCvcDiscreteSorted.ContainsKey(key))
-                            {
-                                if (cvdr.isMouseControl())
-                                {
-                                    controlMapCvcDiscrete.Add(key, cvdr);
-                                }
-                            }
                             count[cvc.ControlType]++;
                             continue;
                         }
@@ -1351,30 +1341,9 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 i++;
             }
-            fillControlMapCvcDiscreteSorted(controlMapCvcDiscrete);
             #endregion
 
             _Viewer.AdjustCabHeight(_Viewer.DisplaySize.X, _Viewer.DisplaySize.Y);
-        }
-
-        private void fillControlMapCvcDiscreteSorted(Dictionary<(CabViewControlType, int), CabViewControlRenderer> controlMapCvcDiscrete)
-        {
-            while (controlMapCvcDiscrete.Count > 0)
-            {
-                double size = double.MaxValue;
-                KeyValuePair<(CabViewControlType, int), CabViewControlRenderer> cvcSmallest = controlMapCvcDiscrete.First();
-                foreach (KeyValuePair<(CabViewControlType, int), CabViewControlRenderer> cvc in controlMapCvcDiscrete)
-                {
-                    double sizeCvc = cvc.Value.Control.Height * cvc.Value.Control.Width;
-                    if (sizeCvc < size)
-                    {
-                        cvcSmallest = cvc;
-                        size = sizeCvc;
-                    }
-                }
-                ControlMapCvcDiscreteSorted.Add(cvcSmallest.Key, cvcSmallest.Value);
-                controlMapCvcDiscrete.Remove(cvcSmallest.Key);
-            }
         }
 
         public CabRenderer(Viewer viewer, MSTSLocomotive car, CabViewFile CVFFile) //used by 3D cab as a refrence, thus many can be eliminated

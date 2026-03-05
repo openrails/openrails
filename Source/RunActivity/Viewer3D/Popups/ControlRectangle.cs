@@ -60,7 +60,7 @@ namespace Orts.Viewer3D.Popups
                 var itemsFrontCount = loco.CabViewList[(int)CabViewType.Front].CVFFile.CabViewControls.Count();
                 var itemsRearCount = loco.CabViewList.Count > 1 ? loco.CabViewList[(int)CabViewType.Rear].CVFFile.CabViewControls.Count() : 0;
 
-                foreach (var controlRenderer in cabRenderer.ControlMapCvcDiscreteSorted .Values.Skip(CabViewFront ? 0 : itemsFrontCount).Take(CabViewFront ? itemsFrontCount : itemsRearCount))
+                foreach (var controlRenderer in cabRenderer.ControlMap.Values.Skip(CabViewFront ? 0 : itemsFrontCount).Take(CabViewFront ? itemsFrontCount : itemsRearCount))
                 {
                     if ((Viewer.Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer)
                     {
