@@ -86,11 +86,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter shadowMapLimit;
         readonly EffectParameter zBias_Lighting;
         readonly EffectParameter fog;
-        readonly EffectParameter lightVector_ZFar;
-        readonly EffectParameter headlightPosition;
-        readonly EffectParameter headlightDirection;
-        readonly EffectParameter headlightRcpDistance;
-        readonly EffectParameter headlightColor;
+        readonly EffectParameter zFar;
         readonly EffectParameter overcast;
         readonly EffectParameter viewerPos;
         readonly EffectParameter imageTextureIsNight;
@@ -100,15 +96,70 @@ namespace Orts.Viewer3D
         readonly EffectParameter signalLightIntensity;
         readonly EffectParameter eyeVector;
         readonly EffectParameter sideVector;
+
         readonly EffectParameter imageTexture;
         readonly EffectParameter overlayTexture;
-        readonly EffectParameter referenceAlpha;
         readonly EffectParameter overlayScale;
+
+        // glTF-PBR:
+        readonly EffectParameter baseColorFactor;
+        readonly EffectParameter emissiveTexture;
+        readonly EffectParameter emissiveFactor;
+        readonly EffectParameter normalTexture;
+        readonly EffectParameter normalScale;
+        readonly EffectParameter occlusionTexture;
+        readonly EffectParameter metallicRoughnessTexture;
+        readonly EffectParameter occlusionFactor;
+        readonly EffectParameter clearcoatTexture;
+        readonly EffectParameter clearcoatFactor;
+        readonly EffectParameter clearcoatRoughnessTexture;
+        readonly EffectParameter clearcoatRoughnessFactor;
+        readonly EffectParameter clearcoatNormalTexture;
+        readonly EffectParameter clearcoatNormalScale;
+        readonly EffectParameter referenceAlpha;
+        readonly EffectParameter textureCoordinates1;
+        readonly EffectParameter textureCoordinates2;
+        readonly EffectParameter texturePacking;
+        readonly EffectParameter hasNormals;
+        readonly EffectParameter hasTangents;
+        readonly EffectParameter bonesTexture;
+        readonly EffectParameter bonesCount;
+        readonly EffectParameter morphConfig;
+        readonly EffectParameter morphWeights;
+        // Per-frame PBR uniforms:
+        readonly EffectParameter environmentMapSpecularTexture;
+        readonly EffectParameter environmentMapDiffuseTexture;
+        readonly EffectParameter brdfLutTexture;
+        readonly EffectParameter numLights;
+        readonly EffectParameter lightPositions;
+        readonly EffectParameter lightDirections;
+        readonly EffectParameter lightColorIntensities;
+        readonly EffectParameter lightRangesRcp;
+        readonly EffectParameter lightInnerConeCos;
+        readonly EffectParameter lightOuterConeCos;
+        readonly EffectParameter lightTypes;
 
         Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
         Vector3 _sunDirection;
         bool _imageTextureIsNight;
+
+        /// <summary>
+        /// The position of the sampler states inside the hlsl shader:
+        /// baseColor, metallicRoughness, occlusion, normal, emissive
+        /// </summary>
+        public enum Samplers
+        {
+            BaseColor = 0,
+            Overlay,
+            Normal,
+            Emissive,
+            Occlusion,
+            MetallicRoughness,
+            Clearcoat,
+            ClearcoatRoughness,
+            ClearcoatNormal,
+        }
 
         public void SetViewMatrix(ref Matrix v)
         {
@@ -187,25 +238,10 @@ namespace Orts.Viewer3D
             fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 1f / depth));
         }
 
-        public void SetLightVector_ZFar(Vector3 sunDirection, int zFar)
+        public void SetLightVector_ZFar(Vector3 sunDirection, float zFarDistance)
         {
             _sunDirection = sunDirection;
-            lightVector_ZFar.SetValue(new Vector4(sunDirection.X, sunDirection.Y, sunDirection.Z, zFar));
-        }
-
-        public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float distance, float minDotProduct, float fadeTime, float fadeDuration, float clampValue, ref Vector4 color)
-        {
-            var lighting = fadeTime / fadeDuration * clampValue;
-            if (fadeDuration < 0) lighting = 1 + lighting;
-            headlightPosition.SetValue(new Vector4(position, MathHelper.Clamp(lighting, 0, clampValue)));
-            headlightDirection.SetValue(new Vector4(direction, 0.5f * (1 - minDotProduct))); // We want 50% brightness at the given dot product.
-            headlightRcpDistance.SetValue(1f / distance); // Needed to be separated (direction * distance) because no pre-shaders are supported in XNA 4
-            headlightColor.SetValue(color);
-        }
-
-        public void SetHeadlightOff()
-        {
-            headlightPosition.SetValue(Vector4.Zero);
+            zFar.SetValue(zFarDistance);
         }
 
         public float SignalLightIntensity { set { signalLightIntensity.SetValue(value); } }
@@ -220,9 +256,71 @@ namespace Orts.Viewer3D
 
         public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
 
+        public Texture2D EmissiveTexture { set { emissiveTexture.SetValue(value); } }
+
+        public Texture2D NormalTexture { set { normalTexture.SetValue(value); } }
+
+        public Texture2D MetallicRoughnessTexture { set { metallicRoughnessTexture.SetValue(value); } }
+
+        public Texture2D OcclusionTexture { set { occlusionTexture.SetValue(value); } }
+
+        public Texture2D ClearcoatTexture { set { clearcoatTexture.SetValue(value); } }
+
+        public Texture2D ClearcoatRoughnessTexture { set { clearcoatRoughnessTexture.SetValue(value); } }
+
+        public Texture2D ClearcoatNormalTexture { set { clearcoatNormalTexture.SetValue(value); } }
+
         public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
 
         public float OverlayScale { set { overlayScale.SetValue(value); } }
+
+        public Vector4 BaseColorFactor { set { baseColorFactor.SetValue(value); } }
+        
+        public Vector3 EmissiveFactor { set { emissiveFactor.SetValue(value); } }
+        
+        public float NormalScale { set { normalScale.SetValue(value); } }
+        
+        public Vector3 OcclusionFactor { set { occlusionFactor.SetValue(value); } }
+
+        public float ClearcoatFactor { set { clearcoatFactor.SetValue(value); } }
+
+        public float ClearcoatRoughnessFactor { set { clearcoatRoughnessFactor.SetValue(value); } }
+
+        public float ClearcoatNormalScale { set { clearcoatNormalScale.SetValue(value); } }
+
+
+        public Texture2D EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
+
+        public TextureCube EnvironmentMapDiffuseTexture { set { environmentMapDiffuseTexture.SetValue(value); } }
+
+        public Texture2D BrdfLutTexture { set { brdfLutTexture.SetValue(value); } }
+
+        public Vector4 TextureCoordinates1 { set { textureCoordinates1.SetValue(value); } }
+        
+        public Vector4 TextureCoordinates2 { set { textureCoordinates2.SetValue(value); } }
+        
+        public float TexturePacking { set { texturePacking.SetValue(value); } }
+
+        public bool HasNormals { set { hasNormals.SetValue(value); } }
+
+        public bool HasTangents { set { hasTangents.SetValue(value); } }
+
+        public Texture2D BonesTexture { set { bonesTexture.SetValue(value); } }
+
+        public float BonesCount { set { bonesCount.SetValue(value); } }
+
+        public int[] MorphConfig { set { morphConfig.SetValue(value); } }
+        
+        public float[] MorphWeights { set { morphWeights.SetValue(value); } }
+
+        public int NumLights { set { numLights.SetValue(value); } }
+        public Vector3[] LightPositions { set { lightPositions.SetValue(value); } }
+        public Vector3[] LightDirections { set { lightDirections.SetValue(value); } }
+        public Vector3[] LightColorIntensities { set { lightColorIntensities.SetValue(value); } }
+        public float[] LightRangesRcp { set { lightRangesRcp.SetValue(value); } }
+        public float[] LightInnerConeCos { set { lightInnerConeCos.SetValue(value); } }
+        public float[] LightOuterConeCos { set { lightOuterConeCos.SetValue(value); } }
+        public float[] LightTypes { set { lightTypes.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
@@ -240,11 +338,7 @@ namespace Orts.Viewer3D
             shadowMapLimit = Parameters["ShadowMapLimit"];
             zBias_Lighting = Parameters["ZBias_Lighting"];
             fog = Parameters["Fog"];
-            lightVector_ZFar = Parameters["LightVector_ZFar"];
-            headlightPosition = Parameters["HeadlightPosition"];
-            headlightDirection = Parameters["HeadlightDirection"];
-            headlightRcpDistance = Parameters["HeadlightRcpDistance"];
-            headlightColor = Parameters["HeadlightColor"];
+            zFar = Parameters["ZFar"];
             overcast = Parameters["Overcast"];
             viewerPos = Parameters["ViewerPos"];
             imageTextureIsNight = Parameters["ImageTextureIsNight"];
@@ -256,8 +350,42 @@ namespace Orts.Viewer3D
             sideVector = Parameters["SideVector"];
             imageTexture = Parameters["ImageTexture"];
             overlayTexture = Parameters["OverlayTexture"];
+            emissiveTexture = Parameters["EmissiveTexture"];
+            normalTexture = Parameters["NormalTexture"];
+            metallicRoughnessTexture = Parameters["MetallicRoughnessTexture"];
+            occlusionTexture = Parameters["OcclusionTexture"];
+            clearcoatTexture = Parameters["ClearcoatTexture"];
+            clearcoatRoughnessTexture = Parameters["ClearcoatRoughnessTexture"];
+            clearcoatNormalTexture = Parameters["ClearcoatNormalTexture"];
             referenceAlpha = Parameters["ReferenceAlpha"];
             overlayScale = Parameters["OverlayScale"];
+            baseColorFactor = Parameters["BaseColorFactor"];
+            emissiveFactor = Parameters["EmissiveFactor"];
+            normalScale = Parameters["NormalScale"];
+            occlusionFactor = Parameters["OcclusionFactor"];
+            clearcoatFactor = Parameters["ClearcoatFactor"];
+            clearcoatRoughnessFactor = Parameters["ClearcoatRoughnessFactor"];
+            clearcoatNormalScale = Parameters["ClearcoatNormalScale"];
+            textureCoordinates1 = Parameters["TextureCoordinates1"];
+            textureCoordinates2 = Parameters["TextureCoordinates2"];
+            texturePacking = Parameters["TexturePacking"];
+            hasNormals = Parameters["HasNormals"];
+            hasTangents = Parameters["HasTangents"];
+            bonesTexture = Parameters["BonesTexture"];
+            bonesCount = Parameters["BonesCount"];
+            morphConfig = Parameters["MorphConfig"];
+            morphWeights = Parameters["MorphWeights"];
+            environmentMapSpecularTexture = Parameters["EnvironmentMapSpecularTexture"];
+            environmentMapDiffuseTexture = Parameters["EnvironmentMapDiffuseTexture"];
+            brdfLutTexture = Parameters["BrdfLutTexture"];
+            numLights = Parameters["NumLights"];
+            lightPositions = Parameters["LightPositions"];
+            lightDirections = Parameters["LightDirections"];
+            lightColorIntensities = Parameters["LightColorIntensities"];
+            lightRangesRcp = Parameters["LightRangesRcp"];
+            lightInnerConeCos = Parameters["LightInnerConeCos"];
+            lightOuterConeCos = Parameters["LightOuterConeCos"];
+            lightTypes = Parameters["LightTypes"];
         }
     }
 
@@ -268,6 +396,10 @@ namespace Orts.Viewer3D
         readonly EffectParameter sideVector;
         readonly EffectParameter imageBlurStep;
         readonly EffectParameter imageTexture;
+        readonly EffectParameter bonesTexture;
+        readonly EffectParameter bonesCount;
+        readonly EffectParameter morphConfig;
+        readonly EffectParameter morphWeights;
 
         public void SetData(ref Matrix v)
         {
@@ -292,6 +424,11 @@ namespace Orts.Viewer3D
             imageBlurStep.SetValue(texture != null ? 1f / texture.Width : 0);
         }
 
+        public Texture2D BonesTexture { set { bonesTexture.SetValue(value); } }
+        public float BonesCount { set { bonesCount.SetValue(value); } }
+        public int[] MorphConfig { set { morphConfig.SetValue(value); } }
+        public float[] MorphWeights { set { morphWeights.SetValue(value); } }
+
         public ShadowMapShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "ShadowMap")
         {
@@ -299,6 +436,10 @@ namespace Orts.Viewer3D
             sideVector = Parameters["SideVector"];
             imageBlurStep = Parameters["ImageBlurStep"];
             imageTexture = Parameters["ImageTexture"];
+            bonesTexture = Parameters["BonesTexture"];
+            bonesCount = Parameters["BonesCount"];
+            morphConfig = Parameters["MorphConfig"];
+            morphWeights = Parameters["MorphWeights"];
         }
     }
 

@@ -24,10 +24,12 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
+using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
@@ -74,19 +76,26 @@ namespace Orts.Viewer3D
         /// Loads a game texture file; DO NOT use with internal data, use <see cref="LoadInternal(GraphicsDevice, string)"/> instead.
         /// </summary>
         /// <returns>The <see cref="Texture2D"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
-        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false)
+        public Texture2D Get(string path, Texture2D defaultTexture, bool required = false, string[] extensionFilter = null)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
             if (string.IsNullOrEmpty(path)) return defaultTexture;
 
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+
+            // With loading gltf textures the standard accordance must be preserved, so we must not allow to load a dds texture where a jpg and png is only allowed.
+            if (extensionFilter != null && !extensionFilter.Contains(ext))
+                return defaultTexture;
+
             var textureKey = path.ToLowerInvariant();
             if (Textures.ContainsKey(textureKey)) return Textures[textureKey];
 
             // DO NOT add additional formats here without explicit approval
-            // - DDS is used for newer, Open Rails-specific content
+            // - DDS is used for newer, Open Rails-specific content or GLTF files
             // - ACE is used for older, MSTS-specific content
+            // - JPEG and PNG is the only allowed format in the core GLTF specification
             switch (Path.GetExtension(textureKey))
             {
                 case ".dds":
@@ -121,6 +130,15 @@ namespace Orts.Viewer3D
                         Trace.WriteLine(new FileLoadException(path, error));
                     }
                     return defaultTexture;
+                case ".jpg":
+                case ".jpeg":
+                case ".png":
+                    using (var stream = File.OpenRead(path))
+                    {
+                        var texture = Texture2D.FromStream(GraphicsDevice, stream);
+                        //texture.Name = path; // Handy when using a graphics debugger
+                        return texture;
+                    }
                 default:
                     Trace.TraceWarning("Ignored unsupported texture file: {0}", path);
                     return defaultTexture;
@@ -256,8 +274,11 @@ namespace Orts.Viewer3D
         public readonly CabShader CabShader;
 
         public static Texture2D MissingTexture;
+        public static TextureCube BlackCubeTexture;
         public static Texture2D DefaultSnowTexture;
         public static Texture2D DefaultDMSnowTexture;
+        public static Texture2D WhiteTexture;
+        public static Texture2D BlackTexture;
 
         [CallOnThread("Render")]
         public SharedMaterialManager(Viewer viewer)
@@ -292,6 +313,9 @@ namespace Orts.Viewer3D
             CabShader = new CabShader(viewer.RenderProcess.GraphicsDevice, Vector4.One, Vector4.One, Vector3.One, Vector3.One);
 
             MissingTexture = SharedTextureManager.GetInternalMissingTexture(viewer.RenderProcess.GraphicsDevice);
+            BlackCubeTexture = new TextureCube(Viewer.GraphicsDevice, 2, false, SurfaceFormat.Color);
+            for (var i = 0; i < 6; i++)
+                    BlackCubeTexture.SetData((CubeMapFace)i, Enumerable.Repeat(Color.Black, 2 * 2).ToArray());
 
             // Managing default snow textures
             var defaultSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultSnow.ace";
@@ -299,6 +323,13 @@ namespace Orts.Viewer3D
             var defaultDMSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultDMSnow.ace";
             DefaultDMSnowTexture = Viewer.TextureManager.Get(defaultDMSnowTexturePath);
 
+            WhiteTexture = new Texture2D(viewer.RenderProcess.GraphicsDevice, 1, 1);
+            WhiteTexture.SetData(new[] { Color.White });
+            WhiteTexture.Name = nameof(WhiteTexture);
+
+            BlackTexture = new Texture2D(viewer.RenderProcess.GraphicsDevice, 1, 1);
+            BlackTexture.SetData(new[] { Color.Black });
+            BlackTexture.Name = nameof(BlackTexture);
         }
 
         public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null)
@@ -373,6 +404,63 @@ namespace Orts.Viewer3D
                         break;
                     case "Screen":
                         Materials[materialKey] = new ScreenMaterial(Viewer, textureName, options);
+                        break;
+                    default:
+                        Trace.TraceInformation("Skipped unknown material type {0}", materialName);
+                        Materials[materialKey] = new YellowMaterial(Viewer);
+                        break;
+                }
+            }
+            return Materials[materialKey];
+        }
+
+        /// <summary>
+        /// This method is used to initialize a metallic-roughness material from a glTF 2.0 source. 
+        /// </summary>
+        public Material Load(string materialName, string materialUniqueId, int options, float mipMapBias,
+            Texture2D baseColorTexture, Vector4 baseColorFactor,
+            Texture2D metallicRoughnessTexture, float metallicFactor, float roughnessFactor,
+            Texture2D normalTexture, float normalScale,
+            Texture2D occlusionTexture, float occlusionStrength,
+            Texture2D emissiveTexture, Vector3 emissiveFactor,
+            Texture2D clearcoatTexture, float clearcoatFactor,
+            Texture2D clearcoatRoughnessTexture, float clearcoatRoughnessFactor,
+            Texture2D clearcoatNormalTexture, float clearcoatNormalScale,
+            float referenceAlpha, bool doubleSided,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateNormal,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateOcclusion,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoat,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatRoughness,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal)
+        {
+            var materialKey = (materialName, materialUniqueId?.ToLower(), options, mipMapBias, (Effect)null);
+
+            if (!Materials.ContainsKey(materialKey))
+            {
+                switch (materialName)
+                {
+                    case "PBR":
+                        Materials[materialKey] = new PbrMaterial(Viewer, materialUniqueId?.ToLower(), (SceneryMaterialOptions)options, mipMapBias,
+                            baseColorTexture, baseColorFactor,
+                            metallicRoughnessTexture, metallicFactor, roughnessFactor,
+                            normalTexture, normalScale,
+                            occlusionTexture, occlusionStrength,
+                            emissiveTexture, emissiveFactor,
+                            clearcoatTexture, clearcoatFactor,
+                            clearcoatRoughnessTexture, clearcoatRoughnessFactor,
+                            clearcoatNormalTexture, clearcoatNormalScale,
+                            referenceAlpha, doubleSided,
+                            samplerStateBaseColor,
+                            samplerStateMetallicRoughness,
+                            samplerStateNormal,
+                            samplerStateOcclusion,
+                            samplerStateEmissive,
+                            samplerStateClearcoat,
+                            samplerStateClearcoatRoughness,
+                            samplerStateClearcoatNormal);
                         break;
                     default:
                         Trace.TraceInformation("Skipped unknown material type {0}", materialName);
@@ -478,11 +566,7 @@ namespace Orts.Viewer3D
         public static Color FogColor = new Color(110, 110, 110, 255);
 
         internal Vector3 sunDirection;
-        bool lastLightState;
-        double fadeStartTimer;
-        float fadeDuration = -1;
-        float clampValue = 1;
-        float distance = 1000;
+
         internal void UpdateShaders()
         {
             if (Viewer.Settings.UseMSTSEnv == false)
@@ -491,61 +575,19 @@ namespace Orts.Viewer3D
                 sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
 
             SceneryShader.SetLightVector_ZFar(sunDirection, Viewer.Settings.ViewingDistance);
-
-            // Headlight illumination
-            if (Viewer.PlayerLocomotiveViewer != null
-                && Viewer.PlayerLocomotiveViewer.lightDrawer != null
-                && Viewer.PlayerLocomotiveViewer.lightDrawer.HasLightCone)
+            if (sunDirection.Y > -0.05)
             {
-                var lightDrawer = Viewer.PlayerLocomotiveViewer.lightDrawer;
-                var lightState = lightDrawer.IsLightConeActive;
-                if (lightState != lastLightState)
-                {
-                    if (lightDrawer.LightConeFadeIn > 0)
-                    {
-                        fadeStartTimer = Viewer.Simulator.GameTime;
-                        fadeDuration = lightDrawer.LightConeFadeIn;
-                    }
-                    else if (lightDrawer.LightConeFadeOut > 0)
-                    {
-                        fadeStartTimer = Viewer.Simulator.GameTime;
-                        fadeDuration = -lightDrawer.LightConeFadeOut;
-                    }
-                    lastLightState = lightState;
-                }
-                else if (!lastLightState && fadeDuration < 0 && Viewer.Simulator.GameTime > fadeStartTimer - fadeDuration)
-                {
-                    fadeDuration = 0;
-                }
-                if (!lightState && fadeDuration == 0)
-                    // This occurs when switching locos and needs to be handled or we get lingering light.
-                    SceneryShader.SetHeadlightOff();
-                else
-                {
-                    if (sunDirection.Y <= -0.05)
-                    {
-                        clampValue = 1; // at nighttime max headlight
-                        distance = lightDrawer.LightConeDistance; // and max distance
-                    }
-                    else if (sunDirection.Y >= 0.15)
-                    {
-                        clampValue = 0.5f; // at daytime min headlight
-                        distance = lightDrawer.LightConeDistance * 0.1f; // and min distance
-
-                    }
-                    else
-                    {
-                        clampValue = 1 - 2.5f * (sunDirection.Y + 0.05f); // in the meantime interpolate
-                        distance = lightDrawer.LightConeDistance * (1 - 4.5f * (sunDirection.Y + 0.05f)); //ditto
-                    }
-                    SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, distance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.GameTime - fadeStartTimer), fadeDuration, clampValue, ref lightDrawer.LightConeColor);
-                }
+                SceneryShader.EnvironmentMapSpecularTexture = GltfShape.EnvironmentMapSpecularDay;
+                SceneryShader.EnvironmentMapDiffuseTexture = GltfShape.EnvironmentMapDiffuseDay;
+                SceneryShader.BrdfLutTexture = GltfShape.BrdfLutTexture;
             }
             else
             {
-                SceneryShader.SetHeadlightOff();
+                SceneryShader.EnvironmentMapSpecularTexture = BlackTexture;
+                SceneryShader.EnvironmentMapDiffuseTexture = BlackCubeTexture;
+                SceneryShader.BrdfLutTexture = BlackTexture;
             }
-            // End headlight illumination
+
             if (Viewer.Settings.UseMSTSEnv == false)
             {
                 SceneryShader.Overcast = Viewer.Simulator.Weather.CloudCoverFactor;
@@ -704,30 +746,47 @@ namespace Orts.Viewer3D
         TextureAddressModeMask = 0x600,
         // Night texture
         NightTexture = 0x800,
+
+        PbrHasIndices = 0x01000,
+        PbrHasNormals = 0x02000,
+        PbrHasTangents = 0x04000,
+        PbrHasSkin = 0x08000,
+        PbrCullClockWise = 0x10000,
+        PbrHasTexCoord1 = 0x20000,
+        PbrHasMorphTargets = 0x40000,
+
         // Texture to be shown in tunnels and underground (used for 3D cab night textures)
         UndergroundTexture = 0x40000000,
     }
 
     public class SceneryMaterial : Material
     {
-        readonly SceneryMaterialOptions Options;
+        public readonly SceneryMaterialOptions Options;
         readonly float MipMapBias;
         protected Texture2D Texture;
         private readonly string TexturePath;
         protected Texture2D NightTexture;
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
+
         IEnumerator<EffectPass> ShaderPassesDarkShade;
         IEnumerator<EffectPass> ShaderPassesFullBright;
         IEnumerator<EffectPass> ShaderPassesHalfBright;
         IEnumerator<EffectPass> ShaderPassesImage;
         IEnumerator<EffectPass> ShaderPassesVegetation;
-        IEnumerator<EffectPass> ShaderPasses;
+
+        protected IEnumerator<EffectPass> ShaderPassesPbrMorphed;
+        protected IEnumerator<EffectPass> ShaderPassesPbrSkinned;
+        protected IEnumerator<EffectPass> ShaderPassesPbrNormalMap;
+        protected IEnumerator<EffectPass> ShaderPassesPbrBase;
+
+        protected IEnumerator<EffectPass> ShaderPasses;
         public static readonly DepthStencilState DepthReadCompareLess = new DepthStencilState
         {
             DepthBufferWriteEnable = false,
             DepthBufferFunction = CompareFunction.Less,
         };
         private static readonly Dictionary<TextureAddressMode, Dictionary<float, SamplerState>> SamplerStates = new Dictionary<TextureAddressMode, Dictionary<float, SamplerState>>();
+        protected int DefaultAlphaCutOff = 200; // This value is used for .s, but is overridden for glTF/PBR with its own value.
 
         public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
             : base(viewer, String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
@@ -801,17 +860,18 @@ namespace Orts.Viewer3D
             return oneMore;
         }
 
+        protected bool IsNightTimeOrUnderground() => (Options & SceneryMaterialOptions.UndergroundTexture) != 0 && (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground) || Viewer.MaterialManager.sunDirection.Y < -(float)KeyLengthRemainder() / 5000f;
+
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
             var shader = Viewer.MaterialManager.SceneryShader;
-            var level9_3 = Viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3);
-            if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = shader.Techniques[level9_3 ? "DarkShadeLevel9_3" : "DarkShadeLevel9_1"].Passes.GetEnumerator();
-            if (ShaderPassesFullBright == null) ShaderPassesFullBright = shader.Techniques[level9_3 ? "FullBrightLevel9_3" : "FullBrightLevel9_1"].Passes.GetEnumerator();
-            if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = shader.Techniques[level9_3 ? "HalfBrightLevel9_3" : "HalfBrightLevel9_1"].Passes.GetEnumerator();
-            if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques[level9_3 ? "ImageLevel9_3" : "ImageLevel9_1"].Passes.GetEnumerator();
-            if (ShaderPassesVegetation == null) ShaderPassesVegetation = shader.Techniques[level9_3 ? "VegetationLevel9_3" : "VegetationLevel9_1"].Passes.GetEnumerator();
+            if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = shader.Techniques["DarkShade"].Passes.GetEnumerator();
+            if (ShaderPassesFullBright == null) ShaderPassesFullBright = shader.Techniques["FullBright"].Passes.GetEnumerator();
+            if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = shader.Techniques["HalfBright"].Passes.GetEnumerator();
+            if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques["Image"].Passes.GetEnumerator();
+            if (ShaderPassesVegetation == null) ShaderPassesVegetation = shader.Techniques["Vegetation"].Passes.GetEnumerator();
 
             shader.LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
 
@@ -851,7 +911,7 @@ namespace Orts.Viewer3D
                 if ((Options & SceneryMaterialOptions.AlphaTest) != 0)
                 {
                     // Transparency testing is enabled
-                    shader.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
+                    shader.ReferenceAlpha = DefaultAlphaCutOff;  // setting this to 128, chain link fences become solid at distance, at 200, they become
                 }
                 else
                 {
@@ -860,32 +920,31 @@ namespace Orts.Viewer3D
                 }
             }
 
-
             switch (Options & SceneryMaterialOptions.ShaderMask)
             {
                 case SceneryMaterialOptions.ShaderImage:
-                    shader.CurrentTechnique = shader.Techniques[level9_3 ? "ImageLevel9_3" : "ImageLevel9_1"];
+                    shader.CurrentTechnique = shader.Techniques["Image"];
                     ShaderPasses = ShaderPassesImage;
                     break;
                 case SceneryMaterialOptions.ShaderDarkShade:
-                    shader.CurrentTechnique = shader.Techniques[level9_3 ? "DarkShadeLevel9_3" : "DarkShadeLevel9_1"];
+                    shader.CurrentTechnique = shader.Techniques["DarkShade"];
                     ShaderPasses = ShaderPassesDarkShade;
                     break;
                 case SceneryMaterialOptions.ShaderHalfBright:
-                    shader.CurrentTechnique = shader.Techniques[level9_3 ? "HalfBrightLevel9_3" : "HalfBrightLevel9_1"];
+                    shader.CurrentTechnique = shader.Techniques["HalfBright"];
                     ShaderPasses = ShaderPassesHalfBright;
                     break;
                 case SceneryMaterialOptions.ShaderFullBright:
-                    shader.CurrentTechnique = shader.Techniques[level9_3 ? "FullBrightLevel9_3" : "FullBrightLevel9_1"];
+                    shader.CurrentTechnique = shader.Techniques["FullBright"];
                     ShaderPasses = ShaderPassesFullBright;
                     break;
                 case SceneryMaterialOptions.ShaderVegetation:
                 case SceneryMaterialOptions.ShaderVegetation | SceneryMaterialOptions.ShaderFullBright:
-                    shader.CurrentTechnique = shader.Techniques[level9_3 ? "VegetationLevel9_3" : "VegetationLevel9_1"];
+                    shader.CurrentTechnique = shader.Techniques["Vegetation"];
                     ShaderPasses = ShaderPassesVegetation;
                     break;
                 default:
-                    throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.ShaderMask value.");
+                    break;
             }
 
             switch (Options & SceneryMaterialOptions.SpecularMask)
@@ -903,8 +962,7 @@ namespace Orts.Viewer3D
                     throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.SpecularMask value.");
             }
 
-            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
-                (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f))
+            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && IsNightTimeOrUnderground())
             {
                 shader.ImageTexture = NightTexture;
                 shader.ImageTextureIsNight = true;
@@ -1021,9 +1079,235 @@ namespace Orts.Viewer3D
         }
     }
 
+    public class PbrMaterial : SceneryMaterial
+    {
+        protected readonly Texture2D MetallicRoughnessTexture;
+        protected readonly Texture2D NormalTexture;
+        protected readonly Texture2D OcclusionTexture;
+        protected readonly Texture2D EmissiveTexture;
+        protected readonly Texture2D ClearcoatTexture;
+        protected readonly Texture2D ClearcoatRoughnessTexture;
+        protected readonly Texture2D ClearcoatNormalTexture;
+
+        // Animatable attributes
+        protected Vector4 BaseColorFactor;
+        protected float MetallicFactor;
+        protected float RoughnessFactor;
+        protected float NormalScale;
+        protected float OcclusionStrength;
+        protected Vector3 EmissiveFactor;
+        protected float ClearcoatFactor;
+        protected float ClearcoatRoughnessFactor;
+        protected float ClearcoatNormalScale;
+
+        bool EmissiveFollowsDayNightCycle;
+        bool DoubleSided;
+
+        public SamplerState SamplerStateBaseColor;
+        public SamplerState SamplerStateMetallicRoughness;
+        public SamplerState SamplerStateNormal;
+        public SamplerState SamplerStateOcclusion;
+        public SamplerState SamplerStateEmissive;
+        public SamplerState SamplerStateClearcoat;
+        public SamplerState SamplerStateClearcoatRoughness;
+        public SamplerState SamplerStateClearcoatNormal;
+
+        // Animation actuators:
+        public void SetAlphaCutoff(float value) => DefaultAlphaCutOff = (int)(value * 255f);
+        public void SetBaseColorFactor(Vector4 value) => BaseColorFactor = value;
+        public void SetMetallicFactor(float value) => MetallicFactor = value;
+        public void SetRoughnessFactor(float value) => RoughnessFactor = value;
+        public void SetNormalScale(float value) => NormalScale = Math.Abs(NormalScale) != 2 ? value : NormalScale;
+        public void SetOcclusionSrtength(float value) => OcclusionStrength = OcclusionStrength != 2 ? value : OcclusionStrength;
+        public void SetEmissiveFactor(Vector3 value) => EmissiveFactor = value;
+        public void SetClearcoatFactor(float value) => ClearcoatFactor = value;
+        public void SetClearcoatRoughnessFactor(float value) => ClearcoatRoughnessFactor = value;
+        public void SetClearcoatNormalScale(float value) => ClearcoatNormalScale = Math.Abs(ClearcoatNormalScale) != 2 ? value : ClearcoatNormalScale;
+
+        static readonly Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState> GltfSamplerStates = new Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState>();
+
+        public PbrMaterial(Viewer viewer, string materialUniqueId, SceneryMaterialOptions options, float mipMapBias,
+            Texture2D baseColorTexture, Vector4 baseColorFactor,
+            Texture2D metallicRoughnessTexture, float metallicFactor, float roughnessFactor,
+            Texture2D normalTexture, float normalScale,
+            Texture2D occlusionTexture, float occlusionStrength,
+            Texture2D emissiveTexture, Vector3 emissiveFactor,
+            Texture2D clearcoatTexture, float clearcoatFactor,
+            Texture2D clearcoatRoughnessTexture, float clearcoatRoughnessFactor,
+            Texture2D clearcoatNormalTexture, float clearcoatNormalScale,
+            float referenceAlpha, bool doubleSided,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateNormal,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateOcclusion,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoat,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatRoughness,
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal)
+            : base(viewer, null, options, mipMapBias)
+        {
+            Texture = baseColorTexture;
+            BaseColorFactor = baseColorFactor;
+            MetallicRoughnessTexture = metallicRoughnessTexture;
+            MetallicFactor = metallicFactor;
+            RoughnessFactor = roughnessFactor;
+            NormalTexture = normalTexture;
+            NormalScale = normalScale;
+            OcclusionTexture = occlusionTexture;
+            OcclusionStrength = occlusionStrength;
+            EmissiveTexture = emissiveTexture;
+            EmissiveFactor = emissiveFactor;
+            ClearcoatTexture = clearcoatTexture;
+            ClearcoatFactor = clearcoatFactor;
+            ClearcoatRoughnessTexture = clearcoatRoughnessTexture;
+            ClearcoatRoughnessFactor = clearcoatRoughnessFactor;
+            ClearcoatNormalTexture = clearcoatNormalTexture;
+            ClearcoatNormalScale = clearcoatNormalScale;
+
+            DefaultAlphaCutOff = (int)(referenceAlpha * 255f);
+            DoubleSided = doubleSided;
+
+            samplerStateBaseColor.Item1 = ChangeToAnisitropic(samplerStateBaseColor.Item1);
+
+            if (!GltfSamplerStates.TryGetValue(samplerStateBaseColor, out SamplerStateBaseColor)) GltfSamplerStates.Add(samplerStateBaseColor, SamplerStateBaseColor = GetNewSamplerState(samplerStateBaseColor));
+            if (!GltfSamplerStates.TryGetValue(samplerStateMetallicRoughness, out SamplerStateMetallicRoughness)) GltfSamplerStates.Add(samplerStateMetallicRoughness, SamplerStateMetallicRoughness = GetNewSamplerState(samplerStateMetallicRoughness));
+            if (!GltfSamplerStates.TryGetValue(samplerStateNormal, out SamplerStateNormal)) GltfSamplerStates.Add(samplerStateNormal, SamplerStateNormal = GetNewSamplerState(samplerStateNormal));
+            if (!GltfSamplerStates.TryGetValue(samplerStateOcclusion, out SamplerStateOcclusion)) GltfSamplerStates.Add(samplerStateOcclusion, SamplerStateOcclusion = GetNewSamplerState(samplerStateOcclusion));
+            if (!GltfSamplerStates.TryGetValue(samplerStateEmissive, out SamplerStateEmissive)) GltfSamplerStates.Add(samplerStateEmissive, SamplerStateEmissive = GetNewSamplerState(samplerStateEmissive));
+            if (!GltfSamplerStates.TryGetValue(samplerStateClearcoat, out SamplerStateClearcoat)) GltfSamplerStates.Add(samplerStateClearcoat, SamplerStateClearcoat = GetNewSamplerState(samplerStateClearcoat));
+            if (!GltfSamplerStates.TryGetValue(samplerStateClearcoatRoughness, out SamplerStateClearcoatRoughness)) GltfSamplerStates.Add(samplerStateClearcoatRoughness, SamplerStateClearcoatRoughness = GetNewSamplerState(samplerStateClearcoatRoughness));
+            if (!GltfSamplerStates.TryGetValue(samplerStateClearcoatNormal, out SamplerStateClearcoatNormal)) GltfSamplerStates.Add(samplerStateClearcoatNormal, SamplerStateClearcoatNormal = GetNewSamplerState(samplerStateClearcoatNormal));
+        }
+
+        public override bool GetBlending() => (Options & SceneryMaterialOptions.AlphaBlendingBlend) != 0;
+        
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            base.SetState(graphicsDevice, previousMaterial);
+
+            graphicsDevice.RasterizerState = DoubleSided ? RasterizerState.CullNone :
+                ((Options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
+
+            var shader = Viewer.MaterialManager.SceneryShader;
+
+            if ((Options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
+            {
+                shader.CurrentTechnique = shader.Techniques["PbrMorphed"];
+                ShaderPasses = ShaderPassesPbrMorphed = ShaderPassesPbrMorphed ?? shader.Techniques["PbrMorphed"].Passes.GetEnumerator();
+            }
+            else if ((Options & SceneryMaterialOptions.PbrHasSkin) != 0)
+            {
+                shader.CurrentTechnique = shader.Techniques["PbrSkinned"];
+                ShaderPasses = ShaderPassesPbrSkinned = ShaderPassesPbrSkinned ?? shader.Techniques["PbrSkinned"].Passes.GetEnumerator();
+            }
+            else if ((Options & SceneryMaterialOptions.PbrHasTexCoord1) != 0)
+            {
+                shader.CurrentTechnique = shader.Techniques["PbrNormalMap"];
+                ShaderPasses = ShaderPassesPbrNormalMap = ShaderPassesPbrNormalMap ?? shader.Techniques["PbrNormalMap"].Passes.GetEnumerator();
+            }
+            else
+            {
+                shader.CurrentTechnique = shader.Techniques["PbrBaseColorMap"];
+                ShaderPasses = ShaderPassesPbrBase = ShaderPassesPbrBase ?? shader.Techniques["PbrBaseColorMap"].Passes.GetEnumerator();
+            }
+
+            shader.BaseColorFactor = BaseColorFactor;
+            shader.NormalTexture = NormalTexture;
+            shader.NormalScale = NormalScale;
+            shader.EmissiveTexture = EmissiveTexture;
+            shader.EmissiveFactor = !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground() ? EmissiveFactor : Vector3.Zero;
+            shader.OcclusionTexture = OcclusionTexture;
+            shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
+            shader.OcclusionFactor = new Vector3(OcclusionStrength == 2 ? 0 : OcclusionStrength, RoughnessFactor, MetallicFactor);
+            shader.HasNormals = (Options & SceneryMaterialOptions.PbrHasNormals) != 0;
+            shader.HasTangents = (Options & SceneryMaterialOptions.PbrHasTangents) != 0;
+            shader.ClearcoatFactor = ClearcoatFactor;
+            if (ClearcoatFactor > 0 && RenderProcess.CLEARCOAT)
+            {
+                shader.ClearcoatTexture = ClearcoatTexture;
+                shader.ClearcoatRoughnessTexture = ClearcoatRoughnessTexture;
+                shader.ClearcoatRoughnessFactor = ClearcoatRoughnessFactor;
+                shader.ClearcoatNormalTexture = ClearcoatNormalTexture;
+                shader.ClearcoatNormalScale = ClearcoatNormalScale;
+            }
+        }
+
+        // Currently isn't possible to set a glTF to anisotropic filtering, so this is a hack against the spec:
+        static TextureFilter ChangeToAnisitropic(TextureFilter textureFilter) => textureFilter == TextureFilter.Linear ? TextureFilter.Anisotropic : textureFilter;
+
+        static SamplerState GetNewSamplerState((TextureFilter, TextureAddressMode, TextureAddressMode) samplerAttributes)
+        {
+           return new SamplerState
+            {
+                Filter = samplerAttributes.Item1,
+                AddressU = samplerAttributes.Item2,
+                AddressV = samplerAttributes.Item3,
+                MaxAnisotropy = 16,
+            };
+        }
+        
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            var shader = Viewer.MaterialManager.SceneryShader;
+
+            ShaderPasses.Reset();
+            while (ShaderPasses.MoveNext())
+            {
+                foreach (var item in renderItems)
+                {
+                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.ZBias = item.RenderPrimitive.ZBias;
+
+                    if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)
+                    {
+                        shader.TextureCoordinates1 = gltfPrimitive.TexCoords1;
+                        shader.TextureCoordinates2 = gltfPrimitive.TexCoords2;
+                        shader.TexturePacking = gltfPrimitive.TexturePacking;
+
+                        if (gltfPrimitive.BonesTexture != null)
+                        {
+                            gltfPrimitive.BonesTexture?.SetData(MemoryMarshal.Cast<Matrix, Vector4>(gltfPrimitive.RenderBonesRendered).ToArray());
+                            shader.BonesTexture = gltfPrimitive.BonesTexture;
+                            shader.BonesCount = gltfPrimitive.Joints.Length;
+                        }
+
+                        if (gltfPrimitive.HasMorphTargets())
+                            (shader.MorphConfig, shader.MorphWeights) = gltfPrimitive.GetMorphingData();
+                    }
+
+                    ShaderPasses.Current.Apply();
+
+                    // SamplerStates can be set only after the ShaderPasses.Current.Apply().
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerStateBaseColor;
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.MetallicRoughness] = SamplerStateMetallicRoughness;
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Occlusion] = SamplerStateOcclusion;
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Normal] = SamplerStateNormal;
+                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Emissive] = SamplerStateEmissive;
+                    if (ClearcoatFactor > 0 && RenderProcess.CLEARCOAT)
+                    {
+                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Clearcoat] = SamplerStateClearcoat;
+                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.ClearcoatRoughness] = SamplerStateClearcoatRoughness;
+                        graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.ClearcoatNormal] = SamplerStateClearcoatNormal;
+                    }
+
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+            }
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            base.ResetState(graphicsDevice);
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        }
+    }
+
     public class ShadowMapMaterial : Material
     {
         IEnumerator<EffectPass> ShaderPassesShadowMap;
+        IEnumerator<EffectPass> ShaderPassesShadowMapNormalMap;
+        IEnumerator<EffectPass> ShaderPassesShadowMapSkinned;
+        IEnumerator<EffectPass> ShaderPassesShadowMapMorphed;
         IEnumerator<EffectPass> ShaderPassesShadowMapForest;
         IEnumerator<EffectPass> ShaderPassesShadowMapBlocker;
         IEnumerator<EffectPass> ShaderPasses;
@@ -1033,6 +1317,9 @@ namespace Orts.Viewer3D
         public enum Mode
         {
             Normal,
+            Pbr,
+            PbrSkinned,
+            PbrMorphed,
             Forest,
             Blocker,
         }
@@ -1053,11 +1340,27 @@ namespace Orts.Viewer3D
         public void SetState(GraphicsDevice graphicsDevice, Mode mode)
         {
             var shader = Viewer.MaterialManager.ShadowMapShader;
-            shader.CurrentTechnique = shader.Techniques[mode == Mode.Forest ? "ShadowMapForest" : mode == Mode.Blocker ? "ShadowMapBlocker" : "ShadowMap"];
+            shader.CurrentTechnique = shader.Techniques[
+                mode == Mode.Forest ? "ShadowMapForest" : 
+                mode == Mode.Blocker ? "ShadowMapBlocker" : 
+                mode == Mode.Pbr ? "ShadowMapNormalMap" :
+                mode == Mode.PbrSkinned ? "ShadowMapSkinned" :
+                mode == Mode.PbrMorphed ? "ShadowMapMorphed" :
+                "ShadowMap"];
+
             if (ShaderPassesShadowMap == null) ShaderPassesShadowMap = shader.Techniques["ShadowMap"].Passes.GetEnumerator();
+            if (ShaderPassesShadowMapNormalMap == null) ShaderPassesShadowMapNormalMap = shader.Techniques["ShadowMapNormalMap"].Passes.GetEnumerator();
+            if (ShaderPassesShadowMapSkinned == null) ShaderPassesShadowMapSkinned = shader.Techniques["ShadowMapSkinned"].Passes.GetEnumerator();
+            if (ShaderPassesShadowMapMorphed == null) ShaderPassesShadowMapMorphed = shader.Techniques["ShadowMapMorphed"].Passes.GetEnumerator();
             if (ShaderPassesShadowMapForest == null) ShaderPassesShadowMapForest = shader.Techniques["ShadowMapForest"].Passes.GetEnumerator();
             if (ShaderPassesShadowMapBlocker == null) ShaderPassesShadowMapBlocker = shader.Techniques["ShadowMapBlocker"].Passes.GetEnumerator();
-            ShaderPasses = mode == Mode.Forest ? ShaderPassesShadowMapForest : mode == Mode.Blocker ? ShaderPassesShadowMapBlocker : ShaderPassesShadowMap;
+
+            ShaderPasses = mode == Mode.Forest ? ShaderPassesShadowMapForest : 
+                mode == Mode.Blocker ? ShaderPassesShadowMapBlocker : 
+                mode == Mode.Pbr ? ShaderPassesShadowMapNormalMap :
+                mode == Mode.PbrSkinned ? ShaderPassesShadowMapSkinned :
+                mode == Mode.PbrMorphed ? ShaderPassesShadowMapMorphed :
+                ShaderPassesShadowMap;
 
             graphicsDevice.RasterizerState = mode == Mode.Blocker ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
         }
@@ -1075,6 +1378,19 @@ namespace Orts.Viewer3D
                 {
                     var wvp = item.XNAMatrix * viewproj;
                     shader.SetData(ref wvp, item.Material.GetShadowTexture());
+
+                    if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)
+                    {
+                        if (gltfPrimitive.BonesTexture != null)
+                        {
+                            shader.BonesTexture = gltfPrimitive.BonesTexture;
+                            shader.BonesCount = gltfPrimitive.Joints.Length;
+                        }
+
+                        if (gltfPrimitive.HasMorphTargets())
+                            (shader.MorphConfig, shader.MorphWeights) = gltfPrimitive.GetMorphingData();
+                    }
+
                     ShaderPasses.Current.Apply();
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
                     graphicsDevice.SamplerStates[0] = item.Material.GetShadowTextureAddressMode();
