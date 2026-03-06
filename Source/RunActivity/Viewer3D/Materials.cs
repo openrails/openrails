@@ -295,12 +295,18 @@ namespace Orts.Viewer3D
             PopupWindowShader = new PopupWindowShader(viewer, viewer.RenderProcess.GraphicsDevice);
             PrecipitationShader = new PrecipitationShader(viewer.RenderProcess.GraphicsDevice);
             SceneryShader = new SceneryShader(viewer.RenderProcess.GraphicsDevice);
-            var microtexPath = viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace";
-            if (File.Exists(microtexPath))
-            {
+            var microtexPath = viewer.Simulator.RoutePath + @"\TERRTEX\microtex";
                 try
                 {
-                    SceneryShader.OverlayTexture = Orts.Formats.Msts.AceFile.Texture2DFromFile(viewer.GraphicsDevice, microtexPath);
+                if (File.Exists(microtexPath + ".dds"))
+                {
+                    DDSLib.DDSFromFile(microtexPath + ".dds", viewer.GraphicsDevice, true, out Texture2D microtex);
+                    SceneryShader.OverlayTexture = microtex;
+                }
+                else if (File.Exists(microtexPath + ".ace"))
+                {
+                    SceneryShader.OverlayTexture = Formats.Msts.AceFile.Texture2DFromFile(viewer.GraphicsDevice, microtexPath + ".ace");
+                }
                 }
                 catch (InvalidDataException error)
                 {
@@ -310,7 +316,6 @@ namespace Orts.Viewer3D
                 {
                     Trace.WriteLine(new FileLoadException(microtexPath, error));
                 }
-            }
             ShadowMapShader = new ShadowMapShader(viewer.RenderProcess.GraphicsDevice);
             SkyShader = new SkyShader(viewer.RenderProcess.GraphicsDevice);
             DebugShader = new DebugShader(viewer.RenderProcess.GraphicsDevice);
