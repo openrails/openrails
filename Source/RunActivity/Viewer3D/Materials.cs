@@ -451,7 +451,7 @@ namespace Orts.Viewer3D
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatRoughness,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecular,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpeculatColor)
+            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecularColor)
         {
             var materialKey = (materialName, materialUniqueId?.ToLower(), options, mipMapBias, (Effect)null);
 
@@ -481,7 +481,7 @@ namespace Orts.Viewer3D
                             samplerStateClearcoatRoughness,
                             samplerStateClearcoatNormal,
                             samplerStateSpecular,
-                            samplerStateSpeculatColor);
+                            samplerStateSpecularColor);
                         break;
                     default:
                         Trace.TraceInformation("Skipped unknown material type {0}", materialName);

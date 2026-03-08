@@ -279,12 +279,12 @@ namespace Orts.Viewer3D
                             object extension = null;
                             if (rootNode.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
                             {
-                                var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString());
+                                var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString(), JsonDeserializerSettings);
                                 if (ext?.Ids != null)
                                     internalLodsNumber = ext.Ids.Length + 1;
                                 var screenCoverages = DefaultScreenCoverages;
                                 if (rootNode.Extras?.TryGetValue("MSFT_screencoverage", out extension) ?? false)
-                                    screenCoverages = Newtonsoft.Json.JsonConvert.DeserializeObject<float[]>(extension.ToString());
+                                    screenCoverages = Newtonsoft.Json.JsonConvert.DeserializeObject<float[]>(extension.ToString(), JsonDeserializerSettings);
                                 shape.MinimumScreenCoverages = new float[internalLodsNumber];
                                 Array.Copy(screenCoverages, shape.MinimumScreenCoverages, internalLodsNumber);
                             }
@@ -373,7 +373,7 @@ namespace Orts.Viewer3D
                 KHR_lights gltfLights = null;
                 object extension = null;
                 if (GltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
-                    gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString());
+                    gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString(), JsonDeserializerSettings);
 
                 while (TempStack.Any())
                 {
@@ -394,7 +394,7 @@ namespace Orts.Viewer3D
 
                     if (node.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
                     {
-                        var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString());
+                        var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString(), JsonDeserializerSettings);
                         var ids = ext?.Ids;
                         if (ids.Any())
                         {
@@ -417,7 +417,7 @@ namespace Orts.Viewer3D
 
                         if (node.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
                         {
-                            var lightId = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual_index>(extension.ToString())?.light;
+                            var lightId = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual_index>(extension.ToString(), JsonDeserializerSettings)?.light;
                             if (lightId != null)
                                 lights.Add(nodeNumber, (int)lightId);
                         }
@@ -767,7 +767,7 @@ namespace Orts.Viewer3D
                 MatrixNames.AddRange(names.Select(n => n.Item1));
                 NodeVisibility = gltfFile.Nodes.Select(n => 
                     (n.Extensions?.TryGetValue("KHR_node_visibility", out extension) ?? false) &&
-                        Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_node_Visibility>(extension.ToString()).Visible is bool v ? v : true).ToArray();
+                        Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_node_Visibility>(extension.ToString(), JsonDeserializerSettings).Visible is bool v ? v : true).ToArray();
             }
 
             internal void ConnectPointers()
@@ -1014,7 +1014,7 @@ namespace Orts.Viewer3D
                     object extension = null;
                     if (texture?.Extensions?.TryGetValue("MSFT_texture_dds", out extension) ?? false)
                     {
-                        var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_texture_dds>(extension.ToString());
+                        var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_texture_dds>(extension.ToString(), JsonDeserializerSettings);
                         source = ext?.Source ?? source;
                         extensionFilter = DdsTextureExtensionFilter;
                     }
@@ -1117,7 +1117,7 @@ namespace Orts.Viewer3D
             {
                 var texture = GetTexture(gltf, index, defaultTexture, srgb);
                 if (texture == defaultTexture)
-                    texCoord = -1;
+                    texCoord = 0;
                 var sampler = gltf.Samplers?.ElementAtOrDefault(gltf.Textures?.ElementAtOrDefault(index ?? -1)?.Sampler ?? -1) ?? GltfSubObject.DefaultGltfSampler;
                 var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
                 return (texCoord ?? 0, texture, samplerState);
@@ -1222,10 +1222,10 @@ namespace Orts.Viewer3D
                 TextureInfo msftRmoInfo = null;
                 object extension = null;
                 if (material.Extensions?.TryGetValue("MSFT_packing_normalRoughnessMetallic", out extension) ?? false)
-                    msftNormalInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_normalRoughnessMetallic>(extension.ToString())?.NormalRoughnessMetallicTexture;
+                    msftNormalInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_normalRoughnessMetallic>(extension.ToString(), JsonDeserializerSettings)?.NormalRoughnessMetallicTexture;
                 else if (material.Extensions?.TryGetValue("MSFT_packing_occlusionRoughnessMetallic", out extension) ?? false)
                 {
-                    var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_occlusionRoughnessMetallic>(extension.ToString());
+                    var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_occlusionRoughnessMetallic>(extension.ToString(), JsonDeserializerSettings);
                     msftOrmInfo = ext?.OcclusionRoughnessMetallicTexture;
                     msftRmoInfo = ext?.RoughnessMetallicOcclusionTexture;
                     msftNormalInfo = ext?.NormalTexture;
@@ -1251,19 +1251,19 @@ namespace Orts.Viewer3D
 
                 KHR_materials_clearcoat clearcoat = null;
                 if (material.Extensions?.TryGetValue("KHR_materials_clearcoat", out extension) ?? false)
-                    clearcoat = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_clearcoat>(extension.ToString());
+                    clearcoat = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_clearcoat>(extension.ToString(), JsonDeserializerSettings);
 
                 KHR_materials_specular specular = null;
                 if (material.Extensions?.TryGetValue("KHR_materials_specular", out extension) ?? false)
-                    specular = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_specular>(extension.ToString());
+                    specular = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_specular>(extension.ToString(), JsonDeserializerSettings);
 
                 KHR_materials_ior ior = null;
                 if (material.Extensions?.TryGetValue("KHR_materials_ior", out extension) ?? false)
-                    ior = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_ior>(extension.ToString());
+                    ior = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_ior>(extension.ToString(), JsonDeserializerSettings);
 
                 var emissiveStrength = 1f;
                 if (material.Extensions?.TryGetValue("KHR_materials_emissive_strength", out extension) ?? false)
-                    emissiveStrength = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_emissive_strength>(extension.ToString())?.EmissiveStrength ?? 1;
+                    emissiveStrength = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_emissive_strength>(extension.ToString(), JsonDeserializerSettings)?.EmissiveStrength ?? 1;
 
                 (texCoords1.X, baseColorTexture, baseColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture, SharedMaterialManager.WhiteTexture, true);
                 (texCoords1.Y, metallicRoughnessTexture, metallicRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, msftRmoInfo ?? msftOrmInfo ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture, SharedMaterialManager.WhiteTexture);
@@ -1277,6 +1277,11 @@ namespace Orts.Viewer3D
                 (texCoords2.Z, clearcoatNormalTexture, clearcoatNormalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatNormalTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords3.X, specularTexture, specularSamplerState) = distanceLevel.GetTextureInfo(gltfFile, specular?.SpecularTexture, SharedMaterialManager.WhiteTexture);
                 (texCoords3.Y, specularColorTexture, specularColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, specular?.SpecularColorTexture, SharedMaterialManager.WhiteTexture, true);
+
+                if (normalTexture == SharedMaterialManager.WhiteTexture)
+                    texCoords1.Z = -1;
+                if (clearcoatNormalTexture == SharedMaterialManager.WhiteTexture)
+                    texCoords2.Z = -1;
 
                 var baseColorFactor = MemoryMarshal.Cast<float, Vector4>(material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f })[0];
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
@@ -1757,7 +1762,7 @@ namespace Orts.Viewer3D
             public float[] color { get; set; }
             [DefaultValue(1)]
             public float intensity { get; set; }
-            [DefaultValue(0)]
+            [DefaultValue(float.MaxValue)]
             public float range { get; set; }
 
             public KHR_lights_punctual_spot spot { get; set; }
@@ -1789,8 +1794,10 @@ namespace Orts.Viewer3D
 
         public class KHR_materials_specular
         {
+            [DefaultValue(1)]
             public float SpecularFactor { get; set; }
             public TextureInfo SpecularTexture { get; set; }
+            [DefaultValue(new[] { 1f, 1f, 1f })]
             public float[] SpecularColorFactor { get; set; }
             public TextureInfo SpecularColorTexture { get; set; }
         }
@@ -1816,6 +1823,11 @@ namespace Orts.Viewer3D
             [DefaultValue("")]
             public string Pointer { get; set; }
         }
+
+        public static readonly Newtonsoft.Json.JsonSerializerSettings JsonDeserializerSettings = new Newtonsoft.Json.JsonSerializerSettings
+        {
+            DefaultValueHandling = Newtonsoft.Json.DefaultValueHandling.Populate
+        };
 
         /// <summary>
         /// This method is part of the animation handling. Gets the parent that will be animated, for finding a bogie for wheels.

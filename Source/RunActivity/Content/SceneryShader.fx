@@ -24,6 +24,7 @@
 // Keep these in sync with the values defined in RenderProcess.cs
 #define MAX_LIGHTS 20 // must not be less than 2
 #define CLEARCOAT
+#define IOR_SPECULAR
 #define MAX_MORPH_TARGETS 8
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
@@ -928,23 +929,21 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float roughnessSq = alphaRoughness * alphaRoughness;
 	
         metallic = clamp(metallic * OcclusionFactor.z, 0.0, 1.0);
-	
+        
+#ifdef IOR_SPECULAR
         float3 specularColorFactor = SpecularFactor.xyz;
+        specularColorFactor *= SpecularColorTexture.Sample(SpecularColorSampler, _PSUV(In.TexCoords, TextureCoordinates3.y)).rgb;
+
         float specularFactor = SpecularFactor.w;
-        if (TextureCoordinates3.x)
-        {
-            float specularSample = SpecularTexture.Sample(SpecularSampler, _PSUV(In.TexCoords, TextureCoordinates3.x)).a;
-            specularFactor *= specularSample;
-        }
-        if (TextureCoordinates3.y)
-        {
-            float3 specularColorSample = SpecularColorTexture.Sample(SpecularColorSampler, _PSUV(In.TexCoords, TextureCoordinates3.y)).rgb;
-            specularColorFactor *= specularColorSample;
-        }
+        specularFactor *= SpecularTexture.Sample(SpecularSampler, _PSUV(In.TexCoords, TextureCoordinates3.x)).a;
 
-        float3 f0 = min((float3) IorFactor * specularColorFactor, (float3) 1.0) * specularFactor; // default: 0.04
-        float3 f90 = (float3) specularFactor; // default:1.0
-
+        float3 f0 = min((float3) IorFactor * specularColorFactor, (float3) 1.0) * specularFactor;
+        float3 f90 = (float3) specularFactor;
+#else
+        float3 f0 = (float3) 0.04; // (float3)(pow((ior - 1) / (ior + 1), 2)) = (float3)0.04, if ior = 1.5
+        float3 f90 = (float3) 1.0;
+#endif
+        
         float3 diffuseColor = Color.rgb * (f90 - f0);
         diffuseColor *= 1.0 - metallic;
 	
@@ -976,8 +975,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 
         if (ClearcoatFactor > 0)
         {
-            float clearcoatSample = ClearcoatTexture.Sample(ClearcoatSampler, _PSUV(In.TexCoords, TextureCoordinates2.x)).r;
-            clearcoatFactor *= clearcoatSample;
+            clearcoatFactor *= ClearcoatTexture.Sample(ClearcoatSampler, _PSUV(In.TexCoords, TextureCoordinates2.x)).r;
 
 	        // TODO: implement clearcoat texturepacking for being able to check whether these two textures are the same
             float clearcoatRoughness = ClearcoatRoughnessTexture.Sample(ClearcoatRoughnessSampler, _PSUV(In.TexCoords, TextureCoordinates2.y)).g;
@@ -986,7 +984,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
             float clearcoatAlphaRoughness = clearcoatRoughness * clearcoatRoughness;
             clearcoatRoughnessSq = clearcoatAlphaRoughness * clearcoatAlphaRoughness;
 
-		// TODO: implement clearcoat texturepacking for being able to check whether the clearcoat normal is the same as the base normal
+            // TODO: implement clearcoat texturepacking for being able to check whether the clearcoat normal is the same as the base normal
             float3 clearcoatNormalSample = ClearcoatNormalTexture.Sample(ClearcoatNormalSampler, _PSUV(In.TexCoords, TextureCoordinates2.z)).rgb;
             clearcoatNormal = _PSGetNormal(In, ClearcoatNormalScale, clearcoatNormalSample, isFrontFace, TextureCoordinates2.z != -1);
             clearcoatNdotV = abs(dot(clearcoatNormal, v)) + 0.001;
