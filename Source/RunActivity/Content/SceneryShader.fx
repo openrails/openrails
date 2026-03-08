@@ -21,76 +21,82 @@
 //                 S C E N E R Y   O B J E C T   S H A D E R                  //
 ////////////////////////////////////////////////////////////////////////////////
 
-////////////////////    G L O B A L   V A L U E S    ///////////////////////////
-
-float4x4 World;         // model -> world [max number of bones]
-float4x4 View;          // world -> view
-float4x4 Projection;    // view -> projection
-float4x4 LightViewProjectionShadowProjection0;  // world -> light view -> light projection -> shadow map projection
-float4x4 LightViewProjectionShadowProjection1;
-float4x4 LightViewProjectionShadowProjection2;
-float4x4 LightViewProjectionShadowProjection3;
-texture  ShadowMapTexture0;
-texture  ShadowMapTexture1;
-texture  ShadowMapTexture2;
-texture  ShadowMapTexture3;
-float4   ShadowMapLimit;
-float4   ZBias_Lighting;  // x = z-bias, y = diffuse (not unlit), z = specular, w = step(1, z)
-float4   Fog;  // rgb = color of fog; a = reciprocal of distance from camera, everything is
-			   // normal color; FogDepth = FogStart, i.e. FogEnd = 2 * FogStart.
-float    ZFar;
-float2   Overcast;      // Lower saturation & brightness when overcast. x = FullBrightness, y = HalfBrightness
-float3   ViewerPos;     // Viewer's world coordinates.
-float    ImageTextureIsNight;
-float    NightColorModifier;
-float    HalfNightColorModifier;
-float    VegetationAmbientModifier;
-float    SignalLightIntensity;
-float4   EyeVector;
-float3   SideVector;
-float    ReferenceAlpha;
-texture  ImageTexture; // .s: linear RGBA, glTF (PBR): 8 bit sRGB + linear A
-texture  OverlayTexture;
-float	 OverlayScale;
-
-texture  BonesTexture; // 4 channels of 32 bit float, containing the 4x4 matrix palette for skinned models
-float    BonesCount;
-
 // Keep these in sync with the values defined in RenderProcess.cs
 #define MAX_LIGHTS 20 // must not be less than 2
 #define CLEARCOAT
+#define IOR_SPECULAR
 #define MAX_MORPH_TARGETS 8
 
-float4   BaseColorFactor; // glTF linear color multiplier
-texture  NormalTexture; // linear RGB
-float    NormalScale;
-texture  EmissiveTexture; // 8 bit sRGB
-float3   EmissiveFactor; // glTF linear emissive multiplier
-texture  OcclusionTexture; // r = occlusion, can be combined with the MetallicRoughnessTexture
-texture  MetallicRoughnessTexture; // g = roughness, b = metalness
-texture  ClearcoatTexture;
-float    ClearcoatFactor;
-texture  ClearcoatRoughnessTexture;
-float    ClearcoatRoughnessFactor;
-texture  ClearcoatNormalTexture;
-float    ClearcoatNormalScale;
-float3   OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
-float4   TextureCoordinates1; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
-float4   TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
-float    TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic, 4: roughnessMetallicOcclusion + normal (RG) 2 channel separate, 5: occlusionRoughnessMetallic + normal (RG) 2 channel separate
-bool     HasNormals; // 0: no, 1: yes
-bool     HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
-int      MorphConfig[9]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. 6: if the model has skin, set to 1. All: set to -1 if not available. 7: targets count. 8: attributes count.
-float    MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
+////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-int		NumLights; // The number of the lights used
-float	LightTypes[MAX_LIGHTS]; // 0: directional, 1: point, 2: spot, 3: headlight
-float3	LightPositions[MAX_LIGHTS];
-float3	LightDirections[MAX_LIGHTS];
-float3	LightColorIntensities[MAX_LIGHTS]; // pre-multiplied by intensity
-float	LightRangesRcp[MAX_LIGHTS];
-float	LightInnerConeCos[MAX_LIGHTS];
-float	LightOuterConeCos[MAX_LIGHTS];
+cbuffer PerFrameVS
+{
+    float4x4 View; // world -> view
+    float4x4 Projection; // view -> projection
+    float3 ViewerPos; // Viewer's world coordinates.
+    float4 EyeVector;
+    float3 SideVector;
+    float3 LightDirection0; // The sun/moon direction, copy of LightDirections[0], but provided separately for easier access in VSForest.
+};
+
+cbuffer PerFramePS
+{
+    float4x4 ShadowMatrices[4]; // world -> light view -> light projection -> shadow map projection
+    float4 ShadowMapLimit;
+    float4 Fog; // rgb = color of fog; a = reciprocal of distance from camera, everything is normal color
+    float2 Overcast; // Lower saturation & brightness when overcast. x = FullBrightness, y = HalfBrightness
+    float NightColorModifier;
+    float HalfNightColorModifier;
+    float LightTypes[MAX_LIGHTS]; // 0: directional, 1: point, 2: spot, 3: headlight
+    float3 LightPositions[MAX_LIGHTS];
+    float3 LightDirections[MAX_LIGHTS];
+    float3 LightColorIntensities[MAX_LIGHTS]; // pre-multiplied by intensity
+    float LightRangesRcp[MAX_LIGHTS];
+    float LightInnerConeCos[MAX_LIGHTS];
+    float LightOuterConeCos[MAX_LIGHTS];
+    float NumLights; // The number of the lights used
+    float ZFar;
+};
+
+// PS only
+cbuffer PerMaterial
+{
+    float ImageTextureIsNight;
+    float VegetationAmbientModifier;
+    float ReferenceAlpha;
+    float OverlayScale;
+
+    float4 BaseColorFactor; // glTF linear color multiplier
+    float3 OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
+    float NormalScale;
+    float3 EmissiveFactor; // glTF linear emissive multiplier
+    float ClearcoatFactor;
+    float ClearcoatRoughnessFactor;
+    float ClearcoatNormalScale;
+    bool HasNormals; // 0: no, 1: yes
+    bool HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
+    float4 SpecularFactor; // xyz: color, w: factor
+    float IorFactor; // ((ior - 1) / (ior + 1))^2 precalculated//};
+
+// VS and PS
+//cbuffer PerObject
+//{
+    float4x4 World; // model -> world [max number of bones]
+    float4 ZBias_Lighting; // x = z-bias, y = diffuse (not unlit), z = specular, w = step(1, z) // zBias is PerDraw, Lighting could be PerMaterial
+    int MorphConfig[8]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. All: set to -1 if not available. 6: targets count. 7: attributes count.
+    float MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
+    float4   TextureCoordinates1; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
+    float4   TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
+    float4   TextureCoordinates3; // x: specular, y: specular-color, zw: unused
+    float TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic, 4: roughnessMetallicOcclusion + normal (RG) 2 channel separate, 5: occlusionRoughnessMetallic + normal (RG) 2 channel separate
+    float SignalLightIntensity;
+    float BonesCount;
+};
+
+
+
+
+
 
 static const float M_PI = 3.141592653589793;
 static const float RECIPROCAL_PI = 0.31830988618;
@@ -105,157 +111,53 @@ static const int LightType_Headlight = 3; // Pre-PBR linear attenuated headlight
 static const float FullBrightness = 1.0;
 static const float ShadowBrightness = 0.5;
 
-sampler Image = sampler_state
-{
-	Texture = (ImageTexture);
-	MagFilter = Linear;
-	MinFilter = Anisotropic;
-	MipFilter = Linear;
-	MaxAnisotropy = 16;
-};
+Texture2D    ImageTexture; // .s: linear RGBA, glTF (PBR): 8 bit sRGB + linear A
+SamplerState ImageSampler;
 
-sampler Overlay = sampler_state
-{
-	Texture = (OverlayTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-	MipLodBias = 0;
-	AddressU = Wrap;
-	AddressV = Wrap;
-};
+Texture2D    OverlayTexture;
+SamplerState OverlaySampler;
 
-sampler Normal = sampler_state
-{
-	Texture = (NormalTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
+Texture2D    NormalTexture; // linear RGB
+SamplerState NormalSampler;
 
-sampler Emissive = sampler_state
-{
-	Texture = (EmissiveTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
+Texture2D    EmissiveTexture; // 8 bit sRGB
+SamplerState EmissiveSampler;
 
-sampler Occlusion = sampler_state
-{
-	Texture = (OcclusionTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
+Texture2D    OcclusionTexture; // r = occlusion, can be combined with the MetallicRoughnessTexture
+SamplerState OcclusionSampler;
 
-sampler MetallicRoughness = sampler_state
-{
-	Texture = (MetallicRoughnessTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
+Texture2D    MetallicRoughnessTexture; // g = roughness, b = metalness
+SamplerState MetallicRoughnessSampler;
 
-sampler Clearcoat = sampler_state
-{
-	Texture = (ClearcoatTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
+Texture2D    ClearcoatTexture;
+SamplerState ClearcoatSampler;
 
-sampler ClearcoatRoughness = sampler_state
-{
-	Texture = (ClearcoatRoughnessTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
+Texture2D    ClearcoatRoughnessTexture;
+SamplerState ClearcoatRoughnessSampler;
 
-sampler ClearcoatNormal = sampler_state
-{
-	Texture = (ClearcoatNormalTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
+Texture2D    ClearcoatNormalTexture;
+SamplerState ClearcoatNormalSampler;
 
-sampler EnvironmentMapSpecular = sampler_state
-{
-	Texture = (EnvironmentMapSpecularTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-	AddressU = Clamp;
-	AddressV = Clamp;
-	AddressW = Clamp;
-};
+Texture2D    SpecularTexture; // rgb: unused, a: specular factor in linear color space
+SamplerState SpecularSampler;
 
-samplerCUBE EnvironmentMapDiffuse = sampler_state
-{
-	Texture = (EnvironmentMapDiffuseTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-	AddressU = Clamp;
-	AddressV = Clamp;
-	AddressW = Clamp;
-};
+Texture2D    SpecularColorTexture; // rgb: specular color in sRGB, a: unused
+SamplerState SpecularColorSampler;
 
-sampler BrdfLut = sampler_state
+Texture2DArray ShadowMapArray;
+SamplerState LinearClampSampler
 {
-	Texture = (BrdfLutTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
+    Filter = Linear;
     AddressU = Clamp;
     AddressV = Clamp;
     AddressW = Clamp;
 };
 
-sampler BoneSampler = sampler_state
-{
-    Texture = (BonesTexture);
-    MagFilter = Point; // No interpolation between bone matrices, otherwise the skinning will be wrong.
-    MinFilter = Point;
-    MipFilter = Point;
-    AddressU = Clamp;
-    AddressV = Clamp;
-    AddressW = Clamp;
-};
+Texture2D BrdfLutTexture;
+Texture2D EnvironmentMapSpecularTexture;
+TextureCube EnvironmentMapDiffuseTexture;
+Texture2D BonesTexture; // 4 channels of 32 bit float, containing the 4x4 matrix palette for skinned models
 
-sampler ShadowMap0 = sampler_state
-{
-	Texture = (ShadowMapTexture0);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
-
-sampler ShadowMap1 = sampler_state
-{
-	Texture = (ShadowMapTexture1);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
-
-sampler ShadowMap2 = sampler_state
-{
-	Texture = (ShadowMapTexture2);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
-
-sampler ShadowMap3 = sampler_state
-{
-	Texture = (ShadowMapTexture3);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Linear;
-};
 
 ////////////////////    V E R T E X   I N P U T S    ///////////////////////////
 
@@ -360,7 +262,7 @@ void _VSNormalProjection(in float3 InNormal, in float4x4 WorldTransform, inout f
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// For VSForest() it is calculated in Shaders.cs eyeVector.SetValue(), the sun direction is uploaded to this shader negated, to conform with glTF lights extension
-	OutNormal_Light.w = dot(OutNormal_Light.xyz, -LightDirections[0]) * 0.5 + 0.5; // [0] is always the sun/moon
+	OutNormal_Light.w = dot(OutNormal_Light.xyz, -LightDirection0) * 0.5 + 0.5; // [0] is always the sun/moon
 }
 
 void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
@@ -406,14 +308,12 @@ void _VSLightsAndShadows(in float4 InPosition, in float4x4 WorldTransform, in fl
 	shadow = mul(InPosition, WorldTransform);
 }
 
-float4x4 GetBoneMatrix(min16uint index)
+float4x4 _VSBoneMatrix(min16uint index)
 {
-    float v = (index + 0.5) / BonesCount;
-
-    float4 row1 = tex2Dlod(BoneSampler, float4(0.125, v, 0, 0)); // 0.5 / 4
-    float4 row2 = tex2Dlod(BoneSampler, float4(0.375, v, 0, 0)); // 1.5 / 4
-    float4 row3 = tex2Dlod(BoneSampler, float4(0.625, v, 0, 0)); // 2.5 / 4
-    float4 row4 = tex2Dlod(BoneSampler, float4(0.875, v, 0, 0)); // 3.5 / 4
+    float4 row1 = BonesTexture.Load(int3(0, index, 0));
+    float4 row2 = BonesTexture.Load(int3(1, index, 0));
+    float4 row3 = BonesTexture.Load(int3(2, index, 0));
+    float4 row4 = BonesTexture.Load(int3(3, index, 0));
 
     return float4x4(row1, row2, row3, row4);
 }
@@ -422,10 +322,10 @@ float4x4 _VSSkinTransform(in min16uint4 Joints, in float4 Weights)
 {
 	float4x4 skinTransform = 0;
 
-    skinTransform += GetBoneMatrix(Joints.x) * (float)Weights.x;
-    skinTransform += GetBoneMatrix(Joints.y) * (float)Weights.y;
-    skinTransform += GetBoneMatrix(Joints.z) * (float)Weights.z;
-    skinTransform += GetBoneMatrix(Joints.w) * (float)Weights.w;
+    skinTransform += _VSBoneMatrix(Joints.x) * (float) Weights.x;
+    skinTransform += _VSBoneMatrix(Joints.y) * (float) Weights.y;
+    skinTransform += _VSBoneMatrix(Joints.z) * (float) Weights.z;
+    skinTransform += _VSBoneMatrix(Joints.w) * (float) Weights.w;
 
     return skinTransform;
 }
@@ -531,7 +431,7 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
 {
     VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR)0;
 
-    float4x4 worldTransform = MorphConfig[6] == 1 ? _VSSkinTransform(In.Joints, In.Weights) : World;
+    float4x4 worldTransform = BonesCount > 0 ? _VSSkinTransform(In.Joints, In.Weights) : World;
 
     Out.Position = In.Position;
     float3 normal = In.Normal;
@@ -541,20 +441,20 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
     Out.TexCoords.zw = In.TexCoordsPbr;
 
     [unroll(MAX_MORPH_TARGETS)]
-    for (int i = 0; i < MorphConfig[7]; i++)
+    for (int i = 0; i < MorphConfig[6]; i++)
     {
         if (MorphConfig[0] != -1)
-            Out.Position.xyz += In.MorphTargets[MorphConfig[8] * i + MorphConfig[0]].xyz * MorphWeights[i];
+            Out.Position.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[0]].xyz * MorphWeights[i];
         if (MorphConfig[1] != -1)
-            normal.xyz += In.MorphTargets[MorphConfig[8] * i + MorphConfig[1]].xyz * MorphWeights[i];
+            normal.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[1]].xyz * MorphWeights[i];
         if (MorphConfig[2] != -1)
-            tangent.xyz += In.MorphTargets[MorphConfig[8] * i + MorphConfig[2]].xyz * MorphWeights[i];
+            tangent.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[2]].xyz * MorphWeights[i];
         if (MorphConfig[3] != -1)
-            Out.TexCoords.xy += In.MorphTargets[MorphConfig[8] * i + MorphConfig[3]].xy * MorphWeights[i];
+            Out.TexCoords.xy += In.MorphTargets[MorphConfig[7] * i + MorphConfig[3]].xy * MorphWeights[i];
         if (MorphConfig[4] != -1)
-            Out.TexCoords.zw += In.MorphTargets[MorphConfig[8] * i + MorphConfig[4]].xy * MorphWeights[i];
+            Out.TexCoords.zw += In.MorphTargets[MorphConfig[7] * i + MorphConfig[4]].xy * MorphWeights[i];
         if (MorphConfig[5] != -1)
-            Out.Color += In.MorphTargets[MorphConfig[8] * i + MorphConfig[5]] * MorphWeights[i];
+            Out.Color += In.MorphTargets[MorphConfig[7] * i + MorphConfig[5]] * MorphWeights[i];
     }
 
     _VSNormalProjection(normal, worldTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
@@ -660,27 +560,26 @@ float _PSGetAmbientEffect(in VERTEX_OUTPUT In)
 float3 _PSGetShadowEffectMoments(in VERTEX_OUTPUT In)
 {
 	float depth = In.RelPosition.w;
-	float3 rv = 0;
-	if (depth < ShadowMapLimit.x) {
-		float3 pos0 = mul(In.Shadow, LightViewProjectionShadowProjection0).xyz;
-		rv = float3(tex2D(ShadowMap0, pos0.xy).xy, pos0.z);
-	} else {
-		if (depth < ShadowMapLimit.y) {
-			float3 pos1 = mul(In.Shadow, LightViewProjectionShadowProjection1).xyz;
-			rv = float3(tex2D(ShadowMap1, pos1.xy).xy, pos1.z);
-		} else {
-			if (depth < ShadowMapLimit.z) {
-				float3 pos2 = mul(In.Shadow, LightViewProjectionShadowProjection2).xyz;
-				rv = float3(tex2D(ShadowMap2, pos2.xy).xy, pos2.z);
-			} else {
-				if (depth < ShadowMapLimit.w) {
-					float3 pos3 = mul(In.Shadow, LightViewProjectionShadowProjection3).xyz;
-					rv = float3(tex2D(ShadowMap3, pos3.xy).xy, pos3.z);
-				}
-			}
-		}
-	}
-	return rv;
+    
+    uint index = 3;
+    if (depth < ShadowMapLimit.x)
+        index = 0;
+    else if (depth < ShadowMapLimit.y)
+        index = 1;
+    else if (depth < ShadowMapLimit.z)
+        index = 2;
+    else if (depth >= ShadowMapLimit.w)
+        return float3(0, 0, 1);
+
+    float3 pos = mul(In.Shadow, ShadowMatrices[index]).xyz;
+
+    float2 uv = pos.xy;
+    float2 dx = ddx(uv);
+    float2 dy = ddy(uv);
+
+    float2 moments = ShadowMapArray.SampleGrad(LinearClampSampler, float3(uv, index), dx, dy).xy;
+
+    return float3(moments, pos.z);
 }
 
 void _PSApplyShadowColor(inout float3 Color, in VERTEX_OUTPUT In)
@@ -805,19 +704,15 @@ void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 	Color.a *= saturate((ZFar - length(In.RelPosition.xyz)) / 50);
 }
 
-float4 _PSTex2D(sampler s, float4 inTexCoords, float texCoordsSelector)
+float2 _PSUV(float4 inTexCoords, float texCoordsSelector)
 {
-	if (texCoordsSelector == 0)
-		return tex2D(s, inTexCoords.xy);
-	else
-		return tex2D(s, inTexCoords.zw);
+    return lerp(inTexCoords.xy, inTexCoords.zw, texCoordsSelector);
 }
 
-float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, float normalScale, sampler normalSampler, float texCoordsSelector, bool isFrontFace)
+float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, float normalScale, float3 normalSample, bool isFrontFace, bool hasNormalTexture)
 {
-	bool hasNormalMap = -1 <= normalScale && normalScale <= 1;
 	float3x3 tbn = float3x3(In.Tangent.xyz, In.Bitangent.xyz, In.Normal_Light.xyz);
-    if (!hasTangents || !HasNormals)
+    if (!HasTangents || !HasNormals)
 	{
 		float3 ng;
 		if (HasNormals)
@@ -826,7 +721,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, float normalScale
 			ng = normalize(cross(ddx(In.RelPosition.xyz), ddy(-In.RelPosition.xyz)));
 		tbn[2].xyz = ng;
 		
-		if (hasNormalMap)
+        if (hasNormalTexture)
 		{
             float3 pos_dx = ddx(In.Position.xyz);
             float3 pos_dy = ddy(In.Position.xyz);
@@ -835,7 +730,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, float normalScale
             float tex_dxy = tex_dx.x * tex_dy.y - tex_dy.x * tex_dx.y;
             float3 t = (tex_dy.y * pos_dx - tex_dx.y * pos_dy) / tex_dxy;
 
-			if (hasTangents)
+			if (HasTangents)
 				t = In.Tangent.xyz;
 			else
 				t = normalize(t - ng * dot(ng, t));
@@ -849,21 +744,13 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, float normalScale
 		tbn[1] *= -1;
 		tbn[2] *= -1;
 	}
-	float3 n;
-	if (hasNormalMap)
+    float3 n = normalSample;
+    if (hasNormalTexture)
 	{
+        n = 2.0 * n - 1.0; // Could be uploaded in SurfaceFormat.NormalizedByte4 or similar to avoid this unpacking, but it is not 
 		if (TexturePacking == 2 || TexturePacking == 4 || TexturePacking == 5)
 		{
-			// Probably this is specific to the BC5 normal maps, which is not supported in MonoGame anyway...
-			float2 normalXY = _PSTex2D(normalSampler, In.TexCoords, texCoordsSelector).rg;
-			normalXY = float2(2.0, 2.0) * normalXY - float2(1.0, 1.0);
-			float normalZ = sqrt(saturate(1.0 - dot(normalXY, normalXY)));
-			n = float3(normalXY.xy, normalZ);
-		}
-		else
-		{
-			n = _PSTex2D(normalSampler, In.TexCoords, texCoordsSelector).rgb;
-			n = 2.0 * n - 1.0;
+			n.z = sqrt(saturate(1.0 - dot(n.xy, n.xy)));
 		}
 		n = normalize(mul((n * float3(normalScale, normalScale, 1.0)), tbn));
 	}
@@ -895,30 +782,28 @@ float3 _PSLinearToSrgb(float3 color)
 
 float3 _PSRgbdToLinear(float4 value)
 {
-	return value.xyz / value.w;
+    return value.xyz / max(value.w, 0.0001);
 }
 
 float3 _PSGetIBLSpecular(float3 specularColor, float NdotV, float perceptualRoughness, float3 reflection)
 {
 	float2 val = float2(NdotV, 1.0 - perceptualRoughness);
-	float3 brdf = tex2D(BrdfLut, val).rgb;
-	brdf.rgb = _PSSrgbToLinear(brdf.rgb);
+    float3 brdf = BrdfLutTexture.Sample(LinearClampSampler, val).rgb;
 
-	float3 specularLight = _PSRgbdToLinear(tex2D(EnvironmentMapSpecular, _PSCartesianToPolar(reflection))).rgb;
+    float3 specularLight = _PSRgbdToLinear(EnvironmentMapSpecularTexture.Sample(LinearClampSampler, _PSCartesianToPolar(reflection))).rgb;
 	specularLight.rgb = _PSSrgbToLinear(specularLight.rgb);
 	return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
 float3 _PSGetIBLDiffuse(float3 diffuseColor, float3 n)
 {
-	float3 diffuseLight = texCUBE(EnvironmentMapDiffuse, n).rgb; // irradiance (washed out)
-	//diffuseLight.rgb = _PSSrgbToLinear(diffuseLight.rgb); // If we can upload the image with sRGB texture surfaceformat, no need to convert manually, the GPU will do that for us.
+    float3 diffuseLight = EnvironmentMapDiffuseTexture.Sample(LinearClampSampler, n).rgb; // irradiance (washed out)
 	return diffuseLight * diffuseColor;
 }
 
 float4 PSImage(uniform bool ClampTexCoords, in VERTEX_OUTPUT In) : COLOR0
 {
-	float4 Color = tex2D(Image, In.TexCoords.xy);
+	float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
 
 	// Do we still need this?
 	if (ClampTexCoords) {
@@ -972,8 +857,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	InGeneral.Shadow = In.Shadow;
 	InGeneral.Fog = In.Tangent.w;
 
-	float4 Color = _PSTex2D(Image, In.TexCoords, TextureCoordinates1.x);
-	Color.rgb = _PSSrgbToLinear(Color.rgb);
+    float4 Color = ImageTexture.Sample(ImageSampler, _PSUV(In.TexCoords, TextureCoordinates1.x));
 	// Apply the linear multipliers.
 	Color *= In.Color * BaseColorFactor;
 	// Alpha testing. Without the > 0 check glithches appear.
@@ -988,6 +872,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	
     float3 litColor;
     
+    [branch]
     if (!ZBias_Lighting.y)
     {
     	// Unlit material
@@ -1001,21 +886,23 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float occlusion = 1;
         float metallic = 1;
         float roughness = 1;
+        
+        [branch]
         if (TexturePacking == 0)
         {
             if (OcclusionFactor.x > 0)
-                occlusion = _PSTex2D(Occlusion, In.TexCoords, TextureCoordinates2.w).r;
+                occlusion = OcclusionTexture.Sample(OcclusionSampler, _PSUV(In.TexCoords, TextureCoordinates2.w)).r;
 
             if (OcclusionFactor.y > 0 || OcclusionFactor.z > 0)
             {
-                float3 orm = _PSTex2D(MetallicRoughness, In.TexCoords, TextureCoordinates1.y).rgb;
+                float3 orm = MetallicRoughnessTexture.Sample(MetallicRoughnessSampler, _PSUV(In.TexCoords, TextureCoordinates1.y)).rgb;
                 roughness = orm.g;
                 metallic = orm.b;
             }
         }
         else if (TexturePacking == 1 || TexturePacking == 3 || TexturePacking == 4 || TexturePacking == 5)
         {
-            float3 orm = _PSTex2D(MetallicRoughness, In.TexCoords, TextureCoordinates1.y).rgb;
+            float3 orm = MetallicRoughnessTexture.Sample(MetallicRoughnessSampler, _PSUV(In.TexCoords, TextureCoordinates1.y)).rgb;
             if (TexturePacking == 3 || TexturePacking == 5)
             {
                 occlusion = orm.r;
@@ -1031,10 +918,10 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         }
         else if (TexturePacking == 2)
         {
-            float4 nrm = _PSTex2D(Normal, In.TexCoords, TextureCoordinates1.z);
+            float4 nrm = NormalTexture.Sample(NormalSampler, _PSUV(In.TexCoords, TextureCoordinates1.z));
             roughness = nrm.b;
             metallic = nrm.a;
-            occlusion = _PSTex2D(Occlusion, In.TexCoords, TextureCoordinates2.w).r;
+            occlusion = OcclusionTexture.Sample(OcclusionSampler, _PSUV(In.TexCoords, TextureCoordinates2.w)).r;
         }
 
         float perceptualRoughness = clamp(roughness * OcclusionFactor.y, MinRoughness, 1.0);
@@ -1042,9 +929,21 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float roughnessSq = alphaRoughness * alphaRoughness;
 	
         metallic = clamp(metallic * OcclusionFactor.z, 0.0, 1.0);
-	
+        
+#ifdef IOR_SPECULAR
+        float3 specularColorFactor = SpecularFactor.xyz;
+        specularColorFactor *= SpecularColorTexture.Sample(SpecularColorSampler, _PSUV(In.TexCoords, TextureCoordinates3.y)).rgb;
+
+        float specularFactor = SpecularFactor.w;
+        specularFactor *= SpecularTexture.Sample(SpecularSampler, _PSUV(In.TexCoords, TextureCoordinates3.x)).a;
+
+        float3 f0 = min((float3) IorFactor * specularColorFactor, (float3) 1.0) * specularFactor;
+        float3 f90 = (float3) specularFactor;
+#else
         float3 f0 = (float3) 0.04; // (float3)(pow((ior - 1) / (ior + 1), 2)) = (float3)0.04, if ior = 1.5
         float3 f90 = (float3) 1.0;
+#endif
+        
         float3 diffuseColor = Color.rgb * (f90 - f0);
         diffuseColor *= 1.0 - metallic;
 	
@@ -1054,7 +953,8 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float3 specularEnvironmentR0 = specularColor.rgb;
         float3 specularEnvironmentR90 = float3(1.0, 1.0, 1.0) * reflectance90;
 	
-        float3 n = _PSGetNormal(In, HasTangents, NormalScale, Normal, TextureCoordinates1.z, isFrontFace);
+        float3 normalSample = NormalTexture.Sample(NormalSampler, _PSUV(In.TexCoords, TextureCoordinates1.z)).rgb;
+        float3 n = _PSGetNormal(In, NormalScale, normalSample, isFrontFace, TextureCoordinates1.z != -1);
         float3 v = normalize(-In.RelPosition.xyz);
 
         float NdotV = abs(dot(n, v)) + 0.001;
@@ -1075,18 +975,18 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 
         if (ClearcoatFactor > 0)
         {
-            float clearcoatSample = _PSTex2D(Clearcoat, In.TexCoords, TextureCoordinates2.x).r;
-            clearcoatFactor *= clearcoatSample;
+            clearcoatFactor *= ClearcoatTexture.Sample(ClearcoatSampler, _PSUV(In.TexCoords, TextureCoordinates2.x)).r;
 
 	        // TODO: implement clearcoat texturepacking for being able to check whether these two textures are the same
-            float clearcoatRoughness = _PSTex2D(ClearcoatRoughness, In.TexCoords, TextureCoordinates2.y).g;
+            float clearcoatRoughness = ClearcoatRoughnessTexture.Sample(ClearcoatRoughnessSampler, _PSUV(In.TexCoords, TextureCoordinates2.y)).g;
             clearcoatRoughness = clamp(clearcoatRoughness * ClearcoatRoughnessFactor, 0.0, 1.0);
 
             float clearcoatAlphaRoughness = clearcoatRoughness * clearcoatRoughness;
             clearcoatRoughnessSq = clearcoatAlphaRoughness * clearcoatAlphaRoughness;
 
-		// TODO: implement clearcoat texturepacking for being able to check whether the clearcoat normal is the same as the base normal
-            clearcoatNormal = _PSGetNormal(In, HasTangents, ClearcoatNormalScale, ClearcoatNormal, TextureCoordinates2.z, isFrontFace);
+            // TODO: implement clearcoat texturepacking for being able to check whether the clearcoat normal is the same as the base normal
+            float3 clearcoatNormalSample = ClearcoatNormalTexture.Sample(ClearcoatNormalSampler, _PSUV(In.TexCoords, TextureCoordinates2.z)).rgb;
+            clearcoatNormal = _PSGetNormal(In, ClearcoatNormalScale, clearcoatNormalSample, isFrontFace, TextureCoordinates2.z != -1);
             clearcoatNdotV = abs(dot(clearcoatNormal, v)) + 0.001;
 
             float3 Fr = max((float3) (1.0 - clearcoatRoughness), f0) - f0;
@@ -1188,7 +1088,8 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         litColor += diffuseContrib + specContrib;
 
 	    // Emissive color:
-        float3 emissive = _PSSrgbToLinear(_PSTex2D(Emissive, In.TexCoords, TextureCoordinates1.w).rgb) * EmissiveFactor;
+        float3 emissive = EmissiveTexture.Sample(EmissiveSampler, _PSUV(In.TexCoords, TextureCoordinates1.w)).rgb;
+        emissive *= EmissiveFactor;
         litColor += emissive;
 
 #ifdef CLEARCOAT
@@ -1207,7 +1108,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, InGeneral), Overcast.x);
 	// And fogging is last.
 	_PSApplyFog(litColor, InGeneral);
-	//_PSApplyShadowColor(litColor, InGeneral); // a debug function only
+	//_PSApplyShadowColor(litColor, InGeneral); // This is a debug method
 	///////////////////////
 
 	// Transform back to sRGB:
@@ -1218,7 +1119,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 
 float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 {
-	float4 Color = tex2D(Image, In.TexCoords.xy);
+	float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
     // Alpha testing:
     clip(Color.a - ReferenceAlpha);
 	// Ambient effect applies first; no shadow effect for vegetation; night-time textures cancel out all normal lighting.
@@ -1238,7 +1139,7 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSTerrain(in VERTEX_OUTPUT In) : COLOR0
 {
-	float4 Color = tex2D(Image, In.TexCoords.xy);
+    float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
 	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(true, In) + ImageTextureIsNight));
 	// No specular effect for terrain.
@@ -1247,7 +1148,7 @@ float4 PSTerrain(in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= NightColorModifier;
 	// Overlay image for terrain.
-	litColor.rgb *= tex2D(Overlay, In.TexCoords.xy * OverlayScale).rgb * 2;
+	litColor.rgb *= OverlayTexture.Sample(OverlaySampler, In.TexCoords.xy * OverlayScale).rgb * 2;
 	// Headlights effect use original Color.
 	litColor += _PSApplyMstsLights(Color.rgb, In, _PSGetShadowEffect(true, In));
 	// And fogging is last.
@@ -1259,7 +1160,7 @@ float4 PSTerrain(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 {
-	float4 Color = tex2D(Image, In.TexCoords.xy);
+    float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
     // Alpha testing:
     clip(Color.a - ReferenceAlpha);
 	// Fixed ambient and shadow effects at darkest level.
@@ -1281,7 +1182,7 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 {
 	const float HalfShadowBrightness = 0.75;
 
-	float4 Color = tex2D(Image, In.TexCoords.xy);
+    float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
     // Alpha testing:
     clip(Color.a - ReferenceAlpha);
 	// Fixed ambient and shadow effects at mid-dark level.
@@ -1301,7 +1202,7 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 {
-	float4 Color = tex2D(Image, In.TexCoords.xy);
+    float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
     // Alpha testing:
     clip(Color.a - ReferenceAlpha);
 	// Fixed ambient and shadow effects at brightest level.
@@ -1319,7 +1220,7 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 {
-	float4 Color = tex2D(Image, In.TexCoords.xy);
+    float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
     // Alpha testing:
     clip(Color.a - ReferenceAlpha);
 	// No ambient and shadow effects for signal lights.

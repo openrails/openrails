@@ -25,45 +25,33 @@
 
 #define MAX_MORPH_TARGETS 8
 
-float4x4 WorldViewProjection;  // model -> world -> view -> projection
-float3   SideVector;
-float    ImageBlurStep;  // = 1 / shadow map texture width and height
-texture  ImageTexture;
-int      MorphConfig[9]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. 6: if the model has skin, set to 1. All: set to -1 if not available. 7: targets count. 8: attributes count.
-float    MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
+cbuffer PerFrame
+{
+    float4x4 View; // world -> view
+    float4x4 Projection; // view -> projection
+    float3 SideVector;
+};
 
-texture  BonesTexture;
-float    BonesCount;
+cbuffer PerObject
+{
+    float4x4 World; // model -> world [max number of bones]
+    float ImageBlurStep; // = 1 / shadow map texture width and height
+    int MorphConfig[8]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. All: set to -1 if not available. 6: targets count. 7: attributes count.
+    float MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
+    float BonesCount;
+};
+
+int    ShadowMapIndex;
+
+Texture2DArray ShadowMapArray;
+Texture2D ImageTexture;
+Texture2D BonesTexture;
+
+SamplerState ImageSampler;
+SamplerState ShadowMapSampler;
 
 static const float4x4 Identity = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 
-sampler ImageSampler = sampler_state
-{
-	Texture = (ImageTexture);
-	MagFilter = Linear;
-	MinFilter = Anisotropic;
-	MipFilter = Linear;
-	MaxAnisotropy = 16;
-};
-
-sampler ShadowMapSampler = sampler_state
-{
-	Texture = (ImageTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Point;
-};
-
-sampler BoneSampler = sampler_state
-{
-    Texture = (BonesTexture);
-    MagFilter = Point;
-    MinFilter = Point;
-    MipFilter = Point;
-    AddressU = Clamp;
-    AddressV = Clamp;
-    AddressW = Clamp;
-};
 
 ////////////////////    V E R T E X   I N P U T S    ///////////////////////////
 
@@ -152,7 +140,7 @@ VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 		In.Normal = mul(In.Normal, (float3x3)transpose(In.Instance));
 	}
 
-	Out.Position = mul(In.Position, WorldViewProjection);
+    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.TexCoord_Depth.xy = In.TexCoord;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
@@ -173,7 +161,7 @@ VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT_FOREST In)
 	In.Position = float4(newPosition, 1);
 
 	// Project vertex with fixed w=1 and normal=eye.
-	Out.Position = mul(In.Position, WorldViewProjection);
+    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.TexCoord_Depth.xy = In.TexCoord;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
@@ -186,7 +174,7 @@ VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT_BLUR In)
 	
 	float2 offsetTexCoord = In.TexCoord + float2(0.5, 0.5);
 
-	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Position = mul(In.Position, Identity);
 	Out.SampleCentre = offsetTexCoord * ImageBlurStep;
 	Out.Sample_01 = (offsetTexCoord - float2(1.5, 0)) * ImageBlurStep;
 	Out.Sample_23 = (offsetTexCoord + float2(1.5, 0)) * ImageBlurStep;
@@ -200,7 +188,7 @@ VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT_BLUR In)
 	
 	float2 offsetTexCoord = In.TexCoord + float2(0.5, 0.5);
 
-	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Position = mul(In.Position, Identity);
 	Out.SampleCentre = offsetTexCoord * ImageBlurStep;
 	Out.Sample_01 = (offsetTexCoord - float2(0, 1.5)) * ImageBlurStep;
 	Out.Sample_23 = (offsetTexCoord + float2(0, 1.5)) * ImageBlurStep;
@@ -216,21 +204,19 @@ VERTEX_OUTPUT VSShadowMapNormalMap(in VERTEX_INPUT_NORMALMAP In)
 		In.Position = mul(In.Position, transpose(In.Instance));
 	}
 
-	Out.Position = mul(In.Position, WorldViewProjection);
+    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.TexCoord_Depth.xy = In.TexCoord;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
 	return Out;
 }
 
-float4x4 GetBoneMatrix(min16uint index)
+float4x4 _VSBoneMatrix(min16uint index)
 {
-    float v = (index + 0.5) / BonesCount;
-
-    float4 row1 = tex2Dlod(BoneSampler, float4(0.125, v, 0, 0)); // 0.5 / 4
-    float4 row2 = tex2Dlod(BoneSampler, float4(0.375, v, 0, 0)); // 1.5 / 4
-    float4 row3 = tex2Dlod(BoneSampler, float4(0.625, v, 0, 0)); // 2.5 / 4
-    float4 row4 = tex2Dlod(BoneSampler, float4(0.875, v, 0, 0)); // 3.5 / 4
+    float4 row1 = BonesTexture.Load(int3(0, index, 0));
+    float4 row2 = BonesTexture.Load(int3(1, index, 0));
+    float4 row3 = BonesTexture.Load(int3(2, index, 0));
+    float4 row4 = BonesTexture.Load(int3(3, index, 0));
 
     return float4x4(row1, row2, row3, row4);
 }
@@ -239,10 +225,10 @@ float4x4 _VSSkinTransform(in min16uint4 Joints, in float4 Weights)
 {
     float4x4 skinTransform = 0;
 
-    skinTransform += GetBoneMatrix(Joints.x) * (float)Weights.x;
-    skinTransform += GetBoneMatrix(Joints.y) * (float)Weights.y;
-    skinTransform += GetBoneMatrix(Joints.z) * (float)Weights.z;
-    skinTransform += GetBoneMatrix(Joints.w) * (float)Weights.w;
+    skinTransform += _VSBoneMatrix(Joints.x) * (float) Weights.x;
+    skinTransform += _VSBoneMatrix(Joints.y) * (float) Weights.y;
+    skinTransform += _VSBoneMatrix(Joints.z) * (float) Weights.z;
+    skinTransform += _VSBoneMatrix(Joints.w) * (float) Weights.w;
 
     return skinTransform;
 }
@@ -259,7 +245,7 @@ VERTEX_OUTPUT VSShadowMapSkinned(in VERTEX_INPUT_SKINNED In)
 
 	In.Position = mul(In.Position, skinTransform);
 
-	Out.Position = mul(In.Position, WorldViewProjection);
+    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.TexCoord_Depth.xy = In.TexCoord;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
@@ -270,22 +256,22 @@ VERTEX_OUTPUT VSShadowMapMorphed(in VERTEX_INPUT_MORPHED In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
-    float4x4 skinTransform = MorphConfig[6] == 1 ? _VSSkinTransform(In.Joints, In.Weights) : Identity;
+    float4x4 skinTransform = BonesCount > 0 ? _VSSkinTransform(In.Joints, In.Weights) : Identity;
 
     Out.Position = In.Position;
     Out.TexCoord_Depth.xy = In.TexCoords;
     
     [unroll(MAX_MORPH_TARGETS)]
-    for (int i = 0; i < MorphConfig[7]; i++)
+    for (int i = 0; i < MorphConfig[6]; i++)
     {
         if (MorphConfig[0] != -1)
-            Out.Position.xyz += In.MorphTargets[MorphConfig[8] * i + MorphConfig[0]].xyz * MorphWeights[i];
+            Out.Position.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[0]].xyz * MorphWeights[i];
         if (MorphConfig[3] != -1)
-            Out.TexCoord_Depth.xy += In.MorphTargets[MorphConfig[8] * i + MorphConfig[3]].xy * MorphWeights[i];
+            Out.TexCoord_Depth.xy += In.MorphTargets[MorphConfig[7] * i + MorphConfig[3]].xy * MorphWeights[i];
     }
 
     Out.Position = mul(Out.Position, skinTransform);
-	Out.Position = mul(Out.Position, WorldViewProjection);
+    Out.Position = mul(mul(mul(Out.Position, World), View), Projection);
 	Out.TexCoord_Depth.z = Out.Position.z;
 
 	return Out;
@@ -293,9 +279,9 @@ VERTEX_OUTPUT VSShadowMapMorphed(in VERTEX_INPUT_MORPHED In)
 
 ////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
-float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR0
+float4 PSShadowMap(in VERTEX_OUTPUT In) : SV_Target
 {
-	float alpha = tex2D(ImageSampler, In.TexCoord_Depth.xy).a;
+	float alpha = ImageTexture.Sample(ImageSampler, In.TexCoord_Depth.xy).a;
 	
 	if(alpha < 0.25)
 		discard;
@@ -303,16 +289,20 @@ float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR0
 	return float4(In.TexCoord_Depth.z, In.TexCoord_Depth.z * In.TexCoord_Depth.z, 0, 0);
 }
 
-float4 PSShadowMapBlocker() : COLOR0
+float4 PSShadowMapBlocker() : SV_Target
 {
 	return 0;
 }
 
-float4 PSShadowMapBlur(in VERTEX_OUTPUT_BLUR In) : COLOR0
+float4 PSShadowMapBlur(in VERTEX_OUTPUT_BLUR In) : SV_Target
 {
-	float2 centreTap =	tex2D(ShadowMapSampler, In.SampleCentre).rg	* 0.4430448;
-	float2 tap01 =		tex2D(ShadowMapSampler, In.Sample_01).rg * 0.2784776;
-	float2 tap23 =		tex2D(ShadowMapSampler, In.Sample_23).rg * 0.2784776;
+    float3 uv_idx_c = float3(In.SampleCentre, ShadowMapIndex);
+    float3 uv_idx_0 = float3(In.Sample_01, ShadowMapIndex);
+    float3 uv_idx_2 = float3(In.Sample_23, ShadowMapIndex);
+
+    float2 centreTap = ShadowMapArray.Sample(ShadowMapSampler, uv_idx_c).rg * 0.4430448;
+    float2 tap01 = ShadowMapArray.Sample(ShadowMapSampler, uv_idx_0).rg * 0.2784776;
+    float2 tap23 = ShadowMapArray.Sample(ShadowMapSampler, uv_idx_2).rg * 0.2784776;
 		
 	return float4(tap01 + centreTap + tap23, 0, 0);
 }

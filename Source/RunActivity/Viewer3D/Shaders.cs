@@ -24,7 +24,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
-using Orts.Viewer3D.Processes;
+using System.Linq;
 
 namespace Orts.Viewer3D
 {
@@ -81,8 +81,8 @@ namespace Orts.Viewer3D
         readonly EffectParameter world;
         readonly EffectParameter view;
         readonly EffectParameter projection;
-        readonly EffectParameter[] lightViewProjectionShadowProjection;
-        readonly EffectParameter[] shadowMapTextures;
+        readonly EffectParameter shadowMatrices;
+        readonly EffectParameter shadowMapArray;
         readonly EffectParameter shadowMapLimit;
         readonly EffectParameter zBias_Lighting;
         readonly EffectParameter fog;
@@ -96,6 +96,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter signalLightIntensity;
         readonly EffectParameter eyeVector;
         readonly EffectParameter sideVector;
+        readonly EffectParameter lightDirection0;
 
         readonly EffectParameter imageTexture;
         readonly EffectParameter overlayTexture;
@@ -116,9 +117,14 @@ namespace Orts.Viewer3D
         readonly EffectParameter clearcoatRoughnessFactor;
         readonly EffectParameter clearcoatNormalTexture;
         readonly EffectParameter clearcoatNormalScale;
+        readonly EffectParameter specularTexture;
+        readonly EffectParameter specularFactor;
+        readonly EffectParameter specularColorTexture;
+        readonly EffectParameter iorFactor;
         readonly EffectParameter referenceAlpha;
         readonly EffectParameter textureCoordinates1;
         readonly EffectParameter textureCoordinates2;
+        readonly EffectParameter textureCoordinates3;
         readonly EffectParameter texturePacking;
         readonly EffectParameter hasNormals;
         readonly EffectParameter hasTangents;
@@ -159,35 +165,37 @@ namespace Orts.Viewer3D
             Clearcoat,
             ClearcoatRoughness,
             ClearcoatNormal,
+            Specular,
+            SpecularColor,
         }
 
-        public void SetViewMatrix(ref Matrix v)
+        public void SetMatrix(Matrix w)
         {
+            world.SetValue(w);
+        }
+
+        public void SetPerFrame(ref Matrix v, ref Matrix p)
+        {
+            view.SetValue(v);
+            projection.SetValue(p);
+
             _eyeVector = Vector3.Normalize(new Vector3(v.M13, v.M23, v.M33));
 
             eyeVector.SetValue(new Vector4(_eyeVector, Vector3.Dot(_eyeVector, _sunDirection) * 0.5f + 0.5f));
             sideVector.SetValue(Vector3.Normalize(Vector3.Cross(_eyeVector, Vector3.Down)));
-        }
-
-        public void SetMatrix(Matrix w, ref Matrix v, ref Matrix p)
-        {
-            world.SetValue(w);
-            view.SetValue(v);
-            projection.SetValue(p);
 
             int vIn = Program.Simulator.Settings.DayAmbientLight;
             
             float FullBrightness = (float)vIn / 20.0f ;
             //const float HalfShadowBrightness = 0.75;
             const float HalfNightBrightness = 0.6f;
-            const float ShadowBrightness = 0.5f;
+            //const float ShadowBrightness = 0.5f;
             const float NightBrightness = 0.2f;
 
             if (_imageTextureIsNight)
             {
                 nightColorModifier.SetValue(FullBrightness);
                 halfNightColorModifier.SetValue(FullBrightness);
-                vegetationAmbientModifier.SetValue(FullBrightness);
             }
             else
             {
@@ -200,17 +208,25 @@ namespace Orts.Viewer3D
 
                 nightColorModifier.SetValue(MathHelper.Lerp(NightBrightness, FullBrightness, nightEffect));
                 halfNightColorModifier.SetValue(MathHelper.Lerp(HalfNightBrightness, FullBrightness, nightEffect));
-                vegetationAmbientModifier.SetValue(MathHelper.Lerp(ShadowBrightness, FullBrightness, _zBias_Lighting.Y));
             }
         }
 
-        public void SetShadowMap(Matrix[] shadowProjections, Texture2D[] textures, float[] limits)
+        public void SetVegetationMaterial()
         {
-            for (var i = 0; i < RenderProcess.ShadowMapCount; i++)
-            {
-                lightViewProjectionShadowProjection[i].SetValue(shadowProjections[i]);
-                shadowMapTextures[i].SetValue(textures[i]);
-            }
+            int vIn = Program.Simulator.Settings.DayAmbientLight;
+
+            float FullBrightness = (float)vIn / 20.0f ;
+            const float ShadowBrightness = 0.5f;
+
+            vegetationAmbientModifier.SetValue(_imageTextureIsNight
+                ? FullBrightness
+                : MathHelper.Lerp(ShadowBrightness, FullBrightness, _zBias_Lighting.Y));
+        }
+
+        public void SetShadowMap(Matrix[] shadowProjections, Texture2D textures, float[] limits)
+        {
+            shadowMapArray.SetValue(textures);
+            shadowMatrices.SetValue(shadowProjections);
             shadowMapLimit.SetValue(new Vector4(limits[0], limits.Length > 1 ? limits[1] : 0, limits.Length > 2 ? limits[2] : 0, limits.Length > 3 ? limits[3] : 0));
         }
 
@@ -270,6 +286,10 @@ namespace Orts.Viewer3D
 
         public Texture2D ClearcoatNormalTexture { set { clearcoatNormalTexture.SetValue(value); } }
 
+        public Texture2D SpecularTexture { set { specularTexture.SetValue(value); } }
+
+        public Texture2D SpecularColorTexture { set { specularColorTexture.SetValue(value); } }
+
         public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
 
         public float OverlayScale { set { overlayScale.SetValue(value); } }
@@ -288,6 +308,10 @@ namespace Orts.Viewer3D
 
         public float ClearcoatNormalScale { set { clearcoatNormalScale.SetValue(value); } }
 
+        public Vector4 SpecularFactor { set { specularFactor.SetValue(value); } }
+
+        public float IorFactor { set { iorFactor.SetValue((float)Math.Pow((value - 1) / (value + 1), 2)); } }
+
 
         public Texture2D EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
 
@@ -298,6 +322,8 @@ namespace Orts.Viewer3D
         public Vector4 TextureCoordinates1 { set { textureCoordinates1.SetValue(value); } }
         
         public Vector4 TextureCoordinates2 { set { textureCoordinates2.SetValue(value); } }
+        
+        public Vector4 TextureCoordinates3 { set { textureCoordinates3.SetValue(value); } }
         
         public float TexturePacking { set { texturePacking.SetValue(value); } }
 
@@ -313,9 +339,9 @@ namespace Orts.Viewer3D
         
         public float[] MorphWeights { set { morphWeights.SetValue(value); } }
 
-        public int NumLights { set { numLights.SetValue(value); } }
+        public float NumLights { set { numLights.SetValue(value); } }
         public Vector3[] LightPositions { set { lightPositions.SetValue(value); } }
-        public Vector3[] LightDirections { set { lightDirections.SetValue(value); } }
+        public Vector3[] LightDirections { set { lightDirections.SetValue(value); lightDirection0.SetValue(value.FirstOrDefault()); } }
         public Vector3[] LightColorIntensities { set { lightColorIntensities.SetValue(value); } }
         public float[] LightRangesRcp { set { lightRangesRcp.SetValue(value); } }
         public float[] LightInnerConeCos { set { lightInnerConeCos.SetValue(value); } }
@@ -328,13 +354,8 @@ namespace Orts.Viewer3D
             world = Parameters["World"];
             view = Parameters["View"];
             projection = Parameters["Projection"];
-            lightViewProjectionShadowProjection = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
-            shadowMapTextures = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
-            for (var i = 0; i < RenderProcess.ShadowMapCountMaximum; i++)
-            {
-                lightViewProjectionShadowProjection[i] = Parameters["LightViewProjectionShadowProjection" + i];
-                shadowMapTextures[i] = Parameters["ShadowMapTexture" + i];
-            }
+            shadowMatrices = Parameters["ShadowMatrices"];
+            shadowMapArray = Parameters["ShadowMapArray"];
             shadowMapLimit = Parameters["ShadowMapLimit"];
             zBias_Lighting = Parameters["ZBias_Lighting"];
             fog = Parameters["Fog"];
@@ -348,6 +369,7 @@ namespace Orts.Viewer3D
             signalLightIntensity = Parameters["SignalLightIntensity"];
             eyeVector = Parameters["EyeVector"];
             sideVector = Parameters["SideVector"];
+            lightDirection0 = Parameters["LightDirection0"];
             imageTexture = Parameters["ImageTexture"];
             overlayTexture = Parameters["OverlayTexture"];
             emissiveTexture = Parameters["EmissiveTexture"];
@@ -366,8 +388,13 @@ namespace Orts.Viewer3D
             clearcoatFactor = Parameters["ClearcoatFactor"];
             clearcoatRoughnessFactor = Parameters["ClearcoatRoughnessFactor"];
             clearcoatNormalScale = Parameters["ClearcoatNormalScale"];
+            specularTexture = Parameters["SpecularTexture"];
+            specularFactor = Parameters["SpecularFactor"];
+            specularColorTexture = Parameters["SpecularColorTexture"];
+            iorFactor = Parameters["IorFactor"];
             textureCoordinates1 = Parameters["TextureCoordinates1"];
             textureCoordinates2 = Parameters["TextureCoordinates2"];
+            textureCoordinates3 = Parameters["TextureCoordinates3"];
             texturePacking = Parameters["TexturePacking"];
             hasNormals = Parameters["HasNormals"];
             hasTangents = Parameters["HasTangents"];
@@ -392,35 +419,38 @@ namespace Orts.Viewer3D
     [CallOnThread("Render")]
     public class ShadowMapShader : Shader
     {
-        readonly EffectParameter worldViewProjection;
+        readonly EffectParameter world;
+        readonly EffectParameter view;
+        readonly EffectParameter projection;
         readonly EffectParameter sideVector;
         readonly EffectParameter imageBlurStep;
         readonly EffectParameter imageTexture;
+        readonly EffectParameter shadowMapArray;
         readonly EffectParameter bonesTexture;
         readonly EffectParameter bonesCount;
         readonly EffectParameter morphConfig;
         readonly EffectParameter morphWeights;
+        readonly EffectParameter shadowMapIndex;
 
-        public void SetData(ref Matrix v)
+        public void SetPerShadowMap(ref Matrix v, ref Matrix p)
         {
             var eyeVector = Vector3.Normalize(new Vector3(v.M13, v.M23, v.M33));
             sideVector.SetValue(Vector3.Normalize(Vector3.Cross(eyeVector, Vector3.Down)));
-        }
 
-        public void SetData(ref Matrix wvp, Texture2D texture)
+            view.SetValue(v);
+            projection.SetValue(p);
+        }
+        
+        public void SetData(Matrix w, Texture2D texture)
         {
-            worldViewProjection.SetValue(wvp);
+            world.SetValue(w);
             imageTexture.SetValue(texture);
         }
 
-        public void SetBlurData(ref Matrix wvp)
+        public void SetBlurData(Texture2D texture, int index)
         {
-            worldViewProjection.SetValue(wvp);
-        }
-
-        public void SetBlurData(Texture2D texture)
-        {
-            imageTexture.SetValue(texture);
+            shadowMapIndex.SetValue(index);
+            shadowMapArray.SetValue(texture);
             imageBlurStep.SetValue(texture != null ? 1f / texture.Width : 0);
         }
 
@@ -432,14 +462,18 @@ namespace Orts.Viewer3D
         public ShadowMapShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "ShadowMap")
         {
-            worldViewProjection = Parameters["WorldViewProjection"];
+            world = Parameters["World"];
+            view = Parameters["View"];
+            projection = Parameters["Projection"];
             sideVector = Parameters["SideVector"];
             imageBlurStep = Parameters["ImageBlurStep"];
             imageTexture = Parameters["ImageTexture"];
+            shadowMapArray = Parameters["ShadowMapArray"];
             bonesTexture = Parameters["BonesTexture"];
             bonesCount = Parameters["BonesCount"];
             morphConfig = Parameters["MorphConfig"];
             morphWeights = Parameters["MorphWeights"];
+            shadowMapIndex = Parameters["ShadowMapIndex"];
         }
     }
 
