@@ -131,7 +131,11 @@ namespace Orts.Viewer3D
         internal static Texture2D GetInternalMissingTexture(GraphicsDevice graphicsDevice)
         {
             var texture = new Texture2D(graphicsDevice, 1, 1);
-            texture.SetData(new[] { Color.Magenta });
+#if DEBUG
+            texture.SetData(new[] { Color.Magenta});
+#else
+            texture.SetData(new[] { Color.Gray });
+#endif
             return texture;
         }
 
