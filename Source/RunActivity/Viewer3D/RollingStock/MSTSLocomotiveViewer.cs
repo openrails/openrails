@@ -395,6 +395,43 @@ namespace Orts.Viewer3D.RollingStock
             }
         }
 
+        /// <summary>
+        /// Checks this locomotive viewer for stale shapes and sets the stale data flag if any shapes are stale
+        /// </summary>
+        /// <returns>bool indicating if this viewer changed from fresh to stale</returns>
+        public override bool CheckStaleShapes()
+        {
+            if (!Car.StaleViewer)
+            {
+                // Locomotive may have a 3D cab, which could itself have a stale shape
+                if (!base.CheckStaleShapes() && ThreeDimentionCabViewer != null && ThreeDimentionCabViewer.CheckStale())
+                    Car.StaleViewer = true;
+
+                return Car.StaleViewer;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Checks this locomotive viewer for stale directly-referenced textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this viewer changed from fresh to stale</returns>
+        public override bool CheckStaleTextures()
+        {
+            if (!Car.StaleViewer)
+            {
+                // Locomotive viewer also handles cabviews,
+                // check if any cab view textures are stale now
+                if (!base.CheckStaleTextures() && _CabRenderer != null && _CabRenderer.CheckStale())
+                    Car.StaleViewer = true;
+
+                return Car.StaleViewer;
+            }
+            else
+                return false;
+        }
+
         internal override void Mark()
         {
             _CabRenderer?.Mark();
@@ -875,25 +912,33 @@ namespace Orts.Viewer3D.RollingStock
         /// <summary>
         /// Loads a texture, day night and cablight
         /// </summary>
-        /// <param name="viewer">Viver3D</param>
-        /// <param name="FileName">Name of the Texture</param>
-        public static bool LoadTextures(Viewer viewer, string FileName)
+        /// <param name="viewer">Viewer3D</param>
+        /// <param name="fileName">Name of the Texture</param>
+        /// <returns>bool indicating if this cabview has a cablight directory</returns>
+        public static bool LoadTextures(Viewer viewer, string fileName)
         {
-            if (string.IsNullOrEmpty(FileName))
+            if (string.IsNullOrEmpty(fileName))
                 return false;
 
-            if (DayTextures.Keys.Contains(FileName))
-                return false;
+            // Use resolved path, without any 'up one level' ("..\\") calls
+            fileName = Path.GetFullPath(fileName).ToLowerInvariant();
 
-            DayTextures.Add(FileName, viewer.TextureManager.Get(FileName, true));
+            bool stale = GetStale(fileName);
 
-            var nightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "night"), Path.GetFileName(FileName));
-            NightTextures.Add(FileName, viewer.TextureManager.Get(nightpath));
+            string nightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(fileName), "night"), Path.GetFileName(fileName));
 
-            var lightdirectory = Path.Combine(Path.GetDirectoryName(FileName), "cablight");
-            var lightpath = Path.Combine(lightdirectory, Path.GetFileName(FileName));
-            var lightTexture = viewer.TextureManager.Get(lightpath);
-            LightTextures.Add(FileName, lightTexture);
+            string lightdirectory = Path.Combine(Path.GetDirectoryName(fileName), "cablight");
+            string lightpath = Path.Combine(lightdirectory, Path.GetFileName(fileName));
+
+            // Get the texture if we don't have it yet, or if it's stale
+            if (!DayTextures.ContainsKey(fileName) || stale)
+            {
+                DayTextures[fileName] = viewer.TextureManager.Get(fileName, true);
+
+                NightTextures[fileName] = viewer.TextureManager.Get(nightpath);
+
+                LightTextures[fileName] = viewer.TextureManager.Get(lightpath);
+            }
             return Directory.Exists(lightdirectory);
         }
 
@@ -1134,6 +1179,20 @@ namespace Orts.Viewer3D.RollingStock
                 retval = DayTextures[FileName];
 
             return retval;
+        }
+
+        /// <summary>
+        /// Returns the StaleData flag for the given texture file, including night and cablight variants
+        /// (or false if this texture is not loaded)
+        /// </summary>
+        /// <returns>bool indicating if the given texture is marked as stale</returns>
+        public static bool GetStale(string texPath)
+        {
+            bool stale = (DayTextures.ContainsKey(texPath) && (DayTextures[texPath].Tag is TextureTag tag) && tag.StaleData) ||
+                (NightTextures.ContainsKey(texPath) && (NightTextures[texPath].Tag is TextureTag nightTag) && nightTag.StaleData) ||
+                (LightTextures.ContainsKey(texPath) && (LightTextures[texPath].Tag is TextureTag lightTag) && lightTag.StaleData);
+
+            return stale;
         }
 
         [CallOnThread("Loader")]
@@ -1464,7 +1523,7 @@ namespace Orts.Viewer3D.RollingStock
         }
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (!_Locomotive.ShowCab)
+            if (!_Locomotive.ShowCab || _Locomotive.StaleCab || _Locomotive.StaleViewer)
                 return;
 
             bool Dark = _Viewer.MaterialManager.sunDirection.Y <= -0.085f || _Viewer.Camera.IsUnderground;
@@ -1565,6 +1624,57 @@ namespace Orts.Viewer3D.RollingStock
                 drawLetterbox(0, _Viewer.CabYLetterboxPixels + _Viewer.CabHeightPixels, _Viewer.DisplaySize.X, _Viewer.DisplaySize.Y - _Viewer.CabHeightPixels - _Viewer.CabYLetterboxPixels);
             }
             //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
+        }
+
+        /// <summary>
+        /// Checks this cabview for stale textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this cab changed from fresh to stale</returns>
+        public bool CheckStale()
+        {
+            if (!_Locomotive.StaleViewer)
+            {
+                bool stale = false;
+
+                foreach (CabView cabView in _Locomotive.CabViewList)
+                {
+                    if (cabView.CVFFile != null)
+                    {
+                        foreach (string cabImage in cabView.CVFFile.TwoDViews)
+                        {
+                            if (CABTextureManager.GetStale(cabImage))
+                            {
+                                stale = true;
+                                return stale;
+                            }
+                        }
+                    }
+                }
+
+                foreach (List<CabViewControlRenderer> controlRenderers in CabViewControlRenderersList)
+                {
+                    foreach (CabViewControlRenderer controlRenderer in controlRenderers)
+                    {
+                        if (!String.IsNullOrEmpty(controlRenderer.Control.ACEFile) && CABTextureManager.GetStale(controlRenderer.Control.ACEFile))
+                        {
+                            stale = true;
+                            return stale;
+                        }
+                        else if (controlRenderer.Control is CVCFirebox fireboxControl)
+                        {
+                            if (!String.IsNullOrEmpty(fireboxControl.FireACEFile) && CABTextureManager.GetStale(fireboxControl.FireACEFile))
+                            {
+                                stale = true;
+                                return stale;
+                            }
+                        }
+                    }
+                }
+
+                return stale;
+            }
+            else
+                return false;
         }
 
         internal void Mark()
@@ -3728,6 +3838,20 @@ namespace Orts.Viewer3D.RollingStock
                 Locomotive.WindowStates[windowIndex] = MSTSWagon.WindowState.Open;
             if (Locomotive.UsingRearCab ^ windowIndex < 2)
                 Locomotive.SoundHeardInternallyCorrection[windowIndex > 1 ? windowIndex - 2 : windowIndex] = animationFraction;
+        }
+
+        /// <summary>
+        /// Checks this 3D cab viewer for a stale shape and reports if the shape is stale
+        /// </summary>
+        /// <returns>bool indicating if this 3D cab changed from fresh to stale</returns>
+        public bool CheckStale()
+        {
+            bool found = false;
+
+            if (!Locomotive.StaleViewer)
+                found |= TrainCarShape.SharedShape.StaleData;
+
+            return found;
         }
 
         internal override void Mark()

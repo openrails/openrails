@@ -562,9 +562,36 @@ namespace Orts.Simulation.RollingStocks
         {
             base.LoadFromWagFile(wagFilePath);
 
+            LoadCabViews(wagFilePath);
+
+            DrvWheelWeightKg = InitialDrvWheelWeightKg;
+
+            // If DrvWheelWeight is not in ENG file, then set drivewheel weight the same as locomotive mass
+
+            if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
+            {
+                DrvWheelWeightKg = MassKG; // set Drive wheel weight to total wagon mass if not in ENG file
+                InitialDrvWheelWeightKg = MassKG; // // set Initial Drive wheel weight as well, as it is used as a reference
+            }
+
+            CorrectBrakingParams();
+            CheckCoherence();
+            GetPressureUnit();
+            IsDriveable = true;
+
+            MoveParamsToAxle();
+        }
+
+        protected void LoadCabViews(string wagFilePath)
+        {
             // Assumes that CabViewList[0] is the front cab
             // and that CabViewList[1] is the rear cab, if present.
             // Could be extended to more than 2 cabs.
+
+            // Remove any existing cab views that might be present (if hot reloading)
+            CabViewList.Clear();
+            CabView3D = null;
+
             if (CVFFileName != null)
             {
                 var cabView = BuildCabView(WagFilePath, CVFFileName);
@@ -595,28 +622,15 @@ namespace Orts.Simulation.RollingStocks
                         CabViewList.Add(CabViewList[0]);
                         CabViewList[0].CabViewType = CabViewType.Void;
                     }
+                    else if (CabViewList.Count == 1)
+                        UsingRearCab = false;
                 }
                 CabView3D = BuildCab3DView();
                 if (CabViewList.Count == 0 & CabView3D == null)
                     Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
             }
 
-            DrvWheelWeightKg = InitialDrvWheelWeightKg;
-
-            // If DrvWheelWeight is not in ENG file, then set drivewheel weight the same as locomotive mass
-
-            if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
-            {
-                DrvWheelWeightKg = MassKG; // set Drive wheel weight to total wagon mass if not in ENG file
-                InitialDrvWheelWeightKg = MassKG; // // set Initial Drive wheel weight as well, as it is used as a reference
-            }
-
-            CorrectBrakingParams();
-            CheckCoherence();
-            GetPressureUnit();
-            IsDriveable = true;
-
-            MoveParamsToAxle();
+            StaleCab = false;
         }
 
         protected void CheckCoherence()
@@ -630,7 +644,7 @@ namespace Orts.Simulation.RollingStocks
             DPThrottleController = (MSTSNotchController)ThrottleController.Clone();
 
             // need to test for Dynamic brake problem on 3DTS and SLI
-            if (DynamicBrakeController.IsValid())
+            if (DynamicBrakeController != null && DynamicBrakeController.IsValid())
             {
                 if (DynamicBrakeController.NotchCount() <= 3)
                 {
@@ -826,7 +840,7 @@ namespace Orts.Simulation.RollingStocks
             if (!File.Exists(cvfFilePath))
                 return null;
 
-            var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath);
+            var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath, Simulator.Settings.EnableHotReloading);
             var viewPoint = new ViewPoint();
             if (cvfFile.Locations.Count <= 0) return null; //check for Protrain's dummy cab
             // Set up camera locations for the cab views
@@ -909,7 +923,7 @@ namespace Orts.Simulation.RollingStocks
                         return null;
                 }
             }
-            var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath);
+            var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath, Simulator.Settings.EnableHotReloading);
             if (!(this is MSTSSteamLocomotive))
                 InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
 
@@ -1002,8 +1016,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdynamicbrakepowerrampdownrate": DynamicBrakePowerRampDownWpS = stf.ReadFloatBlock(STFReader.UNITS.PowerRate, null); break;
                 case "engine(ortsdynamicbrakepowerrampdowntozerorate": DynamicBrakePowerRampDownToZeroWpS = stf.ReadFloatBlock(STFReader.UNITS.PowerRate, null); break;
 
-                case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
-                case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
+                case "engine(enginecontrollers(throttle": ThrottleController.Parse(stf); break;
+                case "engine(enginecontrollers(regulator": ThrottleController.Parse(stf); break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
                 case "engine(ortslocomotivedrivewheelonlybraking":
                     var wheelbraking = stf.ReadIntBlock(null);
@@ -1588,18 +1602,30 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// Called just after the InitializeFromWagFile
         /// </summary>
-        public override void Initialize()
+        public override void Initialize(bool reinitialize = false)
         {
+            if (reinitialize && Train != null)
+            {
+                ThrottleController?.SetValue(Train.MUThrottlePercent / 100);
+                DynamicBrakeController?.SetValue(Train.MUDynamicBrakePercent / 100);
+            }
+            else
+            {
+                ThrottleController?.SetValue(ThrottleController.InitialValue);
+                DynamicBrakeController?.SetValue(DynamicBrakeController.InitialValue);
+            }
 
-            TrainBrakeController.Initialize();
+            SteamHeatController?.SetValue(SteamHeatController.InitialValue);
+
+            TrainBrakeController.Initialize(reinitialize);
             if (!TrainBrakeController.IsValid())
             {
                 TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
-                TrainBrakeController.Initialize();
+                TrainBrakeController.Initialize(reinitialize);
             }
             if (EngineBrakeController != null)
             {
-                EngineBrakeController.Initialize();
+                EngineBrakeController.Initialize(reinitialize);
                 if (!EngineBrakeController.IsValid() && !SteamEngineBrakeFitted)
                 {
                     EngineBrakeController = null;
@@ -1608,7 +1634,7 @@ namespace Orts.Simulation.RollingStocks
             }
             if (BrakemanBrakeController != null)
             {
-                BrakemanBrakeController.Initialize();
+                BrakemanBrakeController.Initialize(reinitialize);
                 if (!BrakemanBrakeController.IsValid())
                 {
                     BrakemanBrakeController = null;
@@ -1958,7 +1984,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            base.Initialize();
+            base.Initialize(reinitialize);
             if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;
 
 
@@ -2127,6 +2153,14 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            if (StaleCab) // Something about the cab view data is out of date
+            {
+                // Force reload the cab view data without reloading anything else
+                LoadCabViews(WagFilePath);
+
+                // Force reload the viewer so that changes in cab view are shown
+                StaleViewer = true;
+            }
 
             var gearloco = this as MSTSDieselLocomotive;
 
