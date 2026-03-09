@@ -165,7 +165,8 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques["Transfer"];
+            if (shader.CurrentTechniqueName != "Transfer")
+                shader.CurrentTechnique = shader.Techniques[shader.CurrentTechniqueName = "Transfer"];
             if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
             shader.ImageTexture = Texture;
             shader.ReferenceAlpha = 10;
