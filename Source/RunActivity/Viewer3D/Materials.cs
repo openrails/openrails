@@ -309,8 +309,8 @@ namespace Orts.Viewer3D
             PrecipitationShader = new PrecipitationShader(viewer.RenderProcess.GraphicsDevice);
             SceneryShader = new SceneryShader(viewer.RenderProcess.GraphicsDevice);
             var microtexPath = viewer.Simulator.RoutePath + @"\TERRTEX\microtex";
-                try
-                {
+            try
+            {
                 if (File.Exists(microtexPath + ".dds"))
                 {
                     DDSLib.DDSFromFile(microtexPath + ".dds", viewer.GraphicsDevice, true, out Texture2D microtex);
@@ -320,15 +320,15 @@ namespace Orts.Viewer3D
                 {
                     SceneryShader.OverlayTexture = Formats.Msts.AceFile.Texture2DFromFile(viewer.GraphicsDevice, microtexPath + ".ace");
                 }
-                }
-                catch (InvalidDataException error)
-                {
-                    Trace.TraceWarning("Skipped texture with error: {1} in {0}", microtexPath, error.Message);
-                }
-                catch (Exception error)
-                {
-                    Trace.WriteLine(new FileLoadException(microtexPath, error));
-                }
+            }
+            catch (InvalidDataException error)
+            {
+                Trace.TraceWarning("Skipped texture with error: {1} in {0}", microtexPath, error.Message);
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(new FileLoadException(microtexPath, error));
+            }
             ShadowMapShader = new ShadowMapShader(viewer.RenderProcess.GraphicsDevice);
             SkyShader = new SkyShader(viewer.RenderProcess.GraphicsDevice);
             DebugShader = new DebugShader(viewer.RenderProcess.GraphicsDevice);
