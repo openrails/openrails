@@ -43,12 +43,13 @@ cbuffer PerObject
 
 int    ShadowMapIndex;
 
-Texture2DArray ShadowMapArray;
 Texture2D ImageTexture;
-Texture2D BonesTexture;
-
 SamplerState ImageSampler;
+
+Texture2DArray ShadowMapArray;
 SamplerState ShadowMapSampler;
+
+Texture2D BonesTexture;
 
 static const float4x4 Identity = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 

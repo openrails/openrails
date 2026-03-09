@@ -500,7 +500,6 @@ namespace Orts.Viewer3D
         readonly Texture2D PatchTexture;
         readonly Texture2D PatchTextureOverlay;
         readonly float OverlayScale;
-        IEnumerator<EffectPass> ShaderPasses;
         static readonly SamplerState OverlaySamplerState = new SamplerState
         {
             AddressU = TextureAddressMode.Wrap,
@@ -524,31 +523,31 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques["Terrain"];
-            if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
+            if (shader.CurrentTechniqueName != "Terrain")
+                shader.CurrentTechnique = shader.Techniques[shader.CurrentTechniqueName = "Terrain"];
             shader.ImageTexture = PatchTexture;
             shader.OverlayTexture = PatchTextureOverlay;
             shader.OverlayScale = OverlayScale;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            // ShaderPasses.Current.Apply() would overwrite the SamplerStates. but by removing the fix states from there,
+            // leaving only the declaration in the shader, the sampler states can be set here instead.
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearWrap;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Overlay] = OverlaySamplerState;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-
-            ShaderPasses.Reset();
-            while (ShaderPasses.MoveNext())
+            var passes = shader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
                     shader.SetMatrix(item.XNAMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
-                    ShaderPasses.Current.Apply();
-                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
-                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearWrap;
-                    graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Overlay] = OverlaySamplerState;
+                    passes[i].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }

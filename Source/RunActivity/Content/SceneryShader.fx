@@ -924,7 +924,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
             occlusion = OcclusionTexture.Sample(OcclusionSampler, _PSUV(In.TexCoords, TextureCoordinates2.w)).r;
         }
 
-        float perceptualRoughness = clamp(roughness * OcclusionFactor.y, MinRoughness, 1.0);
+        float perceptualRoughness = clamp(roughness * OcclusionFactor.y, MinRoughness, 0.99); // at =1 tha calculation becomes wrong, see MetalRoughSpheres
         float alphaRoughness = perceptualRoughness * perceptualRoughness;
         float roughnessSq = alphaRoughness * alphaRoughness;
 	
