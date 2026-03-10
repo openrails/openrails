@@ -313,7 +313,7 @@ namespace Orts.Viewer3D
             {
                 if (File.Exists(microtexPath + ".dds"))
                 {
-                    DDSLib.DDSFromFile(microtexPath + ".dds", viewer.GraphicsDevice, true, out Texture2D microtex);
+                    DDSLib.DDSFromFile(microtexPath + ".dds", viewer.GraphicsDevice, true, out Texture2D microtex, false);
                     SceneryShader.OverlayTexture = microtex;
                 }
                 else if (File.Exists(microtexPath + ".ace"))
