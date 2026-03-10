@@ -6969,7 +6969,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                             float LPslipCylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * SteamEngines[numberofengine].LPCylindersDiameterM * SteamEngines[numberofengine].LPCylindersDiameterM / 4.0f);
 
-                            pistonForceLbf = Me2.ToIn2(Me2.FromFt2(slipCylinderPistonAreaFt2 + LPslipCylinderPistonAreaFt2)) * crankCylinderPressure;
+                            // Token fix - needs to be reworked as part of valve and indicator drawing rework
+                            pistonForceLbf = Me2.ToIn2(Me2.FromFt2(slipCylinderPistonAreaFt2)) * SteamEngines[numberofengine].LPCylinderMEPPSI + Me2.ToIn2(Me2.FromFt2(LPslipCylinderPistonAreaFt2)) * SteamEngines[numberofengine].HPCylinderMEPPSI;
+
+                            //    pistonForceLbf = Me2.ToIn2(Me2.FromFt2(slipCylinderPistonAreaFt2 + LPslipCylinderPistonAreaFt2)) * crankCylinderPressure;
                         }
                         else if (CylinderCompoundOn && SteamEngineType == SteamEngineTypes.Compound)
                         {
