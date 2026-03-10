@@ -444,6 +444,28 @@ iv) In the WAG file (for wagons only) add the entry ``BrakingCogWheelFitted`` to
 
 This configuration should eliminate all wheel slip and skids when the train is on a rack section of track.
 
+.. _physics-riggenbach_counter_pressure_brake:
+
+Riggenbach Counter Pressure Brake
+---------------------------------
+
+To assist in braking some steam locomotives were fitted with Counter Pressure Braking system. Either steam or air could be used. A series of 
+valves were fitted around the steam cylinder which allowed the cylinder to be reconfigured as a either and air compressor or to reverse the 
+steam operation. This created a retarding force which could be used to brake the locomotive.
+
+To set this feature up the following parametrs need to be add:
+
+``ORTSCounterPressureBraking`` - is added to the engine section of the ENG file, and set to true if a Riggenbach brake has been fitted to the locomotive. 
+This will apply for all steam locomotives with only one steam engine.
+
+``CounterPressureBraking`` - for locomotives with multiple steam engines on the same locomotive (such as a rack locomotive) then this value is set to true 
+within the steam engine block that provides the counter pressure braking.
+
+Two steam effects are provided to model the exhaust steam from the counter pressure braking. These effects can be enabled by adding ``CounterPressureBrake1FX``
+ and  ``CounterPressureBrake2FX`` to the locomotive steam effects.
+
+Steam effects can be added to the locomotive by using sound trigger 323 to turn the sounds ON, and 324 to turn the sounds OFF.
+
 Engine -- Classes of Motive Power
 =================================
 

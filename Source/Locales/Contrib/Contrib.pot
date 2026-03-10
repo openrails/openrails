@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-01-25 11:57:31+0000\n"
-"PO-Revision-Date: 2025-01-25 11:57:33+0000\n"
+"POT-Creation-Date: 2026-02-14 15:54:30+0000\n"
+"PO-Revision-Date: 2026-02-14 15:54:31+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -59,6 +59,11 @@ msgstr ""
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:110
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:48
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:42
+#: ../../Contrib/TimetableEditor/ViewModel/InputBox.xaml:27
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:55
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:58
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:51
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:244
 #: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:13
 msgid "OK"
 msgstr ""
@@ -127,6 +132,7 @@ msgstr ""
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:295
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:82
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:76
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:89
 msgid "Remove"
 msgstr ""
 
@@ -200,10 +206,12 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:118
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:63
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:16
 msgid "File"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:127
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:32
 msgid "New"
 msgstr ""
 
@@ -219,6 +227,8 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:153
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:70
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:36
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:44
 msgid "Save"
 msgstr ""
 
@@ -619,6 +629,12 @@ msgid "&Next >"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:210
+#: ../../Contrib/TimetableEditor/ViewModel/InputBox.xaml:28
+#: ../../Contrib/TimetableEditor/Views/OpenSaveView.xaml:30
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:56
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:57
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:52
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:245
 #: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:12
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
 msgid "Cancel"
@@ -634,6 +650,10 @@ msgstr ""
 
 #: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:116
 msgid "Open Rails Content Manager"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/ViewModel/StationParamsViewModel.cs:132
+msgid "Please enter the new Command"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:629
@@ -842,7 +862,7 @@ msgstr ""
 msgid "Loading road track database .rdb ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:366
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:352
 msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr ""
 
@@ -1308,6 +1328,394 @@ msgstr ""
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:692
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:179
 msgid "Documentation"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:9
+msgid "Open Rails Timetable Editor"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:17
+msgid "New Timetable"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:19
+msgid "Open Timetable"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:20
+msgid "Save Timetable"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:22
+msgid "Open Timetable List"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:23
+msgid "Save To List"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:25
+msgid "Close Timetable"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:27
+msgid "Zip Timetable"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:29
+msgid "Close"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:31
+msgid "Pools"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:33
+msgid "Create Pool-File"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:34
+msgid "Create Turntable Pool-File"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/MainWindow.xaml:37
+msgid "Open"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/ViewModel/InputBox.xaml:8
+msgid "InputBox"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/ViewModel/InputBox.xaml:23
+msgid "Has Value"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:10
+msgid "DisposeView"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:31
+msgid "Dispose action:"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:32
+msgid "$forms"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:33
+msgid "$triggers"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:34
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:160
+msgid "$static"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:35
+msgid "$stable"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:36
+msgid "$pool"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:37
+msgid "$attach"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:40
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:35
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:163
+msgid "Command:"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:42
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:37
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:165
+msgid "Add Command"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:45
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:38
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:168
+msgid "Remove Command"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:52
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:175
+msgid "Command"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:53
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:176
+msgid "Command-Value"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:62
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:51
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:185
+msgid "{Binding Value}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:64
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:97
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:187
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:220
+msgid "Set"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:69
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:85
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:192
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:208
+msgid "Parameter"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:86
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:209
+msgid "Parameter-Value"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:95
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:218
+msgid "{Binding ParameterValue}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:106
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:229
+msgid "Add Parameter"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/DisposeView.xaml:109
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:232
+msgid "Remove Parameter"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/OpenSaveView.xaml:9
+msgid "OpenSaveView"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/OpenSaveView.xaml:26
+msgid "Filename: "
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/OpenSaveView.xaml:27
+msgid "{Binding Filename, UpdateSourceTrigger=PropertyChanged}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/OpenSaveView.xaml:29
+msgid "{Binding OKButtonText}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:9
+msgid "PoolView"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:24
+msgid "Add Pool"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:27
+#: ../../Contrib/TimetableEditor/Views/Table.xaml:19
+msgid "Add Row"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:30
+msgid "Insert Row"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:33
+msgid "Delete Row"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:42
+msgid "Qalifier"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:43
+msgid "Value"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:49
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:48
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:132
+msgid "Filename"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/PoolView.xaml:50
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:49
+msgid "Pathname"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:10
+msgid "StationParametersView"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:30
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:49
+msgid "{Binding Name}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:37
+msgid "Cmd+"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:38
+msgid "Cmd-"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationParametersView.xaml:50
+msgid "="
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:9
+msgid "StationsView"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:25
+msgid "Stationfiles"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:26
+msgid "Stations"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:30
+msgid "Choose a stationfile or create a new one"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:31
+msgid "create New"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:41
+msgid "Filename "
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:42
+msgid "{Binding TTFileName, UpdateSourceTrigger=PropertyChanged}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:47
+msgid "Timetable name "
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/StationsView.xaml:48
+msgid "{Binding TTName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/Table.xaml:37
+msgid "{Binding CurrentColumnIndexText}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/Table.xaml:38
+msgid "{Binding CurrentRowIndex}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:10
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:79
+msgid "Consist"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:41
+msgid "Paths (Double-Click to choose Path)"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:42
+msgid "normal paths"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:43
+msgid "siding paths"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:44
+msgid "s"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:68
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:107
+msgid "Name"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:69
+msgid "{Binding TrainName}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:70
+msgid "Comment"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:71
+msgid "{Binding Comment}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:73
+msgid "Path"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:76
+msgid "{Binding ChosenTrainPath, Mode=TwoWay}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:82
+msgid "multi"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:86
+msgid "Move up"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:92
+msgid "Move Down"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:100
+msgid "reverse"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:125
+msgid "Consists (Double Click to choose)"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:126
+msgid "Engines (+Wagons)"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:127
+msgid "Wagons only"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:128
+msgid "+"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:133
+msgid "Consistname"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:149
+msgid "Start"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:157
+msgid "Modus:"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:158
+msgid "Time"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/TrainView.xaml:159
+msgid "{Binding StartTime}"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/waiting.xaml:8
+msgid "waiting"
+msgstr ""
+
+#: ../../Contrib/TimetableEditor/Views/waiting.xaml:10
+msgid "Loading... please wait"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:4

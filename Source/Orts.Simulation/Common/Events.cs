@@ -16,6 +16,8 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 
+using System;
+
 namespace Orts.Common
 {
     public interface EventHandler
@@ -236,6 +238,9 @@ namespace Orts.Common
         BoosterCylinderCocksClose,
         SecondEnginePowerOff,
         SecondEnginePowerOn,
+
+        CounterPressureBrakeOn,
+        CounterPressureBrakeOff,
 
         HotBoxBearingOn,
         HotBoxBearingOff,
@@ -584,6 +589,9 @@ namespace Orts.Common
 
                         case 321: return Event.BoosterCylinderCocksOpen;
                         case 322: return Event.BoosterCylinderCocksClose;
+
+                        case 323: return Event.CounterPressureBrakeOn;
+                        case 324: return Event.CounterPressureBrakeOff;
 
                         // AI train related events
                         case 330: return Event.AITrainLeadLoco;

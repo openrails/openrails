@@ -321,6 +321,21 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float DisplayTractiveForceN;
 
         /// <summary>
+        /// Steam Engine counter pressure barking force
+        /// </summary>
+        public float CylinderCounterPressureBrakeForceN;
+
+        /// <summary>
+        /// Steam Engine counter pressure barking force
+        /// </summary>
+        public bool CounterPressureBrakingFitted;
+
+        /// <summary>
+        /// Steam Engine counter pressure MEP
+        /// </summary>
+        public float CounterPressureMEP;
+        
+        /// <summary>
         /// Steam Engine maximum indicated horsepower
         /// </summary>
         public float MaxIndicatedHorsePowerHP;
@@ -695,6 +710,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "boosterthrottlecutoff": BoosterThrottleCutoff = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.BoosterThrottleCutoffF; break;
                     case "boostergearratio": BoosterGearRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.BoosterGearRatioF; break;
                     case "attachedaxle": AttachedAxleId = stf.ReadIntBlock(null); initLevel |= SettingsFlags.AttachedAxleIdF; break;
+                    case "counterpressurebraking":
+                        CounterPressureBrakingFitted = stf.ReadBoolBlock(false);
+                        break;
                     case "maxindicatedhorsepower":
                         MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
                         MaxIndicatedHorsePowerHP = W.ToHp(MaxIndicatedHorsePowerHP);  // Convert input to HP for use internally in this module
@@ -732,6 +750,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             LPCylindersStrokeM = other.LPCylindersStrokeM;
             LPCylindersDiameterM = other.LPCylindersDiameterM;
             BoosterCutoff = other.BoosterCutoff;
+            AuxiliarySteamEngineType = other.AuxiliarySteamEngineType;
+            CounterPressureBrakingFitted = other.CounterPressureBrakingFitted;
             MaxIndicatedHorsePowerHP = other.MaxIndicatedHorsePowerHP;
             ExcessRodBalanceLbs = other.ExcessRodBalanceLbs;
             BoosterThrottleCutoff = other.BoosterThrottleCutoff;
@@ -751,7 +771,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     Trace.TraceInformation("Auxiliary Steam Engine Type: not found in Steam Engine Configuration: set to default value = {0}", AuxiliarySteamEngineType);
 
             }
-
 
         }
 
