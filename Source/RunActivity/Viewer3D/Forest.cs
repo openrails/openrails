@@ -419,10 +419,12 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques["Forest"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques["Forest"].Passes.GetEnumerator();
+            if (shader.CurrentTechniqueName != "Forest")
+                shader.CurrentTechnique = shader.Techniques[shader.CurrentTechniqueName = "Forest"];
+            if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
             shader.ImageTexture = TreeTexture;
             shader.ReferenceAlpha = 200;
+            shader.SetVegetationMaterial();
 
             // Enable alpha blending for everything: this allows distance scenery to appear smoothly.
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
@@ -432,13 +434,12 @@ namespace Orts.Viewer3D
         {
             var shader = Viewer.MaterialManager.SceneryShader;
 
-            shader.SetViewMatrix(ref XNAViewMatrix);
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.SetMatrix(item.XNAMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
 

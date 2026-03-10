@@ -636,7 +636,7 @@ namespace ORTS.TrackViewer.Drawing
                 try
                 {
                     if (Path.GetExtension(path) == ".dds")
-                        DDSLib.DDSFromFile(path, device, true, out originalTexture);
+                        DDSLib.DDSFromFile(path, device, true, out originalTexture, false);
                     else if (Path.GetExtension(path) == ".ace")
                         originalTexture = AceFile.Texture2DFromFile(device, path);
                     else

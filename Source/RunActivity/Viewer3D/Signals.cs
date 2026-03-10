@@ -708,7 +708,8 @@ namespace Orts.Viewer3D
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            SceneryShader.CurrentTechnique = Viewer.MaterialManager.SceneryShader.Techniques["SignalLight"];
+            if (SceneryShader.CurrentTechniqueName != "SignalLight")
+                SceneryShader.CurrentTechnique = SceneryShader.Techniques[SceneryShader.CurrentTechniqueName = "SignalLight"];
             SceneryShader.ImageTexture = Texture;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
@@ -721,7 +722,7 @@ namespace Orts.Viewer3D
                 foreach (var item in renderItems)
                 {
                     SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    SceneryShader.SetMatrix(item.XNAMatrix);
                     pass.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
@@ -756,7 +757,8 @@ namespace Orts.Viewer3D
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            SceneryShader.CurrentTechnique = Viewer.MaterialManager.SceneryShader.Techniques["SignalLightGlow"];
+            if (SceneryShader.CurrentTechniqueName != "SignalLightGlow")
+                SceneryShader.CurrentTechnique = SceneryShader.Techniques[SceneryShader.CurrentTechniqueName = "SignalLightGlow"];
             SceneryShader.ImageTexture = Texture;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
@@ -779,7 +781,7 @@ namespace Orts.Viewer3D
                     var slp = item.RenderPrimitive as SignalLightPrimitive;
                     SceneryShader.ZBias = MathHelper.Lerp(slp.GlowIntensityDay, slp.GlowIntensityNight, NightEffect);
                     SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    SceneryShader.SetMatrix(item.XNAMatrix);
                     pass.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }

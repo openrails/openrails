@@ -1,4 +1,4 @@
-// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -165,8 +165,8 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            var level9_3 = Viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3);
-            shader.CurrentTechnique = shader.Techniques[level9_3 ? "TransferLevel9_3" : "TransferLevel9_1"];
+            if (shader.CurrentTechniqueName != "Transfer")
+                shader.CurrentTechnique = shader.Techniques[shader.CurrentTechniqueName = "Transfer"];
             if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
             shader.ImageTexture = Texture;
             shader.ReferenceAlpha = 10;
@@ -179,13 +179,12 @@ namespace Orts.Viewer3D
         {
             var shader = Viewer.MaterialManager.SceneryShader;
 
-            shader.SetViewMatrix(ref XNAViewMatrix);
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.SetMatrix(item.XNAMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
