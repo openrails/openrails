@@ -1719,18 +1719,19 @@ namespace Orts.Viewer3D.Popups
 
     public class HUDGraphMaterial : Material
     {
-        IEnumerator<EffectPass> ShaderPassesGraph;
+        EffectTechnique Technique;
 
         public HUDGraphMaterial(Viewer viewer)
             : base(viewer, null)
         {
+            Technique = Viewer.MaterialManager.DebugShader.Techniques["Graph"];
+            SetSortingEffectId(Technique);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.DebugShader;
-            shader.CurrentTechnique = shader.Techniques["Graph"];
-            if (ShaderPassesGraph == null) ShaderPassesGraph = shader.Techniques["Graph"].Passes.GetEnumerator();
+            shader.CurrentTechnique = Technique;
             shader.ScreenSize = new Vector2(Viewer.DisplaySize.X, Viewer.DisplaySize.Y);
 
             graphicsDevice.RasterizerState = RasterizerState.CullNone;
@@ -1741,8 +1742,8 @@ namespace Orts.Viewer3D.Popups
         {
             var shader = Viewer.MaterialManager.DebugShader;
 
-            ShaderPassesGraph.Reset();
-            while (ShaderPassesGraph.MoveNext())
+            var passes = shader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
@@ -1751,7 +1752,7 @@ namespace Orts.Viewer3D.Popups
                     {
                         shader.GraphPos = graphMesh.GraphPos;
                         shader.GraphSample = graphMesh.Sample;
-                        ShaderPassesGraph.Current.Apply();
+                        passes[i].Apply();
                     }
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }

@@ -1032,12 +1032,24 @@ namespace Orts.Viewer3D
     public class LightGlowMaterial : Material
     {
         readonly Texture2D LightGlowTexture;
+        readonly EffectTechnique Technique;
+        public static readonly SamplerState LightGlowSamplerState = new SamplerState
+        {
+            Filter = TextureFilter.Linear,
+            AddressU = TextureAddressMode.Clamp,
+            AddressV = TextureAddressMode.Wrap,
+        };
 
         public LightGlowMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
             // TODO: This should happen on the loader thread.
             LightGlowTexture = textureName.StartsWith(Viewer.ContentPath, StringComparison.OrdinalIgnoreCase) ? SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, textureName) : Viewer.TextureManager.Get(textureName);
+
+            Technique = Viewer.MaterialManager.LightGlowShader.Techniques["LightGlow"];
+
+            SetSortingEffectId(Technique);
+            SetSortingTextureId(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1048,6 +1060,8 @@ namespace Orts.Viewer3D
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.SamplerStates[0] = LightGlowSamplerState;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1089,19 +1103,29 @@ namespace Orts.Viewer3D
 
     public class LightConeMaterial : Material
     {
+        readonly EffectTechnique Technique;
+        
+        public static readonly DepthStencilState DepthReadWithStencil = new DepthStencilState
+        {
+            DepthBufferEnable = true,
+            DepthBufferWriteEnable = false,
+            StencilEnable = true,
+        };
+        
         public LightConeMaterial(Viewer viewer)
             : base(viewer, null)
         {
+            Technique = Viewer.MaterialManager.LightConeShader.Techniques["LightCone"];
+            SetSortingEffectId(Technique);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.LightConeShader;
-            shader.CurrentTechnique = shader.Techniques["LightCone"];
+            shader.CurrentTechnique = Technique;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
-            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
-            graphicsDevice.DepthStencilState.StencilEnable = true;
+            graphicsDevice.DepthStencilState = DepthReadWithStencil;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)

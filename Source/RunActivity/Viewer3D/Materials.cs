@@ -104,13 +104,13 @@ namespace Orts.Viewer3D
                             if (File.Exists(dds))
                             {
                                 DDSLib.DDSFromFile(dds, GraphicsDevice, true, out Texture2D texture, srgb);
-                                if (Debugger.IsAttached) texture.Name = path;
+                                texture.Name = path;
                                 return Textures[textureKey] = texture;
                             }
                             if (File.Exists(ace))
                             {
                                 var texture = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, ace);
-                                if (Debugger.IsAttached) texture.Name = path;
+                                texture.Name = path;
                                 return Textures[textureKey] = texture;
                             }
                             // When a texture is not found, and it is in a selector directory (e.g. "Snow"), we
@@ -135,7 +135,7 @@ namespace Orts.Viewer3D
                         var texture = srgb
                             ? GetSrgbTexture(GraphicsDevice, stream)
                             : Texture2D.FromStream(GraphicsDevice, stream);
-                        if (Debugger.IsAttached) texture.Name = path;
+                        texture.Name = path;
                         //return Textures[textureKey] = texture; // FIXME: loads a wrong texture for some glTF files.
                         return texture;
                     }
@@ -447,6 +447,7 @@ namespace Orts.Viewer3D
             Texture2D specularTexture, float specularFactor,
             Texture2D specularColorTexture, Vector3 specularColorFactor, float ior,
             float referenceAlpha, bool doubleSided,
+            Vector4 texCoords1, Vector4 texCoords2, Vector4 texCoords3,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateNormal,
@@ -477,6 +478,7 @@ namespace Orts.Viewer3D
                             specularTexture, specularFactor,
                             specularColorTexture, specularColorFactor, ior,
                             referenceAlpha, doubleSided,
+                            texCoords1, texCoords2, texCoords3,
                             samplerStateBaseColor,
                             samplerStateMetallicRoughness,
                             samplerStateNormal,
@@ -636,10 +638,12 @@ namespace Orts.Viewer3D
         public readonly Viewer Viewer;
         public readonly string Key;
 
+
         protected Material(Viewer viewer, string key)
         {
             Viewer = viewer;
             Key = key;
+            SetSortingMaterialId(this);
         }
 
         public override string ToString()
@@ -668,6 +672,66 @@ namespace Orts.Viewer3D
         {
             Viewer.MaterialManager.Mark(this);
         }
+
+        /// <summary>
+        /// [63 - 56] Shader/Effect ID (8 bit = 256 states)
+        /// [55 - 52] RasterizerState ID Culling or Wireframe (4 bit = 16 states)
+        /// [51 - 48] BlendState ID (4 bit = 16 states)
+        /// [47 - 40] DepthStencilState ID (8 bit = 256 states)
+        /// [39 - 32] SamplerState ID (8 bit)
+        /// [31 - 16] Texture ID (16 bit)
+        /// [15 - 00] Material ID (16 bit)
+        /// </summary>
+        public ulong SortingKey { get; private set; }
+
+        protected void SetSortingEffectId(EffectTechnique technique)
+        {
+            var id = RenderSortHelper.GetEffectId(technique);
+            SortingKey &= ~(0xFFUL << 56);
+            SortingKey |= ((ulong)id << 56);
+        }
+
+        protected void SetSortingRasterizerStateId(RasterizerState state)
+        {
+            var id = RenderSortHelper.GetRasterizerId(state);
+            SortingKey &= ~(0xFUL << 52);
+            SortingKey |= ((ulong)(id & 0xF) << 52);
+        }
+
+        protected void SetSortingBlendStateId(BlendState state)
+        {
+            var id = RenderSortHelper.GetBlendId(state);
+            SortingKey &= ~(0xFUL << 48);
+            SortingKey |= ((ulong)(id & 0xF) << 48);
+        }
+
+        protected void SetSortingDepthStencilStateId(DepthStencilState state)
+        {
+            var id = RenderSortHelper.GetDepthStencilId(state);
+            SortingKey &= ~(0xFFUL << 40);
+            SortingKey |= ((ulong)(id & 0xFF) << 40);
+        }
+
+        protected void SetSortingSamplerStateId(SamplerState state)
+        {
+            var id = RenderSortHelper.GetSamplerId(state);
+            SortingKey &= ~(0xFFUL << 32);
+            SortingKey |= ((ulong)(id & 0xFF) << 32);
+        }
+
+        protected void SetSortingTextureId(string texture)
+        {
+            var id = RenderSortHelper.GetTextureId(texture);
+            SortingKey &= ~(0xFFFFUL << 16);
+            SortingKey |= ((ulong)(id & 0xFFFF) << 16);
+        }
+
+        protected void SetSortingMaterialId(Material material)
+        {
+            var id = RenderSortHelper.GetMaterialId(material);
+            SortingKey &= ~0xFFFFUL;
+            SortingKey |= (ulong)id & 0xFFFF;
+        }
     }
 
     public class EmptyMaterial : Material
@@ -683,6 +747,8 @@ namespace Orts.Viewer3D
         public BasicMaterial(Viewer viewer, string key)
             : base(viewer, key)
         {
+            SetSortingTextureId("Basic");
+            SetSortingBlendStateId(BlendState.Opaque);
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -697,6 +763,8 @@ namespace Orts.Viewer3D
         public BasicBlendedMaterial(Viewer viewer, string key)
             : base(viewer, key)
         {
+            SetSortingTextureId("BasicBlended");
+            SetSortingBlendStateId(BlendState.NonPremultiplied);
         }
 
         public override bool GetBlending()
@@ -717,12 +785,15 @@ namespace Orts.Viewer3D
         {
             SpriteBatch = new SpriteBatch(Viewer.RenderProcess.GraphicsDevice);
             Effect = effect;
+            SetSortingEffectId(Effect?.CurrentTechnique);
+            SetSortingBlendStateId(BlendState);
         }
 
         public SpriteBatchMaterial(Viewer viewer, BlendState blendState, Effect effect = null)
             : this(viewer, effect: effect)
         {
             BlendState = blendState;
+            SetSortingBlendStateId(BlendState);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -793,6 +864,8 @@ namespace Orts.Viewer3D
         private readonly string TexturePath;
         protected Texture2D NightTexture;
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
+        readonly float LightingSpecular;
+        protected float LightingDiffuse;
 
         protected RasterizerState RasterizerState;
         protected BlendState BlendState;
@@ -800,17 +873,20 @@ namespace Orts.Viewer3D
         protected DepthStencilState DepthStencilStateTransparentPass;
         protected SamplerState SamplerStateBaseColor;
 
+        protected EffectTechnique Technique;
+        EffectTechnique VegetationTechnique;
+
         public static readonly DepthStencilState DepthReadCompareLess = new DepthStencilState
         {
             DepthBufferWriteEnable = false,
             DepthBufferFunction = CompareFunction.Less,
         };
         private static readonly Dictionary<TextureAddressMode, Dictionary<float, SamplerState>> SamplerStates = new Dictionary<TextureAddressMode, Dictionary<float, SamplerState>>();
-        protected int DefaultAlphaCutOff = 200; // This value is used for .s, but is overridden for glTF/PBR with its own value.
+        protected int DefaultAlphaCutOff;
         protected readonly int ReferenceAlphaTransparentPass = 10; // ie default lightcone's are 9 in full transparent areas
 
 
-        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
+        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias, int alphaCutOff)
             : base(viewer, String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
         {
             Options = options;
@@ -818,6 +894,13 @@ namespace Orts.Viewer3D
             TexturePath = texturePath;
             Texture = SharedMaterialManager.MissingTexture;
             NightTexture = SharedMaterialManager.MissingTexture;
+            DefaultAlphaCutOff = alphaCutOff;
+            SetupStates(DefaultAlphaCutOff);
+        }
+
+        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
+            : this(viewer, texturePath, options, mipMapBias, 200)
+        {
             // <CSComment> if "trainset" is in the path (true for night textures for 3DCabs) deferred load of night textures is disabled 
             if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && ((!viewer.IsDaytime && !viewer.IsNighttime)
                 || TexturePath.Contains(@"\trainset\")))
@@ -832,7 +915,6 @@ namespace Orts.Viewer3D
                 viewer.NightTexturesNotLoaded = true;
                 Texture = Viewer.TextureManager.Get(texturePath, true);
             }
-
             else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.IsNighttime)
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
@@ -845,6 +927,16 @@ namespace Orts.Viewer3D
             }
             else Texture = Viewer.TextureManager.Get(texturePath, true);
 
+            switch (Options & SceneryMaterialOptions.SpecularMask)
+            {
+                case SceneryMaterialOptions.Specular0: LightingSpecular = 0; break;
+                case SceneryMaterialOptions.Specular25: LightingSpecular = 25; break;
+                case SceneryMaterialOptions.Specular750: LightingSpecular = 750; break;
+                default: throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.SpecularMask value.");
+            }
+
+            LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
+
             // Record the number of bits in the alpha channel of the original ace file
             var texture = SharedMaterialManager.MissingTexture;
             if (Texture != SharedMaterialManager.MissingTexture && Texture != null) texture = Texture;
@@ -854,9 +946,24 @@ namespace Orts.Viewer3D
             else
                 AceAlphaBits = 0;
 
-            SetupStates(DefaultAlphaCutOff);
             RasterizerState = RasterizerState.CullCounterClockwise;
             SamplerStateBaseColor = GetSamplerStateBaseColor();
+
+            var shader = Viewer.MaterialManager.SceneryShader;
+
+            switch (Options & SceneryMaterialOptions.ShaderMask)
+            {
+                case SceneryMaterialOptions.ShaderImage: Technique = shader.Techniques["Image"]; break;
+                case SceneryMaterialOptions.ShaderDarkShade: Technique = shader.Techniques["DarkShade"]; break;
+                case SceneryMaterialOptions.ShaderHalfBright: Technique = shader.Techniques["HalfBright"]; break;
+                case SceneryMaterialOptions.ShaderFullBright: Technique = shader.Techniques["FullBright"]; break;
+                case SceneryMaterialOptions.ShaderVegetation | SceneryMaterialOptions.ShaderFullBright:
+                case SceneryMaterialOptions.ShaderVegetation: Technique = VegetationTechnique = shader.Techniques["Vegetation"]; break;
+                default:
+                    break;
+            }
+
+            SetupSorting();
         }
 
         protected void SetupStates(int alphaMask)
@@ -883,6 +990,16 @@ namespace Orts.Viewer3D
                 DepthStencilStateOpaquePass = DepthStencilStateTransparentPass = DepthStencilState.Default;
                 DefaultAlphaCutOff = (Options & SceneryMaterialOptions.AlphaTest) != 0 ? alphaMask : -1;
             }
+        }
+
+        protected void SetupSorting()
+        {
+            SetSortingEffectId(Technique);
+            SetSortingBlendStateId(BlendState);
+            SetSortingDepthStencilStateId(DepthStencilStateOpaquePass);
+            SetSortingRasterizerStateId(RasterizerState);
+            SetSortingSamplerStateId(SamplerStateBaseColor);
+            SetSortingTextureId(Texture.Name);
         }
 
         public bool LoadNightTexture()
@@ -917,70 +1034,25 @@ namespace Orts.Viewer3D
         {
             var shader = Viewer.MaterialManager.SceneryShader;
 
-            // Setting the CurrentTechnique is expensive because it flushes the state cache, so avoid it if possible.
-            string demandedTechniqueName = null;
-            switch (Options & SceneryMaterialOptions.ShaderMask)
-            {
-                case SceneryMaterialOptions.ShaderImage: demandedTechniqueName = "Image"; break;
-                case SceneryMaterialOptions.ShaderDarkShade: demandedTechniqueName = "DarkShade"; break;
-                case SceneryMaterialOptions.ShaderHalfBright: demandedTechniqueName = "HalfBright"; break;
-                case SceneryMaterialOptions.ShaderFullBright: demandedTechniqueName = "FullBright"; break;
-                case SceneryMaterialOptions.ShaderVegetation | SceneryMaterialOptions.ShaderFullBright:
-                case SceneryMaterialOptions.ShaderVegetation: demandedTechniqueName = "Vegetation"; break;
-                default:
-                    break;
-            }
-            if (demandedTechniqueName != null && shader.CurrentTechniqueName != demandedTechniqueName)
-                shader.CurrentTechnique = shader.Techniques[shader.CurrentTechniqueName = demandedTechniqueName];
+            shader.CurrentTechnique = Technique;
 
-            if (shader.CurrentTechniqueName == "Vegetation")
+            if (shader.CurrentTechnique == VegetationTechnique)
                 shader.SetVegetationMaterial();
 
-            switch (Options & SceneryMaterialOptions.SpecularMask)
-            {
-                case SceneryMaterialOptions.Specular0:
-                    shader.LightingSpecular = 0;
-                    break;
-                case SceneryMaterialOptions.Specular25:
-                    shader.LightingSpecular = 25;
-                    break;
-                case SceneryMaterialOptions.Specular750:
-                    shader.LightingSpecular = 750;
-                    break;
-                default:
-                    throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.SpecularMask value.");
-            }
+            shader.ImageTextureIsNight = NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && IsNightTimeOrUnderground();
+            shader.ImageTexture = shader.ImageTextureIsNight ? NightTexture : Texture;
+            shader.LightingSpecular = LightingSpecular;
+            shader.LightingDiffuse = LightingDiffuse;
 
-            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && IsNightTimeOrUnderground())
-            {
-                shader.ImageTexture = NightTexture;
-                shader.ImageTextureIsNight = true;
-            }
-            else
-            {
-                shader.ImageTexture = Texture;
-                shader.ImageTextureIsNight = false;
-            }
+            var transparentPass = previousMaterial != null;
 
-            shader.LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
-
+            shader.ReferenceAlpha = !transparentPass ? DefaultAlphaCutOff : ReferenceAlphaTransparentPass;
+            graphicsDevice.DepthStencilState = !transparentPass ? DepthStencilStateOpaquePass : DepthStencilStateTransparentPass;
             graphicsDevice.RasterizerState = RasterizerState;
             graphicsDevice.BlendState = BlendState;
-
-            if (previousMaterial == null)
-            {
-                graphicsDevice.DepthStencilState = DepthStencilStateOpaquePass;
-                shader.ReferenceAlpha = DefaultAlphaCutOff;
-            }
-            else
-            {
-                graphicsDevice.DepthStencilState = DepthStencilStateTransparentPass;
-                shader.ReferenceAlpha = ReferenceAlphaTransparentPass;
-            }
-
-            // ShaderPasses.Current.Apply() would overwrite the SamplerStates. but by removing the fix states from there,
-            // leaving only the declaration in the shader, the sampler states can be set here instead.
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerStateBaseColor;
+            // ShaderPasses.Current.Apply() would overwrite the SamplerStates, but by removing the fix states and
+            // leaving only the declaration in the shader, the sampler states can be set here instead.
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1097,6 +1169,10 @@ namespace Orts.Viewer3D
         protected readonly Texture2D SpecularTexture;
         protected readonly Texture2D SpecularColorTexture;
 
+        protected readonly Vector4 TexCoords1;
+        protected readonly Vector4 TexCoords2;
+        protected readonly Vector4 TexCoords3;
+
         // Animatable attributes
         protected Vector4 BaseColorFactor;
         protected float MetallicFactor;
@@ -1153,6 +1229,7 @@ namespace Orts.Viewer3D
             Texture2D specularTexture, float specularFactor,
             Texture2D specularColorTexture, Vector3 specularColorFactor, float ior,
             float referenceAlpha, bool doubleSided,
+            Vector4 texCoords1, Vector4 texCoords2, Vector4 texCoords3,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateNormal,
@@ -1163,7 +1240,7 @@ namespace Orts.Viewer3D
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecular,
             (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecularColor)
-            : base(viewer, null, options, mipMapBias)
+            : base(viewer, null, options, mipMapBias, (int)(referenceAlpha * 255f))
         {
             Texture = baseColorTexture;
             BaseColorFactor = baseColorFactor;
@@ -1187,9 +1264,11 @@ namespace Orts.Viewer3D
             SpecularColorTexture = specularColorTexture;
             SpecularColorFactor = specularColorFactor;
             Ior = ior;
-            DefaultAlphaCutOff = (int)(referenceAlpha * 255f);
+            TexCoords1 = texCoords1;
+            TexCoords2 = texCoords2;
+            TexCoords3 = texCoords3;
 
-            SetupStates(DefaultAlphaCutOff);
+            LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
 
             RasterizerState = doubleSided ? RasterizerState.CullNone :
                 ((Options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
@@ -1206,6 +1285,19 @@ namespace Orts.Viewer3D
             if (!GltfSamplerStates.TryGetValue(samplerStateClearcoatNormal, out SamplerStateClearcoatNormal)) GltfSamplerStates.Add(samplerStateClearcoatNormal, SamplerStateClearcoatNormal = GetNewSamplerState(samplerStateClearcoatNormal));
             if (!GltfSamplerStates.TryGetValue(samplerStateSpecular, out SamplerStateSpecular)) GltfSamplerStates.Add(samplerStateSpecular, SamplerStateSpecular = GetNewSamplerState(samplerStateSpecular));
             if (!GltfSamplerStates.TryGetValue(samplerStateSpecularColor, out SamplerStateSpecularColor)) GltfSamplerStates.Add(samplerStateSpecularColor, SamplerStateSpecularColor = GetNewSamplerState(samplerStateSpecularColor));
+
+            var shader = Viewer.MaterialManager.SceneryShader;
+
+            if ((Options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
+                Technique = shader.Techniques["PbrMorphed"];
+            else if ((Options & SceneryMaterialOptions.PbrHasSkin) != 0)
+                Technique = shader.Techniques["PbrSkinned"];
+            else if ((Options & SceneryMaterialOptions.PbrHasTexCoord1) != 0)
+                Technique = shader.Techniques["PbrNormalMap"];
+            else
+                Technique = shader.Techniques["PbrBaseColorMap"];
+
+            SetupSorting();
         }
 
         public override bool GetBlending() => (Options & SceneryMaterialOptions.AlphaBlendingBlend) != 0;
@@ -1214,20 +1306,7 @@ namespace Orts.Viewer3D
         {
             var shader = Viewer.MaterialManager.SceneryShader;
 
-            // Setting the CurrentTechnique is expensive because it flushes the state cache, so avoid it if possible.
-            string demandedTechniqueName = null;
-            if ((Options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
-                demandedTechniqueName = "PbrMorphed";
-            else if ((Options & SceneryMaterialOptions.PbrHasSkin) != 0)
-                demandedTechniqueName = "PbrSkinned";
-            else if ((Options & SceneryMaterialOptions.PbrHasTexCoord1) != 0)
-                demandedTechniqueName = "PbrNormalMap";
-            else
-                demandedTechniqueName = "PbrBaseColorMap";
-
-            if (demandedTechniqueName != null && shader.CurrentTechniqueName != demandedTechniqueName)
-                shader.CurrentTechnique = shader.Techniques[shader.CurrentTechniqueName = demandedTechniqueName];
-
+            shader.CurrentTechnique = Technique;;
             shader.ImageTexture = Texture;
             shader.BaseColorFactor = BaseColorFactor;
             shader.NormalTexture = NormalTexture;
@@ -1255,24 +1334,20 @@ namespace Orts.Viewer3D
                 shader.SpecularColorTexture = SpecularColorTexture;
             }
             shader.IorFactor = Ior;
+            shader.TextureCoordinates1 = TexCoords1;
+            shader.TextureCoordinates2 = TexCoords2;
+            shader.TextureCoordinates3 = TexCoords3;
 
-            shader.LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
+            shader.LightingDiffuse = LightingDiffuse;
 
+            var transparentPass = previousMaterial != null;
+
+            shader.ReferenceAlpha = !transparentPass ? DefaultAlphaCutOff : ReferenceAlphaTransparentPass;
+            graphicsDevice.DepthStencilState = !transparentPass ? DepthStencilStateOpaquePass : DepthStencilStateTransparentPass;
             graphicsDevice.RasterizerState = RasterizerState;
             graphicsDevice.BlendState = BlendState;
 
-            if (previousMaterial == null)
-            {
-                graphicsDevice.DepthStencilState = DepthStencilStateOpaquePass;
-                shader.ReferenceAlpha = DefaultAlphaCutOff;
-            }
-            else
-            {
-                graphicsDevice.DepthStencilState = DepthStencilStateTransparentPass;
-                shader.ReferenceAlpha = ReferenceAlphaTransparentPass;
-            }
-
-            // ShaderPasses.Current.Apply() would overwrite the SamplerStates. but by removing the fix states from there,
+            // ShaderPasses.Current.Apply() would overwrite the SamplerStates, but by removing the fix states and
             // leaving only the declaration in the shader, the sampler states can be set here instead.
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerStateBaseColor;
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.MetallicRoughness] = SamplerStateMetallicRoughness;
@@ -1320,14 +1395,9 @@ namespace Orts.Viewer3D
 
                     if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)
                     {
-                        shader.TextureCoordinates1 = gltfPrimitive.TexCoords1;
-                        shader.TextureCoordinates2 = gltfPrimitive.TexCoords2;
-                        shader.TextureCoordinates3 = gltfPrimitive.TexCoords3;
-                        shader.TexturePacking = gltfPrimitive.TexturePacking;
-
                         gltfPrimitive.BonesTexture?.SetData(MemoryMarshal.Cast<Matrix, Vector4>(gltfPrimitive.RenderBonesRendered).ToArray());
                         shader.BonesTexture = gltfPrimitive.BonesTexture;
-                        shader.BonesCount = gltfPrimitive.BonesTexture == null ? 0 : gltfPrimitive.Joints.Length;
+                        shader.HasSkin = gltfPrimitive.BonesTexture != null;
 
                         if (gltfPrimitive.HasMorphTargets())
                             (shader.MorphConfig, shader.MorphWeights) = gltfPrimitive.GetMorphingData();
@@ -1390,11 +1460,13 @@ namespace Orts.Viewer3D
                 mode == Mode.PbrMorphed ? "ShadowMapMorphed" :
                 "ShadowMap"];
 
-            // ShaderPasses.Current.Apply() would overwrite the SamplerStates. but by removing the fix states from there,
+            // ShaderPasses.Current.Apply() would overwrite the SamplerStates. but by removing the fix states and
             // leaving only the declaration in the shader, the sampler states can be set here instead.
             graphicsDevice.SamplerStates[0] = GetShadowTextureAddressMode();
             graphicsDevice.SamplerStates[1] = ShadowMapSamplerState;
             graphicsDevice.RasterizerState = mode == Mode.Blocker ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.BlendState = BlendState.Opaque;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1412,7 +1484,7 @@ namespace Orts.Viewer3D
                         if (gltfPrimitive.BonesTexture != null)
                         {
                             shader.BonesTexture = gltfPrimitive.BonesTexture;
-                            shader.BonesCount = gltfPrimitive.Joints.Length;
+                            shader.HasSkin = gltfPrimitive.BonesTexture != null;
                         }
 
                         if (gltfPrimitive.HasMorphTargets())
@@ -1464,6 +1536,7 @@ namespace Orts.Viewer3D
         public PopupWindowMaterial(Viewer viewer)
             : base(viewer, null)
         {
+            SetSortingEffectId(Viewer.MaterialManager.PopupWindowShader.Techniques["PopupWindow"]);
         }
 
         public void SetState(GraphicsDevice graphicsDevice, Texture2D screen)
@@ -1518,6 +1591,7 @@ namespace Orts.Viewer3D
             : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0)
         {
             HierarchyIndex = hierarchyIndex;
+            SetSortingTextureId("Screen");
         }
 
         public void Set2DRenderer(RollingStock.CabViewControlRenderer cabViewControlRenderer)
@@ -1573,6 +1647,8 @@ namespace Orts.Viewer3D
 
                 basicEffect.LightingEnabled = true;
             }
+
+            SetSortingEffectId(basicEffect.CurrentTechnique);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1625,6 +1701,8 @@ namespace Orts.Viewer3D
 
                 basicEffect.LightingEnabled = true;
             }
+
+            SetSortingEffectId(basicEffect.CurrentTechnique);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1664,6 +1742,8 @@ namespace Orts.Viewer3D
             Texture.SetData(new[] { Color.White });
             Font = Viewer.WindowManager.TextManager.GetScaled("Arial", 12, System.Drawing.FontStyle.Bold, 1);
             BigFont = Viewer.WindowManager.TextManager.GetScaled("Arial", 24, System.Drawing.FontStyle.Bold, 2);
+            
+            SetSortingTextureId("White");
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1708,6 +1788,7 @@ namespace Orts.Viewer3D
         public DebugNormalMaterial(Viewer viewer)
             : base(viewer, null)
         {
+            SetSortingEffectId(Viewer.MaterialManager.DebugShader.Techniques["Normal"]);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

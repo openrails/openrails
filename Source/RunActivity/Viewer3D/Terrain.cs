@@ -497,6 +497,7 @@ namespace Orts.Viewer3D
 
     public class TerrainMaterial : Material
     {
+        EffectTechnique Technique;
         readonly Texture2D PatchTexture;
         readonly Texture2D PatchTextureOverlay;
         readonly float OverlayScale;
@@ -516,23 +517,26 @@ namespace Orts.Viewer3D
             PatchTexture = Viewer.TextureManager.Get(textures[0], defaultTexture);
             PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
             var converted = textures.Length > 2 && float.TryParse(textures[2], out OverlayScale);
-            OverlayScale = OverlayScale != 0 && converted ?  OverlayScale : 32; 
+            OverlayScale = OverlayScale != 0 && converted ?  OverlayScale : 32;
+            Technique = Viewer.MaterialManager.SceneryShader.Techniques["Terrain"];
 
+            SetSortingEffectId(Technique);
+            SetSortingBlendStateId(BlendState.NonPremultiplied);
+            SetSortingRasterizerStateId(RasterizerState.CullCounterClockwise);
+            SetSortingTextureId(textures[0]);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            if (shader.CurrentTechniqueName != "Terrain")
-                shader.CurrentTechnique = shader.Techniques[shader.CurrentTechniqueName = "Terrain"];
+            shader.CurrentTechnique = Technique;
             shader.ImageTexture = PatchTexture;
             shader.OverlayTexture = PatchTextureOverlay;
             shader.OverlayScale = OverlayScale;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            // ShaderPasses.Current.Apply() would overwrite the SamplerStates. but by removing the fix states from there,
-            // leaving only the declaration in the shader, the sampler states can be set here instead.
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearWrap;
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Overlay] = OverlaySamplerState;
         }
@@ -585,6 +589,9 @@ namespace Orts.Viewer3D
         public TerrainSharedDistantMountain(Viewer viewer, string terrainTexture)
             : base(viewer, terrainTexture, Helpers.IsSnow(viewer.Simulator) ? SharedMaterialManager.DefaultDMSnowTexture : SharedMaterialManager.MissingTexture)
         {
+            SetSortingBlendStateId(BlendState.Opaque);
+            SetSortingRasterizerStateId(RasterizerState.CullNone);
+            SetSortingTextureId(terrainTexture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

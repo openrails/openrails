@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// This file is the responsibility of the 3D & Environment Team. 
-
 ////////////////////////////////////////////////////////////////////////////////
 //                 S C E N E R Y   O B J E C T   S H A D E R                  //
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,36 +60,38 @@ cbuffer PerMaterial
     float3 OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
     float NormalScale;
     float3 EmissiveFactor; // glTF linear emissive multiplier
+    bool HasNormals;
     float ClearcoatFactor;
     float ClearcoatRoughnessFactor;
     float ClearcoatNormalScale;
-    bool HasNormals; // 0: no, 1: yes
     bool HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
     float4 SpecularFactor; // xyz: color, w: factor
+    float4 TextureCoordinates1; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
+    float4 TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
+    float4 TextureCoordinates3; // x: specular, y: specular-color, z: transmission (not implemented), w: texture-packing 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic, 4: roughnessMetallicOcclusion + normal (RG) 2 channel separate, 5: occlusionRoughnessMetallic + normal (RG) 2 channel separate
+    float2 LightingSpecular; // x = specular, y = step(1, x)
+    float LightingDiffuse; // diffuse, not-unlit
     float IorFactor; // ((ior - 1) / (ior + 1))^2 precalculated
-//};
-
-// VS and PS
-//cbuffer PerObject
-//{
-    float4x4 World; // model -> world [max number of bones]
-    float4 ZBias_Lighting; // x = z-bias, y = diffuse (not unlit), z = specular, w = step(1, z) // zBias is PerDraw, Lighting could be PerMaterial
-    int MorphConfig[8]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. All: set to -1 if not available. 6: targets count. 7: attributes count.
-    float MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
-    float4   TextureCoordinates1; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
-    float4   TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
-    float4   TextureCoordinates3; // x: specular, y: specular-color, zw: unused
-    float TexturePacking; // 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic, 4: roughnessMetallicOcclusion + normal (RG) 2 channel separate, 5: occlusionRoughnessMetallic + normal (RG) 2 channel separate
-    float SignalLightIntensity;
-    float BonesCount;
 };
 
+// VS only (except SignalLightIntensity, but at signals there is no PerMaterial buffer at all)
+cbuffer PerObject
+{
+    float4x4 World; // model -> world [max number of bones]
+    int MorphConfig[8]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. All: set to -1 if not available. 6: targets count. 7: attributes count.
+    float MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
+    bool HasSkin;
+    float ZBias; // to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1
+    
+    float SignalLightIntensity;
+};
 
 
 static const float M_PI = 3.141592653589793;
 static const float RECIPROCAL_PI = 0.31830988618;
 static const float RECIPROCAL_PI2 = 0.15915494;
 static const float MinRoughness = 0.04;
+static const float MaxRoughness = 0.99; // at 1.0 the calculation becomes wrong, see MetalRoughSpheres
 
 static const float FullBrightness = 1.0;
 static const float ShadowBrightness = 0.5;
@@ -264,12 +264,12 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 		// Position glow a further 1.5cm in front of the light.
 		In.Position.z += 0.015;
 		// The glow around signal lights scales according to distance; there is a cut-off which controls when the glow
-		// starts, a scaling factor which determines how quickly it expands (logarithmically), and ZBias_Lighting.x is
+		// starts, a scaling factor which determines how quickly it expands (logarithmically), and ZBias is
 		// an overall "glow power" control which determines the effectiveness of glow on any individual light. This is
 		// used to have different glows in the day and night, and to prevent theatre boxes from glowing!
 		const float GlowCutOffM = 100;
 		const float GlowScalingFactor = 40;
-		In.Position.xyz *= log(1 + max(0, length(relPos) - GlowCutOffM) / GlowScalingFactor) * ZBias_Lighting.x;
+		In.Position.xyz *= log(1 + max(0, length(relPos) - GlowCutOffM) / GlowScalingFactor) * ZBias;
 	}
 	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.RelPosition.xyz = relPos;
@@ -344,8 +344,7 @@ VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
 	_VSNormalProjection(In.Normal, World, Out.Position, Out.RelPosition, Out.Normal_Light);
 	_VSLightsAndShadows(In.Position, World, length(Out.Position.xyz), Out.Fog, Out.Shadow);
 
-	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
-	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
+	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
 	Out.TexCoords.xy = In.TexCoords;
 
 
@@ -362,8 +361,7 @@ VERTEX_OUTPUT_PBR VSPbrBaseColorMap(in VERTEX_INPUT In)
 	_VSNormalProjection(In.Normal, World, Out.Position, Out.RelPosition, Out.Normal_Light);
 	_VSLightsAndShadows(In.Position, World, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
 
-	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
-	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
+	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
 	Out.TexCoords.xy = In.TexCoords;
 
 	Out.Color = float4(1, 1, 1, 1);
@@ -385,8 +383,7 @@ VERTEX_OUTPUT_PBR VSNormalMap(in VERTEX_INPUT_NORMALMAP In)
 
 	_VSNormalMapTransform(In.Tangent, In.Normal, World, Out);
 
-	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
-	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
+	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
 	Out.Color = In.Color;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.TexCoords.zw = In.TexCoordsPbr;
@@ -407,8 +404,7 @@ VERTEX_OUTPUT_PBR VSSkinned(in VERTEX_INPUT_SKINNED In)
 
 	_VSNormalMapTransform(In.Tangent, In.Normal, worldTransform, Out);
 
-	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
-	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
+	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
 	Out.Color = In.Color;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.TexCoords.zw = In.TexCoordsPbr;
@@ -420,7 +416,7 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
 {
     VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR)0;
 
-    float4x4 worldTransform = BonesCount > 0 ? _VSSkinTransform(In.Joints, In.Weights) : World;
+    float4x4 worldTransform = HasSkin ? _VSSkinTransform(In.Joints, In.Weights) : World;
 
     Out.Position = In.Position;
     float3 normal = In.Normal;
@@ -451,8 +447,7 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
 
     _VSNormalMapTransform(tangent, normal, worldTransform, Out);
 
-    // Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
-    Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
+    Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
 
     return Out;
 }
@@ -464,8 +459,7 @@ VERTEX_OUTPUT VSTransfer(in VERTEX_INPUT_TRANSFER In)
 	_VSTransferProjection(In, Out);
 	_VSLightsAndShadows(In.Position, World, length(Out.Position.xyz), Out.Fog, Out.Shadow);
 
-	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
-	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
+	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
 
 	return Out;
 }
@@ -549,7 +543,7 @@ float pow50(float x)
 // Gets the ambient light effect.
 float _PSGetAmbientEffect(in VERTEX_OUTPUT In)
 {
-	return In.Normal_Light.w * ZBias_Lighting.y;
+	return In.Normal_Light.w * LightingDiffuse;
 }
 
 float3 _PSGetShadowEffectMoments(in VERTEX_OUTPUT In)
@@ -686,7 +680,7 @@ float3 _PSApplyMstsLights(in float3 diffuseColor, in VERTEX_OUTPUT In, float sha
         float NdotH = clamp(dot(n, h), 0.0, 1.0);
 
 		diffuseContrib += intensity * NdotL * diffuseColor / M_PI * diffuseShadowFactor;
-		specContrib += intensity * NdotL * ZBias_Lighting.w * pow(NdotH, ZBias_Lighting.z) * shadowFactor;
+		specContrib += intensity * NdotL * LightingSpecular.y * pow(NdotH, LightingSpecular.x) * shadowFactor;
     }
 	return diffuseContrib + specContrib;
 }
@@ -747,7 +741,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, float normalScale, float3 normalSam
     if (hasNormalTexture)
 	{
         n = 2.0 * n - 1.0; // Could be uploaded in SurfaceFormat.NormalizedByte4 or similar to avoid this unpacking, but it is not 
-		if (TexturePacking == 2 || TexturePacking == 4 || TexturePacking == 5)
+		if (TextureCoordinates3.w == 2 || TextureCoordinates3.w == 4 || TextureCoordinates3.w == 5)
 		{
 			n.z = sqrt(saturate(1.0 - dot(n.xy, n.xy)));
 		}
@@ -872,7 +866,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
     float3 litColor;
     
     [branch]
-    if (!ZBias_Lighting.y)
+    if (!LightingDiffuse)
     {
     	// Unlit material
         litColor = Color.rgb;
@@ -887,7 +881,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float roughness = 1;
         
         [branch]
-        if (TexturePacking == 0)
+        if (TextureCoordinates3.w == 0)
         {
             if (OcclusionFactor.x > 0)
                 occlusion = OcclusionTexture.Sample(OcclusionSampler, _PSUV(In.TexCoords, TextureCoordinates2.w)).r;
@@ -899,10 +893,10 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
                 metallic = orm.b;
             }
         }
-        else if (TexturePacking == 1 || TexturePacking == 3 || TexturePacking == 4 || TexturePacking == 5)
+        else if (TextureCoordinates3.w == 1 || TextureCoordinates3.w == 3 || TextureCoordinates3.w == 4 || TextureCoordinates3.w == 5)
         {
             float3 orm = MetallicRoughnessTexture.Sample(MetallicRoughnessSampler, _PSUV(In.TexCoords, TextureCoordinates1.y)).rgb;
-            if (TexturePacking == 3 || TexturePacking == 5)
+            if (TextureCoordinates3.w == 3 || TextureCoordinates3.w == 5)
             {
                 occlusion = orm.r;
                 roughness = orm.g;
@@ -915,7 +909,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
                 occlusion = orm.b;
             }
         }
-        else if (TexturePacking == 2)
+        else if (TextureCoordinates3.w == 2)
         {
             float4 nrm = NormalTexture.Sample(NormalSampler, _PSUV(In.TexCoords, TextureCoordinates1.z));
             roughness = nrm.b;
@@ -923,7 +917,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
             occlusion = OcclusionTexture.Sample(OcclusionSampler, _PSUV(In.TexCoords, TextureCoordinates2.w)).r;
         }
 
-        float perceptualRoughness = clamp(roughness * OcclusionFactor.y, MinRoughness, 0.99); // at =1 tha calculation becomes wrong, see MetalRoughSpheres
+        float perceptualRoughness = clamp(roughness * OcclusionFactor.y, MinRoughness, MaxRoughness);
         float alphaRoughness = perceptualRoughness * perceptualRoughness;
         float roughnessSq = alphaRoughness * alphaRoughness;
 	
