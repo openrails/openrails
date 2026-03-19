@@ -1,4 +1,4 @@
-// COPYRIGHT 2009 - 2024 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -130,6 +130,9 @@ namespace Menu.Notifications
             {
                 AppendToLog(ex.ToString());
                 Error = ex;
+                // Show that 1 notification is available - the Retry On Error message
+                NewPages.Count = 1;
+                NewPages.Viewed = 0;
             }
         }
 
