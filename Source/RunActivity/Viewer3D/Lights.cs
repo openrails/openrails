@@ -293,8 +293,7 @@ namespace Orts.Viewer3D
                     int coneIndex = ActiveLightCone.Light.ShapeIndex;
                     
                     LightConePosition = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Position1, ActiveLightCone.Position2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
-                    LightConeDirection = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
-                    LightConeDirection -= ShapeXNATranslations[coneIndex].Translation;
+                    LightConeDirection = Vector3.TransformNormal(-Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
                     LightConeDirection.Normalize();
                     LightConeDistance = 4 * MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
                     LightConeOuterAngle = MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y);

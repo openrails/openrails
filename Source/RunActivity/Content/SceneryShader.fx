@@ -22,7 +22,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Keep these in sync with the values defined in RenderProcess.cs
-#define MAX_LIGHTS 20 // must not be less than 2
 #define CLEARCOAT
 #define IOR_SPECULAR
 #define MAX_MORPH_TARGETS 8
@@ -43,19 +42,12 @@ cbuffer PerFramePS
 {
     float4x4 ShadowMatrices[4]; // world -> light view -> light projection -> shadow map projection
     float4 ShadowMapLimit;
-    float4 Fog; // rgb = color of fog; a = reciprocal of distance from camera, everything is normal color
-    float2 Overcast; // Lower saturation & brightness when overcast. x = FullBrightness, y = HalfBrightness
+    float4 Fog; // rgb = linear color of fog; a = 1 / distance from camera
+    float2 Overcast; // lower saturation & brightness when overcast, x: FullBrightness, y: HalfBrightness
+    float ZFar;
+    float NumLights; // The number of the lights used
     float NightColorModifier;
     float HalfNightColorModifier;
-    float LightTypes[MAX_LIGHTS]; // 0: directional, 1: point, 2: spot, 3: headlight
-    float3 LightPositions[MAX_LIGHTS];
-    float3 LightDirections[MAX_LIGHTS];
-    float3 LightColorIntensities[MAX_LIGHTS]; // pre-multiplied by intensity
-    float LightRangesRcp[MAX_LIGHTS];
-    float LightInnerConeCos[MAX_LIGHTS];
-    float LightOuterConeCos[MAX_LIGHTS];
-    float NumLights; // The number of the lights used
-    float ZFar;
 };
 
 // PS only
@@ -76,7 +68,8 @@ cbuffer PerMaterial
     bool HasNormals; // 0: no, 1: yes
     bool HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
     float4 SpecularFactor; // xyz: color, w: factor
-    float IorFactor; // ((ior - 1) / (ior + 1))^2 precalculated//};
+    float IorFactor; // ((ior - 1) / (ior + 1))^2 precalculated
+//};
 
 // VS and PS
 //cbuffer PerObject
@@ -95,18 +88,10 @@ cbuffer PerMaterial
 
 
 
-
-
-
 static const float M_PI = 3.141592653589793;
 static const float RECIPROCAL_PI = 0.31830988618;
 static const float RECIPROCAL_PI2 = 0.15915494;
 static const float MinRoughness = 0.04;
-
-static const int LightType_Directional = 0;
-static const int LightType_Point = 1;
-static const int LightType_Spot = 2;
-static const int LightType_Headlight = 3; // Pre-PBR linear attenuated headlight.
 
 static const float FullBrightness = 1.0;
 static const float ShadowBrightness = 0.5;
@@ -157,6 +142,10 @@ Texture2D BrdfLutTexture;
 Texture2D EnvironmentMapSpecularTexture;
 TextureCube EnvironmentMapDiffuseTexture;
 Texture2D BonesTexture; // 4 channels of 32 bit float, containing the 4x4 matrix palette for skinned models
+Texture2D LightsTexture; // 4 channels of 32 bit float, 3 pixels in a row containing 1 light source
+                         // pixel 1 xyz: position, w: 1 / range
+                         // pixel 2 xyz: direction (for point light = (0, 0, 0)), w: innerConeCos (in range 0-1: spot light; > 1: msts headlight; < 1: point or directional light)
+                         // pixel 3 xyz: color pre-multiplied by intensity, w: outerConeCos (in range 0-1)
 
 
 ////////////////////    V E R T E X   I N P U T S    ///////////////////////////
@@ -262,7 +251,7 @@ void _VSNormalProjection(in float3 InNormal, in float4x4 WorldTransform, inout f
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// For VSForest() it is calculated in Shaders.cs eyeVector.SetValue(), the sun direction is uploaded to this shader negated, to conform with glTF lights extension
-	OutNormal_Light.w = dot(OutNormal_Light.xyz, -LightDirection0) * 0.5 + 0.5; // [0] is always the sun/moon
+	OutNormal_Light.w = dot(OutNormal_Light.xyz, LightDirection0) * 0.5 + 0.5; // [0] is always the sun/moon
 }
 
 void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
@@ -532,6 +521,12 @@ VERTEX_OUTPUT VSSignalLightGlow(in VERTEX_INPUT_SIGNAL In)
 
 ////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
+float pow4(float x)
+{
+    float x2 = x * x;
+    return x2 * x2;
+}
+
 float pow5(float x)
 {
     // x^5 = x * x^2 * x^2
@@ -637,57 +632,61 @@ float3 _PSApplyMstsLights(in float3 diffuseColor, in VERTEX_OUTPUT In, float sha
 	float3 n = In.Normal_Light.xyz;
 	float3 v = normalize(-In.RelPosition.xyz);
 
+    float4 lightDirectionInner = LightsTexture.Load(int3(1, 0, 0));
+    float4 lightColorOuter = LightsTexture.Load(int3(2, 0, 0));
+
 	float3 diffuseContrib = (float3)0;
 	float3 specContrib = (float3)0;
+    float3 l = lightDirectionInner.xyz; // normalized point-to-light
 	float attenuation = 1;
 
-	//[fastopt]
-	[unroll(MAX_LIGHTS)]
+	[loop]
 	for (int i = 0; i < NumLights; i++)
 	{
-        float3 l;
-        if (LightTypes[i] == LightType_Directional)
+        if (i > 0) // non-directional lights, only the light[0] is directional, the sun-moon
         {
-            l = normalize(-LightDirections[i]); // normalize(pointToLight)
-            attenuation = 1;
-        }
-        else
-        {
-            float3 pointToLight = LightPositions[i] - In.Shadow.xyz; // In.Shadow.xyz is the absolute world position of the point
+            float4 lightPositionRangeRcp = LightsTexture.Load(int3(0, i, 0));
+            lightDirectionInner = LightsTexture.Load(int3(1, i, 0));
+            lightColorOuter = LightsTexture.Load(int3(2, i, 0));
+
+            float3 pointToLight = lightPositionRangeRcp.xyz - In.Shadow.xyz; // In.Shadow.xyz is the absolute world position of the point
             float pointLightDistance = length(pointToLight);
             l = pointToLight / pointLightDistance; // normalize(pointToLight)
             attenuation = 1;
-            if (LightTypes[i] == LightType_Headlight)
+            if (lightDirectionInner.w > 1) // type is headlight
             {
-                attenuation *= clamp(1 - pointLightDistance * LightRangesRcp[i], 0, 1); // The pre-PBR headlight used linear range attenuation.
+                attenuation *= clamp(1 - pointLightDistance * lightPositionRangeRcp.w, 0, 1); // The pre-PBR headlight used linear range attenuation.
             }
             else
             {
                 attenuation /= pow(pointLightDistance, 2); // The realistic range attenuation is inverse-squared.
-                attenuation *= clamp(1 - pow(pointLightDistance * LightRangesRcp[i], 4), 0, 1);
+                attenuation *= clamp(1 - pow4(pointLightDistance * lightPositionRangeRcp.w), 0, 1);
             }
 
-            if (LightTypes[i] == LightType_Spot || LightTypes[i] == LightType_Headlight)
-                attenuation *= smoothstep(LightOuterConeCos[i], LightInnerConeCos[i], dot(LightDirections[i], -l));
+            if (lightDirectionInner.w >= 0) // type is spot or headlight
+                attenuation *= smoothstep(lightColorOuter.w, lightDirectionInner.w, dot(lightDirectionInner.xyz, l));
+        
+            // Light 0 is the sun, the shadow factors are needed only for that one. For other lights they do not apply, they no longer needed.
+            shadowFactor = 1;
+            diffuseShadowFactor = 1;
         }
 
-		float3 h = normalize(l + v);
+        if (attenuation <= 0)
+            continue;
 
-		float NdotH = clamp(dot(n, h), 0.0, 1.0);
-		float NdotL = 1;
-		if (LightTypes[i] != LightType_Headlight)
-			NdotL = clamp(dot(n, l), 0.001, 1.0); // Non-headlight lights use realistic lighting.
-		else
-			NdotL = step(0, dot(n, l)); // Pre-PBR headlight used full lit pixels within the headlights range everywhere.
+        float3 intensity = lightColorOuter.xyz * attenuation;
+
+        float NdotL = dot(n, l);
+        if (lightDirectionInner.w > 1) // type is headlight
+            NdotL = step(0, NdotL); // full lit pixels within the headlight's range everywhere.
+        else
+            NdotL = clamp(NdotL, 0.0, 1.0); // Use realistic lighting.
  
-        float3 intensity = LightColorIntensities[i] * attenuation;
+        float3 h = normalize(l + v);
+        float NdotH = clamp(dot(n, h), 0.0, 1.0);
 
 		diffuseContrib += intensity * NdotL * diffuseColor / M_PI * diffuseShadowFactor;
 		specContrib += intensity * NdotL * ZBias_Lighting.w * pow(NdotH, ZBias_Lighting.z) * shadowFactor;
-        
-        // Light 0 is the sun, the shadow factors are needed only for that one. For other lights they do not apply, they no longer needed.
-        shadowFactor = 1;
-        diffuseShadowFactor = 1;
     }
 	return diffuseContrib + specContrib;
 }
@@ -1004,86 +1003,96 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float diffuseShadowFactor = lerp(ShadowBrightness, FullBrightness, saturate(shadowFactor));
         ///////////////////////
 
+        float4 lightDirectionInner = LightsTexture.Load(int3(1, 0, 0));
+        float4 lightColorOuter = LightsTexture.Load(int3(2, 0, 0));
+
         float3 diffuseContrib = (float3) 0;
         float3 specContrib = (float3) 0;
+        float3 l = lightDirectionInner.xyz; // normalized point-to-light
         float attenuation = 1;
 
-	    [fastopt]
+	    [loop]
         for (int i = 0; i < NumLights; i++)
         {
-            float3 l;
-            if (LightTypes[i] == LightType_Directional)
+            if (i > 0) // non-directional lights, only the light[0] is directional, the sun-moon
             {
-                l = normalize(-LightDirections[i]); // normalize(pointToLight)
-                attenuation = 1;
-            }
-            else
-            {
-                float3 pointToLight = LightPositions[i] - In.Shadow.xyz; // In.Shadow.xyz is the absolute world position of the point
+                float4 lightPositionRangeRcp = LightsTexture.Load(int3(0, i, 0));
+                lightDirectionInner = LightsTexture.Load(int3(1, i, 0));
+                lightColorOuter = LightsTexture.Load(int3(2, i, 0));
+
+                float3 pointToLight = lightPositionRangeRcp.xyz - In.Shadow.xyz; // In.Shadow.xyz is the absolute world position of the point
                 float pointLightDistance = length(pointToLight);
                 l = pointToLight / pointLightDistance; // normalize(pointToLight)
                 attenuation = 1;
-                if (LightTypes[i] == LightType_Headlight)
+                if (lightDirectionInner.w > 1) // type is headlight
                 {
-                    attenuation *= clamp(1 - pointLightDistance * LightRangesRcp[i], 0, 1); // The pre-PBR headlight used linear range attenuation.
+                    attenuation *= clamp(1 - pointLightDistance * lightPositionRangeRcp.w, 0, 1); // The pre-PBR headlight used linear range attenuation.
                 }
                 else
                 {
                     attenuation /= pow(pointLightDistance, 2); // The realistic range attenuation is inverse-squared.
-                    attenuation *= clamp(1 - pow(pointLightDistance * LightRangesRcp[i], 4), 0, 1);
+                    attenuation *= clamp(1 - pow4(pointLightDistance * lightPositionRangeRcp.w), 0, 1);
                 }
 
-                if (LightTypes[i] == LightType_Spot || LightTypes[i] == LightType_Headlight)
-                    attenuation *= smoothstep(LightOuterConeCos[i], LightInnerConeCos[i], dot(LightDirections[i], -l));
+                if (lightDirectionInner.w >= 0) // type is spot or headlight
+                    attenuation *= smoothstep(lightColorOuter.w, lightDirectionInner.w, dot(lightDirectionInner.xyz, l));
+
+                // Light 0 is the sun, the shadow factors are needed only for that one. For other lights they do not apply, they no longer needed.
+                shadowFactor = 1;
+                diffuseShadowFactor = 1;
             }
+            
+            if (attenuation <= 0)
+                continue;
 
-            float NdotL = clamp(dot(n, l), 0.001, 1.0);
-
-            if (NdotL > 0.001 || NdotV > 0.001)
-            {
-                float3 h = normalize(l + v);
-
-                float NdotH = clamp(dot(n, h), 0.0, 1.0);
-                float LdotH = clamp(dot(l, h), 0.0, 1.0);
-                float VdotH = clamp(dot(v, h), 0.0, 1.0);
-
-                float fPow = pow5(clamp(1.0 - VdotH, 0.0, 1.0));
-                float3 F = specularEnvironmentR0 + (specularEnvironmentR90 - specularEnvironmentR0) * fPow;
-
-                float attenuationL = 2.0 * NdotL / (NdotL + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotL * NdotL)));
-                float attenuationV = 2.0 * NdotV / (NdotV + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotV * NdotV)));
-                float G = attenuationL * attenuationV;
-
-                float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
-                float D = roughnessSq / (M_PI * f * f);
-
-                float3 intensity = LightColorIntensities[i] * attenuation;
+            float3 intensity = lightColorOuter.xyz * attenuation;
                 
-                diffuseContrib += intensity * NdotL * (1.0 - F) * diffuseColor / M_PI * diffuseShadowFactor;
-                specContrib += intensity * NdotL * F * G * D / (4.0 * NdotL * NdotV) * shadowFactor;
+            float NdotL = dot(n, l);
+            if (lightDirectionInner.w > 1) // type is headlight
+                NdotL = step(0, NdotL); // full lit pixels within the headlight's range everywhere.
+            else
+                NdotL = clamp(NdotL, 0.001, 1.0); // Use realistic lighting.
+            
+            if (NdotL <= 0.001 && NdotV <= 0.001)
+                continue;
+
+            float3 h = normalize(l + v);
+
+            float NdotH = clamp(dot(n, h), 0.0, 1.0);
+            float LdotH = clamp(dot(l, h), 0.0, 1.0);
+            float VdotH = clamp(dot(v, h), 0.0, 1.0);
+
+            float fPow = pow5(clamp(1.0 - VdotH, 0.0, 1.0));
+            float3 F = specularEnvironmentR0 + (specularEnvironmentR90 - specularEnvironmentR0) * fPow;
+
+            float attenuationL = 2.0 * NdotL / (NdotL + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotL * NdotL)));
+            float attenuationV = 2.0 * NdotV / (NdotV + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotV * NdotV)));
+            float G = attenuationL * attenuationV;
+
+            float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
+            float D = roughnessSq / (M_PI * f * f);
+
+            diffuseContrib += intensity * NdotL * (1.0 - F) * diffuseColor / M_PI * diffuseShadowFactor;
+            specContrib += intensity * NdotL * F * G * D / (4.0 * NdotL * NdotV + 0.0001) * shadowFactor;
 
 #ifdef CLEARCOAT
-                if (ClearcoatFactor > 0)
-                {
-                    float clearcoatNdotL = clamp(dot(clearcoatNormal, l), 0.001, 1.0);
-                    float clearcoatNdotH = clamp(dot(clearcoatNormal, h), 0.0, 1.0);
+            if (ClearcoatFactor > 0)
+            {
+                float clearcoatNdotL = clamp(dot(clearcoatNormal, l), 0.001, 1.0);
+                float clearcoatNdotH = clamp(dot(clearcoatNormal, h), 0.0, 1.0);
 
-                    F = clearcoatF0 + (f90 - clearcoatF0) * fPow;
+                F = clearcoatF0 + (f90 - clearcoatF0) * fPow;
 
-                    attenuationL = 2.0 * clearcoatNdotL / (clearcoatNdotL + sqrt(clearcoatRoughnessSq + (1.0 - clearcoatRoughnessSq) * (clearcoatNdotL * clearcoatNdotL)));
-                    attenuationV = 2.0 * clearcoatNdotV / (clearcoatNdotV + sqrt(clearcoatRoughnessSq + (1.0 - clearcoatRoughnessSq) * (clearcoatNdotV * clearcoatNdotV)));
-                    G = attenuationL * attenuationV;
+                attenuationL = 2.0 * clearcoatNdotL / (clearcoatNdotL + sqrt(clearcoatRoughnessSq + (1.0 - clearcoatRoughnessSq) * (clearcoatNdotL * clearcoatNdotL)));
+                attenuationV = 2.0 * clearcoatNdotV / (clearcoatNdotV + sqrt(clearcoatRoughnessSq + (1.0 - clearcoatRoughnessSq) * (clearcoatNdotV * clearcoatNdotV)));
+                G = attenuationL * attenuationV;
 
-                    f = (clearcoatNdotH * clearcoatRoughnessSq - clearcoatNdotH) * clearcoatNdotH + 1.0;
-                    D = clearcoatRoughnessSq / (M_PI * f * f);
+                f = (clearcoatNdotH * clearcoatRoughnessSq - clearcoatNdotH) * clearcoatNdotH + 1.0;
+                D = clearcoatRoughnessSq / (M_PI * f * f);
 
-                    clearcoat += intensity * clearcoatNdotL * F * G * D / (4.0 * clearcoatNdotL * clearcoatNdotV) * shadowFactor;
-                }
-#endif
+                clearcoat += intensity * clearcoatNdotL * F * G * D / (4.0 * clearcoatNdotL * clearcoatNdotV) * shadowFactor;
             }
-            // Light 0 is the sun, the shadow factors are needed only for that one. For other lights they do not apply, they no longer needed.
-            shadowFactor = 1;
-            diffuseShadowFactor = 1;
+#endif
         }
         litColor += diffuseContrib + specContrib;
 

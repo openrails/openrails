@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Processes;
@@ -396,9 +397,10 @@ namespace Orts.Viewer3D
         //public const float HeadLightIntensity = 250000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
         public const float HeadLightIntensity = 4; // Using the old linear attenuation model
 
-        const float LIGHT_INTENSITY_ADJUSTMENT_SPOT = 1f;
-        const float LIGHT_INTENSITY_ADJUSTMENT_POINT = 0.08f; // By visual inspection of PlaysetLightTest at nighttime. Probably should be 1 / 4π = 0.08
-        const float LIGHT_INTENSITY_ADJUSTMENT_DIRECTIONAL = 1f;
+        /// <summary>
+        /// In the order of <see cref="LightMode"/>, by visual inspection of PlaysetLightTest at nighttime. For Point probably should be 1 / 4π = 0.08
+        /// </summary>
+        static readonly float[] LightIntensityAdjustment = new float[] { 1, 0.08f, 1, 1 };
         
         float LightDayNightClampTo = 1;
         float LightDayNightMultiplier = 1;
@@ -424,14 +426,9 @@ namespace Orts.Viewer3D
         readonly RenderItemCollection[] RenderShadowTerrainItems;
         readonly RenderItemCollection RenderItemsSequence = new RenderItemCollection();
 
-        int NumLights;
-        readonly Vector3[] LightPositions = new Vector3[RenderProcess.MAX_LIGHTS];
-        readonly Vector3[] LightDirections = new Vector3[RenderProcess.MAX_LIGHTS];
-        readonly Vector3[] LightColorIntensities = new Vector3[RenderProcess.MAX_LIGHTS];
-        readonly float[] LightRangesRcp = new float[RenderProcess.MAX_LIGHTS];
-        readonly float[] LightInnerConeCos = new float[RenderProcess.MAX_LIGHTS];
-        readonly float[] LightOuterConeCos = new float[RenderProcess.MAX_LIGHTS];
-        readonly float[] LightTypes = new float[RenderProcess.MAX_LIGHTS];
+        public int NumLights;
+        Texture2D LightsTexture;
+        LightData[] Lights = new LightData[RenderProcess.MaxLights];
 
         public bool IsScreenChanged { get; internal set; }
         ShadowMapMaterial ShadowMapMaterial;
@@ -486,6 +483,8 @@ namespace Orts.Viewer3D
 
             XNACameraView = Matrix.Identity;
             XNACameraProjection = Matrix.CreateOrthographic(game.RenderProcess.DisplaySize.X, game.RenderProcess.DisplaySize.Y, 1, 100);
+
+            SetLightsTexture();
 
             ScreenChanged();
         }
@@ -565,12 +564,12 @@ namespace Orts.Viewer3D
             // Ensure that the first light is always the sun/moon, because the ambient and shadow effects will be calculated based on the first light.
             if (SolarDirection.Y > -0.05)
             {
-                AddLight(LightMode.Directional, Vector3.Zero, -SolarDirection, SunColor, SunIntensity, 0, 0, 0, 1, true);
+                AddLight(LightMode.Directional, Vector3.Zero, SolarDirection, SunColor, SunIntensity, 0, 0, 0, 1, true);
             }
             else
             {
                 var moonDirection = viewer.Settings.UseMSTSEnv ? viewer.World.MSTSSky.mstsskylunarDirection : viewer.World.Sky.LunarDirection;
-                AddLight(LightMode.Directional, Vector3.Zero, -moonDirection, MoonGlow, MoonIntensity, 0, 0, 0, 1, true);
+                AddLight(LightMode.Directional, Vector3.Zero, moonDirection, MoonGlow, MoonIntensity, 0, 0, 0, 1, true);
             }
 
             if (SolarDirection.Y <= -0.05)
@@ -1076,7 +1075,7 @@ namespace Orts.Viewer3D
         {
             // Do not allow directional light injection. That is reserved to the sun and the moon.
             if (light != null && light.Type != LightMode.Directional)
-                AddLight(light.Type, light.WorldMatrix.Translation, Vector3.TransformNormal(-Vector3.UnitZ, light.WorldMatrix),
+                AddLight(light.Type, light.WorldMatrix.Translation, Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitZ, light.WorldMatrix)),
                     light.Color * light.ColorX,
                     light.Intensity,
                     light.Range * light.RangeX,
@@ -1101,22 +1100,28 @@ namespace Orts.Viewer3D
         /// <param name="ignoreDayNight">At daytime the intensity is automatically reduced to match the sunlight. Disable this by this parameter.</param>
         public void AddLight(LightMode type, Vector3 position, Vector3 direction, Vector3 color, float intensity, float range, float innerConeAngle, float outerConeAngle, float fade, bool ignoreDayNight)
         {
-            if (NumLights >= RenderProcess.MAX_LIGHTS || intensity <= 0 || fade <= 0)
+            if (intensity <= 0 || fade <= 0)
                 return;
 
-            LightTypes[NumLights] = (float)type;
-            LightPositions[NumLights] = position;
-            LightDirections[NumLights] = direction;
-            intensity *= (ignoreDayNight
+            if (NumLights >= Lights.Length)
+                Array.Resize(ref Lights, Lights.Length * 2);
+
+            intensity *= ignoreDayNight
                 ? MathHelper.Clamp(fade, 0, 1)
-                : MathHelper.Clamp(fade * LightDayNightMultiplier * LightDayNightClampTo, 0, LightDayNightClampTo));
-            intensity *= (type == LightMode.Directional ? LIGHT_INTENSITY_ADJUSTMENT_DIRECTIONAL : type == LightMode.Point ? LIGHT_INTENSITY_ADJUSTMENT_POINT : LIGHT_INTENSITY_ADJUSTMENT_SPOT);
-            LightColorIntensities[NumLights] = color * intensity;
-            LightRangesRcp[NumLights] = range * (ignoreDayNight ? 1 : LightDayNightMultiplier);
-            LightRangesRcp[NumLights] = LightRangesRcp[NumLights] == 0 ? float.MaxValue : 1f / LightRangesRcp[NumLights];
-            LightInnerConeCos[NumLights] = (float)Math.Cos(innerConeAngle);
-            LightOuterConeCos[NumLights] = (float)Math.Cos(outerConeAngle);
-            NumLights++;
+                : MathHelper.Clamp(fade * LightDayNightMultiplier * LightDayNightClampTo, 0, LightDayNightClampTo);
+            intensity *= LightIntensityAdjustment[(int)type];
+            range *= ignoreDayNight ? 1 : LightDayNightMultiplier;
+
+            Lights[NumLights++] = new LightData
+            {
+                Position = position,
+                Direction = type == LightMode.Point ? Vector3.Zero : direction,
+                ColorIntensity = color * intensity,
+                RangeRcp = range == 0 ? float.MaxValue : 1f / range,
+                OuterConeCos = (float)Math.Cos(outerConeAngle),
+                InnerConeCos = type == LightMode.Headlight ? 1.0001f : type != LightMode.Spot ? -1 : (float)Math.Cos(innerConeAngle)
+                // Light type is coded into this parameter. -1: non-spot type, 1.0001: headlight. Need to keep close to 1.0 not to ruin the smoothrange() in the shader.
+            };
         }
 
         void SetLights()
@@ -1124,19 +1129,35 @@ namespace Orts.Viewer3D
             if (SceneryShader == null)
                 return;
 
-            SceneryShader.NumLights = NumLights;
-            if (NumLights > 0)
+            if (Lights.Length > RenderProcess.MaxLights)
             {
-                SceneryShader.LightTypes = LightTypes.Take(NumLights).ToArray();
-                SceneryShader.LightPositions = LightPositions.Take(NumLights).ToArray();
-                SceneryShader.LightDirections = LightDirections.Take(NumLights).ToArray();
-                SceneryShader.LightColorIntensities = LightColorIntensities.Take(NumLights).ToArray();
-                SceneryShader.LightRangesRcp = LightRangesRcp.Take(NumLights).ToArray();
-                SceneryShader.LightInnerConeCos = LightInnerConeCos.Take(NumLights).ToArray();
-                SceneryShader.LightOuterConeCos = LightOuterConeCos.Take(NumLights).ToArray();
+                RenderProcess.MaxLights = Lights.Length;
+                SetLightsTexture();
             }
+            LightsTexture.SetData(MemoryMarshal.Cast<LightData, Vector4>(Lights).ToArray());
+
+            SceneryShader.NumLights = NumLights;
+            SceneryShader.LightsTexture = LightsTexture;
         }
 
+        void SetLightsTexture()
+        {
+            if (LightsTexture != null)
+                LightsTexture.Dispose();
+
+            LightsTexture = new Texture2D(Game.RenderProcess.GraphicsDevice, 3, RenderProcess.MaxLights, false, SurfaceFormat.Vector4);
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        struct LightData
+        {
+            public Vector3 Position;
+            public float RangeRcp;
+            public Vector3 Direction;
+            public float InnerConeCos;
+            public Vector3 ColorIntensity;
+            public float OuterConeCos;
+        }
 
 #if DEBUG_RENDER_STATE
         static void DebugRenderState(GraphicsDevice graphicsDevice, string location)

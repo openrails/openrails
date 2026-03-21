@@ -20,6 +20,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Graphics;
@@ -137,13 +138,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter environmentMapDiffuseTexture;
         readonly EffectParameter brdfLutTexture;
         readonly EffectParameter numLights;
-        readonly EffectParameter lightPositions;
-        readonly EffectParameter lightDirections;
-        readonly EffectParameter lightColorIntensities;
-        readonly EffectParameter lightRangesRcp;
-        readonly EffectParameter lightInnerConeCos;
-        readonly EffectParameter lightOuterConeCos;
-        readonly EffectParameter lightTypes;
+        readonly EffectParameter lightsTexture;
 
         Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
@@ -342,13 +337,8 @@ namespace Orts.Viewer3D
         public float[] MorphWeights { set { morphWeights.SetValue(value); } }
 
         public float NumLights { set { numLights.SetValue(value); } }
-        public Vector3[] LightPositions { set { lightPositions.SetValue(value); } }
-        public Vector3[] LightDirections { set { lightDirections.SetValue(value); lightDirection0.SetValue(value.FirstOrDefault()); } }
-        public Vector3[] LightColorIntensities { set { lightColorIntensities.SetValue(value); } }
-        public float[] LightRangesRcp { set { lightRangesRcp.SetValue(value); } }
-        public float[] LightInnerConeCos { set { lightInnerConeCos.SetValue(value); } }
-        public float[] LightOuterConeCos { set { lightOuterConeCos.SetValue(value); } }
-        public float[] LightTypes { set { lightTypes.SetValue(value); } }
+
+        public Texture2D LightsTexture { set { lightsTexture.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
@@ -408,13 +398,7 @@ namespace Orts.Viewer3D
             environmentMapDiffuseTexture = Parameters["EnvironmentMapDiffuseTexture"];
             brdfLutTexture = Parameters["BrdfLutTexture"];
             numLights = Parameters["NumLights"];
-            lightPositions = Parameters["LightPositions"];
-            lightDirections = Parameters["LightDirections"];
-            lightColorIntensities = Parameters["LightColorIntensities"];
-            lightRangesRcp = Parameters["LightRangesRcp"];
-            lightInnerConeCos = Parameters["LightInnerConeCos"];
-            lightOuterConeCos = Parameters["LightOuterConeCos"];
-            lightTypes = Parameters["LightTypes"];
+            lightsTexture = Parameters["LightsTexture"];
         }
     }
 

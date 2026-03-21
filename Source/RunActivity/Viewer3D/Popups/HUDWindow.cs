@@ -1526,6 +1526,7 @@ namespace Orts.Viewer3D.Popups
             }
             TableSetCells(table, 3, Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("F0")).ToArray());
             TableAddLabelValue(table, Viewer.Catalog.GetString("Render primitives"), Viewer.Catalog.GetStringFmt("{0:F0}", Viewer.RenderProcess.PrimitivePerFrame.Sum()));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Light sources"), Viewer.Catalog.GetStringFmt("{0:F0}", Viewer.RenderProcess.LightSourcesCount));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Render process"), Viewer.Catalog.GetStringFmt("{0:F0}% ({1:F0}% {2})", Viewer.RenderProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait")));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Updater process"), Viewer.Catalog.GetStringFmt("{0:F0}% ({1:F0}% {2})", Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue, Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait")));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Loader process"), Viewer.Catalog.GetStringFmt("{0:F0}% ({1:F0}% {2})", Viewer.LoaderProcess.Profiler.Wall.SmoothedValue, Viewer.LoaderProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait")));

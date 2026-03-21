@@ -54,8 +54,6 @@ namespace Orts.Viewer3D
         };
 
         // Settings
-        public static bool EnableAnimations { get; set; }
-        public static bool ShapeWarnings { get; set; }
         public static bool TangentsAlwaysCalculatedPerPixel { get; set; }
 
         string FileDir { get; set; }
@@ -110,8 +108,6 @@ namespace Orts.Viewer3D
         {
             // In glTF the animation frames are measured in seconds, so the default FPS value must be 1 second per second.
             CustomAnimationFPS = 1;
-            EnableAnimations = viewer.Game.Settings.GltfAnimations;
-            ShapeWarnings = !viewer.Game.Settings.SuppressShapeWarnings;
 
             if (ConsistGenerator.GltfVisualTestRun)
             {
@@ -946,7 +942,9 @@ namespace Orts.Viewer3D
                 {
                     case Accessor.ComponentTypeEnum.UNSIGNED_INT: return IndexElementSize.ThirtyTwoBits;
                     case Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return IndexElementSize.SixteenBits;
-                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: if (ShapeWarnings) Trace.TraceInformation($"glTF: Unsupported 8 bit index size in file {GltfFileName}, converting it to 16 bits."); return IndexElementSize.SixteenBits;
+                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE:
+                        if (!Viewer.Game.Settings.SuppressShapeWarnings) Trace.TraceInformation($"glTF: Unsupported 8 bit index size in file {GltfFileName}, converting it to 16 bits.");
+                        return IndexElementSize.SixteenBits;
                     default: return IndexElementSize.SixteenBits;
                 }
             }
@@ -1849,7 +1847,7 @@ namespace Orts.Viewer3D
         public override Matrix GetMatrixProduct(int iNode) => base.GetMatrixProduct(iNode) * PlusZToForward;
         public override bool IsAnimationArticulation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault()?.TimeArray == null;
         public override int GetAnimationTargetNode(int animationId) => GltfAnimations?.ElementAtOrDefault(animationId)?.Channels?.FirstOrDefault()?.TargetNode ?? 0;
-        public override int GetAnimationNamesCount() => EnableAnimations || ConsistGenerator.GltfVisualTestRun ? GltfAnimations?.Count ?? 0 : 0;
+        public override int GetAnimationNamesCount() => Viewer.Game.Settings.GltfAnimations || ConsistGenerator.GltfVisualTestRun ? GltfAnimations?.Count ?? 0 : 0;
 
         public bool HasAnimation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
         public float GetAnimationLength(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TimeMax).Max() ?? 0;
@@ -1861,7 +1859,7 @@ namespace Orts.Viewer3D
         /// <param name="time">Actual time in the animation clip in seconds.</param>
         public void Animate(int animationNumber, float time, Matrix[] animatedMatrices)
         {
-            if (!EnableAnimations && !ConsistGenerator.GltfVisualTestRun)
+            if (!Viewer.Game.Settings.GltfAnimations && !ConsistGenerator.GltfVisualTestRun)
                 return;
 
             foreach (var channel in GltfAnimations[animationNumber].Channels)
