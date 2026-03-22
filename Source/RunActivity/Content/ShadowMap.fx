@@ -38,7 +38,7 @@ cbuffer PerObject
     float ImageBlurStep; // = 1 / shadow map texture width and height
     int MorphConfig[8]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. All: set to -1 if not available. 6: targets count. 7: attributes count.
     float MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
-    float BonesCount;
+    bool HasSkin;
 };
 
 int    ShadowMapIndex;
@@ -257,7 +257,7 @@ VERTEX_OUTPUT VSShadowMapMorphed(in VERTEX_INPUT_MORPHED In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
-    float4x4 skinTransform = BonesCount > 0 ? _VSSkinTransform(In.Joints, In.Weights) : Identity;
+    float4x4 skinTransform = HasSkin ? _VSSkinTransform(In.Joints, In.Weights) : Identity;
 
     Out.Position = In.Position;
     Out.TexCoord_Depth.xy = In.TexCoords;

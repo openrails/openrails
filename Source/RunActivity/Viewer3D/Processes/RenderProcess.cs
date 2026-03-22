@@ -60,6 +60,7 @@ namespace Orts.Viewer3D.Processes
         public int[] PrimitivePerFrame { get; private set; }
         public int[] ShadowPrimitiveCount { get; private set; }
         public int[] ShadowPrimitivePerFrame { get; private set; }
+        public int LightSourcesCount { get; private set; }
 
         // Dynamic shadow map setup.
         public static int ShadowMapCount = -1; // number of shadow maps
@@ -68,7 +69,7 @@ namespace Orts.Viewer3D.Processes
         public static float[] ShadowMapLimit; // diameter of shadow map far edge from camera
         public bool isFullScreen { get; set; }
 
-        public const int MAX_LIGHTS = 20; // must not be lower than 2.
+        public static int MaxLights = 32; // must not be lower than 2.
         public const int MAX_MORPH_BUFFERS = 8;
         public const bool CLEARCOAT = true;
 
@@ -353,6 +354,7 @@ namespace Orts.Viewer3D.Processes
                 ShadowPrimitivePerFrame[shadowMapIndex] = ShadowPrimitiveCount[shadowMapIndex];
                 ShadowPrimitiveCount[shadowMapIndex] = 0;
             }
+            LightSourcesCount = CurrentFrame.NumLights;
 
             // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
             GraphicsDevice.DepthStencilState = DepthStencilState.None;

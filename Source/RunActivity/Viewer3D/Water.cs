@@ -161,41 +161,47 @@ namespace Orts.Viewer3D
 
     public class WaterMaterial : Material
     {
+        readonly EffectTechnique Technique;
         readonly Texture2D WaterTexture;
-        IEnumerator<EffectPass> ShaderPasses;
 
         public WaterMaterial(Viewer viewer, string waterTexturePath)
             : base(viewer, waterTexturePath)
         {
             WaterTexture = Viewer.TextureManager.Get(waterTexturePath, true);
+            Technique = Viewer.MaterialManager.SceneryShader.Techniques["Image"];
+
+            SetSortingEffectId(Technique);
+            SetSortingBlendStateId(BlendState.NonPremultiplied);
+            SetSortingDepthStencilStateId(DepthStencilState.Default);
+            SetSortingRasterizerStateId(RasterizerState.CullCounterClockwise);
+            SetSortingSamplerStateId(SamplerState.LinearWrap);
+            SetSortingTextureId(waterTexturePath);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            if (shader.CurrentTechniqueName != "Image")
-                shader.CurrentTechnique = shader.Techniques[shader.CurrentTechniqueName = "Image"];
-            if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
+            shader.CurrentTechnique = Technique;
             shader.ImageTexture = WaterTexture;
             shader.ReferenceAlpha = 10;
 
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearWrap;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-
-            ShaderPasses.Reset();
-            while (ShaderPasses.MoveNext())
+            var passes = shader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
                     shader.SetMatrix(item.XNAMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
-                    ShaderPasses.Current.Apply();
-                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
-                    graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
+                    passes[i].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }

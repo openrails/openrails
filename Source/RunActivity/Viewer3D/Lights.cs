@@ -293,8 +293,7 @@ namespace Orts.Viewer3D
                     int coneIndex = ActiveLightCone.Light.ShapeIndex;
                     
                     LightConePosition = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Position1, ActiveLightCone.Position2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
-                    LightConeDirection = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
-                    LightConeDirection -= ShapeXNATranslations[coneIndex].Translation;
+                    LightConeDirection = Vector3.TransformNormal(-Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
                     LightConeDirection.Normalize();
                     LightConeDistance = 4 * MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
                     LightConeOuterAngle = MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y);
@@ -1033,12 +1032,24 @@ namespace Orts.Viewer3D
     public class LightGlowMaterial : Material
     {
         readonly Texture2D LightGlowTexture;
+        readonly EffectTechnique Technique;
+        public static readonly SamplerState LightGlowSamplerState = new SamplerState
+        {
+            Filter = TextureFilter.Linear,
+            AddressU = TextureAddressMode.Clamp,
+            AddressV = TextureAddressMode.Wrap,
+        };
 
         public LightGlowMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
             // TODO: This should happen on the loader thread.
             LightGlowTexture = textureName.StartsWith(Viewer.ContentPath, StringComparison.OrdinalIgnoreCase) ? SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, textureName) : Viewer.TextureManager.Get(textureName);
+
+            Technique = Viewer.MaterialManager.LightGlowShader.Techniques["LightGlow"];
+
+            SetSortingEffectId(Technique);
+            SetSortingTextureId(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1049,6 +1060,8 @@ namespace Orts.Viewer3D
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.SamplerStates[0] = LightGlowSamplerState;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1090,19 +1103,29 @@ namespace Orts.Viewer3D
 
     public class LightConeMaterial : Material
     {
+        readonly EffectTechnique Technique;
+        
+        public static readonly DepthStencilState DepthReadWithStencil = new DepthStencilState
+        {
+            DepthBufferEnable = true,
+            DepthBufferWriteEnable = false,
+            StencilEnable = true,
+        };
+        
         public LightConeMaterial(Viewer viewer)
             : base(viewer, null)
         {
+            Technique = Viewer.MaterialManager.LightConeShader.Techniques["LightCone"];
+            SetSortingEffectId(Technique);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.LightConeShader;
-            shader.CurrentTechnique = shader.Techniques["LightCone"];
+            shader.CurrentTechnique = Technique;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
-            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
-            graphicsDevice.DepthStencilState.StencilEnable = true;
+            graphicsDevice.DepthStencilState = DepthReadWithStencil;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
