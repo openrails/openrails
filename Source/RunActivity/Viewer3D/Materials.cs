@@ -899,7 +899,6 @@ namespace Orts.Viewer3D
             Texture = SharedMaterialManager.MissingTexture;
             NightTexture = SharedMaterialManager.MissingTexture;
             DefaultAlphaCutOff = alphaCutOff;
-            SetupStates(DefaultAlphaCutOff);
         }
 
         public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
@@ -967,10 +966,11 @@ namespace Orts.Viewer3D
                     break;
             }
 
+            SetupStates(); // Needs to have the AceAlphaBits preset
             SetupSorting();
         }
 
-        protected void SetupStates(int alphaMask)
+        protected void SetupStates()
         {
             var needsTransparentBlending = GetBlending();
             if (needsTransparentBlending && (Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingAdd)
@@ -992,7 +992,8 @@ namespace Orts.Viewer3D
             {
                 BlendState = BlendState.Opaque;
                 DepthStencilStateOpaquePass = DepthStencilStateTransparentPass = DepthStencilState.Default;
-                DefaultAlphaCutOff = (Options & SceneryMaterialOptions.AlphaTest) != 0 ? alphaMask : -1;
+                if ((Options & SceneryMaterialOptions.AlphaTest) == 0)
+                    DefaultAlphaCutOff = -1;
             }
         }
 
@@ -1301,6 +1302,7 @@ namespace Orts.Viewer3D
             else
                 Technique = shader.Techniques["PbrBaseColorMap"];
 
+            SetupStates();
             SetupSorting();
         }
 
