@@ -99,6 +99,8 @@ namespace Orts.Viewer3D
         public TrainCarOperationsWindow TrainCarOperationsWindow { get; private set; } // Alt-F9 window
         public TrainCarOperationsViewerWindow TrainCarOperationsViewerWindow { get; private set; } // From TrainCarOperationWindow
         public TrainCarOperationsWebpage TrainCarOperationsWebpage { get; set; }
+
+        public ActivityEventsWebpage ActivityEventsWebpage { get; set; }
         public CarOperationsWindow CarOperationsWindow { get; private set; } // F9 sub-window for car operations
         public TrainDpuWindow TrainDpuWindow { get; private set; } // Shift + F9 train distributed power window
         public NextStationWindow NextStationWindow { get; private set; } // F10 window
@@ -272,6 +274,14 @@ namespace Orts.Viewer3D
         public static double DbfEvalIniAutoPilotTimeS = 0;//Debrief eval
         public static bool DbfEvalAutoPilot = false;//DebriefEval
         public bool IsFormationReversed; //Avoid flickering when reversal using TrainCarOperations window
+        public int CameraOutsideFrontPosition { get; set; }
+        public int CameraOutsideRearPosition { get; set; }
+        public bool CameraF9Reference { get; set; }
+        public bool FirstLoop { get; set; } = false;
+        public bool IsDownCameraChanged { get; set; }
+        public bool IsCameraPositionUpdated { get; set; } = false;
+        public bool CameraFrontUpdated { get; set; }
+        public bool CameraRearUpdated { get; set; }
 
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.

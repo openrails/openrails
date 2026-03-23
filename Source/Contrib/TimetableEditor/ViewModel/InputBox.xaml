@@ -1,0 +1,31 @@
+﻿<Window x:Class="Orts.TimetableEditor.Views.InputBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Orts.TimetableEditor.Views"
+        mc:Ignorable="d"
+        Title="InputBox" Height="450" Width="800" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" SizeToContent="WidthAndHeight">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="22"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="Question"/>
+        <TextBox Grid.Row="1" x:Name="Input"/>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <CheckBox x:Name="HasValue" Content="Has Value" Margin="0 0 5 0" Click="HasValue_Click" IsChecked="False"/>
+            <TextBox Grid.Column="1" x:Name="InputValue" Visibility="Collapsed"/>
+        </Grid>
+        <StackPanel Grid.Row="3" Orientation="Horizontal">
+            <Button x:Name="OK_Button" Width="70" Height="20" Content="OK" Margin="30 0" Click="OK_Button_Click"/>
+            <Button Width="70" Height="20" Content="Cancel" IsCancel="True" Margin="30 0"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -29,8 +29,6 @@ SET CheckToolInPath.Check=0
 CALL :list-or-check-tool "git.exe" "[UTS] Git version control tool"
 CALL :list-or-check-tool "nuget.exe" "[UTS] .NET package manager tool"
 CALL :list-or-check-tool "MSBuild.exe" "[UTS] Microsoft Visual Studio build tool"
-CALL :list-or-check-tool "lazbuild.exe" "[UTS] Lazarus compiler"
-CALL :list-or-check-tool "strip.exe" "[UTS] Lazarus tool"
 CALL :list-or-check-tool "xunit.console.x86.exe" "[UTS] XUnit tool"
 CALL :list-or-check-tool "rcedit-x86.exe" "[UTS] Electron rcedit tool"
 CALL :list-or-check-tool "7za.exe" "[UTS] 7-zip tool"
@@ -92,9 +90,6 @@ REM Disable warning CS1591 "Missing XML comment for publicly visible type or mem
 SET BuildConfiguration=Release
 IF "%Mode%" == "Unstable" SET BuildConfiguration=Debug
 MSBuild Source\ORTS.sln /t:Clean;Build /p:Configuration=%BuildConfiguration% /p:NoWarn=1591 || GOTO :error
-
-REM Build contributed Timetable Editor.
-PUSHD Source\Contrib\TimetableEditor && CALL Build.cmd && POPD || GOTO :error
 
 REM Set update channel.
 >>Program\Updater.ini ECHO Channel=string:%Mode% || GOTO :error

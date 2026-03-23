@@ -294,6 +294,20 @@ namespace ORTS.Scripting.Api
         protected virtual void SetCurrentDynamicBrakeAvailability(bool avail) => LpsHost.DynamicBrakeAvailable = avail;
 
         /// <summary>
+        /// Called by other subsystems to determine whether the locomotive is powered
+        /// </summary>
+        /// <returns>
+        /// PowerSupplyState.PowerOff if the locomotive is unpowered
+        /// PowerSupplyState.PowerOnOngoing if the locomotive is in a power on sequence, but not all subsystems are ready
+        /// PowerSupplyState.PowerOn if the locomotive is ready for service (all necessary subystems are connected)
+        /// </returns>
+        public virtual PowerSupplyState GetPowerStatus()
+        {
+            if (LpsHost.MainPowerSupplyState == LpsHost.AuxiliaryPowerSupplyState) return LpsHost.MainPowerSupplyState;
+            return PowerSupplyState.PowerOnOngoing;
+        }
+
+        /// <summary>
         /// Sends an event to the master switch
         /// </summary>
         protected void SignalEventToMasterKey(PowerSupplyEvent evt) => LpsHost.MasterKey.HandleEvent(evt);

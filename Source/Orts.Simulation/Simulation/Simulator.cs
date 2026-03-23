@@ -1839,14 +1839,15 @@ namespace Orts.Simulation
             train.activityClearingDistanceM = train.Cars.Count < Train.standardTrainMinCarNo ? Train.shortClearingDistanceM : Train.standardClearingDistanceM;
             train2.activityClearingDistanceM = train2.Cars.Count < Train.standardTrainMinCarNo ? Train.shortClearingDistanceM : Train.standardClearingDistanceM;
 
-
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;
-            
+
             train2.SpeedMpS = train.SpeedMpS;
 
+            train.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
             train.Cars[train.Cars.Count - 1].BrakeSystem.RearBrakeHoseConnected = false;
             train2.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
+            train2.Cars[train2.Cars.Count - 1].BrakeSystem.RearBrakeHoseConnected = false;
 
             train2.AITrainDirectionForward = train.AITrainDirectionForward;
 

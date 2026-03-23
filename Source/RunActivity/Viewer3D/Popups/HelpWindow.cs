@@ -1206,7 +1206,7 @@ namespace Orts.Viewer3D.Popups
             int numOperativeBrakes = 0;
             bool isMetric = false; bool isUK = false;  // isImperial* does not seem to be used in simulation
 
-            if (TrainInfoSpriteSheet == null) { TrainInfoSpriteSheet = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, Path.Combine(Owner.Viewer.ContentPath, "TrainInfoSprites.png")); }
+            if (TrainInfoSpriteSheet == null) { TrainInfoSpriteSheet = SharedTextureManager.LoadInternal(Owner.Viewer.RenderProcess.GraphicsDevice, Path.Combine(Owner.Viewer.ContentPath, "TrainInfoSprites.png")); }
             const int spriteWidth = 6; const int spriteHeight = 26;
             var carInfoList = new List<CarInfo>(playerTrain.Cars.Count);
 

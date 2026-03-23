@@ -1,0 +1,61 @@
+﻿<Window x:Class="Orts.TimetableEditor.Views.StationParametersView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Orts.TimetableEditor.Views"
+        xmlns:ViewModel="clr-namespace:Orts.TimetableEditor.ViewModel"
+        xmlns:Converters="clr-namespace:Orts.TimetableEditor.Converters"
+        mc:Ignorable="d"
+        Title="StationParametersView" Height="450" Width="800" SizeToContent="Width">
+    <Window.DataContext>
+        <ViewModel:StationParamsViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <Converters:BooleanToVisibilityConverter x:Key="boolVisConverter"></Converters:BooleanToVisibilityConverter>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <ListBox ItemsSource="{Binding Stations}" SelectedItem="{Binding SelectedStation}" Grid.RowSpan="2">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Visibility="{Binding CommandsVisible}">
+            <TextBlock Text="Command:" Height="20"/>
+            <ComboBox ItemsSource="{Binding PossibleCommands}" SelectedItem="{Binding SelectedPossibleCommand}" Width="150" Height="22" Margin="5 0"/>
+            <Button Width="32" Content="Cmd+" Command="{Binding AddCommand}" ToolTip="Add Command"/>
+            <Button Width="32" Content="Cmd-" Command="{Binding RemoveCommand}" ToolTip="Remove Command"/>
+        </StackPanel>
+        <ListView Grid.Row="1" Grid.Column="1" ItemsSource="{Binding SelectedStation.Commands}" SelectedItem="{Binding SelectedCommand}" Visibility="{Binding CommandsVisible}">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Name}"/>
+                        <TextBlock Text="=" Margin="2 0" Visibility="{Binding HasValue, Converter={StaticResource boolVisConverter}}"/>
+                        <TextBox Text="{Binding Value}" Width="80" Visibility="{Binding HasValue, Converter={StaticResource boolVisConverter}}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Orientation="Horizontal">
+            <Button Content="Cancel" IsCancel="True" Width="70" Margin="20 5"/>
+            <Button Content="OK" Width="70" Margin="20 5" Click="OK_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

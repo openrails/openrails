@@ -120,7 +120,7 @@ namespace ORTS.Settings
             Routes = new Dictionary<string, Route>();
         }
 
-        public void LoadContent()
+        public void LoadContent(ref string errorMsg)
         {
             // only for debug purposes
             string definedContentJsonName = @"c:\content\routes.json";
@@ -142,8 +142,8 @@ namespace ORTS.Settings
                     definedContentJsonName = Path.Combine(definedContentJsonDirectoryName, "routes.json");
                 }
                 catch (Exception error) 
-                { 
-                    throw new Exception("Error during retrieving routes.json from \"" + githubUrl + "\": " + error.Message, error); 
+                {
+                    errorMsg = error.Message;
                 }  
             }
 
