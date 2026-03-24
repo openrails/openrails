@@ -31,6 +31,11 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Common.Input;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
@@ -173,6 +178,12 @@ namespace Orts.Viewer3D.Popups
             outf.Write(Location.Width);
             outf.Write(Location.Height);
 
+            // rwf-rr: temporary fix for bug 2121985
+            if (CarPosition >= Owner.Viewer.PlayerTrain.Cars.Count)
+            {
+                Trace.TraceWarning("TrainCarOperationsViewerWindow.CarPosition {0} out of range [0..{1}]", CarPosition, Owner.Viewer.PlayerTrain.Cars.Count - 1);
+                CarPosition = Owner.Viewer.PlayerTrain.Cars.Count - 1;
+            }
             outf.Write(CarPosition);
             outf.Write(ResetAllSymbols);
         }
@@ -207,63 +218,63 @@ namespace Orts.Viewer3D.Popups
 
                 // TODO: This should happen on the loader thread.
                 //                                                                           texture rectangles : X, Y, width, height
-                BattAlwaysOn32 = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 0, 32, 32));
-                BattOn32 = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 0, 32, 32));
-                BattOff32 = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 0, 32, 32));
+                BattAlwaysOn32 = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 0, 32, 32));
+                BattOn32 = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 0, 32, 32));
+                BattOff32 = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 0, 32, 32));
 
-                BleedOffValveClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 32, 32, 32));
-                BleedOffValveOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 32, 32, 32));
-                BleedOffValveNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 32, 32, 32));
+                BleedOffValveClosed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 32, 32, 32));
+                BleedOffValveOpened = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 32, 32, 32));
+                BleedOffValveNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 32, 32, 32));
 
-                BrakeHoseCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 64, 32, 32));
-                BrakeHoseDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 64, 32, 32));
-                BrakeHoseFirstDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 64, 32, 32));
-                BrakeHoseRearDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 64, 32, 32));
-                BrakeHoseFirstCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 320, 32, 32));
-                BrakeHoseRearCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 320, 32, 32));
+                BrakeHoseCon = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 64, 32, 32));
+                BrakeHoseDis = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 64, 32, 32));
+                BrakeHoseFirstDis = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 64, 32, 32));
+                BrakeHoseRearDis = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 64, 32, 32));
+                BrakeHoseFirstCon = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 320, 32, 32));
+                BrakeHoseRearCon = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 320, 32, 32));
 
-                Coupler = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 96, 32, 32));
-                CouplerFront = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 96, 32, 32));
-                CouplerRear = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 96, 32, 32));
-                CouplerNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 96, 32, 32));
+                Coupler = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 96, 32, 32));
+                CouplerFront = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 96, 32, 32));
+                CouplerRear = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 96, 32, 32));
+                CouplerNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 96, 32, 32));
 
-                Empty = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 0, 32, 32));
+                Empty = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 0, 32, 32));
 
-                SteamLoco = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 352, 64, 32));
-                ElectricLoco = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 352, 64, 32));
-                DieselLoco = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 384, 64, 32));
+                SteamLoco = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 352, 64, 32));
+                ElectricLoco = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 352, 64, 32));
+                DieselLoco = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 384, 64, 32));
 
-                FrontAngleCockClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 224, 32, 32));
-                FrontAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 224, 32, 32));
-                FrontAngleCockPartial = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 160, 32, 32));
-                FrontAngleCockNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 320, 32, 32));
+                FrontAngleCockClosed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 224, 32, 32));
+                FrontAngleCockOpened = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 224, 32, 32));
+                FrontAngleCockPartial = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 160, 32, 32));
+                FrontAngleCockNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 320, 32, 32));
 
-                HandBrakeNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 160, 32, 32));
-                HandBrakeNotSet = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 160, 32, 32));
-                HandBrakeSet = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 160, 32, 32));
+                HandBrakeNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 160, 32, 32));
+                HandBrakeNotSet = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 160, 32, 32));
+                HandBrakeSet = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 160, 32, 32));
 
-                LocoSymbol = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 128, 64, 32));
-                LocoSymbolGreen = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 128, 64, 32));
-                LocoSymbolRed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 256, 64, 32));
+                LocoSymbol = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 128, 64, 32));
+                LocoSymbolGreen = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 128, 64, 32));
+                LocoSymbolRed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 256, 64, 32));
 
-                MUconnected = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 192, 32, 32));
-                MUdisconnected = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 192, 32, 32));
+                MUconnected = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 192, 32, 32));
+                MUdisconnected = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 192, 32, 32));
 
-                ETSconnected32 = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 192, 32, 32));
-                ETSdisconnected32 = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 192, 32, 32));
+                ETSconnected32 = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 192, 32, 32));
+                ETSdisconnected32 = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 192, 32, 32));
 
-                RearAngleCockClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 224, 32, 32));
-                RearAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 224, 32, 32));
-                RearAngleCockPartial = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 288, 32, 32));
-                RearAngleCockNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 320, 32, 32));
+                RearAngleCockClosed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 224, 32, 32));
+                RearAngleCockOpened = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 224, 32, 32));
+                RearAngleCockPartial = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 288, 32, 32));
+                RearAngleCockNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 320, 32, 32));
 
-                ResetBrakesOff = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 256, 32, 32));
-                ResetBrakesOn = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 256, 32, 32));
-                ResetBrakesWarning = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 32, 32, 32));
+                ResetBrakesOff = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 256, 32, 32));
+                ResetBrakesOn = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 256, 32, 32));
+                ResetBrakesWarning = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(96, 32, 32, 32));
 
-                PowerOn = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 288, 32, 32));
-                PowerOff = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 288, 32, 32));
-                PowerChanging = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 288, 32, 32));
+                PowerOn = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 288, 32, 32));
+                PowerOff = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 288, 32, 32));
+                PowerChanging = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(64, 288, 32, 32));
             }
             UpdateWindowSize();
         }

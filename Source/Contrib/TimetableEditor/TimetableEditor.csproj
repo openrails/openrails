@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Orts.TimetableEditor</RootNamespace>
+    <AssemblyName>Contrib.TimetableEditor</AssemblyName>
+    <ApplicationIcon>..\..\ORTS.ico</ApplicationIcon>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <IsPublishable>False</IsPublishable>
+    <AssemblyTitle>Open Rails Timetable Editor (Contributed)</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2026</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>..\..\Launcher\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Add_24x24.png" />
+    <Resource Include="Images\ColumnAdd.png" />
+    <Resource Include="Images\ColumnDelete.png" />
+    <Resource Include="Images\ColumnInsert.png" />
+    <Resource Include="Images\Dispose_32x32.png" />
+    <Resource Include="Images\Move_Down_24x24.png" />
+    <Resource Include="Images\Move_Down_32x32.png" />
+    <Resource Include="Images\Move_Up_24x24.png" />
+    <Resource Include="Images\Move_Up_32x32.png" />
+    <Resource Include="Images\Remove_24x24.png" />
+    <Resource Include="Images\RowAdd.png" />
+    <Resource Include="Images\RowDelete.png" />
+    <Resource Include="Images\RowInsert.png" />
+    <Resource Include="Images\Save_32x32.png" />
+    <Resource Include="Images\Station.png" />
+    <Resource Include="Images\train.png" />
+  </ItemGroup>
+</Project>

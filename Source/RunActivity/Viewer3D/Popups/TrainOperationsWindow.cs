@@ -46,7 +46,7 @@ namespace Orts.Viewer3D.Popups
             base.Initialize();
             if (CouplerTexture == null)
                 // TODO: This should happen on the loader thread.
-                CouplerTexture = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsCoupler.png"));
+                CouplerTexture = SharedTextureManager.LoadInternal(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsCoupler.png"));
         }
 
         protected override ControlLayout Layout(ControlLayout layout)
