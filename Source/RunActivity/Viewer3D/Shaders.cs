@@ -99,7 +99,6 @@ namespace Orts.Viewer3D
         readonly EffectParameter signalLightIntensity;
         readonly EffectParameter eyeVector;
         readonly EffectParameter sideVector;
-        readonly EffectParameter lightDirection0;
 
         readonly EffectParameter imageTexture;
         readonly EffectParameter overlayTexture;
@@ -328,7 +327,7 @@ namespace Orts.Viewer3D
         public float NumLights { set { numLights.SetValue(value); } }
 
         public Texture2D LightsTexture { set { lightsTexture.SetValue(value); } }
-
+        
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
         {
@@ -352,7 +351,6 @@ namespace Orts.Viewer3D
             signalLightIntensity = Parameters["SignalLightIntensity"];
             eyeVector = Parameters["EyeVector"];
             sideVector = Parameters["SideVector"];
-            lightDirection0 = Parameters["LightDirection0"];
             imageTexture = Parameters["ImageTexture"];
             overlayTexture = Parameters["OverlayTexture"];
             emissiveTexture = Parameters["EmissiveTexture"];

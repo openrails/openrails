@@ -19,6 +19,8 @@
 //                 S C E N E R Y   O B J E C T   S H A D E R                  //
 ////////////////////////////////////////////////////////////////////////////////
 
+//#define DEBUG_SHADOW_COLORS
+
 // Keep these in sync with the values defined in RenderProcess.cs
 #define CLEARCOAT
 #define IOR_SPECULAR
@@ -33,7 +35,6 @@ cbuffer PerFrameVS
     float3 ViewerPos; // Viewer's world coordinates.
     float4 EyeVector;
     float3 SideVector;
-    float3 LightDirection0; // The sun/moon direction, copy of LightDirections[0], but provided separately for easier access in VSForest.
 };
 
 cbuffer PerFramePS
@@ -72,11 +73,11 @@ cbuffer PerMaterial
     float2 LightingSpecular; // x = specular, y = step(1, x)
     float LightingDiffuse; // diffuse, not-unlit
     float IorFactor; // ((ior - 1) / (ior + 1))^2 precalculated
-};
+//};
 
 // VS only (except SignalLightIntensity, but at signals there is no PerMaterial buffer at all)
-cbuffer PerObject
-{
+//cbuffer PerObject
+//{
     float4x4 World; // model -> world [max number of bones]
     int MorphConfig[8]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. All: set to -1 if not available. 6: targets count. 7: attributes count.
     float MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
@@ -142,10 +143,10 @@ Texture2D BrdfLutTexture;
 Texture2D EnvironmentMapSpecularTexture;
 TextureCube EnvironmentMapDiffuseTexture;
 Texture2D BonesTexture; // 4 channels of 32 bit float, containing the 4x4 matrix palette for skinned models
-Texture2D LightsTexture; // 4 channels of 32 bit float, 3 pixels in a row containing 1 light source
-                         // pixel 1 xyz: position, w: 1 / range
-                         // pixel 2 xyz: direction (for point light = (0, 0, 0)), w: innerConeCos (in range 0-1: spot light; > 1: msts headlight; < 1: point or directional light)
-                         // pixel 3 xyz: color pre-multiplied by intensity, w: outerConeCos (in range 0-1)
+Texture2D LightsTexture; // 4 channels of 32 bit float, 3 pixels in a row containing 1 light source, row 0 is always the sun/moon.
+                         // pixel 0 xyz: position, w: 1 / range
+                         // pixel 1 xyz: direction (for point light = (0, 0, 0)), w: innerConeCos (in range 0-1: spot light; > 1: msts headlight; < 1: point or directional light)
+                         // pixel 2 xyz: color pre-multiplied by intensity, w: outerConeCos (in range 0-1)
 
 
 ////////////////////    V E R T E X   I N P U T S    ///////////////////////////
@@ -248,10 +249,9 @@ void _VSNormalProjection(in float3 InNormal, in float4x4 WorldTransform, inout f
 	OutPosition = mul(mul(mul(OutPosition, WorldTransform), View), Projection);
 	OutRelPosition.w = OutPosition.z;
 	OutNormal_Light.xyz = normalize(mul(InNormal, (float3x3)WorldTransform).xyz);
-	
-	// Normal lighting (range 0.0 - 1.0)
-	// For VSForest() it is calculated in Shaders.cs eyeVector.SetValue(), the sun direction is uploaded to this shader negated, to conform with glTF lights extension
-	OutNormal_Light.w = dot(OutNormal_Light.xyz, LightDirection0) * 0.5 + 0.5; // [0] is always the sun/moon
+
+    float3 sunDirection = LightsTexture.Load(int3(1, 0, 0)).xyz; // light[0] is always the sun/moon
+    OutNormal_Light.w = dot(OutNormal_Light.xyz, sunDirection) * 0.5 + 0.5; // Normal lighting (range 0.0 - 1.0)
 }
 
 void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
@@ -571,6 +571,7 @@ float3 _PSGetShadowEffectMoments(in VERTEX_OUTPUT In)
     return float3(moments, pos.z);
 }
 
+#ifdef DEBUG_SHADOW_COLORS
 void _PSApplyShadowColor(inout float3 Color, in VERTEX_OUTPUT In)
 {
 	float depth = In.RelPosition.w;
@@ -594,6 +595,7 @@ void _PSApplyShadowColor(inout float3 Color, in VERTEX_OUTPUT In)
 		}
 	}
 }
+#endif
 
 float _PSGetShadowEffect(uniform bool NormalLighting, in VERTEX_OUTPUT In)
 {
@@ -824,7 +826,9 @@ float4 PSImage(uniform bool ClampTexCoords, in VERTEX_OUTPUT In) : COLOR0
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
-	//_PSApplyShadowColor(litColor, In); // This is a debug method
+#ifdef DEBUG_SHADOW_COLORS
+	_PSApplyShadowColor(litColor, In);
+#endif
 	return float4(litColor, Color.a);
 }
 
@@ -1111,7 +1115,9 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, InGeneral), Overcast.x);
 	// And fogging is last.
 	_PSApplyFog(litColor, InGeneral);
-	//_PSApplyShadowColor(litColor, InGeneral); // This is a debug method
+#ifdef DEBUG_SHADOW_COLORS
+	_PSApplyShadowColor(litColor, InGeneral);
+#endif
 	///////////////////////
 
 	// Transform back to sRGB:
@@ -1157,7 +1163,9 @@ float4 PSTerrain(in VERTEX_OUTPUT In) : COLOR0
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
-	//_PSApplyShadowColor(litColor, In); // This is a debug method
+#ifdef DEBUG_SHADOW_COLORS
+	_PSApplyShadowColor(litColor, In);
+#endif
 	return float4(litColor, Color.a);
 }
 
