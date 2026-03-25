@@ -107,9 +107,8 @@ namespace Orts.Viewer3D
         // glTF-PBR:
         readonly EffectParameter baseColorFactor;
         readonly EffectParameter emissiveTexture;
-        readonly EffectParameter emissiveFactor;
+        readonly EffectParameter emissiveIorFactor;
         readonly EffectParameter normalTexture;
-        readonly EffectParameter normalScale;
         readonly EffectParameter occlusionTexture;
         readonly EffectParameter metallicRoughnessTexture;
         readonly EffectParameter occlusionFactor;
@@ -122,7 +121,6 @@ namespace Orts.Viewer3D
         readonly EffectParameter specularTexture;
         readonly EffectParameter specularFactor;
         readonly EffectParameter specularColorTexture;
-        readonly EffectParameter iorFactor;
         readonly EffectParameter referenceAlpha;
         readonly EffectParameter textureCoordinates1;
         readonly EffectParameter textureCoordinates2;
@@ -283,11 +281,9 @@ namespace Orts.Viewer3D
 
         public Vector4 BaseColorFactor { set { baseColorFactor.SetValue(value); } }
         
-        public Vector3 EmissiveFactor { set { emissiveFactor.SetValue(value); } }
+        public Vector4 EmissiveIorFactor { set { emissiveIorFactor.SetValue(value); } }
         
-        public float NormalScale { set { normalScale.SetValue(value); } }
-        
-        public Vector3 OcclusionFactor { set { occlusionFactor.SetValue(value); } }
+        public Vector4 OcclusionFactor { set { occlusionFactor.SetValue(value); } }
 
         public float ClearcoatFactor { set { clearcoatFactor.SetValue(value); } }
 
@@ -296,8 +292,6 @@ namespace Orts.Viewer3D
         public float ClearcoatNormalScale { set { clearcoatNormalScale.SetValue(value); } }
 
         public Vector4 SpecularFactor { set { specularFactor.SetValue(value); } }
-
-        public float IorFactor { set { iorFactor.SetValue((float)Math.Pow((value - 1) / (value + 1), 2)); } }
 
 
         public Texture2D EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
@@ -320,14 +314,14 @@ namespace Orts.Viewer3D
 
         public bool HasSkin { set { hasSkin.SetValue(value); } }
 
-        public int[] MorphConfig { set { morphConfig.SetValue(value); } }
-        
-        public float[] MorphWeights { set { morphWeights.SetValue(value); } }
+        public Vector4[] MorphConfig { set { morphConfig.SetValue(value); } }
+
+        public Vector4[] MorphWeights { set { morphWeights.SetValue(value); } }
 
         public float NumLights { set { numLights.SetValue(value); } }
 
         public Texture2D LightsTexture { set { lightsTexture.SetValue(value); } }
-        
+
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
         {
@@ -363,8 +357,7 @@ namespace Orts.Viewer3D
             referenceAlpha = Parameters["ReferenceAlpha"];
             overlayScale = Parameters["OverlayScale"];
             baseColorFactor = Parameters["BaseColorFactor"];
-            emissiveFactor = Parameters["EmissiveFactor"];
-            normalScale = Parameters["NormalScale"];
+            emissiveIorFactor = Parameters["EmissiveIorFactor"];
             occlusionFactor = Parameters["OcclusionFactor"];
             clearcoatFactor = Parameters["ClearcoatFactor"];
             clearcoatRoughnessFactor = Parameters["ClearcoatRoughnessFactor"];
@@ -372,7 +365,6 @@ namespace Orts.Viewer3D
             specularTexture = Parameters["SpecularTexture"];
             specularFactor = Parameters["SpecularFactor"];
             specularColorTexture = Parameters["SpecularColorTexture"];
-            iorFactor = Parameters["IorFactor"];
             textureCoordinates1 = Parameters["TextureCoordinates1"];
             textureCoordinates2 = Parameters["TextureCoordinates2"];
             textureCoordinates3 = Parameters["TextureCoordinates3"];
@@ -430,8 +422,8 @@ namespace Orts.Viewer3D
 
         public Texture2D BonesTexture { set { bonesTexture.SetValue(value); } }
         public bool HasSkin { set { hasSkin.SetValue(value); } }
-        public int[] MorphConfig { set { morphConfig.SetValue(value); } }
-        public float[] MorphWeights { set { morphWeights.SetValue(value); } }
+        public Vector4[] MorphConfig { set { morphConfig.SetValue(value); } }
+        public Vector4[] MorphWeights { set { morphWeights.SetValue(value); } }
 
         public ShadowMapShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "ShadowMap")

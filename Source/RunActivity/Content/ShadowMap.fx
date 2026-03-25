@@ -23,8 +23,6 @@
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-#define MAX_MORPH_TARGETS 8
-
 cbuffer PerFrame
 {
     float4x4 View; // world -> view
@@ -35,9 +33,9 @@ cbuffer PerFrame
 cbuffer PerObject
 {
     float4x4 World; // model -> world [max number of bones]
+    float4 MorphConfig[2]; // 0.x: POS, 0.y: NORM, 0.z: TANG, 0.w: TEX0, 1.x: TEX1, 1.y: COL0, 1.z: targets count, 1.w: attributes count
+    float4 MorphWeights[2];
     float ImageBlurStep; // = 1 / shadow map texture width and height
-    int MorphConfig[8]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. All: set to -1 if not available. 6: targets count. 7: attributes count.
-    float MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
     bool HasSkin;
 };
 
@@ -111,7 +109,7 @@ struct VERTEX_INPUT_MORPHED
     min16uint4  Joints : BLENDINDICES0;
     float4 Weights     : BLENDWEIGHT0;
     float4 Color       : COLOR0;
-    float4 MorphTargets[MAX_MORPH_TARGETS] : POSITION1;
+    float4 MorphTargets[8] : POSITION1;
 };
 
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
@@ -262,13 +260,18 @@ VERTEX_OUTPUT VSShadowMapMorphed(in VERTEX_INPUT_MORPHED In)
     Out.Position = In.Position;
     Out.TexCoord_Depth.xy = In.TexCoords;
     
-    [unroll(MAX_MORPH_TARGETS)]
-    for (int i = 0; i < MorphConfig[6]; i++)
+    int attrCount = MorphConfig[1].w;
+
+    [unroll(8)]
+    for (int i = 0; i < MorphConfig[1].z; i++)
     {
-        if (MorphConfig[0] != -1)
-            Out.Position.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[0]].xyz * MorphWeights[i];
-        if (MorphConfig[3] != -1)
-            Out.TexCoord_Depth.xy += In.MorphTargets[MorphConfig[7] * i + MorphConfig[3]].xy * MorphWeights[i];
+        float weight = MorphWeights[i / 4][i % 4];
+        int offset = attrCount * i;
+
+        if (MorphConfig[0].x != -1)
+            Out.Position.xyz += In.MorphTargets[offset + MorphConfig[0].x].xyz * weight;
+        if (MorphConfig[0].w != -1)
+            Out.TexCoord_Depth.xy += In.MorphTargets[offset + MorphConfig[0].w].xy * weight;
     }
 
     Out.Position = mul(Out.Position, skinTransform);
