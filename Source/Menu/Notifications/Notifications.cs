@@ -69,6 +69,9 @@ namespace Menu.Notifications
     class Update : ValueItem
     {
     }
+    class Refresh : ValueItem
+    {
+    }
     abstract class ValueItem : Item
     {
         public string Value { get; set; }
@@ -84,7 +87,7 @@ namespace Menu.Notifications
         public List<string> IncludeIfNot { get; set; }
         public string Label { get; set; }
         public string Color { get; set; } = "black";
-        public int Indent { get; set; } = 140;
+        public int Indent { get; set; } = 144;
         internal virtual void ReplaceParameters(Func<string, string> replaceFunc)
         {
             Label = replaceFunc(Label);
