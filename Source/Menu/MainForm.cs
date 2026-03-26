@@ -343,9 +343,15 @@ namespace Menu
                 return null;
             }, _ =>
             {
-                NotificationManager.CheckNotifications();
-                UpdateNotificationPageAlert();
+                LoadNotifications();
             });
+        }
+
+        private void LoadNotifications()
+        {
+            NotificationManager.CheckNotifications();
+            ShowNotificationPages();
+            UpdateNotificationPageAlert();
         }
 
         // Event raised by Retry button in NotificationPages so user can retry updates following an error notification.
@@ -369,6 +375,16 @@ namespace Menu
                 SystemInfo.GPUs,
                 SystemInfo.Direct3DFeatureLevels
             });
+        }
+
+        public virtual void OnRefreshUpdates(EventArgs e)
+        {
+            // Force a Refresh of the notifications, which will check for updates and show the notification pages if there are any new notifications.
+            UpdateManager.SetChannel("Unstable"); // The 'Refresh' button is only available for the 'Unstable' mode.
+            UpdateManager.Check();
+
+            // Reload the notifications and show them as the 'Latest version available' may have changed.
+            LoadNotifications();
         }
 
         void LoadLanguage()
@@ -1744,18 +1760,14 @@ namespace Menu
         // 3 should be enough, but is there a way to get unlimited buttons?
         public void Button0_Click(object sender, EventArgs e)
         {
-            if (NotificationManager.Notifications == null) // button0 used for "Retry"
-            {
-                NotificationManager.CheckNotifications();
-                ShowNotificationPages();
-            }
-            else NotificationManager.Page.DoButton(UpdateManager, 0);
+            NotificationManager.Page.DoButton(UpdateManager, 0);
         }
 
         public void Button1_Click(object sender, EventArgs e)
         {
             NotificationManager.Page.DoButton(UpdateManager, 1);
         }
+
         public void Button2_Click(object sender, EventArgs e)
         {
             NotificationManager.Page.DoButton(UpdateManager, 2);
