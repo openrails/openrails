@@ -24,8 +24,7 @@
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
 float4x4 World;         // model -> world
-float4x4 View;          // world -> view
-float4x4 Projection;    // view -> projection
+float4x4 WorldViewProjection;  // model -> world -> view -> projection
 float4x4 LightViewProjectionShadowProjection0;  // world -> light view -> light projection -> shadow map projection
 float4x4 LightViewProjectionShadowProjection1;
 float4x4 LightViewProjectionShadowProjection2;
@@ -56,6 +55,13 @@ float    ReferenceAlpha;
 texture  ImageTexture;
 texture  OverlayTexture;
 float	 OverlayScale;
+
+// === Dynamic Light Parameters (up to 40 lights) ===
+float4 DynamicLightPosition[40];  // xyz = position, w = radius (for point lights) or spot angle falloff (for spotlights)
+float4 DynamicLightColor[40];     // rgb = color, a = intensity
+float4 DynamicLightDirection[40]; // xyz = normalized direction (for spotlights), w = 0.5 * (1 - minDotProduct)
+float  DynamicLightType[40];      // 0 = Point light, 1 = Spotlight, 2 = Directional
+int DynamicLightCount;            // number of active dynamic lights (max 40)
 
 sampler Image = sampler_state
 {
@@ -157,7 +163,7 @@ struct VERTEX_OUTPUT
 void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
-	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
+	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
@@ -185,7 +191,7 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 		const float GlowScalingFactor = 40;
 		In.Position.xyz *= log(1 + max(0, length(relPos) - GlowCutOffM) / GlowScalingFactor) * ZBias_Lighting.x;
 	}
-	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
+	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = relPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
@@ -195,7 +201,7 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
-	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
+	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
@@ -302,7 +308,7 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT_FOREST In)
 	In.Position = float4(newPosition, 1);
 
 	// Project vertex with fixed w=1 and normal=eye.
-	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
+	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
@@ -454,6 +460,63 @@ void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 	Color.a *= saturate((LightVector_ZFar.w - length(In.RelPosition.xyz)) / 50);
 }
 
+// === Dynamic Light Contribution Function (supports point and spotlight) ===
+// Illuminates surfaces using original texture color, just like the headlight
+void ApplyDynamicLights(inout float3 Color, in float3 OriginalColor, in float3 worldPos, in float3 normal)
+{
+    [unroll]
+    for (int i = 0; i < 40; ++i)
+    {
+        if (i >= DynamicLightCount) break;
+        
+        float3 lightVec = DynamicLightPosition[i].xyz - worldPos;
+        float dist = length(lightVec);
+        float radius = DynamicLightPosition[i].w;
+        
+        // Skip if beyond radius
+        if (dist >= radius) continue;
+        
+        float3 L = normalize(lightVec);
+        
+        // Calculate shading contribution
+        float shading = 0.0;
+        
+        if (DynamicLightType[i] < 0.5) 
+        {
+            // POINT LIGHT: Omnidirectional
+            float NdotL = saturate(dot(normal, L));
+            float attenuation = saturate(1.0 - dist / radius);
+            attenuation *= attenuation; // Quadratic falloff (smooth drop-off like headlight)
+            shading = NdotL * attenuation;
+        }
+        else 
+        {
+            // SPOTLIGHT: Cone-based like headlight
+            float3 lightToSurface = -L;
+            float coneDot = dot(lightToSurface, DynamicLightDirection[i].xyz);
+            
+            // Outside the cone
+            if (coneDot <= 0.0) continue;
+            
+            // Check if surface faces the light
+            float NdotL = saturate(dot(normal, L));
+            if (NdotL <= 0.0) continue;
+            
+            // Cone falloff with smooth edges (same as headlight)
+            float coneShading = saturate(DynamicLightDirection[i].w / (1.0 - coneDot + 0.001));
+            
+            // Distance falloff (smooth, like headlight)
+            float distAttenuation = saturate(1.0 - dist / radius);
+            
+            shading = NdotL * coneShading * distAttenuation;
+        }
+        
+        // Apply light to original surface color (blends WITH environment, not on top)
+        // This is exactly how the headlight does it!
+        Color += OriginalColor * DynamicLightColor[i].rgb * DynamicLightColor[i].a * shading;
+    }
+}
+
 float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
@@ -481,6 +544,8 @@ float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX
 	_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	// Dynamic lights blend with environment just like headlights do
+	ApplyDynamicLights(litColor, Color.rgb, In.RelPosition.xyz + ViewerPos, In.Normal_Light.xyz);
 	if (ShaderModel3) _PSSceneryFade(Color, In);
 	//if (ShaderModel3) _PSApplyShadowColor(litColor, In);
 	return float4(litColor, Color.a);
@@ -540,6 +605,8 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	// Dynamic lights blend with environment just like headlights do
+	ApplyDynamicLights(litColor, Color.rgb, In.RelPosition.xyz + ViewerPos, In.Normal_Light.xyz);
 	_PSSceneryFade(Color, In);
 	//if (ShaderModel3) _PSApplyShadowColor(litColor, In);
 	return float4(litColor, Color.a);
@@ -639,119 +706,119 @@ float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 
 technique ImageLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSImage9_1();
+		VertexShader = compile vs_5_0 VSGeneral9_1();
+		PixelShader = compile ps_5_0 PSImage9_1();
 	}
 }
 
 technique ImageLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSImage9_3();
+		VertexShader = compile vs_5_0 VSGeneral9_3();
+		PixelShader = compile ps_5_0 PSImage9_3();
 	}
 }
 
 technique TransferLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSTransfer9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSImage9_1();
+		VertexShader = compile vs_5_0 VSTransfer9_1();
+		PixelShader = compile ps_5_0 PSImage9_1();
 	}
 }
 
 technique TransferLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSTransfer3();
-		PixelShader = compile ps_4_0_level_9_3 PSImage9_3Clamp();
+		VertexShader = compile vs_5_0 VSTransfer3();
+		PixelShader = compile ps_5_0 PSImage9_3Clamp();
 	}
 }
 
 technique Forest {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSForest();
-		PixelShader = compile ps_4_0_level_9_1 PSVegetation();
+		VertexShader = compile vs_5_0 VSForest();
+		PixelShader = compile ps_5_0 PSVegetation();
 	}
 }
 
 technique VegetationLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSVegetation();
+		VertexShader = compile vs_5_0 VSGeneral9_1();
+		PixelShader = compile ps_5_0 PSVegetation();
 	}
 }
 
 technique VegetationLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSVegetation();
+		VertexShader = compile vs_5_0 VSGeneral9_3();
+		PixelShader = compile ps_5_0 PSVegetation();
 	}
 }
 
 technique TerrainLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSTerrain9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSTerrain9_1();
+		VertexShader = compile vs_5_0 VSTerrain9_1();
+		PixelShader = compile ps_5_0 PSTerrain9_1();
 	}
 }
 
 technique TerrainLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSTerrain9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSTerrain9_3();
+		VertexShader = compile vs_5_0 VSTerrain9_3();
+		PixelShader = compile ps_5_0 PSTerrain9_3();
 	}
 }
 
 technique DarkShadeLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSDarkShade();
+		VertexShader = compile vs_5_0 VSGeneral9_1();
+		PixelShader = compile ps_5_0 PSDarkShade();
 	}
 }
 
 technique DarkShadeLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSDarkShade();
+		VertexShader = compile vs_5_0 VSGeneral9_3();
+		PixelShader = compile ps_5_0 PSDarkShade();
 	}
 }
 
 technique HalfBrightLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSHalfBright();
+		VertexShader = compile vs_5_0 VSGeneral9_1();
+		PixelShader = compile ps_5_0 PSHalfBright();
 	}
 }
 
 technique HalfBrightLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSHalfBright();
+		VertexShader = compile vs_5_0 VSGeneral9_3();
+		PixelShader = compile ps_5_0 PSHalfBright();
 	}
 }
 
 technique FullBrightLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
-		PixelShader = compile ps_4_0_level_9_1 PSFullBright();
+		VertexShader = compile vs_5_0 VSGeneral9_1();
+		PixelShader = compile ps_5_0 PSFullBright();
 	}
 }
 
 technique FullBrightLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
-		PixelShader = compile ps_4_0_level_9_3 PSFullBright();
+		VertexShader = compile vs_5_0 VSGeneral9_3();
+		PixelShader = compile ps_5_0 PSFullBright();
 	}
 }
 
 technique SignalLight {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSSignalLight();
-		PixelShader = compile ps_4_0_level_9_1 PSSignalLight();
+		VertexShader = compile vs_5_0 VSSignalLight();
+		PixelShader = compile ps_5_0 PSSignalLight();
 	}
 }
 
 technique SignalLightGlow {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSSignalLightGlow();
-		PixelShader = compile ps_4_0_level_9_1 PSSignalLight();
+		VertexShader = compile vs_5_0 VSSignalLightGlow();
+		PixelShader = compile ps_5_0 PSSignalLight();
 	}
 }

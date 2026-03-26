@@ -1,44 +1,57 @@
-﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
-//
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+// 
 // This file is part of Open Rails.
-//
+// 
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// This file is the responsibility of the 3D & Environment Team.
+// This file is the responsibility of the 3D & Environment Team. 
 
-using System;
-using System.Diagnostics;
-using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS.Common;
+using Microsoft.Xna.Framework.Content.Pipeline;
+using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
+using Microsoft.Xna.Framework.Content.Pipeline.Processors;
 using Orts.Viewer3D.Processes;
+using ORTS.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.IO;
 
 namespace Orts.Viewer3D
 {
     public abstract class Shader : Effect
     {
-        protected Shader(GraphicsDevice graphicsDevice, string filename)
+        public Shader(GraphicsDevice graphicsDevice, string filename)
             : base(graphicsDevice, GetEffectCode(filename))
         {
         }
 
         static byte[] GetEffectCode(string filename)
         {
-            string filePath = Path.Combine(ApplicationInfo.ProcessDirectory, "Content", filename + ".mgfx");
-            return File.ReadAllBytes(filePath);
+            var basePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
+            var effectFileName = System.IO.Path.Combine(basePath, filename + ".fx");
+
+            var input = new EffectContent()
+            {
+                // Bizarrely, MonoGame loads the content from the identity's filename and ignores the EffectCode property, so we don't need to bother loading the file ourselves
+                Identity = new ContentIdentity(effectFileName),
+            };
+            var context = new ProcessorContext();
+            var processor = new EffectProcessor();
+            var effect = processor.Process(input, context);
+            return effect.GetEffectCode();
         }
     }
 
@@ -58,7 +71,7 @@ namespace Orts.Viewer3D
         readonly OpaqueDataDictionary parameters = new OpaqueDataDictionary();
 
         public override ContentBuildLogger Logger { get { return logger; } }
-        readonly ContentBuildLogger logger = new TraceContentBuildLogger();
+        readonly ContentBuildLogger logger = new Logger();
 
         public override void AddDependency(string filename) { }
         public override void AddOutputFile(string filename) { }
@@ -68,19 +81,18 @@ namespace Orts.Viewer3D
         public override ExternalReference<TOutput> BuildAsset<TInput, TOutput>(ExternalReference<TInput> sourceAsset, string processorName, OpaqueDataDictionary processorParameters, string importerName, string assetName) { throw new NotImplementedException(); }
     }
 
-    class TraceContentBuildLogger : ContentBuildLogger
+    class Logger : ContentBuildLogger
     {
-        public override void LogMessage(string message, params object[] messageArgs) => Trace.TraceInformation(message, messageArgs);
-        public override void LogImportantMessage(string message, params object[] messageArgs) => Trace.TraceInformation(message, messageArgs);
-        public override void LogWarning(string helpLink, ContentIdentity contentIdentity, string message, params object[] messageArgs) => Trace.TraceWarning(message, messageArgs);
+        public override void LogMessage(string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
+        public override void LogImportantMessage(string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
+        public override void LogWarning(string helpLink, ContentIdentity contentIdentity, string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
     }
 
     [CallOnThread("Render")]
     public class SceneryShader : Shader
     {
         readonly EffectParameter world;
-        readonly EffectParameter view;
-        readonly EffectParameter projection;
+        readonly EffectParameter worldViewProjection;
         readonly EffectParameter[] lightViewProjectionShadowProjection;
         readonly EffectParameter[] shadowMapTextures;
         readonly EffectParameter shadowMapLimit;
@@ -104,6 +116,11 @@ namespace Orts.Viewer3D
         readonly EffectParameter overlayTexture;
         readonly EffectParameter referenceAlpha;
         readonly EffectParameter overlayScale;
+        readonly EffectParameter dynamicLightPosition;
+        readonly EffectParameter dynamicLightColor;
+        readonly EffectParameter dynamicLightDirection;
+        readonly EffectParameter dynamicLightType;
+        readonly EffectParameter dynamicLightCount;
 
         Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
@@ -118,11 +135,10 @@ namespace Orts.Viewer3D
             sideVector.SetValue(Vector3.Normalize(Vector3.Cross(_eyeVector, Vector3.Down)));
         }
 
-        public void SetMatrix(Matrix w, ref Matrix v, ref Matrix p)
+        public void SetMatrix(Matrix w, ref Matrix vp)
         {
             world.SetValue(w);
-            view.SetValue(v);
-            projection.SetValue(p);
+            worldViewProjection.SetValue(w * vp);
 
             int vIn = Program.Simulator.Settings.DayAmbientLight;
             
@@ -224,12 +240,72 @@ namespace Orts.Viewer3D
 
         public float OverlayScale { set { overlayScale.SetValue(value); } }
 
+        public void SetDynamicLights(IEnumerable<ORTS.Common.Lighting.DynamicLight> lights)
+        {
+            var activeLights = lights.Where(l => l.Active).Take(40).ToArray();
+            Vector4[] positions = new Vector4[40];
+            Vector4[] colors = new Vector4[40];
+            Vector4[] directions = new Vector4[40];
+            float[] types = new float[40];
+            int count = activeLights.Length;
+            
+            for (int i = 0; i < count; i++)
+            {
+                var light = activeLights[i];
+                positions[i] = new Vector4(light.Position, light.Radius);
+                colors[i] = new Vector4(light.Color * light.Intensity, light.Intensity);
+                
+                // For spotlights, set direction and minDot based on SpotAngle
+                if (light.Type == ORTS.Common.Lighting.DynamicLight.LightType.Spot)
+                {
+                    types[i] = 1.0f; // Spotlight type
+                    // Convert spot angle to a dot product threshold
+                    float angleRadians = MathHelper.ToRadians(light.SpotAngle);
+                    float minDotProduct = MathHelper.Cos(angleRadians * 0.5f); // Half angle for cone
+                    
+                    // Use same formula as headlight: w = 0.5f * (1 - minDotProduct)
+                    float directionW = 0.5f * (1.0f - minDotProduct);
+                    directions[i] = new Vector4(light.Direction, directionW);
+                }
+                else
+                {
+                    types[i] = 0.0f; // Point light type
+                    directions[i] = Vector4.Zero;
+                }
+            }
+            
+            for (int i = count; i < 40; i++)
+            {
+                positions[i] = Vector4.Zero;
+                colors[i] = Vector4.Zero;
+                directions[i] = Vector4.Zero;
+                types[i] = 0.0f;
+            }
+            
+            dynamicLightPosition.SetValue(positions);
+            dynamicLightColor.SetValue(colors);
+            dynamicLightDirection.SetValue(directions);
+            dynamicLightType.SetValue(types);
+            dynamicLightCount.SetValue(count);
+        }
+
+        public void RenderWithDynamicLights(Viewer viewer)
+        {
+            // Collect up to 40 active dynamic lights from the LightManager
+            SetDynamicLights(viewer.World.LightManager.Lights);
+            // ...existing rendering code...
+            // Example: Set matrices, textures, etc. before drawing
+            // SetMatrix(...);
+            // SetViewMatrix(...);
+            // Set other shader parameters as needed
+            // Then draw your geometry
+        }
+
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
         {
             world = Parameters["World"];
-            view = Parameters["View"];
-            projection = Parameters["Projection"];
+            worldViewProjection = Parameters["WorldViewProjection"];
             lightViewProjectionShadowProjection = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
             shadowMapTextures = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
             for (var i = 0; i < RenderProcess.ShadowMapCountMaximum; i++)
@@ -258,6 +334,11 @@ namespace Orts.Viewer3D
             overlayTexture = Parameters["OverlayTexture"];
             referenceAlpha = Parameters["ReferenceAlpha"];
             overlayScale = Parameters["OverlayScale"];
+            dynamicLightPosition = Parameters["DynamicLightPosition"];
+            dynamicLightColor = Parameters["DynamicLightColor"];
+            dynamicLightDirection = Parameters["DynamicLightDirection"];
+            dynamicLightType = Parameters["DynamicLightType"];
+            dynamicLightCount = Parameters["DynamicLightCount"];
         }
     }
 
@@ -309,7 +390,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter lightVector;
         readonly EffectParameter time;
         readonly EffectParameter overcast;
-        readonly EffectParameter cloudScalePosition;
+        readonly EffectParameter windDisplacement;
         readonly EffectParameter skyColor;
         readonly EffectParameter fogColor;
         readonly EffectParameter fog;
@@ -323,6 +404,9 @@ namespace Orts.Viewer3D
         readonly EffectParameter moonMapTexture;
         readonly EffectParameter moonMaskTexture;
         readonly EffectParameter cloudMapTexture;
+        readonly EffectParameter dayGradientTexture;
+        readonly EffectParameter nightGradientTexture;
+        readonly EffectParameter cloudShadowTexture;
 
 
         public Vector3 LightVector
@@ -376,22 +460,35 @@ namespace Orts.Viewer3D
             set
             {
                 if (value < 0.2f)
-                    overcast.SetValue(new Vector4(5 * value, 0.0f, 0.0f, 0.0f));
+                    overcast.SetValue(new Vector4(4 * value + 0.2f, 0.0f, 0.0f, 0.0f));
                 else
                     // Coefficients selected by author to achieve the desired appearance
                     overcast.SetValue(new Vector4(MathHelper.Clamp(2 * value - 0.4f, 0, 1), 1.25f - 1.125f * value, 1.15f - 0.75f * value, 1f));
             }
         }
 
-        public Vector4 CloudScalePosition { set => cloudScalePosition.SetValue(value); }
+        public float WindSpeed { get; set; }
+
+        public float WindDirection
+        {
+            set 
+            {
+                var totalWindDisplacement = 50 * WindSpeed * _time; // This exaggerates the wind speed, but it is necessary to get a visible effect
+                windDisplacement.SetValue(new Vector2(-(float)Math.Sin(value) * totalWindDisplacement, (float)Math.Cos(value) * totalWindDisplacement));
+            }
+        }
 
         public float MoonScale { get; set; }
 
-        public Texture2D SkyMapTexture { set { skyMapTexture.SetValue(value); } }
-        public Texture2D StarMapTexture { set { starMapTexture.SetValue(value); } }
-        public Texture2D MoonMapTexture { set { moonMapTexture.SetValue(value); } }
-        public Texture2D MoonMaskTexture { set { moonMaskTexture.SetValue(value); } }
-        public Texture2D CloudMapTexture { set { cloudMapTexture.SetValue(value); } }
+        public Texture2D SkyMapTexture { set { if (skyMapTexture != null) skyMapTexture.SetValue(value); } }
+        public Texture2D StarMapTexture { set { if (starMapTexture != null) starMapTexture.SetValue(value); } }
+        public Texture2D MoonMapTexture { set { if (moonMapTexture != null) moonMapTexture.SetValue(value); } }
+        public Texture2D MoonMaskTexture { set { if (moonMaskTexture != null) moonMaskTexture.SetValue(value); } }
+        public Texture2D CloudMapTexture { set { if (cloudMapTexture != null) cloudMapTexture.SetValue(value); } }
+
+        public Texture2D DayGradientTexture { set { if (dayGradientTexture != null) dayGradientTexture.SetValue(value); } }
+        public Texture2D NightGradientTexture { set { if (nightGradientTexture != null) nightGradientTexture.SetValue(value); } }
+        public Texture2D CloudShadowTexture { set { if (cloudShadowTexture != null) cloudShadowTexture.SetValue(value); } }
 
         public void SetViewMatrix(ref Matrix view)
         {
@@ -419,7 +516,7 @@ namespace Orts.Viewer3D
             lightVector = Parameters["LightVector"];
             time = Parameters["Time"];
             overcast = Parameters["Overcast"];
-            cloudScalePosition = Parameters["CloudScalePosition"];
+            windDisplacement = Parameters["WindDisplacement"];
             skyColor = Parameters["SkyColor"];
             fogColor = Parameters["FogColor"];
             fog = Parameters["Fog"];
@@ -433,6 +530,9 @@ namespace Orts.Viewer3D
             moonMapTexture = Parameters["MoonMapTexture"];
             moonMaskTexture = Parameters["MoonMaskTexture"];
             cloudMapTexture = Parameters["CloudMapTexture"];
+            dayGradientTexture = Parameters["DayGradientTexture"];
+            nightGradientTexture = Parameters["NightGradientTexture"];
+            cloudShadowTexture = Parameters["CloudShadowTexture"];
         }
         
 
@@ -611,7 +711,7 @@ namespace Orts.Viewer3D
             screenSize = Parameters["ScreenSize"];
             screenTexture = Parameters["ScreenTexture"];
             // TODO: This should happen on the loader thread.
-            Parameters["WindowTexture"].SetValue(SharedTextureManager.LoadInternal(graphicsDevice, System.IO.Path.Combine(viewer.ContentPath, "Window.png")));
+            Parameters["WindowTexture"].SetValue(SharedTextureManager.Get(graphicsDevice, System.IO.Path.Combine(viewer.ContentPath, "Window.png")));
         }
     }
 
