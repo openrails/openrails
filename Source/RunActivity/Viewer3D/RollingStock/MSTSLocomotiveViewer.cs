@@ -1523,7 +1523,7 @@ namespace Orts.Viewer3D.RollingStock
         }
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (!_Locomotive.ShowCab || _Locomotive.StaleCab || _Locomotive.StaleViewer)
+            if (!_Locomotive.ShowCab)
                 return;
 
             bool Dark = _Viewer.MaterialManager.sunDirection.Y <= -0.085f || _Viewer.Camera.IsUnderground;
