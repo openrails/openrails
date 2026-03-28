@@ -616,19 +616,19 @@ namespace Orts.Viewer3D
                 SceneryShader.BrdfLutTexture = BlackTexture;
             }
 
+            SceneryShader.Fog = FogColor;
+
             if (Viewer.Settings.UseMSTSEnv == false)
             {
                 SceneryShader.Overcast = Viewer.Simulator.Weather.CloudCoverFactor;
-                SceneryShader.SetFog(Viewer.Simulator.Weather.VisibilityM, ref SharedMaterialManager.FogColor);
                 ParticleEmitterShader.SetFog(Viewer.Simulator.Weather.VisibilityM, ref SharedMaterialManager.FogColor);
-                SceneryShader.ViewerPos = Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation);
+                SceneryShader.SetViewerPos(Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation), Viewer.Simulator.Weather.VisibilityM);
             }
             else
             {
                 SceneryShader.Overcast = Viewer.World.MSTSSky.mstsskyovercastFactor;
-                SceneryShader.SetFog(Viewer.World.MSTSSky.mstsskyfogDistance, ref SharedMaterialManager.FogColor);
-                ParticleEmitterShader.SetFog(Viewer.Simulator.Weather.VisibilityM, ref SharedMaterialManager.FogColor);
-                SceneryShader.ViewerPos = Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation);
+                ParticleEmitterShader.SetFog(Viewer.World.MSTSSky.mstsskyfogDistance, ref SharedMaterialManager.FogColor);
+                SceneryShader.SetViewerPos(Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation), Viewer.World.MSTSSky.mstsskyfogDistance);
             }
         }
     }
