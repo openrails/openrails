@@ -233,9 +233,9 @@ namespace Orts.Viewer3D
         public float LightingSpecular { set { lightingSpecular.SetValue(new Vector2(value >= 1 ? value : 1, value >= 1 ? 1 : 0)); } }
         // Setting this exponent of HLSL pow() function to 0 in DX11 leads to undefined result ^^^^
 
-        public void SetFog(float depth, ref Color color)
+        public void SetViewerPos(Vector3 pos, float fogVisibilityM)
         {
-            fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 1f / depth));
+            viewerPos.SetValue(new Vector4(pos, 1f / fogVisibilityM));
         }
 
         public void SetLightVector_ZFar(Vector3 sunDirection, float zFarDistance)
@@ -248,7 +248,7 @@ namespace Orts.Viewer3D
 
         public float Overcast { set { overcast.SetValue(new Vector2(value, value / 2)); } }
 
-        public Vector3 ViewerPos { set { viewerPos.SetValue(value); } }
+        public Color Fog { set { fog.SetValue(value.ToVector3()); } }
 
         public bool ImageTextureIsNight { set { _imageTextureIsNight = value; imageTextureIsNight.SetValue(value ? 1f : 0f); } get => _imageTextureIsNight; }
 

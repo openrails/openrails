@@ -30,7 +30,7 @@ cbuffer PerFrameVS
 {
     float4x4 View; // world -> view
     float4x4 Projection; // view -> projection
-    float3 ViewerPos; // Viewer's world coordinates.
+    float4 ViewerPos; // xyz: viewer's world coordinates, w: fog 1 / distance
     float4 EyeVector;
     float3 SideVector;
 };
@@ -39,7 +39,7 @@ cbuffer PerFramePS
 {
     float4x4 ShadowMatrices[4]; // world -> light view -> light projection -> shadow map projection
     float4 ShadowMapLimit;
-    float4 Fog; // rgb = linear color of fog; a = 1 / distance from camera
+    float3 Fog; // linear color of fog
     float2 Overcast; // lower saturation & brightness when overcast, x: FullBrightness, y: HalfBrightness
     float ZFar;
     float NumLights; // The number of the lights used
@@ -241,7 +241,7 @@ struct VERTEX_OUTPUT_PBR
 
 void _VSNormalProjection(in float3 InNormal, in float4x4 WorldTransform, inout float4 OutPosition, inout float4 OutRelPosition, inout float4 OutNormal_Light)
 {
-	OutRelPosition.xyz = mul(OutPosition, WorldTransform).xyz - ViewerPos;
+	OutRelPosition.xyz = mul(OutPosition, WorldTransform).xyz - ViewerPos.xyz;
 	OutPosition = mul(mul(mul(OutPosition, WorldTransform), View), Projection);
 	OutRelPosition.w = OutPosition.z;
 	OutNormal_Light.xyz = normalize(mul(InNormal, (float3x3)WorldTransform).xyz);
@@ -253,7 +253,7 @@ void _VSNormalProjection(in float3 InNormal, in float4x4 WorldTransform, inout f
 void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
-	float3 relPos = mul(In.Position, World).xyz - ViewerPos;
+	float3 relPos = mul(In.Position, World).xyz - ViewerPos.xyz;
 	// Position 1.5cm in front of signal.
 	In.Position.z += 0.015;
 	if (Glow) {
@@ -278,7 +278,7 @@ void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
 	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
-	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
+	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos.xyz;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light.w = 1;
@@ -287,7 +287,7 @@ void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 void _VSLightsAndShadows(in float4 InPosition, in float4x4 WorldTransform, in float distance, inout float fog, inout float4 shadow)
 {
 	// Fog fading
-	fog = (2.0 / (1.0 + exp(distance * Fog.a * -2.0))) - 1.0;
+	fog = (2.0 / (1.0 + exp(distance * ViewerPos.w * -2.0))) - 1.0;
 
 	// Absolute position for shadow mapping
 	shadow = mul(InPosition, WorldTransform);
@@ -490,7 +490,7 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT_FOREST In)
 
 	// Project vertex with fixed w=1 and normal=eye.
 	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
-	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
+	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos.xyz;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light = EyeVector;
@@ -696,7 +696,7 @@ void _PSApplyFog(inout float3 Color, in VERTEX_OUTPUT In)
 
 void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 {
-	if (ReferenceAlpha < 0.01) Color.a = 1;
+	//if (ReferenceAlpha < 0.01) Color.a = 1;
 	Color.a *= saturate((ZFar - length(In.RelPosition.xyz)) / 50);
 }
 
