@@ -21,10 +21,8 @@
 
 //#define DEBUG_SHADOW_COLORS
 
-// Keep these in sync with the values defined in RenderProcess.cs
 #define CLEARCOAT
 #define IOR_SPECULAR
-#define MAX_MORPH_TARGETS 8
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
@@ -57,30 +55,28 @@ cbuffer PerMaterial
     float ReferenceAlpha;
     float OverlayScale;
 
-    float4 BaseColorFactor; // glTF linear color multiplier
-    float3 OcclusionFactor; // x = occlusion strength, y = roughness factor, z = metallic factor
-    float NormalScale;
-    float3 EmissiveFactor; // glTF linear emissive multiplier
-    bool HasNormals;
+    float4 BaseColorFactor; // linear color multiplier
+    float4 OcclusionFactor; // x: occlusion strength, y: roughness factor, z: metallic factor, w: normal scale
+    float4 EmissiveIorFactor; // xyz: linear emissive multiplier, w: ((ior - 1) / (ior + 1))^2 precalculated
     float ClearcoatFactor;
     float ClearcoatRoughnessFactor;
     float ClearcoatNormalScale;
-    bool HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
     float4 SpecularFactor; // xyz: color, w: factor
     float4 TextureCoordinates1; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
     float4 TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
     float4 TextureCoordinates3; // x: specular, y: specular-color, z: transmission (not implemented), w: texture-packing 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic, 4: roughnessMetallicOcclusion + normal (RG) 2 channel separate, 5: occlusionRoughnessMetallic + normal (RG) 2 channel separate
     float2 LightingSpecular; // x = specular, y = step(1, x)
     float LightingDiffuse; // diffuse, not-unlit
-    float IorFactor; // ((ior - 1) / (ior + 1))^2 precalculated
+    bool HasNormals;
+    bool HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
 //};
 
 // VS only (except SignalLightIntensity, but at signals there is no PerMaterial buffer at all)
 //cbuffer PerObject
 //{
     float4x4 World; // model -> world [max number of bones]
-    int MorphConfig[8]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD_0, TEXCOORD_1, COLOR_0 data within MorphTargets, respectively. All: set to -1 if not available. 6: targets count. 7: attributes count.
-    float MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
+    float4 MorphConfig[2]; // 0.x: POS, 0.y: NORM, 0.z: TANG, 0.w: TEX0, 1.x: TEX1, 1.y: COL0, 1.z: targets count, 1.w: attributes count
+    float4 MorphWeights[2];
     bool HasSkin;
     float ZBias; // to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1
     
@@ -213,7 +209,7 @@ struct VERTEX_INPUT_MORPHED
     min16uint4  Joints : BLENDINDICES0;
 	float4 Weights     : BLENDWEIGHT0;
 	float4 Color       : COLOR0;
-    float4 MorphTargets[MAX_MORPH_TARGETS] : POSITION1;
+    float4 MorphTargets[8] : POSITION1;
 };
 
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
@@ -425,21 +421,26 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
     Out.TexCoords.xy = In.TexCoords;
     Out.TexCoords.zw = In.TexCoordsPbr;
 
-    [unroll(MAX_MORPH_TARGETS)]
-    for (int i = 0; i < MorphConfig[6]; i++)
+    int attrCount = MorphConfig[1].w;
+
+    [unroll(8)]
+    for (int i = 0; i < MorphConfig[1].z; i++)
     {
-        if (MorphConfig[0] != -1)
-            Out.Position.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[0]].xyz * MorphWeights[i];
-        if (MorphConfig[1] != -1)
-            normal.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[1]].xyz * MorphWeights[i];
-        if (MorphConfig[2] != -1)
-            tangent.xyz += In.MorphTargets[MorphConfig[7] * i + MorphConfig[2]].xyz * MorphWeights[i];
-        if (MorphConfig[3] != -1)
-            Out.TexCoords.xy += In.MorphTargets[MorphConfig[7] * i + MorphConfig[3]].xy * MorphWeights[i];
-        if (MorphConfig[4] != -1)
-            Out.TexCoords.zw += In.MorphTargets[MorphConfig[7] * i + MorphConfig[4]].xy * MorphWeights[i];
-        if (MorphConfig[5] != -1)
-            Out.Color += In.MorphTargets[MorphConfig[7] * i + MorphConfig[5]] * MorphWeights[i];
+        float weight = MorphWeights[i / 4][i % 4];
+        int offset = attrCount * i;
+
+        if (MorphConfig[0].x != -1)
+            Out.Position.xyz += In.MorphTargets[offset + MorphConfig[0].x].xyz * weight;
+        if (MorphConfig[0].y != -1)
+            normal.xyz += In.MorphTargets[offset + MorphConfig[0].y].xyz * weight;
+        if (MorphConfig[0].z != -1)
+            tangent.xyz += In.MorphTargets[offset + MorphConfig[0].z].xyz * weight;
+        if (MorphConfig[0].w != -1)
+            Out.TexCoords.xy += In.MorphTargets[offset + MorphConfig[0].w].xy * weight;
+        if (MorphConfig[1].x != -1)
+            Out.TexCoords.zw += In.MorphTargets[offset + MorphConfig[1].x].xy * weight;
+        if (MorphConfig[1].y != -1)
+            Out.Color += In.MorphTargets[offset + MorphConfig[1].y] * weight;
     }
 
     _VSNormalProjection(normal, worldTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
@@ -934,7 +935,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float specularFactor = SpecularFactor.w;
         specularFactor *= SpecularTexture.Sample(SpecularSampler, _PSUV(In.TexCoords, TextureCoordinates3.x)).a;
 
-        float3 f0 = min((float3) IorFactor * specularColorFactor, (float3) 1.0) * specularFactor;
+        float3 f0 = min((float3) EmissiveIorFactor.w * specularColorFactor, (float3) 1.0) * specularFactor;
         float3 f90 = (float3) specularFactor;
 #else
         float3 f0 = (float3) 0.04; // (float3)(pow((ior - 1) / (ior + 1), 2)) = (float3)0.04, if ior = 1.5
@@ -951,7 +952,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float3 specularEnvironmentR90 = float3(1.0, 1.0, 1.0) * reflectance90;
 	
         float3 normalSample = NormalTexture.Sample(NormalSampler, _PSUV(In.TexCoords, TextureCoordinates1.z)).rgb;
-        float3 n = _PSGetNormal(In, NormalScale, normalSample, isFrontFace, TextureCoordinates1.z != -1);
+        float3 n = _PSGetNormal(In, OcclusionFactor.w, normalSample, isFrontFace, TextureCoordinates1.z != -1);
         float3 v = normalize(-In.RelPosition.xyz);
 
         float NdotV = abs(dot(n, v)) + 0.001;
@@ -1093,11 +1094,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 #endif
         }
         litColor += diffuseContrib + specContrib;
-
-	    // Emissive color:
-        float3 emissive = EmissiveTexture.Sample(EmissiveSampler, _PSUV(In.TexCoords, TextureCoordinates1.w)).rgb;
-        emissive *= EmissiveFactor;
-        litColor += emissive;
+        litColor += EmissiveTexture.Sample(EmissiveSampler, _PSUV(In.TexCoords, TextureCoordinates1.w)).rgb * EmissiveIorFactor.xyz;
 
 #ifdef CLEARCOAT
         if (ClearcoatFactor > 0)

@@ -1204,6 +1204,8 @@ namespace Orts.Viewer3D
         protected readonly SamplerState SamplerStateSpecular;
         protected readonly SamplerState SamplerStateSpecularColor;
 
+        readonly Vector4[] MorphConfig = new Vector4[2];
+        readonly Vector4[] MorphWeights = new Vector4[2];
 
         // Animation actuators:
         public void SetAlphaCutoff(float value) => DefaultAlphaCutOff = (int)(value * 255f);
@@ -1316,12 +1318,13 @@ namespace Orts.Viewer3D
             shader.ImageTexture = Texture;
             shader.BaseColorFactor = BaseColorFactor;
             shader.NormalTexture = NormalTexture;
-            shader.NormalScale = NormalScale;
             shader.EmissiveTexture = EmissiveTexture;
-            shader.EmissiveFactor = !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground() ? EmissiveFactor : Vector3.Zero;
+            shader.EmissiveIorFactor = new Vector4(
+                !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground() ? EmissiveFactor : Vector3.Zero,
+                (float)Math.Pow((Ior - 1) / (Ior + 1), 2));
             shader.OcclusionTexture = OcclusionTexture;
             shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
-            shader.OcclusionFactor = new Vector3(OcclusionStrength == 2 ? 0 : OcclusionStrength, RoughnessFactor, MetallicFactor);
+            shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, NormalScale);
             shader.HasNormals = (Options & SceneryMaterialOptions.PbrHasNormals) != 0;
             shader.HasTangents = (Options & SceneryMaterialOptions.PbrHasTangents) != 0;
             shader.ClearcoatFactor = ClearcoatFactor;
@@ -1339,7 +1342,6 @@ namespace Orts.Viewer3D
                 shader.SpecularTexture = SpecularTexture;
                 shader.SpecularColorTexture = SpecularColorTexture;
             }
-            shader.IorFactor = Ior;
             shader.TextureCoordinates1 = TexCoords1;
             shader.TextureCoordinates2 = TexCoords2;
             shader.TextureCoordinates3 = TexCoords3;
@@ -1406,7 +1408,13 @@ namespace Orts.Viewer3D
                         shader.HasSkin = gltfPrimitive.BonesTexture != null;
 
                         if (gltfPrimitive.HasMorphTargets())
-                            (shader.MorphConfig, shader.MorphWeights) = gltfPrimitive.GetMorphingData();
+                        {
+                            var morphingData = gltfPrimitive.GetMorphingData();
+                            MemoryMarshal.Cast<float, Vector4>(morphingData.Item1).CopyTo(MorphConfig);
+                            MemoryMarshal.Cast<float, Vector4>(morphingData.Item2).CopyTo(MorphWeights);
+                            shader.MorphConfig = MorphConfig;
+                            shader.MorphWeights = MorphWeights;
+                        }
                     }
 
                     passes[i].Apply();
@@ -1441,6 +1449,9 @@ namespace Orts.Viewer3D
             Forest,
             Blocker,
         }
+
+        readonly Vector4[] MorphConfig = new Vector4[2];
+        readonly Vector4[] MorphWeights = new Vector4[2];
 
         public ShadowMapMaterial(Viewer viewer)
             : base(viewer, null)
@@ -1494,7 +1505,13 @@ namespace Orts.Viewer3D
                         }
 
                         if (gltfPrimitive.HasMorphTargets())
-                            (shader.MorphConfig, shader.MorphWeights) = gltfPrimitive.GetMorphingData();
+                        {
+                            var morphingData = gltfPrimitive.GetMorphingData();
+                            MemoryMarshal.Cast<float, Vector4>(morphingData.Item1).CopyTo(MorphConfig);
+                            MemoryMarshal.Cast<float, Vector4>(morphingData.Item2).CopyTo(MorphWeights);
+                            shader.MorphConfig = MorphConfig;
+                            shader.MorphWeights = MorphWeights;
+                        }
                     }
 
                     passes[i].Apply();

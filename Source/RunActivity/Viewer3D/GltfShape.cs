@@ -1429,7 +1429,7 @@ namespace Orts.Viewer3D
                 }
 
                 // Indicates what position in the target a specific vertex attribute is located at. [6] is the targets count. [7] is the attributes count per target.
-                var morphConfig = new int[8];
+                var morphConfig = new float[8];
 
                 // When having morph targets, make sure we have exactly 8 of them.
                 if ((options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
@@ -1548,13 +1548,13 @@ namespace Orts.Viewer3D
             /// Indicates what position in the target a specific vertex attribute is located at. Element [6] is set to 1 if the primitive has a skin.
             /// [7] is the targets count. [8] is the attributes count per target.
             /// </summary>
-            readonly int[] MorphConfig;
+            readonly float[] MorphConfig;
             readonly float[] MorphWeights;
-            readonly int MaxActiveMorphTargets;
+            readonly float MaxActiveMorphTargets;
 
 
             public GltfPrimitive(KHR_lights_punctual light, Gltf gltfFile, GltfDistanceLevel distanceLevel, int hierarchyIndex, int[] hierarchy)
-                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Array.Empty<int>())
+                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Array.Empty<float>())
             {
                 object extension = null;
                 AttachedLight = new StaticLight
@@ -1572,7 +1572,7 @@ namespace Orts.Viewer3D
                     distanceLevel.MatrixNames.Add(AttachedLight.ManagedName);
             }
 
-            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, int[] morphConfig)
+            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, float[] morphConfig)
                 : base(vertexAttributes.ToArray())
             {
                 Material = material;
@@ -1629,7 +1629,7 @@ namespace Orts.Viewer3D
             /// Select the max. 8 active morph targets and compile the active buffer binding.
             /// </summary>
             /// <returns>(morphConfig, weights)</returns>
-            public (int[], float[]) GetMorphingData()
+            public (float[], float[]) GetMorphingData()
             {
                 if (MorphWeights.Length <= MaxActiveMorphTargets)
                     return (MorphConfig, MorphWeights);
@@ -1668,11 +1668,11 @@ namespace Orts.Viewer3D
                 for (var i = 0; i < w; i++)
                 {
                     for (var j = 0; j < MorphConfig[7]; j++)
-                        ActiveVertexBufferBindings[8 + MorphConfig[7] * i + j] = VertexBufferBindings[8 + MorphConfig[7] * ActiveWeightIndices[i] + j];
+                        ActiveVertexBufferBindings[8 + (int)MorphConfig[7] * i + j] = VertexBufferBindings[8 + (int)MorphConfig[7] * ActiveWeightIndices[i] + j];
                     ActiveWeights[i] = MorphWeights[ActiveWeightIndices[i]];
                 }
                 // Fill up the rest of ActiveVertexBufferBindings with anything, as a padding.
-                for (var i = 8 + MorphConfig[7] * w; i < 16; i++)
+                for (var i = 8 + (int)MorphConfig[7] * w; i < 16; i++)
                     ActiveVertexBufferBindings[i] = VertexBufferBindings[8];
 
                 return (MorphConfig, ActiveWeights);
