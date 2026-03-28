@@ -430,10 +430,10 @@ namespace Orts.Viewer3D.RollingStock
                 drawer.SetOutputVelocity(car.LargeEjectorSteamVelocityMpS, car.LargeEjectorParticleDurationS);
 
             foreach (var drawer in CounterPressureBrake1)
-                drawer.SetOutput(car.CounterPressureBrake1SteamVelocityMpS, car.CounterPressureBrake1SteamVolumeM3pS, car.CounterPressureBrake1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.CounterPressureBrake1SteamVolumeM3pS, car.CounterPressureBrake1ParticleDurationS);
 
             foreach (var drawer in CounterPressureBrake2)
-                drawer.SetOutput(car.CounterPressureBrake2SteamVelocityMpS, car.CounterPressureBrake2SteamVolumeM3pS, car.CounterPressureBrake2ParticleDurationS);
+                drawer.SetOutputVolumetric(car.CounterPressureBrake2SteamVolumeM3pS, car.CounterPressureBrake2ParticleDurationS);
 
             foreach (var drawer in Compressor)
                 drawer.SetOutputVelocity(car.CompressorSteamVelocityMpS, car.CompressorParticleDurationS);

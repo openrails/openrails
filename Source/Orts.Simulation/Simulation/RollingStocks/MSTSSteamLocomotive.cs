@@ -855,13 +855,11 @@ namespace Orts.Simulation.RollingStocks
         public float BoosterCylinderSteamExhaust01SteamVolumeM3pS;
         public float BoosterCylinderSteamExhaust02SteamVolumeM3pS;
 
-        public float CounterPressureBrake1SteamVelocityMpS;
         public float CounterPressureBrake1SteamVolumeM3pS;
-        public float CounterPressureBrake1ParticleDurationS;
+        public float CounterPressureBrake1ParticleDurationS = 1.0f;
 
-        public float CounterPressureBrake2SteamVelocityMpS;
         public float CounterPressureBrake2SteamVolumeM3pS;
-        public float CounterPressureBrake2ParticleDurationS;
+        public float CounterPressureBrake2ParticleDurationS = 1.0f;
 
         float SteamExhaustDebugTimerS;
 
@@ -3952,12 +3950,8 @@ namespace Orts.Simulation.RollingStocks
             var CPFudgeFactor = 2.5f; // Purely a factor to make the steam visible in the Sim
 
             CounterPressureBrake1SteamVolumeM3pS = CounterPressureBrakeOn ? Math.Abs(CPFudgeFactor * CounterPressureBrakeWaterSteamExhaustM3pS) : 0.0f;
-            CounterPressureBrake1SteamVelocityMpS = 100.0f;
-            CounterPressureBrake1ParticleDurationS = 1.0f;
 
             CounterPressureBrake2SteamVolumeM3pS = CounterPressureBrakeOn ? Math.Abs(CPFudgeFactor * CounterPressureBrakeWaterSteamExhaustM3pS) : 0.0f;
-            CounterPressureBrake2SteamVelocityMpS = 100.0f;
-            CounterPressureBrake2ParticleDurationS = 1.0f;
 
             CylinderSteamExhaust2_1SteamVolumeM3pS = throttle > 0.0 && CylinderSteamExhaust2_1On ? (cutoff * 2.5f * SteamEffectsFactor) : 0.0f;
             CylinderSteamExhaust2_2SteamVolumeM3pS = throttle > 0.0 && CylinderSteamExhaust2_2On ? (cutoff * 2.5f * SteamEffectsFactor) : 0.0f;
