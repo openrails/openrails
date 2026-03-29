@@ -504,7 +504,7 @@ namespace Orts.Viewer3D
                     * Matrix.CreateScale(Scales.ElementAt(i)) * Matrix.CreateFromQuaternion(Rotations.ElementAt(i)) * Matrix.CreateTranslation(Translations.ElementAt(i))).ToArray();
 
                 // Substitute the sparse data to its place.
-                for (var a = 0; a < gltfFile.Accessors.Length; a++)
+                for (var a = 0; a < gltfFile.Accessors?.Length; a++)
                 {
                     if (gltfFile.Accessors[a] is var accessor && accessor.Sparse != null)
                     {
@@ -541,17 +541,17 @@ namespace Orts.Viewer3D
                 // Shovel all binary index & vertex attribute data over to the GPU. Such bufferViews are VertexBuffers/IndexBuffers in fact.
                 // The byteStride is constant throughout a vertex attribute bufferView, but may vary in index bufferViews.
                 // An accessor is the vertex attribute, is has a byteOffset within the bufferView. If byteOffset < byteStride, then the accessors are interleaved.
-                var primitives = gltfFile.Meshes.SelectMany(m => m.Primitives);
+                var primitives = gltfFile.Meshes?.SelectMany(m => m.Primitives);
                 var bufferViews = primitives
-                    .SelectMany(p => p.Attributes)
-                    .Concat(primitives // Upload all the morph targets too in this sole pass.
+                    ?.SelectMany(p => p.Attributes)
+                    ?.Concat(primitives // Upload all the morph targets too in this sole pass.
                         .SelectMany(p => p.Targets ?? new Dictionary<string, int>[0])
                         .SelectMany(t => t.Select(d => new KeyValuePair<string, int>("POSITION", d.Value)))) // Create all morph target vertex buffers with POSITION semantic, so they bind to the right slots.
-                    .OrderBy(a => gltfFile.Accessors[a.Value].ByteOffset)
-                    .Distinct()
-                    .GroupBy(a => gltfFile.Accessors[a.Value].BufferView ?? -1);
+                    ?.OrderBy(a => gltfFile.Accessors[a.Value].ByteOffset)
+                    ?.Distinct()
+                    ?.GroupBy(a => gltfFile.Accessors[a.Value].BufferView ?? -1);
 
-                foreach (var bufferView in bufferViews)
+                foreach (var bufferView in bufferViews ?? Enumerable.Empty<IGrouping<int, KeyValuePair<string, int>>>())
                 {
                     var byteStride = gltfFile.BufferViews.ElementAtOrDefault(bufferView.Key)?.ByteStride ?? GetSizeInBytes(gltfFile.Accessors[bufferView.First().Value]);
 
@@ -649,11 +649,11 @@ namespace Orts.Viewer3D
                 }
 
                 var indexBufferViews = primitives
-                    .OrderBy(p => gltfFile.Accessors?.ElementAtOrDefault(p.Indices ?? -1)?.ByteOffset ?? -1)
-                    .GroupBy(p => gltfFile.Accessors?.ElementAtOrDefault(p.Indices ?? -1)?.BufferView ?? -1)
-                    .Where(i => i.Key != -1);
+                    ?.OrderBy(p => gltfFile.Accessors?.ElementAtOrDefault(p.Indices ?? -1)?.ByteOffset ?? -1)
+                    ?.GroupBy(p => gltfFile.Accessors?.ElementAtOrDefault(p.Indices ?? -1)?.BufferView ?? -1)
+                    ?.Where(i => i.Key != -1);
 
-                foreach (var indexBufferView in indexBufferViews)
+                foreach (var indexBufferView in indexBufferViews ?? Enumerable.Empty<IGrouping<int, MeshPrimitive>>())
                 {
                     // Trigger the loading of the binary buffer.
                     GetBufferViewSpan(indexBufferView.Key, 0);
