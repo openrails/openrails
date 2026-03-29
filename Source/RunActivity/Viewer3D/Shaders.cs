@@ -261,7 +261,7 @@ namespace Orts.Viewer3D
                     types[i] = 1.0f; // Spotlight type
                     // Convert spot angle to a dot product threshold
                     float angleRadians = MathHelper.ToRadians(light.SpotAngle);
-                    float minDotProduct = MathHelper.Cos(angleRadians * 0.5f); // Half angle for cone
+                    float minDotProduct = (float)Math.Cos(angleRadians * 0.5f); // Half angle for cone
                     
                     // Use same formula as headlight: w = 0.5f * (1 - minDotProduct)
                     float directionW = 0.5f * (1.0f - minDotProduct);
