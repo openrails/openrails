@@ -48,7 +48,7 @@ using Orts.Simulation.RollingStocks.Coupling;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
-using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -590,6 +590,8 @@ namespace Orts.Simulation.RollingStocks
         public readonly Dictionary<(BrakeModes BrakeMode, float MinMass), BrakeSystem> BrakeSystems = new Dictionary<(BrakeModes, float), BrakeSystem>();
         /// <summary>Filter for the <see cref="BrakeSystems"/>, in case that comes from an include file</summary>
         public string[] BrakeModeNames { get; protected set; }
+        /// <summary>Store for the various train brake controllers fitted, e.g. air and vacuum.</summary>
+        public readonly Dictionary<BrakeModes, ScriptedBrakeController> TrainBrakeControllers = new Dictionary<BrakeModes, ScriptedBrakeController>();
 
         public float PreviousSteamBrakeCylinderPressurePSI;
 

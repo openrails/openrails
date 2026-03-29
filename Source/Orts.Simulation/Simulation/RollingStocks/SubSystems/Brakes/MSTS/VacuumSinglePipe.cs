@@ -538,11 +538,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (EngineBrake && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)) // Only apples when an engine brake is in place, otherwise processed to next loop
             {
                 // The engine brake can only be applied when the train brake is released or partially released. It cannot be released whilever the train brake is applied.
-                if (lead.TrainBrakeController.CurrentValue == 0 && lead.EngineBrakeController.CurrentValue > 0) // If train brake is completely released & Engine brake is applied
+                if ((lead.TrainBrakeController == null || lead.TrainBrakeController.CurrentValue == 0) && lead.EngineBrakeController?.CurrentValue > 0) // If train brake is completely released & Engine brake is applied
                 {
                     CylPressurePSIA = BrakeLine3PressurePSI;
                 }
-                else if (lead.TrainBrakeController.CurrentValue > 0) // if train brake is applied, then set engine brake to the higher of either the train brake or engine brake
+                else if (lead.TrainBrakeController?.CurrentValue > 0) // if train brake is applied, then set engine brake to the higher of either the train brake or engine brake
                 {
                     if (BrakeLine3PressurePSI > BrakeLine1PressurePSI)
                     {
@@ -764,7 +764,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             float vacuumreductionfactor = alititudereducedvacuum / sealevelpressure;
 
-            float InitialMaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : lead.TrainBrakeController.MaxPressurePSI;
+            float InitialMaxVacuumPipeLevelPSI = lead?.TrainBrakeController == null ? Bar.ToPSI(Bar.FromInHg(21)) : lead.TrainBrakeController.MaxPressurePSI;
 
             float MaxVacuumPipeLevelPSI = InitialMaxVacuumPipeLevelPSI * vacuumreductionfactor;
 
@@ -908,7 +908,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                 // Calculate the net loss/gain in terms of charging the BP - applies in regard to EQ Release positions
                 // Assume that EQ reservoir only fitted to diesel or electric locomotives
-                if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Release && lead.VacuumExhausterPressed))
+                if (lead.TrainBrakeController?.TrainBrakeControllerState == ControllerState.FullQuickRelease || (lead.TrainBrakeController?.TrainBrakeControllerState == ControllerState.Release && lead.VacuumExhausterPressed))
                 {
                     // Full Quick release - assumption that exhauster is in high speed mode
                     EQReleaseNetBPLossGainPSI = (AdjHighSExhausterChargingRateInHgpS + AdjLargeEjectorChargingRateInHgpS + AdjSmallEjectorChargingRateInHgpS + AdjVacuumPumpChargingRateInHgpS) - AdjTrainPipeLeakLossPSI;
@@ -931,7 +931,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 // Calculate train pipe pressure at lead locomotive.
                 // If a straight vacuum brake, then calculate lead brake pressure in straightvacuumsinglepipe class.
-                if (lead != null && lead.CarBrakeSystemType != "straight_vacuum_single_pipe")
+                if (lead?.TrainBrakeController != null && lead.CarBrakeSystemType != "straight_vacuum_single_pipe")
                 {
 
                     // When brakeController put into Running position the RunningLock ensures that brake pipe matches the Equalising Reservoir (Desired Vacuum) before

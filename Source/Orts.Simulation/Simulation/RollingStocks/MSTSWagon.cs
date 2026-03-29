@@ -916,6 +916,12 @@ namespace Orts.Simulation.RollingStocks
                 {
                     HandleIncompatibleBrakesystems(brakeSystem);
                     BrakeSystem.InitializeFromCopy(brakeSystem, true);
+
+                    if (this is MSTSLocomotive locomotive)
+                    {
+                        if (TrainBrakeControllers.TryGetValue(mode, out locomotive.TrainBrakeController))
+                            locomotive.TrainBrakeController.Initialize();
+                    }
                 }
 
                 // 2) Then try to auto-switch to / get values from the appropriate load stage
@@ -968,7 +974,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (newBrakeSystem is VacuumSinglePipe ^ BrakeSystem is VacuumSinglePipe)
             {
-                if (BrakeSystemAlt == null || BrakeSystemAlt == BrakeSystem)
+                if (BrakeSystemAlt == null || !(BrakeSystemAlt is VacuumSinglePipe ^ BrakeSystem is VacuumSinglePipe))
                 {
                     BrakeSystemAlt = BrakeSystem.CreateNewLike(newBrakeSystem, this).InitializeDefault();
 
@@ -1256,6 +1262,7 @@ namespace Orts.Simulation.RollingStocks
                         lowercasetoken = stf.Tree.ToLower();
                         switch (lowercasetoken)
                         {
+                            // The definition of the BrakeSystemType and OrtsBrakeModeName can be in any order, but they both need to be read before the BrakeSystem can be added to the dictionary
                             case "wagon(ortsbrakemode(ortsbrakemodename":
                                 if (stf.ReadStringBlock(null) is var mode && !string.IsNullOrEmpty(mode) && Enum.TryParse(mode, true, out BrakeModes brakeMode))
                                 {
@@ -1306,7 +1313,7 @@ namespace Orts.Simulation.RollingStocks
                                             if (lowercasetoken.EndsWith("("))
                                             {
                                                 stf.SkipRestOfBlock();
-                                                STFException.TraceWarning(stf, "Unknown braking parameter ignored.");
+                                                STFException.TraceWarning(stf, $"Unknown braking parameter '{lowercasetoken}' ignored");
                                             }
                                             else if (stage is MSTSBrakeSystem mstsStage)
                                                 mstsStage.Parse(lowercasetoken.Replace("ortsbrakemode(ortsloadstage(", ""), stf);
@@ -1320,11 +1327,30 @@ namespace Orts.Simulation.RollingStocks
                                 else
                                     BrakeSystems[(newSystem.BrakeMode, stage.LoadStageMinMassKg)].InitializeFromCopy(stage, true);
                                 break;
+                            case "wagon(ortsbrakemode(brake_train":
+                                if (this is MSTSLocomotive locomotive)
+                                {
+                                    var brakeController = new ScriptedBrakeController(locomotive);
+                                    brakeController.Parse("engine(enginecontrollers(brake_train", stf);
+                                    if (TrainBrakeControllers.ContainsKey(newSystem.BrakeMode))
+                                        TrainBrakeControllers[newSystem.BrakeMode] = brakeController;
+                                    else
+                                        TrainBrakeControllers.Add(newSystem.BrakeMode, brakeController);
+                                    stf.SkipRestOfBlock();
+                                }
+                                break;
                             default:
-                                if (lowercasetoken.EndsWith("("))
+                                if ((lowercasetoken.StartsWith("wagon(ortsbrakemode(trainbrakescontroller")
+                                    || lowercasetoken.StartsWith("wagon(ortsbrakemode(ortstrainbrakecontroller")
+                                    || lowercasetoken.StartsWith("wagon(ortsbrakemode(ortstrainbrakescontroller"))
+                                    && TrainBrakeControllers.TryGetValue(newSystem.BrakeMode, out var tbc))
+                                {
+                                    tbc.Parse(lowercasetoken.Replace("wagon(ortsbrakemode(", "engine("), stf);
+                                }
+                                else if (lowercasetoken.EndsWith("("))
                                 {
                                     stf.SkipRestOfBlock();
-                                    STFException.TraceWarning(stf, "Unknown braking parameter ignored.");
+                                    STFException.TraceWarning(stf, $"Unknown braking parameter '{lowercasetoken}' ignored");
                                 }
                                 else if (newSystem is MSTSBrakeSystem newMstsSystem)
                                     newMstsSystem.Parse(lowercasetoken.Replace("ortsbrakemode(", ""), stf);
