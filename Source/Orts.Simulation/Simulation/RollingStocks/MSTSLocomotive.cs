@@ -1383,6 +1383,14 @@ namespace Orts.Simulation.RollingStocks
             DPSyncTrainRelease = locoCopy.DPSyncTrainRelease;
             DPSyncEmergency = locoCopy.DPSyncEmergency;
             DPSyncIndependent = locoCopy.DPSyncIndependent;
+            foreach (var key in locoCopy.TrainBrakeControllers.Keys)
+            {
+                var tbcCopy = locoCopy.TrainBrakeControllers[key].Clone(this);
+                if (TrainBrakeControllers.ContainsKey(key))
+                    TrainBrakeControllers[key] = tbcCopy;
+                else
+                    TrainBrakeControllers.Add(key, tbcCopy);
+            }
 
             LocomotivePowerSupply.Copy(locoCopy.LocomotivePowerSupply);
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
