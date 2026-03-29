@@ -84,6 +84,7 @@ namespace Orts.Viewer3D
         private HashSet<string> IncludeUpdates = new HashSet<string>();
         private HashSet<string> WaveUpdates = new HashSet<string>();
         private HashSet<string> WorldUpdates = new HashSet<string>();
+        private HashSet<string> ProfileUpdates = new HashSet<string>();
         private HashSet<string> TileUpdates = new HashSet<string>();
         public bool ManualReloadQueued;
         /// <summary>
@@ -848,7 +849,7 @@ namespace Orts.Viewer3D
                 {
                     ProcessGraphicsFileUpdates();
                 }
-                if (WorldUpdates.Count > 0 || TileUpdates.Count > 0)
+                if (WorldUpdates.Count > 0 || TileUpdates.Count > 0 || ProfileUpdates.Count > 0)
                 {
                     ProcessRouteFileUpdates();
                 }
@@ -1080,6 +1081,7 @@ namespace Orts.Viewer3D
             bool staleTextures = false;
             bool staleMaterials = false;
             bool staleShapes = false;
+            bool staleScenery = false;
 
             if (TextureUpdates.Count > 0)
             {
@@ -1118,7 +1120,7 @@ namespace Orts.Viewer3D
                     car.CheckStaleTextures();
 
                 foreach (WorldFile world in World.Scenery.WorldFiles)
-                    world.CheckStaleTextures();
+                    staleScenery |= world.CheckStaleTextures();
 
                 foreach (TerrainTile terrain in World.Terrain.TerrainTiles)
                     terrain.CheckStaleTextures();
@@ -1128,10 +1130,14 @@ namespace Orts.Viewer3D
                 foreach (TrainCarViewer car in World.Trains.Cars.Values)
                     car.CheckStaleShapes();
 
-                World.RoadCars.CheckStale();
+                staleScenery |= World.RoadCars.CheckStale();
 
                 foreach (WorldFile world in World.Scenery.WorldFiles)
-                    world.CheckStaleShapes();
+                    staleScenery |= world.CheckStaleShapes();
+            }
+            if (staleScenery)
+            {
+                World.Scenery.CheckStale();
             }
         }
 
@@ -1196,6 +1202,7 @@ namespace Orts.Viewer3D
         {
             bool staleSounds = false;
             bool staleSoundManagers = false;
+            bool staleScenery = false;
 
             if (WaveUpdates.Count > 0)
             {
@@ -1223,7 +1230,11 @@ namespace Orts.Viewer3D
                     car.CheckStaleSounds();
 
                 foreach (WorldFile world in World.Scenery.WorldFiles)
-                    world.CheckStaleSounds();
+                    staleScenery |= world.CheckStaleSounds();
+            }
+            if (staleScenery)
+            {
+                World.Scenery.CheckStale();
             }
         }
 
@@ -1269,6 +1280,12 @@ namespace Orts.Viewer3D
 
                     found = true;
                 }
+                else if (ext == ".stf" || ext == ".xml")
+                {
+                    ProfileUpdates.Add(path);
+
+                    found = true;
+                }
             }
 
             if (found)
@@ -1280,6 +1297,9 @@ namespace Orts.Viewer3D
         /// </summary>
         private void ProcessRouteFileUpdates()
         {
+            bool staleProfiles = false;
+            bool staleScenery = false;
+
             if (WorldUpdates.Count > 0)
             {
                 World.Scenery.MarkStale(WorldUpdates);
@@ -1291,6 +1311,29 @@ namespace Orts.Viewer3D
                 World.Terrain.MarkStale(TileUpdates);
 
                 TileUpdates.Clear();
+            }
+            if (ProfileUpdates.Count > 0)
+            {
+                foreach (TRPFile trp in TRPs)
+                    staleProfiles |= trp.MarkStale(ProfileUpdates);
+
+                ProfileUpdates.Clear();
+            }
+
+            if (staleProfiles)
+            {
+                foreach (WorldFile world in World.Scenery.WorldFiles)
+                    staleScenery |= world.CheckStaleDyntrack();
+
+                // Re-load track profiles to capture changes
+                TRPFile.CreateTrackProfile(this, Simulator.RoutePath, out TRPs);
+
+                // Clear cache of track profile assignments so it can be regenerated correctly
+                TrackProfileIndicies.Clear();
+            }
+            if (staleScenery)
+            {
+                World.Scenery.CheckStale();
             }
         }
 
@@ -1311,6 +1354,16 @@ namespace Orts.Viewer3D
             SharedSMSFileManager.SetAllStale(stale);
 
             SoundProcess.SetAllStale(stale);
+
+            foreach (TRPFile trp in TRPs)
+                trp.TrackProfile.StaleData = stale;
+
+            if (stale)
+            {
+                TRPFile.CreateTrackProfile(this, Simulator.RoutePath, out TRPs);
+
+                TrackProfileIndicies.Clear();
+            }
         }
 
         [CallOnThread("Updater")]

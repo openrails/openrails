@@ -271,6 +271,29 @@ namespace Orts.Viewer3D
 
             return found;
         }
+
+        /// <summary>
+        /// Checks the scenery drawer for stale scenery tiles and sets the stale data flag if any tiles are stale
+        /// </summary>
+        /// <returns>bool indicating if the scenery changed from fresh to stale</returns>
+        public bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                foreach (WorldFile worldFile in WorldFiles)
+                {
+                    if (worldFile.StaleData)
+                    {
+                        StaleData = true;
+                        break;
+                    }
+                }
+
+                return StaleData;
+            }
+            else
+                return false;
+        }
     }
 
     [CallOnThread("Loader")]
@@ -712,7 +735,7 @@ namespace Orts.Viewer3D
                 // as opposed to textures referenced indirectly through shape files
                 foreach (DynamicTrackViewer dTrack in dTrackList)
                 {
-                    if (dTrack.CheckStale())
+                    if (dTrack.CheckStaleTextures())
                     {
                         StaleData = true;
                         break;
@@ -747,6 +770,29 @@ namespace Orts.Viewer3D
             {
                 // Scenery sounds are 'owned' by the ".ws" file with the same name as the world file
                 StaleData = Viewer.SoundProcess.GetStale(WorldFilePath + "s");
+
+                return StaleData;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Checks this world file for stale dynamic track sections and sets the stale data flag if any dynamic track is stale
+        /// </summary>
+        /// <returns>bool indicating if this world file changed from fresh to stale</returns>
+        public bool CheckStaleDyntrack()
+        {
+            if (!StaleData)
+            {
+                foreach (DynamicTrackViewer dTrack in dTrackList)
+                {
+                    if (dTrack.CheckStaleProfile())
+                    {
+                        StaleData = true;
+                        break;
+                    }
+                }
 
                 return StaleData;
             }

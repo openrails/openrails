@@ -913,12 +913,13 @@ Hot reloading and manual reloading work with these systems:
 - sounds and audio files
 - cab views
 - world files
+- dynamic track profiles
 - terrain tiles and terrain textures
 
 Note that this means there are an assortment of systems that hot
 reloading and manual reloading do NOT affect:
 
-- tracks and track markers
+- track database and track markers
 - signals
 - activities and timetables
 - paths, services, and traffic

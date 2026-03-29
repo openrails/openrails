@@ -135,7 +135,7 @@ namespace Orts.Viewer3D
         /// Checks this dynamic track object for stale materials and sets the stale data flag if any materials are stale
         /// </summary>
         /// <returns>bool indicating if this dynamic track changed from fresh to stale</returns>
-        public bool CheckStale()
+        public bool CheckStaleTextures()
         {
             if (!StaleData)
             {
@@ -152,6 +152,23 @@ namespace Orts.Viewer3D
                     if (StaleData)
                         break;
                 }
+
+                return StaleData;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Checks this dynamic track object for a stale track profile and sets the stale data flag if the track profile is stale
+        /// </summary>
+        /// <returns>bool indicating if this dynamic track changed from fresh to stale</returns>
+        public bool CheckStaleProfile()
+        {
+            if (!StaleData)
+            {
+                if (Primitive.TrProfile.StaleData)
+                    StaleData = true;
 
                 return StaleData;
             }
@@ -181,13 +198,13 @@ namespace Orts.Viewer3D
             shapePath = shapePath.ToLowerInvariant();
 
             if (viewer.TrackProfileIndicies.ContainsKey(shapePath))
-                viewer.TrackProfileIndicies.TryGetValue(shapePath, out trpIndex);
+                trpIndex = viewer.TrackProfileIndicies[shapePath];
             else if (shapePath != "") // Haven't checked this track shape yet
             {
                 // Need to load the shape file if not already loaded
                 SharedShape trackShape = viewer.ShapeManager.Get(shapePath);
                 trpIndex = GetBestTrackProfile(viewer, trackShape);
-                viewer.TrackProfileIndicies.Add(shapePath, trpIndex);
+                viewer.TrackProfileIndicies[shapePath] = trpIndex;
             }
             else // Not enough info-use default track profile
                 trpIndex = 0;
@@ -210,13 +227,13 @@ namespace Orts.Viewer3D
             shapePath = shapePath.ToLowerInvariant();
 
             if (viewer.TrackProfileIndicies.ContainsKey(shapePath))
-                viewer.TrackProfileIndicies.TryGetValue(shapePath, out trpIndex);
+                trpIndex = viewer.TrackProfileIndicies[shapePath];
             else if (shapePath != "")
             {
                 // Need to load the shape file if not already loaded
                 SharedShape trackShape = viewer.ShapeManager.Get(shapePath);
                 trpIndex = GetBestTrackProfile(viewer, trackShape);
-                viewer.TrackProfileIndicies.Add(shapePath, trpIndex);
+                viewer.TrackProfileIndicies[shapePath] = trpIndex;
             }
             else // Not enough info-use default track profile
                 trpIndex = 0;
@@ -368,6 +385,7 @@ namespace Orts.Viewer3D
     public class TRPFile
     {
         public TrProfile TrackProfile; // Represents the track profile
+        public string FilePath;
         //public RenderProcess RenderProcess; // TODO: Pass this along in function calls
 
         /// <summary>
@@ -450,12 +468,16 @@ namespace Orts.Viewer3D
         /// <param name="filespec">Complete filepath string to track profile file.</param>
         public TRPFile(Viewer viewer, string filespec)
         {
+
             if (filespec == "")
             {
                 // No track profile provided, use default
                 TrackProfile = new TrProfile(viewer);
                 return;
             }
+
+            FilePath = Path.GetFullPath(filespec).ToLowerInvariant();
+
             FileInfo fileInfo = new FileInfo(filespec);
             if (!fileInfo.Exists)
             {
@@ -556,6 +578,26 @@ namespace Orts.Viewer3D
             Console.WriteLine(args.Message);
             Console.WriteLine("----------");
         }
+
+        /// <summary>
+        /// Sets the stale data flag for the track profiles in the given set of paths
+        /// </summary>
+        /// <returns>bool indicating if this track profile changed from fresh to stale</returns>
+        public bool MarkStale(HashSet<string> trpPaths)
+        {
+            bool found = false;
+
+            if (!TrackProfile.StaleData)
+            {
+                if (trpPaths.Contains(FilePath))
+                {
+                    TrackProfile.StaleData = true;
+                    found = true;
+                }
+            }
+
+            return found;
+        }
     }
 
     // Dynamic track profile class
@@ -578,6 +620,7 @@ namespace Orts.Viewer3D
         public List<Regex> ExcludeImages;
         // The gauge of track represented by this track profile
         public float TrackGaugeM;
+        public bool StaleData = false;
         /// <summary>
         /// The type of superelevation used (ie: which rail is superelevated)
         /// </summary>
