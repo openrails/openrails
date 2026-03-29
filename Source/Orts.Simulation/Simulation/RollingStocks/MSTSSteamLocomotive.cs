@@ -265,7 +265,7 @@ namespace Orts.Simulation.RollingStocks
         /// Grate limit of locomotive exceedeed?
         /// </summary>
         public bool IsGrateLimit { get; protected set; } = false;
-        bool HasSuperheater = false;  // Flag to indicate whether locomotive is superheated steam type
+        public bool HasSuperheater = false;  // Flag to indicate whether locomotive is superheated steam type
         bool IsSuperSet = false;    // Flag to indicate whether superheating is reducing cylinder condenstation
         bool IsSaturated = false;     // Flag to indicate locomotive is saturated steam type
         bool IsFixGeared = false;
@@ -562,7 +562,7 @@ namespace Orts.Simulation.RollingStocks
 
         // Derating factors for motive force 
         float BoilerPrimingDeratingFactor = 0.1f;   // Factor if boiler is priming
-        float OneAtmospherePSI = 14.696f;      // Atmospheric Pressure
+        public float OneAtmospherePSI = 14.696f;      // Atmospheric Pressure
 
         float SuperheaterFactor = 1.0f;               // Currently 2 values respected: 0.0 for no superheat (default), > 1.0 for typical superheat
         public float SuperheaterSteamUsageFactor = 1.0f;       // Below 1.0, reduces steam usage due to superheater
@@ -575,7 +575,7 @@ namespace Orts.Simulation.RollingStocks
         float FuelBoostResetTimerS = 0.01f; // Timer to rest fuel boosting for a while
         float TimeFuelBoostOnS = 300.0f;    // Time to allow fuel boosting to go on for 
         float TimeFuelBoostResetS = 1200.0f;// Time to wait before next fuel boost
-        float throttle;
+        public float throttle;
         float previousThrottle;
         float SpeedEquivMpS = 27.0f;          // Equvalent speed of 60mph in mps (27m/s) - used for damper control
 
@@ -649,7 +649,7 @@ namespace Orts.Simulation.RollingStocks
         // Simple locomotive cylinder information
         public float MeanEffectivePressurePSI;         // Mean effective pressure
         float RatioOfExpansion_bc;             // Ratio of expansion
-        float CylinderClearancePC = 0.09f;    // Assume cylinder clearance of 8% of the piston displacement for saturated locomotives and 9% for superheated locomotive - default to saturated locomotive value
+        public float CylinderClearancePC;
         float CylinderPortOpeningFactor;   // Model the size of the steam port opening in the cylinder - set to 0.085 as default, if no ENG file value added
         float CylinderPortOpeningUpper = 0.12f; // Set upper limit for Cylinder port opening
         float CylinderPortOpeningLower = 0.05f; // Set lower limit for Cylinder port opening
@@ -729,7 +729,7 @@ namespace Orts.Simulation.RollingStocks
         float CombCurveN;     // Temporary parameter to store combined Curve values of locomotive and tender
         float CombWindN;     // Temporary parameter to store combined Curve values of locomotive and tender
 
-        float cutoff;
+        public float cutoff;
 
         // Safety Valve parameters
         public bool SafetyIsOn;
@@ -756,16 +756,59 @@ namespace Orts.Simulation.RollingStocks
         float SteamGearRatioHigh;   // Gear ratio for a two speed geared locomotive, such as a Climax
         float LowMaxGearedSpeedMpS;  // Max speed of the geared locomotive - Low Gear
         float HighMaxGearedSpeedMpS; // Max speed of the geared locomotive - High Gear
-        float MotiveForceGearRatio; // mulitplication factor to be used in calculating motive force etc, when a geared locomotive.
+        public float MotiveForceGearRatio; // mulitplication factor to be used in calculating motive force etc, when a geared locomotive.
         float SteamGearPosition = 0.0f; // Position of Gears if set
 
         // Rotative Force and adhesion
 
         float ReciprocatingWeightLb = 580.0f;  // Weight of reciprocating parts of the rod driving gears
         float ConnectingRodWeightLb = 600.0f;  // Weignt of connecting rod
-        float CrankRadiusFt = 1.08f;        // Assume crank and rod lengths to give a 1:10 ratio - a reasonable av for steam locomotives?
-        float ConnectRodLengthFt = 10.8f;
-        float RodCoGFt = 4.32f;  // 0.4 from crank end of rod
+        public float CrankRadiusM;        // Crank radius (R) - Assume crank and rod lengths to give a 1:10 ratio - a reasonable av for steam locomotives?
+        public float ConnectRodLengthM; // Connecting Rod Length (L)
+        public float RodCoGM;  // 0.4 from crank end of rod
+
+        // Values for Steam Cylinder events
+        public enum SteamLocomotiveValveGearTypes
+        {
+            Unknown,
+            Walschaert_Inside,
+            Walschaert_Outside,
+            Stephenson_Inside,
+            Stephenson_Outside,
+        }
+
+        public SteamLocomotiveValveGearTypes SteamLocomotiveValveGearType;
+
+
+        public double ValveEccentricRadiusM;   // Eccentric Radius (r) - typically half of total valve travel, say 2.25 inches for a 4.5 inch cylinder stroke
+        public double ValvePortWidthM;      // Valve travel (2r) - Eccentric Radius (r) (Typically half of total valve travel) = 2.25in
+        public double ValveMaximumLeadM;        // Lead (Pb) = 0.25in
+        public double ValveExhaustLapM;        // Exhaust Lap (e) (Usually 0 or very small value)
+        public double SteamLapM;        // Maximum Steam Lap at full cutoff (when piston at end of stroke)
+
+        public double EccentricRodLinkPinDistM;
+        public double EccentricRodLengthM;
+
+
+        public float wireDrawingLocomotiveConstant;
+        public float KEffFactor;
+/*
+        double ValveLeadM;
+        double CutoffCrankAngleRad; // Crank angle at cutoff - used to determine cylinder events and steam usage
+        double AngleofAdvanceRad;
+        double ReleaseCylinderFraction;
+        double CompressionCylinderFraction;
+        double AdmissionCylinderFraction;
+        double ActualCutoffCylinderFraction;
+
+        double AdPortOpenM; // Distance the admission port is open in metres
+        double ExPortOpenM;
+        double FullValveTravelM;
+        float MEPWireDrawingFactor; // Factor to reduce MEP due to wire drawing - drop in pressure as steam flows through valve ports, etc. - typically around 0.85 for a saturated locomotive and 0.9 for a superheated locomotive
+
+        float NewCylinderCondensationFactor;
+        float SteamChestPressureReductionPSI;
+*/
 
         public enum SteamLocomotiveFuelTypes
         {
@@ -1047,6 +1090,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     break;
                 case "engine(cylinderstroke": MSTSCylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(cylinderdiameter": MSTSCylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+
+                case "engine(ortscylinderclearance": CylinderClearancePC = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+
                 case "engine(lpnumcylinders": MSTSLPNumCylinders = stf.ReadIntBlock(null); break;
                 case "engine(lpcylinderstroke": MSTSLPCylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(lpcylinderdiameter": MSTSLPCylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1082,6 +1128,31 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         FuelOilSteamHeatingReqd = true;
                     break;
                 case "engine(ortsfueloilspecificgravity": OilSpecificGravity = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+
+                case "engine(ortssteamlocomotivevalvegeartype":
+                    stf.MustMatch("(");
+                    var steamLocomotiveValveGearType = stf.ReadString();
+                    try
+                    {
+                        SteamLocomotiveValveGearType = (SteamLocomotiveValveGearTypes)Enum.Parse(typeof(SteamLocomotiveValveGearTypes), steamLocomotiveValveGearType);
+                    }
+                    catch
+                    {
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                            STFException.TraceWarning(stf, "Assumed unknown valve gear type " + steamLocomotiveValveGearType);
+                    }
+                    break;
+                case "engine(ortscylinderportwidth": ValvePortWidthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(ortscylinderlead": ValveMaximumLeadM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(ortscylinderlap": SteamLapM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(ortseccentricrodlength": EccentricRodLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(ortseccentricrodpindistance": EccentricRodLinkPinDistM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(ortscylinderexhaustlap": ValveExhaustLapM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(ortswiredrawlocomotiveconstant": wireDrawingLocomotiveConstant = stf.ReadIntBlock(null); break;
+                case "engine(ortssteamchestefficiencyfactor": KEffFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortsconnectingrodlength": ConnectRodLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(ortscrankradius": CrankRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(ortssmallejector": SmallEjectorController.Parse(stf); SmallEjectorControllerFitted = true; break;
                 case "engine(enginecontrollers(ortslargeejector": LargeEjectorController.Parse(stf); LargeEjectorControllerFitted = true; break;
@@ -1320,6 +1391,18 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             InitialPressureDropRatioRpMtoX = new Interpolator(locoCopy.InitialPressureDropRatioRpMtoX);
             BackPressuretoSteamOutput = new Interpolator(locoCopy.BackPressuretoSteamOutput);
             NewBurnRateSteamToFuelLbspH = new Interpolator(locoCopy.NewBurnRateSteamToFuelLbspH);
+            ValvePortWidthM = locoCopy.ValvePortWidthM;
+            SteamLocomotiveValveGearType = locoCopy.SteamLocomotiveValveGearType;
+            ValveMaximumLeadM = locoCopy.ValveMaximumLeadM;
+            wireDrawingLocomotiveConstant = locoCopy.wireDrawingLocomotiveConstant;
+            KEffFactor = locoCopy.KEffFactor;
+            ValveExhaustLapM = locoCopy.ValveExhaustLapM;
+            EccentricRodLengthM = locoCopy.EccentricRodLengthM;
+            EccentricRodLinkPinDistM = locoCopy.EccentricRodLinkPinDistM;
+            SteamLapM = locoCopy.SteamLapM;
+            ConnectRodLengthM = locoCopy.ConnectRodLengthM;
+            CrankRadiusM = locoCopy.CrankRadiusM;
+            CylinderClearancePC = locoCopy.CylinderClearancePC;
             BoilerEfficiency = locoCopy.BoilerEfficiency;
             SteamGearRatioLow = locoCopy.SteamGearRatioLow;
             SteamGearRatioHigh = locoCopy.SteamGearRatioHigh;
@@ -1565,7 +1648,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             {
                 SteamEngines[0].CounterPressureBrakingFitted = true;
             }
-
+            
             #region Initialise additional steam properties
 
             WaterDensityPSItoLBpFT3 = SteamTable.WaterDensityInterpolatorPSItoLBpFT3();
@@ -1813,7 +1896,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Water Glass Length set as per MSTS default value = {0}", FormatStrings.FormatVeryShortDistanceDisplay(WaterGlassLengthM, IsMetric));
+                    Trace.TraceInformation("Water Glass Length set as per MSTS default value = {0}", FormatStrings.FormatMillimeterDistanceDisplay(WaterGlassLengthM, IsMetric));
                 }
             }
             else if (WaterGlassLengthM == 0)
@@ -3302,10 +3385,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
                 else if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Rack && IsRackRailway)
                 {
+                    SteamEngines[i].Update(elapsedClockSeconds);
                     UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedRefMpS, i);
                 }
                 else if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Rack)
                 {
+                    SteamEngines[i].Update(elapsedClockSeconds);
                     UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedRefMpS, i);
                 }
 
@@ -6954,7 +7039,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                         float pistonForceLbf = Me2.ToIn2(Me2.FromFt2(slipCylinderPistonAreaFt2)) * crankCylinderPressure;
 
-                        float tangentialCrankForceFactor = Math.Abs(sin + (CrankRadiusFt / ConnectRodLengthFt) * sin * cos);
+                        float tangentialCrankForceFactor = Math.Abs(sin + (Me.ToFt(CrankRadiusM) / Me.ToFt(ConnectRodLengthM)) * sin * cos);
 
                         float tangentialForcelbf = tangentialCrankForceFactor * pistonForceLbf;
 
@@ -6962,12 +7047,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         float connectRodInertiaAngleFactor = 0;
 
                         // Calculate the "angle variation factors" for the Inertia
-                        reciprocatingInertiaAngleFactor = (cos + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Cos(2 * crankAngleRad)));
-                        connectRodInertiaAngleFactor = (cos + ((CrankRadiusFt * RodCoGFt) / (ConnectRodLengthFt * ConnectRodLengthFt)) * (float)Math.Cos(2 * crankAngleRad));
+                        reciprocatingInertiaAngleFactor = (cos + ((Me.ToFt(CrankRadiusM) / Me.ToFt(ConnectRodLengthM)) * (float)Math.Cos(2 * crankAngleRad)));
+                        connectRodInertiaAngleFactor = (cos + ((Me.ToFt(CrankRadiusM) * Me.ToFt(RodCoGM)) / (Me.ToFt(ConnectRodLengthM) * Me.ToFt(ConnectRodLengthM))) * (float)Math.Cos(2 * crankAngleRad));
 
                         // Calculate the speed factor to allow for variation in speed
                         // Adjust the above factor to allow for the speed of rotation on the parts - based upon Eq 8 (pg 21)
-                        float inertiaSpeedCorrectionFactor = 0.00034f * CrankRadiusFt * (float)Math.Pow(pS.TopM(SteamEngines[numberofengine].DriveWheelRevRpS), 2);
+                        float inertiaSpeedCorrectionFactor = 0.00034f * Me.ToFt(CrankRadiusM) * (float)Math.Pow(pS.TopM(SteamEngines[numberofengine].DriveWheelRevRpS), 2);
+
 
 
                         // Calculate the inertia force of the reciprocating weights
@@ -7035,7 +7121,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         // Wheel Adhesive Force = 
                         // Vertical thrust of the connecting rod will reduce or increase the effect of the adhesive weight of the locomotive
                         // Vert Thrust = Piston Force * 3/4 * r/l * sin(crank angle)
-                        float verticalThrustFactor = 3.0f / 4.0f * (CrankRadiusFt / ConnectRodLengthFt) * sin;
+                        float verticalThrustFactor = 3.0f / 4.0f * (CrankRadiusM / ConnectRodLengthM) * sin;
 
                         float effectiveRotationalForcelbf = totalInertiaForcelbf + pistonForceLbf;
 
@@ -9020,8 +9106,45 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             CylinderAdmissionOpenFactor * 100
                              );
 
-            for (int i = 0; i < SteamEngines.Count; i++)
+            for (int numberofengine = 0; numberofengine < SteamEngines.Count; numberofengine++)
             {
+
+                // Display new steam cylinder events
+                status.AppendFormat("{0}\t\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N3}\t{9}\t{10:N2}\t{11}\t{12:N2}\t{13}\t{14:N2}\t{15}\t{16:N2}\t{17}\t{18:N2}\t{19}\t{20:N2}\t{21}\t{22:N2}\t{23}\t{24:N2}\t{25}\t{26:N2}\t{27}\t{28:N2}\t{29}\t{30:N2}\n",
+                Simulator.Catalog.GetString("NewCylEvts:"),
+                Simulator.Catalog.GetString("Eng"),
+                numberofengine + 1,
+                Simulator.Catalog.GetString("Cutoff"),
+                SteamEngines[numberofengine].ActualCutoffCylinderFraction * 100,
+                Simulator.Catalog.GetString("CylRel"),
+                SteamEngines[numberofengine].ReleaseCylinderFraction * 100,
+                Simulator.Catalog.GetString("CylComp"),
+                SteamEngines[numberofengine].CompressionCylinderFraction * 100,
+                Simulator.Catalog.GetString("CyAdmis"),
+                SteamEngines[numberofengine].AdmissionCylinderFraction * 100,
+                Simulator.Catalog.GetString("StLap"),
+                FormatStrings.FormatMillimeterDistanceDisplay((float)SteamEngines[numberofengine].SESteamLapM, IsMetric),
+                Simulator.Catalog.GetString("Lead"),
+                FormatStrings.FormatMillimeterDistanceDisplay((float)SteamEngines[numberofengine].ValveLeadM, IsMetric),
+                Simulator.Catalog.GetString("CCAng"),
+                MathHelper.ToDegrees((float)SteamEngines[numberofengine].CutoffCrankAngleRad),
+                Simulator.Catalog.GetString("AdvAng"),
+                MathHelper.ToDegrees((float)SteamEngines[numberofengine].AngleofAdvanceRad),
+                Simulator.Catalog.GetString("InPort"),
+                FormatStrings.FormatMillimeterDistanceDisplay((float)SteamEngines[numberofengine].AdPortOpenM, IsMetric),
+                Simulator.Catalog.GetString("OutPort"),
+                FormatStrings.FormatMillimeterDistanceDisplay((float)SteamEngines[numberofengine].ExPortOpenM, IsMetric),
+                Simulator.Catalog.GetString("Travel"),
+                FormatStrings.FormatMillimeterDistanceDisplay((float)SteamEngines[numberofengine].FullValveTravelM, IsMetric),
+                Simulator.Catalog.GetString("WDFact"),
+                SteamEngines[numberofengine].MEPWireDrawingFactor,
+                Simulator.Catalog.GetString("CCFact"),
+                SteamEngines[numberofengine].NewCylinderCondensationFactor,
+                Simulator.Catalog.GetString("SCPrD"),
+                SteamEngines[numberofengine].SteamChestPressureReductionPSI
+
+                  );
+
                 if (SteamEngineType == SteamEngineTypes.Compound)  // Display Steam Indicator Information for compound locomotive
                 {
 
@@ -9029,19 +9152,19 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
                     Simulator.Catalog.GetString("PressHP:"),
                     Simulator.Catalog.GetString("Eng"),
-                    i + 1,
+                    numberofengine + 1,
                     Simulator.Catalog.GetString("Chest"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Initial"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Cutoff"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Rel"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Back"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("MEP"),
-                    FormatStrings.FormatPressure(SteamEngines[i].HPCylinderMEPPSI, PressureUnit.PSI, MainPressureUnit, true)
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].HPCylinderMEPPSI, PressureUnit.PSI, MainPressureUnit, true)
                                         );
 
 
@@ -9049,17 +9172,17 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     status.AppendFormat("{0}\t\t\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                     Simulator.Catalog.GetString("PressLP:"),
                     Simulator.Catalog.GetString("Eng"),
-                    i + 1,
+                    numberofengine + 1,
                     Simulator.Catalog.GetString("Initial"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogLPInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogLPInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Cutoff"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogLPCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogLPCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Rel"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogLPReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogLPReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Back"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogLPBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogLPBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("MEP"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LPCylinderMEPPSI, PressureUnit.PSI, MainPressureUnit, true)
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LPCylinderMEPPSI, PressureUnit.PSI, MainPressureUnit, true)
                         );
                 }
                 else  // Display Steam Indicator Information for single expansion locomotive
@@ -9069,19 +9192,40 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Simulator.Catalog.GetString("Press:"),
                     Simulator.Catalog.GetString("Chest"),
                     Simulator.Catalog.GetString("Eng#"),
-                    i + 1,
-                    FormatStrings.FormatPressure(SteamEngines[i].LogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    numberofengine + 1,
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Initial"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Cutoff"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Rel"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Back"),
-                    FormatStrings.FormatPressure(SteamEngines[i].LogBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].LogBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("MEP"),
-                    FormatStrings.FormatPressure(SteamEngines[i].MeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true)
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].MeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true)
                         );
+
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
+                    Simulator.Catalog.GetString("NewPress:"),
+                    Simulator.Catalog.GetString("Chest"),
+                    Simulator.Catalog.GetString("Eng#"),
+                    numberofengine + 1,
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].SELogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("Initial"),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].SELogInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("Cutoff"),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].SELogCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("Rel"),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].SELogReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("Back"),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].SELogBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("MEP"),
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].SEMeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true)
+                        );
+
+
+
                 }
             }
 
