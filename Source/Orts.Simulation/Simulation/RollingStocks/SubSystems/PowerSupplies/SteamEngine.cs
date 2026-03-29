@@ -15,19 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Parsers.Msts;
-using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
-using Orts.Simulation.RollingStocks.SubSystems;
-using Orts.Simulation.RollingStocks;
-using ORTS.Scripting.Api;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using static Orts.Simulation.RollingStocks.TrainCar;
+using Microsoft.Xna.Framework;
+using Orts.Parsers.Msts;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
+using ORTS.Scripting.Api;
+using static Orts.Simulation.RollingStocks.TrainCar;
 
 namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
@@ -600,6 +601,76 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public float SteamStaticWheelForce;
 
+        // Values for Steam Cylinder events
+        public enum SESteamLocomotiveValveGearTypes
+        {
+            Unknown,
+            Walschaert_Inside,
+            Walschaert_Outside,
+            Stephenson_Inside,
+            Stephenson_Outside,
+        }
+
+        public SESteamLocomotiveValveGearTypes SESteamLocomotiveValveGearType;
+
+
+        public double SEValveEccentricRadiusM;   // Eccentric Radius (r) - typically half of total valve travel, say 2.25 inches for a 4.5 inch cylinder stroke
+        public double SEValvePortWidthM;      // Valve travel (2r) - Eccentric Radius (r) (Typically half of total valve travel) = 2.25in
+        public double SEValveMaximumLeadM;        // Lead (Pb) = 0.25in
+        public double SEValveExhaustLapM;        // Exhaust Lap (e) (Usually 0 or very small value)
+        public double SESteamLapM;        // Maximum Steam Lap at full cutoff (when piston at end of stroke)
+
+        public float SECrankRadiusM;        // Crank radius (R) - Assume crank and rod lengths to give a 1:10 ratio - a reasonable av for steam locomotives?
+        public float SEConnectRodLengthM; // Connecting Rod Length (L)
+        public double SEEccentricRodLinkPinDistM;
+        public double SEEccentricRodLengthM;
+
+        public double ValveLeadM;
+        public float SEwireDrawingLocomotiveConstant;
+
+        public double CutoffCrankAngleRad; // Crank angle at cutoff - used to determine cylinder events and steam usage
+        public double AngleofAdvanceRad;
+        public double ReleaseCylinderFraction;
+        public double CompressionCylinderFraction;
+        public double AdmissionCylinderFraction;
+        public double ActualCutoffCylinderFraction;
+
+        public double AdPortOpenM; // Distance the admission port is open in metres
+        public double ExPortOpenM;
+        public double FullValveTravelM;
+        public float MEPWireDrawingFactor; // Factor to reduce MEP due to wire drawing - drop in pressure as steam flows through valve ports, etc. - typically around 0.85 for a saturated locomotive and 0.9 for a superheated locomotive
+
+        public float SEKEffFactor;
+        public float SESteamChestPressurePSI;
+
+
+        public float NewCylinderCondensationFactor;
+        public float SteamChestPressureReductionPSI;
+
+        float SERodCoGM; // Centre of Gravity of the rods - used to calculate unbalanced forces
+
+        // Assume cylinder clearance of 8% of the piston displacement for saturated locomotives and 9% for superheated locomotive -
+        // default to saturated locomotive value
+        float SECylinderClearancePC;
+
+        float CylinderWork_ab_InLbs; // Work done during admission stage of cylinder
+        float CylinderWork_bc_InLbs; // Work done during expansion stage of cylinder
+        float CylinderWork_cd_InLbs;   // Work done during release stage of cylinder
+        float CylinderWork_ef_InLbs; // Work done during compression stage of cylinder
+        float CylinderWork_fa_InLbs; // Work done during PreAdmission stage of cylinder
+        float CylinderWork_de_InLbs; // Work done during Exhaust stage of cylinder
+
+        // Values for logging and displaying Steam pressure
+        public float SELogInitialPressurePSI;
+        public float SELogCutoffPressurePSI;
+        public float SELogBackPressurePSI;
+        public float SELogReleasePressurePSI;
+        public float SELogSteamChestPressurePSI;
+        public float SELogPreCompressionPressurePSI;
+        public float SELogPreAdmissionPressurePSI;
+        public float SEMeanEffectivePressurePSI;
+
+
         public enum SettingsFlags
         {
             NumberCylindersF = 0x0001,
@@ -703,6 +774,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "numcylinders": NumberCylinders = stf.ReadIntBlock(null); initLevel |= SettingsFlags.NumberCylindersF; break;
                     case "cylinderstroke": CylindersStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); initLevel |= SettingsFlags.CylinderStrokeF; break;
                     case "cylinderdiameter": CylindersDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); initLevel |= SettingsFlags.CylindersDiameterF; break;
+                    case "cylinderclearance": SECylinderClearancePC = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+
+
                     case "lpnumcylinders": LPNumberCylinders = stf.ReadIntBlock(null); initLevel |= SettingsFlags.LPNumberCylindersF; break;
                     case "lpcylinderstroke": LPCylindersStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); initLevel |= SettingsFlags.LPCylinderStrokeF; break;
                     case "lpcylinderdiameter": LPCylindersDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); initLevel |= SettingsFlags.LPCylindersDiameterF; break;
@@ -733,6 +807,30 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                         }
                         break;
 
+                    case "engine(ortssteamlocomotivevalvegeartype":
+                        stf.MustMatch("(");
+                        var steamLocomotiveValveGearType = stf.ReadString();
+                        try
+                        {
+                            SESteamLocomotiveValveGearType = (SESteamLocomotiveValveGearTypes)Enum.Parse(typeof(SESteamLocomotiveValveGearTypes), steamLocomotiveValveGearType);
+                        }
+                        catch
+                        {
+                            if (Simulator.Settings.VerboseConfigurationMessages)
+                                STFException.TraceWarning(stf, "Assumed unknown valve gear type " + steamLocomotiveValveGearType);
+                        }
+                        break;
+                    case "cylinderportwidth": SEValvePortWidthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "cylinderlead": SEValveMaximumLeadM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "cylinderlap": SESteamLapM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "eccentricrodlength": SEEccentricRodLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "eccentricrodpindistance": SEEccentricRodLinkPinDistM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "cylinderexhaustlap": SEValveExhaustLapM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "wiredrawlocomotiveconstant": SEwireDrawingLocomotiveConstant = stf.ReadIntBlock(null); break;
+                    case "steamchestefficiencyfactor": SEKEffFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                    case "connectingrodlength": SEConnectRodLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                    case "crankradius": SECrankRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+
                     case "(":
                         stf.SkipRestOfBlock();
                         break;
@@ -757,6 +855,18 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             BoosterThrottleCutoff = other.BoosterThrottleCutoff;
             BoosterGearRatio = other.BoosterGearRatio;
             AttachedAxleId = other.AttachedAxleId;
+            SEValvePortWidthM = other.SEValvePortWidthM;
+            SESteamLocomotiveValveGearType = other.SESteamLocomotiveValveGearType;
+            SEValveMaximumLeadM = other.SEValveMaximumLeadM;
+            SEwireDrawingLocomotiveConstant = other.SEwireDrawingLocomotiveConstant;
+            SEValveExhaustLapM = other.SEValveExhaustLapM;
+            SEEccentricRodLengthM = other.SEEccentricRodLengthM;
+            SEEccentricRodLinkPinDistM = other.SEEccentricRodLinkPinDistM;
+            SESteamLapM = other.SESteamLapM;
+            SEConnectRodLengthM = other.SEConnectRodLengthM;
+            SECrankRadiusM = other.SECrankRadiusM;
+            SEKEffFactor = other.SEKEffFactor;
+            SECylinderClearancePC = other.SECylinderClearancePC;
         }
 
         public void Initialize()
@@ -772,6 +882,182 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             }
 
+            // Assign default information for steam cylinder valve gear
+            if (SESteamLocomotiveValveGearType == SESteamLocomotiveValveGearTypes.Unknown && Locomotive.SteamLocomotiveValveGearType != MSTSSteamLocomotive.SteamLocomotiveValveGearTypes.Unknown)
+            {
+                int steamLocomotiveValveGearType = (int)Locomotive.SteamLocomotiveValveGearType;
+                SESteamLocomotiveValveGearType = (SESteamLocomotiveValveGearTypes)steamLocomotiveValveGearType;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Steam Locomotive Valve Gear Type: copied from ENG file and set to value of {0}", SESteamLocomotiveValveGearType);
+            }
+            else
+            {
+                 SESteamLocomotiveValveGearType = SESteamLocomotiveValveGearTypes.Walschaert_Inside; // default value
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Steam Locomotive Valve Gear Type: not found in Steam Engine Configuration: set to Default value of {0}", SESteamLocomotiveValveGearType);
+            }
+
+            if (SEwireDrawingLocomotiveConstant == 0 && Locomotive.wireDrawingLocomotiveConstant != 0 && Id == 1)
+            {
+                SEwireDrawingLocomotiveConstant = Locomotive.wireDrawingLocomotiveConstant;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Wire Drawing Locomotive Constant: copied from ENG file and set to value of {0}", SEwireDrawingLocomotiveConstant);
+            }
+            else if (SEwireDrawingLocomotiveConstant == 0)
+            {
+                SEwireDrawingLocomotiveConstant = 145; // default value
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Wire Drawing Locomotive Constant: not found in Steam Engine Configuration: set to Default value of {0}", SEwireDrawingLocomotiveConstant);
+            }
+
+            if (SEKEffFactor == 0 && Locomotive.KEffFactor != 0 && Id == 1)
+            {
+                SEKEffFactor = Locomotive.KEffFactor;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Steam Chest Locomotive Constant: copied from ENG file and set to value of {0}", SEKEffFactor);
+            }
+            else if (SEKEffFactor == 0)
+            {
+                SEKEffFactor = 1.3f * (float)Math.Pow(10, -9); // default value
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Steam Chest Locomotive Constant: not found in Steam Engine Configuration: set to Default value of {0}", SEKEffFactor);
+            }
+
+            if (SEValvePortWidthM == 0 && Locomotive.ValvePortWidthM != 0 && Id == 1)
+            {
+                SEValvePortWidthM = Locomotive.ValvePortWidthM;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Cylinder Port Width: copied from ENG file and set to value of {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEValvePortWidthM, Locomotive.IsMetric));
+            }
+            else if (SEValvePortWidthM == 0)
+            {
+                SEValvePortWidthM = 0.05715f; // default value - 2.25 inches
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Cylinder Port Width: not found in Steam Engine Configuration: set to default value = {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEValvePortWidthM, Locomotive.IsMetric));
+            }
+
+            if (SEValveMaximumLeadM == 0 && Locomotive.ValveMaximumLeadM != 0 && Id == 1)
+            {
+                SEValveMaximumLeadM = Locomotive.ValveMaximumLeadM;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Valve Maximum Lead: copied from ENG file and set to value of {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEValveMaximumLeadM, Locomotive.IsMetric));
+            }
+            else if (SEValveMaximumLeadM == 0)
+            {
+                SEValveMaximumLeadM = 0.003175f; // default value - 0.125 inches
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Valve Maximum Lead: not found in Steam Engine Configuration: set to default value = {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEValveMaximumLeadM, Locomotive.IsMetric));
+            }
+
+            if (SEValveExhaustLapM == 0 && Locomotive.ValveExhaustLapM != 0 && Id == 1)
+            {
+                SEValveExhaustLapM = Locomotive.ValveExhaustLapM;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Valve Exhaust Lap: copied from ENG file and set to value of {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEValveExhaustLapM, Locomotive.IsMetric));
+            }
+            else if (SEValveExhaustLapM == 0)
+            {
+                SEValveExhaustLapM = 0.0005f; // default value - 0.02 inches
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Valve Exhaust Lap: not found in Steam Engine Configuration: set to default value = {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEValveExhaustLapM, Locomotive.IsMetric));
+            }
+
+            if (SESteamLapM == 0 && Locomotive.SteamLapM != 0 && Id == 1)
+            {
+                SESteamLapM = Locomotive.SteamLapM;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Valve Steam Lap: copied from ENG file and set to value of {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SESteamLapM, Locomotive.IsMetric));
+            }
+            else if (SESteamLapM == 0)
+            {
+                SESteamLapM = 0.001f; // default value - 0.04 inches
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Valve Steam Lap: not found in Steam Engine Configuration: set to default value = {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEValveExhaustLapM, Locomotive.IsMetric));
+            }
+
+            if (SEConnectRodLengthM == 0 && Locomotive.ConnectRodLengthM != 0 && Id == 1)
+            {
+                SEConnectRodLengthM = Locomotive.ConnectRodLengthM; // 10.8 ft
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Connecting Rod Length: copied from ENG file and set to value of {0}", FormatStrings.FormatDistanceDisplay((float)SEConnectRodLengthM, Locomotive.IsMetric));
+
+            }
+            else if (SEConnectRodLengthM == 0)
+            {
+                SEConnectRodLengthM = 3.29184f; // default value - 10.8 ft
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Connecting Rod Length: not found in Steam Engine Configuration: set to default value = {0}", FormatStrings.FormatDistanceDisplay((float)SEConnectRodLengthM, Locomotive.IsMetric));
+            }
+
+            if (SECrankRadiusM == 0 && Locomotive.CrankRadiusM != 0 && Id == 1)
+            {
+                SECrankRadiusM = Locomotive.CrankRadiusM;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Crank Radius: copied from ENG file and set to value of {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SECrankRadiusM, Locomotive.IsMetric));
+            }
+            else if (SECrankRadiusM == 0)
+            {
+                SECrankRadiusM = Me.FromFt(1.08f); // default value
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Crank Radius: not found in Steam Engine Configuration: set to default value = {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SECrankRadiusM, Locomotive.IsMetric));
+            }
+
+            if (SEEccentricRodLinkPinDistM == 0 && Locomotive.EccentricRodLinkPinDistM != 0 && Id == 1)
+            {
+                SEEccentricRodLinkPinDistM = Locomotive.EccentricRodLinkPinDistM; // half of cylinder stroke
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Eccentric Rod Link Pin Distance: copied from ENG file and set to value of {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEEccentricRodLinkPinDistM, Locomotive.IsMetric));
+            }
+            else if (SEEccentricRodLinkPinDistM == 0)
+            {
+                SEEccentricRodLinkPinDistM = CylindersStrokeM / 2; // default value - half of cylinder stroke
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Eccentric Rod Link Pin Distance: not found in Steam Engine Configuration: set to default value = {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEEccentricRodLinkPinDistM, Locomotive.IsMetric));
+            }
+
+            if (SEEccentricRodLengthM == 0 && Locomotive.EccentricRodLengthM != 0 && Id == 1)
+            {
+                SEEccentricRodLengthM = Locomotive.EccentricRodLengthM; // half of cylinder stroke
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Valve Eccentric Rod Length: copied from ENG file and set to default value = {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEEccentricRodLengthM, Locomotive.IsMetric));
+            }
+            else if (SEEccentricRodLengthM == 0)
+                {
+                SEEccentricRodLengthM = Me.FromFt(4.35f); // default value - half of cylinder stroke
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("Valve Eccentric Rod Length: not found in Steam Engine Configuration: set to default value = {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEEccentricRodLengthM, Locomotive.IsMetric));
+            }
+
+            if (SECylinderClearancePC == 0 && Locomotive.CylinderClearancePC != 0 && Id == 1)
+            {
+                SECylinderClearancePC = Locomotive.CylinderClearancePC; 
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Cylinder Clearance: copied from ENG file and set to default value = {0}", SECylinderClearancePC);
+            }
+            else if (SECylinderClearancePC == 0)
+            {
+                SEEccentricRodLengthM = 0.08f; // Assume cylinder clearance of 8% of the piston displacement for saturated locomotives
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Cylinder Clearance: not found in Steam Engine Configuration: set to default value = {0}", SECylinderClearancePC);
+            }
+
+
+            //   Locomotive.RodCoGM = 0.4f * SEConnectRodLengthM;   // 0.4 from crank end of rod
+
+            //   RodCoGM = 0.4f * SEConnectRodLengthM;   // 0.4 from crank end of rod
+            SERodCoGM = Me.FromFt(4.32f);
+
+            // Temp feed back into MSTSSteamLocomotive.cs until all code refactored
+            Locomotive.ConnectRodLengthM = SEConnectRodLengthM;
+            Locomotive.CrankRadiusM = SECrankRadiusM;
+            Locomotive.RodCoGM = SERodCoGM; 
+            Locomotive.CylinderClearancePC = SECylinderClearancePC;
+
         }
 
         public void InitializeMoving()
@@ -782,7 +1068,11 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public void Update(float elapsedClockSeconds)
         {
 
-
+            CalculateSteamEvents();
+            if (Locomotive.SteamEngineType != SteamEngineTypes.Compound)
+            {
+                CalculateSingleExpansionCylinderSteamIndicatorDiagram();
+            }
         }
 
         public void HandleEvent(PowerSupplyEvent evt)
@@ -1011,6 +1301,503 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         }
 
+
+        private void CalculateSteamEvents()
+        {
+
+            // Calculate valve events based upon cutoff value - this is used to determine the timing of the opening and closing of the valves,
+            // which in turn impacts the pressure and volume in the cylinder at different points in the cycle, and thus the mean effective
+            // pressure and power output of the cylinder.
+
+            // Valve events calculated using Zeuner Diagram
+            // References - Valve-gears, Analysis by the Zeuner diagram : Spangler, H. W. -  https://archive.org/details/valvegearsanalys00spanrich
+            // Zeuner Diagram by Charles Dockstader used as a reference source (Note - the release value seems to be incorrect ) - http://www.billp.org/Dockstader/ValveGear.html
+
+
+            // Inputs required for Walschaert valve gear.
+            // Cylinder stroke (S)
+            // Connecting Rod Length (L)
+            // Exhaust Lap (e) (Usually 0 or very small value)
+            // Lead (l)
+
+            // Additional Inputs required for Stephenson valve gear
+            // Distance between eccentric rod pins (w)
+            // Expansion Rod Link (ER)
+
+            //  double ValveLeadM = 0;
+            double MaxCutoffCrankAngleRad = 0;
+            double MaxCutoffAngleofAdvanceRad = 0;
+            double HalfTravelCutoffM = 0;
+            double FullTravelMaxCutoffM = 0;
+            double HalfTravelMaxCutoffM = 0;
+            double StephensonLeadChangeM = 0;
+
+            switch (SESteamLocomotiveValveGearType)
+            {
+                case SESteamLocomotiveValveGearTypes.Walschaert_Outside:
+                // yi = Lap - req * sin (crank angle - angle of advance)
+                case SESteamLocomotiveValveGearTypes.Walschaert_Inside:
+                    // This is the default valve gear type
+                    // Timing for steam events for Walschaert inside and outside valves should remain the same, as the valve events are determined by the
+                    // crank angle at which the valve opens and closes, and this is determined by the eccentric radius and lead, which are the same
+                    // for both inside and outside Walschaert valve gear. The only difference is that with inside valve gear, the eccentric rod
+                    // is attached to the inside of the driving wheel, whereas with outside valve gear it is attached to the outside of the driving
+                    // wheel. This means that with inside valve gear, the eccentric rod will be shorter than with outside valve gear, but this does
+                    // not impact the timing of the valve events.
+                    // The only variation will be the port opening :- yi = req * sin (crank angle + angle of advance) - Lap ????
+
+                    ValveLeadM = SEValveMaximumLeadM; // Lead is constant for Walschaert valve gear, and is equal to the maximum lead
+
+                    CutoffCrankAngleRad = CalculateCrankAngle(Locomotive.cutoff);
+
+                    MaxCutoffCrankAngleRad = CalculateCrankAngle(Locomotive.CutoffController.MaximumValue);
+
+                    AngleofAdvanceRad = CalculateAngleOfAdvance(CutoffCrankAngleRad, SESteamLapM, ValveLeadM);
+
+                    MaxCutoffAngleofAdvanceRad = CalculateAngleOfAdvance(MaxCutoffCrankAngleRad, SESteamLapM, ValveLeadM);
+
+                    HalfTravelCutoffM = CalculateValveHalfTravel(SESteamLapM, ValveLeadM, AngleofAdvanceRad);
+
+                    FullValveTravelM = 2 * HalfTravelCutoffM;
+
+                    HalfTravelMaxCutoffM = CalculateValveHalfTravel(SESteamLapM, ValveLeadM, MaxCutoffAngleofAdvanceRad);
+
+                    FullTravelMaxCutoffM = 2 * HalfTravelMaxCutoffM;
+
+                    break;
+
+                case SESteamLocomotiveValveGearTypes.Stephenson_Outside:
+                case SESteamLocomotiveValveGearTypes.Stephenson_Inside:
+                    // Following developed for Inside admission Stepehenson valve gear, but should be the same for outside admission, as the timing of the valve events is determined by the eccentric radius and lead, which are the same for both inside and outside Stephenson valve gear.
+                    // In Stephenson valve lead is recalculated for every value of cutoff, as the lead is not constant, but varies with cutoff.
+                    // The lead is calculated using the following formula:
+                    // Lead = Lead Change + Max Lead
+                    // Lead Change = (w^2 - y^2) / 2 * ER, where w = half-distance between eccentric rod pins, y = offset of die block of the link (0 at mid gear, and increases as cutoff increases (w)), ER = Expansion Rod Link
+
+                    // y = w x (cutoff / max cutoff)                             
+
+                    double EccentricRodLinkPinHalfDistM = SEEccentricRodLinkPinDistM / 2.0f; // convert to metres
+
+                    double DieOffsetY = (Locomotive.cutoff / Locomotive.CutoffController.MaximumValue) * (EccentricRodLinkPinHalfDistM);
+
+                    StephensonLeadChangeM = ((Math.Pow(EccentricRodLinkPinHalfDistM, 2) - Math.Pow(DieOffsetY, 2)) / (2 * SEEccentricRodLengthM));
+
+                    ValveLeadM = SEValveMaximumLeadM + StephensonLeadChangeM;
+
+                    //                    Trace.TraceInformation("Lead {0}  Change {1} Base {2} cutoff {3}", ValveLeadM, StephensonLeadChangeM, ValveMaximumLeadM, cutoff);
+
+                    CutoffCrankAngleRad = CalculateCrankAngle(Locomotive.cutoff);
+
+                    MaxCutoffCrankAngleRad = CalculateCrankAngle(Locomotive.CutoffController.MaximumValue);
+
+                    AngleofAdvanceRad = CalculateAngleOfAdvance(CutoffCrankAngleRad, SESteamLapM, ValveLeadM);
+
+                    MaxCutoffAngleofAdvanceRad = CalculateAngleOfAdvance(MaxCutoffCrankAngleRad, SESteamLapM, ValveLeadM);
+
+                    HalfTravelCutoffM = CalculateValveHalfTravel(SESteamLapM, ValveLeadM, AngleofAdvanceRad);
+
+                    FullValveTravelM = 2 * HalfTravelCutoffM;
+
+                    HalfTravelMaxCutoffM = CalculateValveHalfTravel(SESteamLapM, ValveLeadM, MaxCutoffAngleofAdvanceRad);
+
+                    FullTravelMaxCutoffM = 2 * HalfTravelMaxCutoffM;
+
+                    break;
+            }
+
+            // Eccentric Radius (r) (Half of total valve travel)
+            // Admission crank Angle = arcsin (Steam Lap / Half Travel) - AngleofAdvance
+            double AdmissionCrankAngleRad = Math.Asin(SESteamLapM / HalfTravelCutoffM) - AngleofAdvanceRad;
+
+            // Actual cutoff crank Angle = 180 - arcsin (Steam Lap / Half Travel) - AngleofAdvance
+            double ActualCutoffCrankAngleRad = Math.PI - Math.Asin(SESteamLapM / HalfTravelCutoffM) - AngleofAdvanceRad;
+
+            // Release crank Angle = 180 - arcsin (-Exhaust Lap / Half Travel) - AngleofAdvance
+            double ReleaseCrankAngleRad = (Math.PI - Math.Asin((-1 * SEValveExhaustLapM)) / HalfTravelCutoffM) - AngleofAdvanceRad;
+
+            // Compression crank Angle = 360 + arcsin (-Exhaust Lap / Half Travel) - AngleofAdvance
+            double CompressionCrankAngleRad = (2 * Math.PI) + Math.Asin((-1 * SEValveExhaustLapM) / HalfTravelCutoffM) - AngleofAdvanceRad;
+
+            // Convert crank angles to linear travel
+            // S = R (1 - cos(crank angle) + L (1 - SQRT ( 1 - (R/L sin(crank angle))^2)
+            // To convert to a fraction of total stroke
+            // Fraction = S / (2 * R)
+
+            if (Locomotive.cutoff == 0)
+            {
+                AdmissionCylinderFraction = 0.0f;
+                ReleaseCylinderFraction = 0.0f;
+                CompressionCylinderFraction = 0.0f;
+                ActualCutoffCylinderFraction = 0.0f;
+
+            }
+            else
+            {
+                // Admission
+                float TempAdA = (float)(HalfTravelCutoffM * (1 - Math.Cos(AdmissionCrankAngleRad)));
+                float TempAdB = (float)(Math.Sqrt(1 - Math.Pow(HalfTravelCutoffM / SEConnectRodLengthM * Math.Sin(AdmissionCrankAngleRad), 2)));
+                float TravelAdmissionM = TempAdA + SEConnectRodLengthM * (1 - TempAdB);
+                AdmissionCylinderFraction = TravelAdmissionM / (2 * HalfTravelCutoffM);
+
+                // Cutoff
+                float TempCutA = (float)(HalfTravelCutoffM * (1 - Math.Cos(ActualCutoffCrankAngleRad)));
+                float TempCutB = (float)(Math.Sqrt(1 - Math.Pow(HalfTravelCutoffM / SEConnectRodLengthM * Math.Sin(ActualCutoffCrankAngleRad), 2)));
+                float TravelCutoffM = TempCutA + SEConnectRodLengthM * (1 - TempCutB);
+                ActualCutoffCylinderFraction = TravelCutoffM / (2 * HalfTravelCutoffM);
+
+                // Release
+                float TempRelA = (float)(HalfTravelCutoffM * (1 - Math.Cos(ReleaseCrankAngleRad)));
+                float TempRelB = (float)(Math.Sqrt(1 - Math.Pow(HalfTravelCutoffM / SEConnectRodLengthM * Math.Sin(ReleaseCrankAngleRad), 2)));
+                float TravelReleaseM = TempRelA + SEConnectRodLengthM * (1 - TempRelB);
+                ReleaseCylinderFraction = TravelReleaseM / (2 * HalfTravelCutoffM);
+
+                // Compression
+                float TempCompA = (float)(HalfTravelCutoffM * (1 - Math.Cos(CompressionCrankAngleRad)));
+                float TempCompB = (float)(Math.Sqrt(1 - Math.Pow(HalfTravelCutoffM / SEConnectRodLengthM * Math.Sin(CompressionCrankAngleRad), 2)));
+                float TravelCompressionM = TempCompA + SEConnectRodLengthM * (1 - TempCompB);
+                CompressionCylinderFraction = TravelCompressionM / (2 * HalfTravelCutoffM);
+
+                // Inlet Port Opening = req * sin (crank angle + angle of advance) - Lap
+                // Maximum inlet opening occurs when sin(crank angle + angle of advance) = 1, so maximum inlet opening = req - Lap
+                AdPortOpenM = HalfTravelCutoffM - SESteamLapM;
+
+                // Exhaust Port Opening = - req * sin (crank angle + angle of advance) - Exhaust Lap
+                // Maximum exhaust opening occurs when sin(crank angle + angle of advance) = -1, so maximum exhaust opening = req - Exhaust Lap
+                ExPortOpenM = HalfTravelCutoffM - SEValveExhaustLapM;
+
+                if (ExPortOpenM > SEValvePortWidthM)
+                {
+                    ExPortOpenM = SEValvePortWidthM; // Limit exhaust port opening to maximum valve port width
+                }
+
+            }
+
+            // Three elements impact the theoretical steam indicator diagram as follows:
+            // i) Boiler to Steam Chest Pressure Drop - caused by the flow of steam from the boiler to the steam chest, and the resistance of the steam
+            // passages. Hence the pressure in the steam chest is lower than the boiler pressure.
+            // ii) Wire-drawing -  Steam Chest to Cylinder Pressure Drop - caused by the flow of steam from the steam chest to the cylinder, and the
+            // resistance of the valve and port. Hence the pressure in the cylinder is lower than the steam chest pressure.
+            // iii) Cylinder Condensation - caused by the condensation of steam in the cylinder, which reduces the effective pressure of the steam
+            // in the cylinder, and increases the amount of steam used by the cylinder, as more steam is required to fill the cylinder to the same
+            // pressure due to the condensation. Hence the effective pressure in the cylinder is lower than the pressure of the steam entering the
+            // cylinder.
+
+            // i) Boiler to Steam Chest Pressure Drop
+            // To calculate the pressure drop from the boiler to the steam chest, we can use the following formula based upon a representation of
+            // steam flow and a k factor for different types of locomotives.
+            // Steam Chest Pressure = Boiler Pressure - (kwot * Steam Flow^2), where kwot is a fixed constant which represents the resistance of
+            // the steam passages at wide open throttle.
+            // kwot is a locomotive specific constant which represents the resistance of the steam passages, and is based upon the design of the
+            // locomotive, and in particular the size of the steam passages.
+            // Closing the regulator will also create wire drawing as well as reducing the pressure, so we can adjust the kwot value by a throttle factor to account for this.
+            // kwot = kwot full throttle / throttle^2, where kwot full throttle is the value of kwot at wide open throttle, and throttle is the
+            // current throttle setting as a fraction of wide open throttle.
+            // Typical values are as follows:
+            // 
+
+            double SEKFullFactor = SEKEffFactor / Math.Pow(Locomotive.throttle, 2);
+
+            if (CylinderSteamUsageLBpH > 0)
+            {
+                SteamChestPressureReductionPSI = (float)Math.Pow(CylinderSteamUsageLBpH, 2) * (float)(SEKFullFactor);
+            }
+            else
+            {
+                SteamChestPressureReductionPSI = 0;
+            }
+
+            // ii) Wire-drawing -  Steam Chest to Cylinder Pressure Drop
+            // To calculate the pressure at the moment of cut-off, we must account for the pressure drop(wire-drawing) as steam flows through the
+            // restricted port opening.This is a dynamic flow problem where the cylinder pressure lags behind the steam chest pressure due to the
+            // resistance of the valve.
+            // Using the Alco / Cole ratio for flow through the valve, we can calculate the pressure drop across the valve at cut-off, and thus the
+            // pressure in the cylinder at cut-off, which is used to determine the mean effective pressure of the cylinder.
+            // Cutoff Pressure = Steam Chest Pressure * exp( - locomotive constant * Cutoff Port opening (in) / piston speed (ft/s))
+            // Reference document -
+            // http://users.fini.net/~bersano/english-anglais/The%20development%20of%20Locomotive%20Power%20at%20speed%20404.full%20-O.pdf
+            //
+            // Typical locomotive constants are as follows:
+            // Saturated Steam (Pre- 1910) eg Deans Goods, 4-4-0 - 380 - 320, High resistance, small ports and heavy wiredrawing
+            // Early Superheated Steam (1910s) eg GWR Saint, PRR K4s - 210 - 240, Significant pressure drop at high speed; shorter valve travel
+            // Late Pre-War (1920s-30s) eg LMS Coronation, LNER A4 - 160-180, Good breathing, but often limited by smaller internal steam passages
+            // Modern Standards (1940s+) eg BR Standard, Britannia - 145, Balanced high speed performance, standard long travel gear
+            // Ultra-Modern / Streamlined eg Chapelon 242A1, N&W J-Class - 110 - 125, Minimum wiredrawing; large ports and long travel valves.
+
+            var PistonSpeedFtS = (CylindersStrokeM * 2.0f * DriveWheelRevRpS) * Me.ToFt(1.0f); // Piston speed in ft/s
+
+            MEPWireDrawingFactor = 0;
+
+            if (PistonSpeedFtS > 0)
+            {
+
+                MEPWireDrawingFactor = (float)Math.Exp(PistonSpeedFtS / (-SEwireDrawingLocomotiveConstant * Me.ToIn((float)AdPortOpenM)));
+            }
+            else
+            {
+                MEPWireDrawingFactor = 1.0f;
+            }
+
+            // iii) Cylinder Condensation - caused by the condensation of steam in the cylinder, which reduces the effective pressure of the steam
+            // To allow for steam condensation in a steam cylinder the "Missing Factor" is used to adjust MEP and Steam Consumption.
+            // The following is based upon Professor Bill Hall's paper "Cylinder Condensation in Unsuperheated Steam Engines"
+            // Missing Quantity (M) = Pressure & Material Factor (Ms) x Speed Factor (R) x Size Factor (S) x Configuration Factor (C)
+            // Pressure and Material Factor (Ms) = 2.45 * P^-0.46 + 0.08, where P is the boiler gauge pressure (Extrapolation of Fig 3)
+            // Speed Factor (R) = SQRT (500 / Wheel RPM) - accounts for the time that steam is in contact with cold cylinder walls.
+            // Size Factor (S) = 2 / Cylinder Diameter (inches)
+            // Configuration Factor (C) = Cbase + Cratio
+            // Cbase = 1.62 * cutoff^2 - 2.05*cutoff + 1.63
+            // Cratio = ((Cylinder Diameter (inches) / Stroke (inches)) - 0.5) * (2.5 * exp (-2.2 * cutoff))
+
+            float PressureMaterialFactor = (float)((2.45f * Math.Pow(Locomotive.BoilerPressurePSI, -0.46f)) + 0.08f);
+            float SpeedFactor = (float)Math.Sqrt(500.0f / (DriveWheelRevRpS * 60.0f)); // Convert wheel revs per second to revs per minute for this calculation
+            float SizeFactor = 2.0f / Me.ToIn(CylindersDiameterM);
+            float ConfigurationBaseFactor = (1.62f * (float)Math.Pow(Locomotive.cutoff, 2)) - (2.05f * Locomotive.cutoff) + 1.63f;
+            float ConfigurationRatioFactor = ((Me.ToIn(CylindersDiameterM) / Me.ToIn(CylindersStrokeM)) - 0.5f) * (2.5f * (float)Math.Exp(-2.2f * Locomotive.cutoff));
+
+            if (PistonSpeedFtS > 0)
+            {
+                NewCylinderCondensationFactor = PressureMaterialFactor * SpeedFactor * SizeFactor * (ConfigurationBaseFactor + ConfigurationRatioFactor);
+            }
+            else
+            {
+                NewCylinderCondensationFactor = 0;
+            }
+        }
+
+        private void CalculateSingleExpansionCylinderSteamIndicatorDiagram()
+        {
+            // Principle source of reference for this section is - "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson  - pg 128
+            // https://archive.org/details/locomotiveoperat00hend/page/128/mode/2up
+
+            // Calculate apparent volumes at various points in cylinder
+            float CylinderVolumePoint_e = (float)CompressionCylinderFraction + SECylinderClearancePC;
+            float CylinderVolumePoint_f = (float)AdmissionCylinderFraction + SECylinderClearancePC;
+
+            // Note all pressures in absolute pressure for working on steam indicator diagram. MEP will be just a gauge pressure value as it is a differencial pressure calculated as an area off the indicator diagram
+            // The pressures below are as calculated and referenced to the steam indicator diagram for single expansion locomotives by letters shown in brackets - see Coals to Newcastle website
+            // Calculate Ratio of expansion, with cylinder clearance
+            // R (ratio of Expansion) = (length of stroke to point of  exhaust + clearance) / (length of stroke to point of cut-off + clearance)
+            // Expressed as a fraction of stroke R = (Exhaust point + c) / (cutoff + c)
+            float SERatioOfExpansion_bc = ((float)ReleaseCylinderFraction + SECylinderClearancePC) / (Locomotive.cutoff + SECylinderClearancePC);
+            // Absolute Mean Pressure = Ratio of Expansion
+
+            SESteamChestPressurePSI = (Locomotive.throttle * (Locomotive.BoilerPressurePSI - SteamChestPressureReductionPSI)); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
+
+            SELogSteamChestPressurePSI = SESteamChestPressurePSI;  // Value for recording in log file
+            SELogSteamChestPressurePSI = MathHelper.Clamp(SELogSteamChestPressurePSI, 0.00f, SELogSteamChestPressurePSI); // Clamp so that steam chest pressure does not go negative
+
+            // Initial pressure will be decreased depending upon locomotive speed
+            // This drop can be adjusted with a table in Eng File
+            // (a) - Initial Pressure
+            Pressure_a_AtmPSI = SESteamChestPressurePSI + Locomotive.OneAtmospherePSI; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
+
+            SELogInitialPressurePSI = Pressure_a_AtmPSI - Locomotive.OneAtmospherePSI; // Value for log file & display
+            SELogInitialPressurePSI = MathHelper.Clamp(SELogInitialPressurePSI, 0.00f, SELogInitialPressurePSI); // Clamp so that initial pressure does not go negative
+
+            // (b) - Cutoff Pressure
+            Pressure_b_AtmPSI = Pressure_a_AtmPSI * MEPWireDrawingFactor;
+
+            SELogCutoffPressurePSI = Pressure_b_AtmPSI - Locomotive.OneAtmospherePSI;   // Value for log file
+            SELogCutoffPressurePSI = MathHelper.Clamp(SELogCutoffPressurePSI, 0.00f, SELogCutoffPressurePSI); // Clamp so that Cutoff pressure does not go negative
+
+            // (c) - Release pressure 
+            // Release pressure = Cutoff Pressure x Cylinder Volume (at cutoff point) / cylinder volume (at release)
+            Pressure_c_AtmPSI = (Pressure_b_AtmPSI) * (Locomotive.cutoff + Locomotive.CylinderClearancePC) / ((float)ReleaseCylinderFraction + Locomotive.CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
+
+            SELogReleasePressurePSI = Pressure_c_AtmPSI - Locomotive.OneAtmospherePSI;   // Value for log file
+            SELogReleasePressurePSI = MathHelper.Clamp(SELogReleasePressurePSI, 0.00f, SELogReleasePressurePSI); // Clamp so that Release pressure does not go negative
+
+            // (d) - Back Pressure 
+            Pressure_d_AtmPSI = CylinderBackPressurePSIG + Locomotive.OneAtmospherePSI;
+
+            if (Locomotive.throttle < 0.02f)
+            {
+                Pressure_a_AtmPSI = 0.0f;  // for sake of display zero pressure values if throttle is closed.
+                Pressure_d_AtmPSI = 0.0f;
+            }
+
+            SELogBackPressurePSI = Pressure_d_AtmPSI - Locomotive.OneAtmospherePSI;  // Value for log file
+            SELogBackPressurePSI = MathHelper.Clamp(SELogBackPressurePSI, 0.00f, SELogBackPressurePSI); // Clamp so that Back pressure does not go negative
+
+            // (e) - Compression Pressure 
+            // Calculate pre-compression pressure based upon back pressure being equal to it, as steam should be exhausting
+            Pressure_e_AtmPSI = Pressure_d_AtmPSI;
+
+            SELogPreCompressionPressurePSI = Pressure_e_AtmPSI - Locomotive.OneAtmospherePSI;   // Value for log file
+            SELogPreCompressionPressurePSI = MathHelper.Clamp(SELogPreCompressionPressurePSI, 0.00f, SELogPreCompressionPressurePSI); // Clamp so that pre compression pressure does not go negative
+
+            // (f) - Admission pressure 
+            Pressure_f_AtmPSI = Pressure_e_AtmPSI * ((float)CompressionCylinderFraction + Locomotive.CylinderClearancePC) / ((float)AdmissionCylinderFraction + Locomotive.CylinderClearancePC);  // Check factor to calculate volume of
+
+            SELogPreAdmissionPressurePSI = Pressure_f_AtmPSI - Locomotive.OneAtmospherePSI;   // Value for log file
+            SELogPreAdmissionPressurePSI = MathHelper.Clamp(SELogPreAdmissionPressurePSI, 0.00f, SELogPreAdmissionPressurePSI); // Clamp so that pre admission pressure does not go negative
+
+            // ****** Calculate Cylinder Work *******
+            // In driving the wheels steam does work in the cylinders. The amount of work can be calculated by a typical steam indicator diagram
+            // Mean Effective Pressure (work) = average positive pressures - average negative pressures
+            // Average Positive pressures = admission + expansion + release
+            // Average Negative pressures = exhaust + compression + pre-admission
+
+            // Calculate Av Admission Work (inch pounds) between a) - b)
+            // Av Admission work = Av (Initial Pressure + Cutoff Pressure) * length of Cylinder to cutoff
+            // Mean Pressure
+            float MeanPressure_ab_AtmPSI = ((Pressure_a_AtmPSI + Pressure_b_AtmPSI) / 2.0f);
+            // Calculate volume between a - b
+            float CylinderLength_ab_In = Me.ToIn(CylindersStrokeM * ((Locomotive.cutoff + Locomotive.CylinderClearancePC) - Locomotive.CylinderClearancePC));
+            // Calculate work - a-b
+            CylinderWork_ab_InLbs = MeanPressure_ab_AtmPSI * CylinderLength_ab_In;
+
+            // Calculate Av Expansion Work (inch pounds) - between b) - c)
+            // Av pressure during expansion = Cutoff pressure x log (ratio of expansion) / (ratio of expansion - 1.0) 
+            // Av Expansion work = Av pressure during expansion * length of Cylinder during expansion
+            // Mean Pressure
+            float MeanPressure_bc_AtmPSI = Pressure_b_AtmPSI * ((float)Math.Log(SERatioOfExpansion_bc) / (SERatioOfExpansion_bc - 1.0f));
+            // Calculate volume between b-c
+            float CylinderLength_bc_In = Me.ToIn(CylindersStrokeM) * (((float)ReleaseCylinderFraction + Locomotive.CylinderClearancePC) - (Locomotive.cutoff + Locomotive.CylinderClearancePC));
+            // Calculate work - b-c
+            CylinderWork_bc_InLbs = MeanPressure_bc_AtmPSI * CylinderLength_bc_In;
+
+            // Calculate Av Release work (inch pounds) - between c) - d)
+            // Av Release work = Av pressure during release * length of Cylinder during release
+            // Mean Pressure
+            float MeanPressure_cd_AtmPSI = ((Pressure_c_AtmPSI + Pressure_d_AtmPSI) / 2.0f);
+            // Calculate volume between c-d
+            float CylinderLength_cd_In = Me.ToIn(CylindersStrokeM) * ((1.0f + Locomotive.CylinderClearancePC) - ((float)ReleaseCylinderFraction + Locomotive.CylinderClearancePC)); // Full cylinder length is 1.0
+            
+            // Calculate work - c-d             
+            CylinderWork_cd_InLbs = MeanPressure_cd_AtmPSI * CylinderLength_cd_In;
+
+            // Calculate Av Exhaust Work (inch pounds) - between d) - e)
+            // Av Exhaust work = Av pressure during exhaust * length of Cylinder during exhaust stroke
+            // Mean Pressure
+            float MeanPressure_de_AtmPSI = ((Pressure_d_AtmPSI + Pressure_e_AtmPSI) / 2.0f);
+            // Calculate volume between d-e
+            float CylinderLength_de_In = Me.ToIn(CylindersStrokeM) * ((1.0f + Locomotive.CylinderClearancePC) - ((float)CompressionCylinderFraction + Locomotive.CylinderClearancePC)); // Full cylinder length is 1.0
+
+            // Calculate work - d-e
+            CylinderWork_de_InLbs = MeanPressure_de_AtmPSI * CylinderLength_de_In;
+
+            // Calculate Av Compression Work (inch pounds) - between e) - f)
+            // Ratio of compression = stroke during compression = stroke @ start of compression / stroke and end of compression
+            // Av compression pressure = PreCompression Pressure x Ratio of Compression x log (Ratio of Compression) / (Ratio of Compression - 1.0)
+            // Av Exhaust work = Av pressure during compression * length of Cylinder during compression stroke
+            // Mean Pressure
+            float RatioOfCompression_ef = (CylinderVolumePoint_e) / (CylinderVolumePoint_f);
+            float MeanPressure_ef_AtmPSI = Pressure_e_AtmPSI * RatioOfCompression_ef * ((float)Math.Log(RatioOfCompression_ef) / (RatioOfCompression_ef - 1.0f));
+            // Calculate volume between e-f
+            float CylinderLength_ef_In = Me.ToIn(CylindersStrokeM) * (CylinderVolumePoint_e - CylinderVolumePoint_f);
+            // Calculate work - e-f
+            CylinderWork_ef_InLbs = MeanPressure_ef_AtmPSI * CylinderLength_ef_In;
+
+            // Calculate Av Pre-admission work (inch pounds) - between f) - a)
+            // Av Pre-admission work = Av pressure during pre-admission * length of Cylinder during pre-admission stroke
+            // Mean Pressure
+            float MeanPressure_fa_AtmPSI = ((Pressure_a_AtmPSI + Pressure_f_AtmPSI) / 2.0f);
+            // Calculate volume between f-a
+            float CylinderLength_fa_In = (float)AdmissionCylinderFraction * Me.ToIn(CylindersStrokeM);
+            // Calculate work - f-a
+            CylinderWork_fa_InLbs = MeanPressure_fa_AtmPSI * CylinderLength_fa_In;
+
+            // Calculate total work in cylinder
+            float TotalWorkInLbs = CylinderWork_ab_InLbs + CylinderWork_bc_InLbs + CylinderWork_cd_InLbs - CylinderWork_de_InLbs - CylinderWork_ef_InLbs - CylinderWork_fa_InLbs;
+
+            SEMeanEffectivePressurePSI = TotalWorkInLbs / Me.ToIn(CylindersStrokeM); // MEP doen't need to be converted from Atm to gauge pressure as it is a differential pressure.
+            SEMeanEffectivePressurePSI = MathHelper.Clamp(SEMeanEffectivePressurePSI, 0, Locomotive.MaxBoilerPressurePSI); // Make sure that Cylinder pressure does not go negative
+
+            if (Locomotive.throttle < 0.01)
+            {
+                SEMeanEffectivePressurePSI = 0;
+            }
+
+/*
+                if (DriveWheelRevRpS >= 55.0 && DriveWheelRevRpS < 55.1 | DriveWheelRevRpS >= 110.0 && DriveWheelRevRpS < 110.1 | DriveWheelRevRpS >= 165.0 && DriveWheelRevRpS < 165.05 | DriveWheelRevRpS >= 220.0 && DriveWheelRevRpS < 220.05)
+                 {
+                     Trace.TraceInformation("***************************************** Single Expansion Steam Locomotive ***************************************************************");
+ 
+                    Trace.TraceInformation("All pressures in Atmospheric Pressure (ie Added 14.5psi)");
+
+                     Trace.TraceInformation("*********** Operating Conditions *********");
+ 
+                    Trace.TraceInformation("Boiler Pressure {0} Initial/Cutoff Factor {1}", BoilerPressurePSI, CutoffPressureDropRatio);
+
+                     Trace.TraceInformation("Throttle {0} Cutoff {1}  Revs {2} RelPt {3} Clear {4}", throttle, cutoff, pS.TopM(DrvWheelRevRpS), CylinderExhaustOpenFactor, CylinderClearancePC);
+ 
+                     Trace.TraceInformation("*********** Cylinder *********");
+ 
+                    Trace.TraceInformation("Cylinder Pressures: a {0} b {1} c {2} d {3} e {4} f {5}", Pressure_a_AtmPSI, Pressure_b_AtmPSI , Pressure_c_AtmPSI , Pressure_d_AtmPSI , Pressure_e_AtmPSI , Pressure_f_AtmPSI);
+ 
+                    Trace.TraceInformation("MeanPressure b-c (Expansion):MeanPressure b-c {0} ExpRatio {1} cutoff {2} Release {3}", MeanPressure_bc_AtmPSI, RatioOfExpansion_bc, cutoff, CylinderExhaustOpenFactor);
+ 
+                    Trace.TraceInformation("MeanPressure e-f (Compression): MeanPressure e-f {0} CompRatio {1} Vol_e {2} Vol_f {3}", MeanPressure_ef_AtmPSI, RatioOfCompression_ef , CylinderVolumePoint_e, CylinderVolumePoint_f);
+ 
+                    Trace.TraceInformation("Cylinder Works: Total {0} === a-b {1} b-c {2} c-d {3} d-e {4} e-f {5} f-a {6}", TotalWorkInLbs, CylinderWork_ab_InLbs, CylinderWork_bc_InLbs, CylinderWork_cd_InLbs, CylinderWork_de_InLbs, CylinderWork_ef_InLbs, CylinderWork_fa_InLbs);
+
+                    Trace.TraceInformation("MEP {0}", MeanEffectivePressurePSI);
+                 }
+*/
+
+        }
+        
+
+        /// <summary>
+        /// Find Crank Angle @ a certain cutoff point. 
+        /// We will calculate the crank angle at the maximum cutoff point, and then use this to calculate the steam lap, which will be constant 
+        /// for all cutoff points. We can then calculate the crank angle for any cutoff point using the same steam lap. Angularity Ratio = L/S, 
+        /// where L is the connecting rod length, S is the cylinder stroke. This is used to calculate the crank angle at a given cutoff point, 
+        /// based upon the distance from the crank centre to the piston at that cutoff point, which is in turn based upon the valve travel at 
+        /// that cutoff point. The formula for calculating the crank angle is as follows:
+        /// Crank Ang = ArcCos ( ( L/S + 0.5 - cutoff)^2 - (L/S)^2 + 0.25) / (L/S + 0.5 - cutoff) )
+        /// </summary>
+        public double CalculateCrankAngle(float cutoff)
+        {
+            var AngularityRatio = SEConnectRodLengthM / CylindersStrokeM;
+
+            double numerator = Math.Pow((AngularityRatio + 0.5f - cutoff), 2) - Math.Pow(AngularityRatio, 2) + 0.25;
+
+            double denominator = AngularityRatio + 0.5f - cutoff;
+
+            double crankanglerad = Math.Acos(numerator / denominator);
+
+            return crankanglerad;
+        }
+
+        /// <summary>
+        /// Calculate Angle of Advance
+        /// Angle of Advance = ArcTan ( Sin(CutoffCrankAngle) / ((Lap / (Lap + Lead)) - cos(CutoffCrankAngle)) )
+        /// </summary>
+        public double CalculateAngleOfAdvance(double crankangle, double steamlap, double valvelead)
+        {
+            double angleofadvancerad = Math.Atan(Math.Sin(crankangle) / ((steamlap / (steamlap + valvelead)) - Math.Cos(crankangle)));
+
+            return angleofadvancerad;
+        }
+
+        /// <summary>
+        /// Calculate Equivalent Eccentric Radius (HalfTravel) 
+        /// req = (Lap + Lead) / Sin(Angle of Advance)
+        /// </summary>
+        public double CalculateValveHalfTravel(double steamlap, double valvelead, double angleofadvancerad)
+        {
+            double halftravel = 0;
+            // Calculate half travel at users cutoff point. Gives infinity values if angle of advance = 0 (ie cutoff =0)
+            if (angleofadvancerad != 0)
+            {
+                halftravel = (steamlap + valvelead) / Math.Sin(angleofadvancerad);
+                return halftravel;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+
     }
+
+
+
+
+
+    
 
 }
