@@ -41,6 +41,12 @@ namespace Orts.Formats.Msts
 
         public EngineFile(string filePath)
         {
+            string dir = Path.GetDirectoryName(filePath);
+            string file = Path.GetFileName(filePath);
+            string orFile = dir + @"\openrails\" + file;
+            if (File.Exists(orFile))
+                filePath = orFile;
+
             Name = Path.GetFileNameWithoutExtension(filePath);
             using (var stf = new STFReader(filePath, false))
             {

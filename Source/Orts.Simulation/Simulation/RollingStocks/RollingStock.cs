@@ -109,6 +109,12 @@ namespace Orts.Simulation.RollingStocks
 
             public static GenericWAGFile Get(string path)
             {
+                string dir = Path.GetDirectoryName(path);
+                string file = Path.GetFileName(path);
+                string orFile = dir + @"\openrails\" + file;
+                if (File.Exists(orFile))
+                    path = orFile;
+
                 if (!SharedWAGFiles.ContainsKey(path))
                 {
                     GenericWAGFile wagFile = new GenericWAGFile(path);
