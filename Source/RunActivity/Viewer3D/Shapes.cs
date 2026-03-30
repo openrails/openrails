@@ -315,7 +315,7 @@ namespace Orts.Viewer3D
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
-        public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
+        public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Dictionary<int, bool> matrixVisible = null)
         {
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
         }
@@ -2581,12 +2581,12 @@ namespace Orts.Viewer3D
             PrepareFrame(frame, location, Matrices, null, flags);
         }
 
-        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags, bool[] matrixVisible = null)
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags, Dictionary<int, bool> matrixVisible = null)
         {
             PrepareFrame(frame, location, animatedXNAMatrices, null, flags, matrixVisible);
         }
 
-        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool[] subObjVisible, ShapeFlags flags, bool[] matrixVisible = null)
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool[] subObjVisible, ShapeFlags flags, Dictionary<int, bool> matrixVisible = null)
         {
             var lodBias = ((float)Viewer.Settings.LODBias / 100 + 1);
 
@@ -2670,7 +2670,7 @@ namespace Orts.Viewer3D
                     foreach (var shapePrimitive in subObject.ShapePrimitives)
                     {
                         var hi = shapePrimitive.HierarchyIndex;
-                        if (matrixVisible != null && !matrixVisible[hi]) continue;
+                        if (matrixVisible != null && matrixVisible.TryGetValue(hi, out var visible) && !visible) continue;
 
                         var xnaMatrix = SetRenderMatrices(shapePrimitive, animatedXNAMatrices, ref xnaDTileTranslation);
 
@@ -2744,6 +2744,8 @@ namespace Orts.Viewer3D
         public virtual int GetAnimationTargetNode(int animationId) => animationId;
 
         public virtual int GetAnimationNamesCount() => LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault().ShapePrimitives?.FirstOrDefault()?.Hierarchy?.Length ?? 0;
+
+        public virtual bool HasAnimations() => Animations != null;
 
         [CallOnThread("Loader")]
         internal void Mark()
