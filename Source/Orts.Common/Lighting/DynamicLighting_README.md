@@ -17,22 +17,38 @@ This system allows creators to place dynamic, real-time light sources in routes,
   - `DYN_LIGHT_STATION.s` (station preset)
 
 ### 2. Advanced Placement (Config File)
-- For advanced control, add a `.cfg` file with the same base name as your shape:
-  - Example: `DYN_LIGHT_CUSTOM.s` + `DYN_LIGHT_CUSTOM.cfg`
+- For advanced control, add a `.or-lights.json` file with the same base name as your shape:
+  - Example: `DYN_LIGHT_CUSTOM.s` + `DYN_LIGHT_CUSTOM.or-lights.json`
 - Supported config properties:
-  - `Color: 255,255,200` (RGB, 0-255)
-  - `Intensity: 1.5`
-  - `Radius: 25.0`
-  - `Type: Point|Spot|Directional`
-  - `Schedule: Night_Only` (future use)
+  - `color` - RGB array (0-255) or color name string
+  - `intensity` - Float value (default: 1.0)
+  - `radius` - Float value in meters (default: 25.0)
+  - `type` - "Point", "Spot", or "Directional"
+  - `direction` - XYZ array (for Spot/Directional lights)
+  - `spotAngle` - Float in degrees (for Spot lights, default: 45.0)
+  - `schedule` - "Night_Only", "Day_Only", or "Always" (default: "Always")
 
-#### Example Config
-```
-Color: 255,255,200
-Intensity: 1.5
-Radius: 25.0
-Type: Point
-Schedule: Night_Only
+#### Example Config (JSON)
+```json
+{
+  "lights": [
+    {
+      "color": [255, 255, 200],
+      "intensity": 1.5,
+      "radius": 25.0,
+      "type": "Point",
+      "schedule": "Night_Only"
+    },
+    {
+      "color": [255, 100, 100],
+      "intensity": 2.0,
+      "radius": 30.0,
+      "type": "Spot",
+      "direction": [0, -1, 0],
+      "spotAngle": 45.0
+    }
+  ]
+}
 ```
 
 ## How It Works

@@ -59,9 +59,10 @@ float	 OverlayScale;
 // === Dynamic Light Parameters (up to 40 lights) ===
 float4 DynamicLightPosition[40];  // xyz = position, w = radius (for point lights) or spot angle falloff (for spotlights)
 float4 DynamicLightColor[40];     // rgb = color, a = intensity
-float4 DynamicLightDirection[40]; // xyz = normalized direction (for spotlights), w = 0.5 * (1 - minDotProduct)
-float  DynamicLightType[40];      // 0 = Point light, 1 = Spotlight, 2 = Directional
+float4 DynamicLightDirection[40]; // xyz = normalized direction (for spotlights), w encodes type: sign bit = type (0=Point, 1=Spot)
 int DynamicLightCount;            // number of active dynamic lights (max 40)
+// NOTE: Removed DynamicLightType[40] array (was wasting 640 bytes due to HLSL float4 padding)
+// Light type is now packed into DynamicLightDirection.w sign bit
 
 sampler Image = sampler_state
 {

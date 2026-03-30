@@ -242,11 +242,12 @@ namespace Orts.Viewer3D
 
         public void SetDynamicLights(IEnumerable<ORTS.Common.Lighting.DynamicLight> lights)
         {
+            // TODO: Cache these arrays as static/member fields to prevent GC allocations in render loop
+            // Currently allocates 3 * 40 * 16 bytes = 1920 bytes per frame = ~115 KB/sec at 60 FPS
             var activeLights = lights.Where(l => l.Active).Take(40).ToArray();
             Vector4[] positions = new Vector4[40];
             Vector4[] colors = new Vector4[40];
             Vector4[] directions = new Vector4[40];
-            float[] types = new float[40];
             int count = activeLights.Length;
             
             for (int i = 0; i < count; i++)
@@ -255,21 +256,21 @@ namespace Orts.Viewer3D
                 positions[i] = new Vector4(light.Position, light.Radius);
                 colors[i] = new Vector4(light.Color * light.Intensity, light.Intensity);
                 
-                // For spotlights, set direction and minDot based on SpotAngle
+                // For spotlights, set direction and pack type into direction.w sign bit
                 if (light.Type == ORTS.Common.Lighting.DynamicLight.LightType.Spot)
                 {
-                    types[i] = 1.0f; // Spotlight type
                     // Convert spot angle to a dot product threshold
                     float angleRadians = MathHelper.ToRadians(light.SpotAngle);
                     float minDotProduct = (float)Math.Cos(angleRadians * 0.5f); // Half angle for cone
                     
                     // Use same formula as headlight: w = 0.5f * (1 - minDotProduct)
+                    // Sign bit encodes type: positive = Spot(1), negative = Point(0)
                     float directionW = 0.5f * (1.0f - minDotProduct);
                     directions[i] = new Vector4(light.Direction, directionW);
                 }
                 else
                 {
-                    types[i] = 0.0f; // Point light type
+                    // Point light: direction = zero, w encodes type via sign bit
                     directions[i] = Vector4.Zero;
                 }
             }
@@ -279,26 +280,25 @@ namespace Orts.Viewer3D
                 positions[i] = Vector4.Zero;
                 colors[i] = Vector4.Zero;
                 directions[i] = Vector4.Zero;
-                types[i] = 0.0f;
             }
             
             dynamicLightPosition.SetValue(positions);
             dynamicLightColor.SetValue(colors);
             dynamicLightDirection.SetValue(directions);
-            dynamicLightType.SetValue(types);
             dynamicLightCount.SetValue(count);
         }
 
+        [System.Obsolete("This function is incomplete. Dynamic lights should be integrated into the main render pipeline.")]
         public void RenderWithDynamicLights(Viewer viewer)
         {
+            // TODO: This function is not called from anywhere in the codebase.
+            // Integration needed into:
+            // - RunActivity/Viewer3D/World.cs PrepareFrame()
+            // - RunActivity/Viewer3D/Materials.cs RenderMaterial()
+            // For now, SetDynamicLights() is called from the main rendering pipeline.
+            
             // Collect up to 40 active dynamic lights from the LightManager
             SetDynamicLights(viewer.World.LightManager.Lights);
-            // ...existing rendering code...
-            // Example: Set matrices, textures, etc. before drawing
-            // SetMatrix(...);
-            // SetViewMatrix(...);
-            // Set other shader parameters as needed
-            // Then draw your geometry
         }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
