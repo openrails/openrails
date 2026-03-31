@@ -32,7 +32,20 @@ namespace Orts.Simulation.RollingStocks
     {
         public static TrainCar Load(Simulator simulator, Train train, string wagFilePath, bool initialize = true)
         {
-            GenericWAGFile wagFile = SharedGenericWAGFileManager.Get(wagFilePath);
+            GenericWAGFile mstsWagFile = SharedGenericWAGFileManager.Get(wagFilePath);
+            GenericWAGFile wagFile = null;
+
+            string dir = Path.GetDirectoryName(wagFilePath);
+            string file = Path.GetFileName(wagFilePath);
+            string orFile = dir + @"\openrails\" + file;
+
+            bool ortsWag = File.Exists(orFile);
+
+            if (ortsWag)
+                wagFile = SharedGenericWAGFileManager.Get(orFile);
+            else
+                wagFile = SharedGenericWAGFileManager.Get(wagFilePath);
+
             TrainCar car;
             if (wagFile.OpenRails != null
                && wagFile.OpenRails.DLL != null)
@@ -69,10 +82,22 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 // its an ordinary MSTS engine of some type.
-                if (wagFile.Engine.Type == null)
-                    throw new InvalidDataException(wagFilePath + "\r\n\r\nEngine type missing");
+                string engType = "";
 
-                switch (wagFile.Engine.Type.ToLower())
+                if (wagFile.Engine.Type == null)
+                {
+                    if (ortsWag && mstsWagFile.Engine.Type != null)
+                    {
+                        engType = mstsWagFile.Engine.Type;
+                        Trace.TraceWarning("Engine type missing from " + orFile + ", assuming " + engType + " engine type.");
+                    }
+                    else
+                        throw new InvalidDataException(wagFilePath + "\r\n\r\nEngine type missing");
+                }
+                else
+                    engType = wagFile.Engine.Type;
+
+                switch (engType.ToLower())
                 {
                     // TODO complete parsing of proper car types
                     case "electric": car = new MSTSElectricLocomotive(simulator, wagFilePath); break;
@@ -110,12 +135,6 @@ namespace Orts.Simulation.RollingStocks
 
             public static GenericWAGFile Get(string path)
             {
-                string dir = Path.GetDirectoryName(path);
-                string file = Path.GetFileName(path);
-                string orFile = dir + @"\openrails\" + file;
-                if (File.Exists(orFile))
-                    path = orFile;
-
                 if (!SharedWAGFiles.ContainsKey(path))
                 {
                     GenericWAGFile wagFile = new GenericWAGFile(path);
