@@ -265,14 +265,9 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> DoesBrakeCutPower;
         /// <summary>
-        /// Deprecated. Returns positive infinity if traction cutoff is requested by the brake system, and negative infinity if it is not requested
+        /// Train brake pressure value which triggers the power cut-off.
         /// </summary>
-        [Obsolete("BrakeCutsPowerAtBrakeCylinderPressureBar() is deprecated, use BrakeSystemTractionAuthorization instead")]
-        public float BrakeCutsPowerAtBrakeCylinderPressureBar()
-        {
-            return BrakeSystemTractionAuthorization ? float.PositiveInfinity : float.NegativeInfinity;
-        }
-        public bool BrakeSystemTractionAuthorization => Host.BrakeSystemTractionAuthorization;
+        public Func<float> BrakeCutsPowerAtBrakeCylinderPressureBar;
         /// <summary>
         /// True if dynamic brake must be cut if the emergency brake is applied.
         /// </summary>
@@ -369,36 +364,6 @@ namespace ORTS.Scripting.Api
         /// Set dynamic brake controller to position in range [0-1].
         /// </summary>
         public Action<float> SetDynamicBrakeController;
-        /// <summary>
-        /// Sets the target speed of the automatic traction/braking system
-        /// Gets the current speed enforced by the automatic traction/braking system
-        /// </summary>
-        public float? SetSpeedMpS
-        {
-            get
-            {
-                if (Locomotive.CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) return Locomotive.CruiseControl.SetSpeedMpS;
-                return null;
-            }
-            set
-            {
-                if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ASCSetSpeedMpS = value;
-            }
-        }
-        /// <summary>
-        /// Controls the target acceleration of the automatic traction/braking system when a braking curve is active
-        /// </summary>
-        public float SetSpeedAccelerationMpSS
-        {
-            get
-            {
-                return Locomotive?.CruiseControl.ASCAccelerationMpSS ?? 0;
-            }
-            set
-            {
-                if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ASCAccelerationMpSS = value;
-            }
-        }
         /// <summary>
         /// Cut power by pull all pantographs down.
         /// </summary>

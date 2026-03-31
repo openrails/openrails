@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.IO;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using ORTS.Common;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 {
@@ -422,7 +421,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                            Locomotive.ThrottleController.CurrentValue == 0 && Locomotive.DynamicBrakeController.CurrentValue == 0)
                     {
                         Locomotive.CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Auto;
-                        Locomotive.CruiseControl.SpeedSelectorIncreaseStep();
+                        Locomotive.CruiseControl.SpeedRegulatorSelectedSpeedIncrease();
                     }
                 }
             }
@@ -572,11 +571,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 }
                 if (controllerPosition == ControllerPosition.SelectedSpeedIncrease)
                 {
-                    Locomotive.CruiseControl.SpeedSelectorIncreaseStep();
+                    Locomotive.CruiseControl.SpeedRegulatorSelectedSpeedIncrease();
                 }
                 if (controllerPosition == ControllerPosition.SelectedSpeedDecrease)
                 {
-                    Locomotive.CruiseControl.SpeedSelectorDecreaseStep();
+                    Locomotive.CruiseControl.SpeedRegulatorSelectedSpeedDecrease();
                 }
                 if (controllerPosition == ControllerPosition.SelectSpeedZero)
                 {
@@ -829,8 +828,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         ThrottleDecrease,
         ThrottleIncreaseFast,
         ThrottleDecreaseFast,
-        DynamicBrakeIncrease,
-        DynamicBrakeDecrease,
+        DynamicBrakeIncrease, DynamicBrakeDecrease,
         DynamicBrakeIncreaseFast,
         TrainBrakeIncrease,
         TrainBrakeDecrease,

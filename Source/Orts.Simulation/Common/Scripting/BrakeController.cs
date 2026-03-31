@@ -67,16 +67,6 @@ namespace ORTS.Scripting.Api
         public bool OverchargeButtonPressed() => Host.OverchargeButtonPressed;
 
         /// <summary>
-        /// True if the neutral mode switch is on
-        /// </summary>
-        protected bool NeutralModeCommandSwitchOn { get => Host.NeutralModeCommandSwitchOn; set => Host.NeutralModeCommandSwitchOn = value; }
-
-        /// <summary>
-        /// True if the neutral mode is on
-        /// </summary>
-        protected bool NeutralModeOn { get => Host.NeutralModeOn; set => Host.NeutralModeOn = value; }
-
-        /// <summary>
         /// True if low voltage power supply is switched on.
         /// </summary>
         public bool IsLowVoltagePowerSupplyOn() => LocomotivePowerSupply.LowVoltagePowerSupplyOn;
@@ -197,9 +187,9 @@ namespace ORTS.Scripting.Api
         public List<MSTSNotch> Notches() => Host.Notches;
 
         /// <summary>
-        /// Fraction of train brake demanded by cruise control. Returns -1 if CC is inactive
+        /// Fraction of train brake demanded by cruise control
         /// </summary>
-        public float CruiseControlBrakeDemand() => Host.CruiseControlBrakeDemand;
+        public float CruiseControlBrakeDemand() => Locomotive.CruiseControl != null ? Locomotive.CruiseControl.TrainBrakePercent / 100 : 0;
 
         /// <summary>
         /// Current notch of the brake controller
