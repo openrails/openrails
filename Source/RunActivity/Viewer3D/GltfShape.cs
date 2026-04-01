@@ -66,9 +66,9 @@ namespace Orts.Viewer3D
         internal bool[] NodeVisibility;
 
         // Need these at load time to connect the pointers
-        internal Dictionary<int, PbrMaterial> Materials = new Dictionary<int, PbrMaterial>();
-        internal Dictionary<int, GltfPrimitive> Meshes = new Dictionary<int, GltfPrimitive>();
-        internal Dictionary<int, StaticLight> Lights = new Dictionary<int, StaticLight>();
+        internal readonly Dictionary<int, PbrMaterial> Materials = new Dictionary<int, PbrMaterial>();
+        internal readonly Dictionary<int, GltfPrimitive> Meshes = new Dictionary<int, GltfPrimitive>();
+        internal readonly Dictionary<int, StaticLight> Lights = new Dictionary<int, StaticLight>();
 
         /// <summary>
         /// glTF specification declares that the model's forward is +Z. However OpenRails uses -Z as forward,
@@ -93,10 +93,10 @@ namespace Orts.Viewer3D
         List<GltfAnimation> GltfAnimations;
         public Vector4[] BoundingBoxNodes;
 
-        Dictionary<int, string> ExternalLods = new Dictionary<int, string>();
         public float[] MinimumScreenCoverages = new[] { 0f };
-        internal int LastLod = -1;
-        internal bool LodChanged;
+        readonly Dictionary<int, string> ExternalLods = new Dictionary<int, string>();
+        int LastLod = -1;
+        bool LodChanged;
 
         /// <summary>
         /// glTF shape from file
@@ -246,22 +246,40 @@ namespace Orts.Viewer3D
                     var gltfFile = glTFLoader.Interface.LoadModel(externalLods[id]);
                     Gltfs.Add(externalLods[id], gltfFile);
 
+                    if (!(gltfFile.Scenes?.Length > 0))
+                    {
+                        Trace.TraceWarning($"glTF file contains no scenes: {externalLods[id]}");
+                        continue;
+                    }
+
                     if (gltfFile.ExtensionsRequired != null)
                     {
                         var unsupportedExtensions = new List<string>();
+                        var unusedExtensions = new List<string>();
                         foreach (var extensionRequired in gltfFile.ExtensionsRequired)
+                        {
                             if (!ExtensionsSupported.Contains(extensionRequired))
                                 unsupportedExtensions.Add($"\"{extensionRequired}\"");
+                            if (!(gltfFile.ExtensionsUsed?.Contains(extensionRequired) ?? false))
+                                unusedExtensions.Add($"\"{extensionRequired}\"");
+                        }
                         if (unsupportedExtensions.Any())
                         {
-                            var message = $"glTF required extension {string.Join(", ", unsupportedExtensions)} is unsupported in file {externalLods[id]}";
-                            if (ConsistGenerator.GltfVisualTestRun)
-                                Trace.TraceWarning(message);
-                            else
-                                throw new NotImplementedException(message);
+                            var message = $"glTF required extension {string.Join(", ", unsupportedExtensions)} is unsupported by Openrails, skipping file {externalLods[id]}";
+                            Trace.TraceWarning(message);
+                            if (!ConsistGenerator.GltfVisualTestRun)
+                                continue;
+                        }
+                        if (unusedExtensions.Any())
+                        {
+                            var message = $"glTF required extension {string.Join(", ", unusedExtensions)} is not listed as \"extensionsUsed\", skipping file {externalLods[id]}";
+                            Trace.TraceWarning(message);
+                            if (!ConsistGenerator.GltfVisualTestRun)
+                                continue;
                         }
                     }
 
+                    // An attempt to load MS Flight Simulator gltf-s. They use a strange non-standard optimization, not yet deciphered fully here
                     if (gltfFile.Asset?.Extensions?.ContainsKey("ASOBO_asset_optimized") ?? false)
                         shape.MsfsFlavoured = true;
 
@@ -273,7 +291,7 @@ namespace Orts.Viewer3D
                         {
                             var rootNode = gltfFile.Nodes[(int)rootNodeNumber];
                             object extension = null;
-                            if (rootNode.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
+                            if (gltfFile.ExtensionsUsed?.Contains("MSFT_lod") & rootNode.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
                             {
                                 var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString(), JsonDeserializerSettings);
                                 if (ext?.Ids != null)
@@ -364,13 +382,13 @@ namespace Orts.Viewer3D
                 var meshes = new Dictionary<int, Node>();
                 var lights = new Dictionary<int, int>();
 
+                object extension = null;
+
                 TempStack.Clear();
                 Array.ForEach(GltfFile.Scenes.ElementAtOrDefault(GltfFile.Scene ?? 0).Nodes, node => TempStack.Push(node));
                 KHR_lights gltfLights = null;
-                object extension = null;
-                if (GltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
+                if (gltfFile.ExtensionsUsed?.Contains("KHR_lights_punctual") & GltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
                     gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString(), JsonDeserializerSettings);
-
                 while (TempStack.Any())
                 {
                     var nodeNumber = TempStack.Pop();
@@ -388,7 +406,7 @@ namespace Orts.Viewer3D
                         }
                     }
 
-                    if (node.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
+                    if (gltfFile.ExtensionsUsed?.Contains("MSFT_lod") & node.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
                     {
                         var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString(), JsonDeserializerSettings);
                         var ids = ext?.Ids;
@@ -411,7 +429,7 @@ namespace Orts.Viewer3D
                         if (node.Mesh != null)
                             meshes.Add(nodeNumber, node);
 
-                        if (node.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
+                        if (gltfFile.ExtensionsUsed?.Contains("KHR_lights_punctual") & node.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
                         {
                             var lightId = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual_index>(extension.ToString(), JsonDeserializerSettings)?.light;
                             if (lightId != null)
@@ -444,9 +462,9 @@ namespace Orts.Viewer3D
                 SubObjects = subObjects.ToArray();
 
                 var minPosition = SubObjects.Cast<GltfSubObject>().Select(so => Vector4.Transform(so.MinPosition, Matrices.ElementAt(so.HierarchyIndex)))
-                    .Aggregate((pos1, pos2) => Vector4.Min(pos1, pos2));
+                    .DefaultIfEmpty(Vector4.Zero).Aggregate((pos1, pos2) => Vector4.Min(pos1, pos2));
                 var maxPosition = SubObjects.Cast<GltfSubObject>().Select(so => Vector4.Transform(so.MaxPosition, Matrices.ElementAt(so.HierarchyIndex)))
-                    .Aggregate((pos1, pos2) => Vector4.Max(pos1, pos2));
+                    .DefaultIfEmpty(Vector4.Zero).Aggregate((pos1, pos2) => Vector4.Max(pos1, pos2));
 
                 BoundingBoxNodes[0] = minPosition;
                 BoundingBoxNodes[1] = new Vector4(minPosition.X, minPosition.Y, maxPosition.Z, 1);
@@ -693,7 +711,7 @@ namespace Orts.Viewer3D
                         
                         object pointerExtension = null;
                         string pointer = null;
-                        if (gltfChannel.Target.Extensions?.TryGetValue("KHR_animation_pointer", out pointerExtension) ?? false)
+                        if (gltfFile.ExtensionsUsed?.Contains("KHR_animation_pointer") & gltfChannel.Target.Extensions?.TryGetValue("KHR_animation_pointer", out pointerExtension) ?? false)
                             pointer = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_animation_pointer>(pointerExtension.ToString()).Pointer;
                         else if (gltfChannel.Target.Node == null)
                             continue;
@@ -758,12 +776,11 @@ namespace Orts.Viewer3D
 
                 object extension = null;
                 var names = gltfFile.Nodes.Select((n, i) => ((n.Extras?.TryGetValue("OPENRAILS_animation_name", out extension) ?? false) && extension is string a ? a : null, i)).Where(n => n.Item1 != null);
-                var dimensions = gltfFile.Nodes.Select(n => (n.Extras?.TryGetValue("OPENRAILS_animation_wheelradius", out extension) ?? false) && extension is string dim && float.TryParse(dim, out var d) ? d : 0f);
-                GltfAnimations.AddRange(names.Select(n => new GltfAnimation(n.Item1) { ExtrasWheelRadius = dimensions.ElementAt(n.i), Channels = { new GltfAnimationChannel() { TargetNode = n.i } } }));
                 MatrixNames.AddRange(names.Select(n => n.Item1));
-                NodeVisibility = gltfFile.Nodes.Select(n => 
-                    (n.Extensions?.TryGetValue("KHR_node_visibility", out extension) ?? false) &&
-                        Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_node_Visibility>(extension.ToString(), JsonDeserializerSettings).Visible is bool v ? v : true).ToArray();
+                NodeVisibility = (gltfFile.ExtensionsUsed?.Contains("KHR_node_visibility") ?? false)
+                    ? gltfFile.Nodes.Select(n => (n.Extensions?.TryGetValue("KHR_node_visibility", out extension) ?? false) &&
+                        Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_node_Visibility>(extension.ToString(), JsonDeserializerSettings).Visible is bool v ? v : true).ToArray()
+                    : Enumerable.Repeat(true, gltfFile.Nodes.Length).ToArray();
             }
 
             internal void ConnectPointers()
@@ -1010,7 +1027,7 @@ namespace Orts.Viewer3D
                     var source = texture?.Source;
                     var extensionFilter = StandardTextureExtensionFilter;
                     object extension = null;
-                    if (texture?.Extensions?.TryGetValue("MSFT_texture_dds", out extension) ?? false)
+                    if (gltf.ExtensionsUsed?.Contains("MSFT_texture_dds") & texture?.Extensions?.TryGetValue("MSFT_texture_dds", out extension) ?? false)
                     {
                         var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_texture_dds>(extension.ToString(), JsonDeserializerSettings);
                         source = ext?.Source ?? source;
@@ -1182,7 +1199,7 @@ namespace Orts.Viewer3D
 
                 var options = SceneryMaterialOptions.None;
 
-                if (!material.Extensions?.ContainsKey("KHR_materials_unlit") ?? true)
+                if (!(gltfFile.ExtensionsUsed?.Contains("KHR_materials_unlit") & material.Extensions?.ContainsKey("KHR_materials_unlit") ?? false))
                     options |= SceneryMaterialOptions.Diffuse;
 
                 if (skin != null)
@@ -1219,9 +1236,9 @@ namespace Orts.Viewer3D
                 TextureInfo msftOrmInfo = null;
                 TextureInfo msftRmoInfo = null;
                 object extension = null;
-                if (material.Extensions?.TryGetValue("MSFT_packing_normalRoughnessMetallic", out extension) ?? false)
+                if (gltfFile.ExtensionsUsed?.Contains("MSFT_packing_normalRoughnessMetallic") & material.Extensions?.TryGetValue("MSFT_packing_normalRoughnessMetallic", out extension) ?? false)
                     msftNormalInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_normalRoughnessMetallic>(extension.ToString(), JsonDeserializerSettings)?.NormalRoughnessMetallicTexture;
-                else if (material.Extensions?.TryGetValue("MSFT_packing_occlusionRoughnessMetallic", out extension) ?? false)
+                else if (gltfFile.ExtensionsUsed?.Contains("MSFT_packing_occlusionRoughnessMetallic") & material.Extensions?.TryGetValue("MSFT_packing_occlusionRoughnessMetallic", out extension) ?? false)
                 {
                     var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_occlusionRoughnessMetallic>(extension.ToString(), JsonDeserializerSettings);
                     msftOrmInfo = ext?.OcclusionRoughnessMetallicTexture;
@@ -1257,19 +1274,19 @@ namespace Orts.Viewer3D
                 (TextureFilter, TextureAddressMode, TextureAddressMode) baseColorSamplerState = default, metallicRoughnessSamplerState = default, normalSamplerState = default, occlusionSamplerState = default, emissiveSamplerState = default, clearcoatSamplerState = default, clearcoatRoughnessSamplerState = default, clearcoatNormalSamplerState = default, specularSamplerState = default, specularColorSamplerState = default;
 
                 KHR_materials_clearcoat clearcoat = null;
-                if (material.Extensions?.TryGetValue("KHR_materials_clearcoat", out extension) ?? false)
+                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_clearcoat") & material.Extensions?.TryGetValue("KHR_materials_clearcoat", out extension) ?? false)
                     clearcoat = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_clearcoat>(extension.ToString(), JsonDeserializerSettings);
 
                 KHR_materials_specular specular = null;
-                if (material.Extensions?.TryGetValue("KHR_materials_specular", out extension) ?? false)
+                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_specular") & material.Extensions?.TryGetValue("KHR_materials_specular", out extension) ?? false)
                     specular = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_specular>(extension.ToString(), JsonDeserializerSettings);
 
                 KHR_materials_ior ior = null;
-                if (material.Extensions?.TryGetValue("KHR_materials_ior", out extension) ?? false)
+                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_ior") & material.Extensions?.TryGetValue("KHR_materials_ior", out extension) ?? false)
                     ior = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_ior>(extension.ToString(), JsonDeserializerSettings);
 
                 var emissiveStrength = 1f;
-                if (material.Extensions?.TryGetValue("KHR_materials_emissive_strength", out extension) ?? false)
+                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_emissive_strength") & material.Extensions?.TryGetValue("KHR_materials_emissive_strength", out extension) ?? false)
                     emissiveStrength = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_emissive_strength>(extension.ToString(), JsonDeserializerSettings)?.EmissiveStrength ?? 1;
 
                 (texCoords1.X, baseColorTexture, baseColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture, SharedMaterialManager.WhiteTexture, true);
@@ -2073,13 +2090,6 @@ namespace Orts.Viewer3D
     {
         public string Name;
         public List<GltfAnimationChannel> Channels = new List<GltfAnimationChannel>();
-
-        /// <summary>
-        /// Used for calculating rotation-to-speed type animations,
-        /// either rotationAngle = travelDistance / wheelRadius
-        /// or numRotations = travelDistance / wheelRadius / 2𝜋
-        /// </summary>
-        public float ExtrasWheelRadius;
 
         public GltfAnimation(string name)
         {
