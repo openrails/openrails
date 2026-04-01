@@ -2607,7 +2607,7 @@ namespace Orts.Viewer3D
 
                 // If this LOD group is not in the FOV, skip the whole LOD group.
                 // TODO: This might imair some shadows.
-                if (!Viewer.Camera.InFov(mstsLocation, lodControl.DistanceLevels[displayDetailLevel].ViewSphereRadius))
+                if (!(lodControl.DistanceLevels.ElementAtOrDefault(displayDetailLevel) is DistanceLevel distanceLevel) || !Viewer.Camera.InFov(mstsLocation, distanceLevel.ViewSphereRadius))
                     continue;
 
                 // We choose the distance level (LOD) to display first:
