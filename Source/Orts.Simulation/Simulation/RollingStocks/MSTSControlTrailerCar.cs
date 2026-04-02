@@ -260,6 +260,14 @@ namespace Orts.Simulation.RollingStocks
             return status.ToString();
         }
 
+        public override string GetDebugStatus()
+        {
+            var status = new StringBuilder(base.GetDebugStatus());
+            if (LocomotivePowerSupply.ElectricTrainSupplyState != ORTS.Scripting.Api.PowerSupplyState.Unavailable) status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Auxiliary power"), Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(LocomotivePowerSupply.AuxiliaryPowerSupplyState)));
+            status.AppendFormat("\t{0}\n", Simulator.Catalog.GetString("Unpowered Control Trailer Car"));
+            return status.ToString();
+        }
+
         /// <summary>
         /// This function updates periodically the locomotive's motive force.
         /// </summary>
