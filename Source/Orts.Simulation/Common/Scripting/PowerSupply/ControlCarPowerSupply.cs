@@ -51,11 +51,11 @@ namespace ORTS.Scripting.Api
         public override PowerSupplyState GetPowerStatus() => LpsHost.AuxiliaryPowerSupplyState;
         public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt)
         {
-            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEvent(evt);
+            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEventFromControlCar(evt);
         }
         public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt, int id)
         {
-            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEvent(evt, id);
+            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEventFromControlCar(evt, id);
         }
     }
 }
