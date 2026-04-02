@@ -338,19 +338,19 @@ namespace Orts.Simulation
                 RDB = new RoadDatabaseFile(rdbFile);
             }
 
-            var carSpawnFile = RoutePath + @"\carspawn.dat";
+            string carSpawnFile = RoutePath + @"\carspawn.dat";
             if (File.Exists(carSpawnFile))
             {
                 CarSpawnerLists = new List<CarSpawnerList>();
-                CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
+                CarSpawnerFile = new CarSpawnerFile(carSpawnFile, RoutePath + @"\shapes\", CarSpawnerLists);
             }
 
             // Extended car spawner file
-            var extCarSpawnFile = RoutePath + @"\openrails\carspawn.dat";
+            string extCarSpawnFile = ORFileHelper.GetORTSFilePath(carSpawnFile);
             if (File.Exists(extCarSpawnFile))
             {
                 if (CarSpawnerLists == null) CarSpawnerLists = new List<CarSpawnerList>();
-                ExtCarSpawnerFile = new ExtCarSpawnerFile(RoutePath + @"\openrails\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
+                ExtCarSpawnerFile = new ExtCarSpawnerFile(extCarSpawnFile, RoutePath + @"\shapes\", CarSpawnerLists);
             }
 
             // Load animated clocks if file "animated.clocks-or" exists --------------------------------------------------------
@@ -381,7 +381,7 @@ namespace Orts.Simulation
 
             // check for existence of activity file in OpenRails subfolder
 
-            activityPath = RoutePath + @"\Activities\Openrails\" + ActivityFileName + ".act";
+            activityPath = ORFileHelper.GetORTSFilePath(activityPath);
             if (File.Exists(activityPath))
             {
                 // We have an OR-specific addition to world file
