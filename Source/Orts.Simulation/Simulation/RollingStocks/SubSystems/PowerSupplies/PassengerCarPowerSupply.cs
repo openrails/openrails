@@ -277,7 +277,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         }
                     }
                     
-                    if (connectedToLocomotive) ElectricTrainSupplyConnectedLocomotives.Add(locomotive);
+                    if (connectedToLocomotive && locomotive.LocomotivePowerSupply.Type != PowerSupplyType.ControlCar) ElectricTrainSupplyConnectedLocomotives.Add(locomotive);
                 }
             }
 

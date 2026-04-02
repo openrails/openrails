@@ -18,6 +18,7 @@
 using Orts.Common;
 using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
+using SharpDX;
 using System.IO;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
@@ -52,8 +53,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     if (car == null) continue;
                     if (!(car is MSTSWagon wagon)) continue;
-                    if (!(wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)) continue;
-                    count++;
+                    if (wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)
+                    {
+                        ++count;
+                    }
+                    else if (car is MSTSLocomotive locomotive && locomotive.LocomotivePowerSupply is ScriptedControlCarPowerSupply control && control.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive))
+                    {
+                        ++count;
+                    }
                 }
                 return count;
             }
