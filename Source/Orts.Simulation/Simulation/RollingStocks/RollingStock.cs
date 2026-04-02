@@ -34,10 +34,7 @@ namespace Orts.Simulation.RollingStocks
             GenericWAGFile mstsWagFile = SharedGenericWAGFileManager.Get(wagFilePath);
             GenericWAGFile wagFile = null;
 
-            string dir = Path.GetDirectoryName(wagFilePath);
-            string file = Path.GetFileName(wagFilePath);
-            string orFile = dir + @"\openrails\" + file;
-
+            string orFile = ORFileHelper.GetORTSFilePath(wagFilePath);
             bool ortsWag = File.Exists(orFile);
 
             if (ortsWag)
@@ -83,9 +80,9 @@ namespace Orts.Simulation.RollingStocks
                 // its an ordinary MSTS engine of some type.
                 string engType = "";
 
-                if (wagFile.Engine.Type == null)
+                if (String.IsNullOrEmpty(wagFile.Engine.Type))
                 {
-                    if (ortsWag && mstsWagFile.Engine.Type != null)
+                    if (ortsWag && !String.IsNullOrEmpty(mstsWagFile.Engine.Type))
                     {
                         engType = mstsWagFile.Engine.Type;
                         Trace.TraceWarning("Engine type missing from " + orFile + ", assuming " + engType + " engine type.");
@@ -152,9 +149,9 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public class GenericWAGFile
         {
-            public bool IsEngine { get { return Engine != null; } }
-            public EngineClass Engine;
-            public OpenRailsData OpenRails;
+            public bool IsEngine = false;
+            public EngineClass Engine = new EngineClass();
+            public OpenRailsData OpenRails = new OpenRailsData();
 
             public GenericWAGFile(string filenamewithpath)
             {
@@ -165,8 +162,8 @@ namespace Orts.Simulation.RollingStocks
             {
                 using (STFReader stf = new STFReader(filenamewithpath, false))
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("engine", ()=>{ Engine = new EngineClass(stf); }),
-                        new STFReader.TokenProcessor("_openrails", ()=>{ OpenRails = new OpenRailsData(stf); }),
+                        new STFReader.TokenProcessor("engine", ()=>{ IsEngine = true; Engine.Parse(stf); }),
+                        new STFReader.TokenProcessor("_openrails", ()=>{ OpenRails.Parse(stf); }),
                     });
             }
 
@@ -174,7 +171,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 public string Type;
 
-                public EngineClass(STFReader stf)
+                public EngineClass() { }
+
+                public void Parse(STFReader stf)
                 {
                     stf.MustMatch("(");
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -187,7 +186,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 public string DLL;
 
-                public OpenRailsData(STFReader stf)
+                public OpenRailsData() { }
+
+                public void Parse(STFReader stf)
                 {
                     stf.MustMatch("(");
                     stf.ParseBlock(new STFReader.TokenProcessor[] {

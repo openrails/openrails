@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using Orts.Common;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -107,13 +108,10 @@ namespace Orts.Formats.Msts
 
         public WagonFile(string filePath)
         {
-            string dir = Path.GetDirectoryName(filePath);
-            string file = Path.GetFileName(filePath);
-            string orFile = dir + @"\openrails\" + file;
-            if (File.Exists(orFile))
-                filePath = orFile;
+            filePath = ORFileHelper.FindORTSFile(filePath);
 
             Name = Path.GetFileNameWithoutExtension(filePath);
+
             using (var stf = new STFReader(filePath, false))
             {
                 stf.ParseFile(new STFReader.TokenProcessor[] {
