@@ -579,6 +579,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
 
         bool IsActive = false;
+
+        private float? prevForceSelectorValue = null;
+        private float? prevSpeedSelectorValue = null;
         public void Update(float elapsedClockSeconds)
         {
             if (!Locomotive.IsPlayerTrain || Locomotive != Locomotive.Train.LeadLocomotive)
@@ -604,11 +607,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Simulator.Confirmer.Confirm(CabControl.RestrictedSpeedZone, CabSetting.Off);
                 Locomotive.SignalEvent(Common.Event.CruiseControlAlert);
             }
-            var prevForceSelectorValue = MaxForceSelectorController.CurrentValue;
-            var prevSpeedSelectorValue = SpeedSelectorController.CurrentValue;
-            MaxForceSelectorController.Update(elapsedClockSeconds);
-            SpeedSelectorController.Update(elapsedClockSeconds);
+
+            if (prevForceSelectorValue > 0 && MaxForceSelectorController.CurrentValue == 0) Locomotive.SignalEvent(Common.Event.LeverToZero);
+            if (prevForceSelectorValue == 0 && MaxForceSelectorController.CurrentValue > 0) Locomotive.SignalEvent(Common.Event.LeverFromZero);
+            prevForceSelectorValue = MaxForceSelectorController.CurrentValue;
+
             if (prevSpeedSelectorValue > 0 && SpeedSelectorController.CurrentValue == 0) Locomotive.SignalEvent(Common.Event.LeverToZero);
+            if (prevSpeedSelectorValue == 0 && SpeedSelectorController.CurrentValue > 0) Locomotive.SignalEvent(Common.Event.LeverFromZero);
+            prevSpeedSelectorValue = SpeedSelectorController.CurrentValue;
+
+            if (!UseThrottleAsForceSelector) MaxForceSelectorController.Update(elapsedClockSeconds);
+            if (!UseThrottleAsSpeedSelector) SpeedSelectorController.Update(elapsedClockSeconds);
+
             if ((!UseThrottleAsForceSelector || SpeedRegMode == SpeedRegulatorMode.Auto) && MaxForceSelectorController.UpdateValue != 0.0)
             {
                 Simulator.Confirmer.UpdateWithPerCent(
@@ -1022,10 +1032,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public void SpeedRegulatorMaxForceStartIncrease()
         {
-            if (MaxForceSelectorController.CurrentValue == 0)
-            {
-                Locomotive.SignalEvent(Common.Event.LeverFromZero);
-            }
             Locomotive.SignalEvent(Common.Event.CruiseControlMaxForce);
             MaxForceSelectorController.StartIncrease();
         }
@@ -1082,10 +1088,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
                 mpc.DoMovement(MultiPositionController.Movement.Forward);
                 return;
-            }
-            if (SpeedSelectorController.CurrentValue == 0)
-            {
-                Locomotive.SignalEvent(Common.Event.LeverFromZero);
             }
             if (UseThrottleAsSpeedSelector || HasProportionalSpeedSelector || (UseThrottleAsForceSelector && mpc == null ))
                 SpeedSelectorController.StartIncrease();
