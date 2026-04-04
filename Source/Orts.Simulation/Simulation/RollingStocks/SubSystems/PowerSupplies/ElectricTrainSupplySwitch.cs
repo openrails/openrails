@@ -153,7 +153,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         if (!Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn || NumberOfElectricTrainSupplyConnectedCars == 0)
                         {
                             On = false;
-                            Locomotive.SignalEvent(Event.ElectricTrainSupplyOff);
+                            SignalEvent(Event.ElectricTrainSupplyOff);
                         }
                     }
                     else
@@ -161,7 +161,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         if (Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && NumberOfElectricTrainSupplyConnectedCars > 0)
                         {
                             On = true;
-                            Locomotive.SignalEvent(Event.ElectricTrainSupplyOn);
+                            SignalEvent(Event.ElectricTrainSupplyOn);
                         }
                     }
                     break;
@@ -177,7 +177,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         {
                             QuickPowerOn = false;
                             CommandSwitch = true;
-                            Locomotive.SignalEvent(Event.ElectricTrainSupplyCommandOn);
+                            SignalEvent(Event.ElectricTrainSupplyCommandOn);
                         }
                     }
                     if (On)
@@ -185,7 +185,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         if (!CommandSwitch || !Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn)
                         {
                             On = false;
-                            Locomotive.SignalEvent(Event.ElectricTrainSupplyOff);
+                            SignalEvent(Event.ElectricTrainSupplyOff);
                         }
                     }
                     else
@@ -193,7 +193,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         if (CommandSwitch && Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn)
                         {
                             On = true;
-                            Locomotive.SignalEvent(Event.ElectricTrainSupplyOn);
+                            SignalEvent(Event.ElectricTrainSupplyOn);
                         }
                     }
                     break;
@@ -215,7 +215,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (Mode == ModeType.Switch)
                     {
                         CommandSwitch = true;
-                        Locomotive.SignalEvent(Event.ElectricTrainSupplyCommandOn);
+                        SignalEvent(Event.ElectricTrainSupplyCommandOn);
                     }
                     break;
 
@@ -225,9 +225,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (Mode == ModeType.Switch)
                     {
                         CommandSwitch = false;
-                        Locomotive.SignalEvent(Event.ElectricTrainSupplyCommandOff);
+                        SignalEvent(Event.ElectricTrainSupplyCommandOff);
                     }
                     break;
+            }
+        }
+        protected void SignalEvent(Event evt)
+        {
+            Locomotive.SignalEvent(evt);
+            if (Locomotive.Train?.LeadLocomotive is MSTSControlTrailerCar control && control.ControlActiveLocomotive == Locomotive)
+            {
+                control.SignalEvent(evt);
             }
         }
     }
