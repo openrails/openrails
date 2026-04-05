@@ -9125,7 +9125,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 Simulator.Catalog.GetString("StLap"),
                 FormatStrings.FormatMillimeterDistanceDisplay((float)SteamEngines[numberofengine].SESteamLapM, IsMetric),
                 Simulator.Catalog.GetString("Lead"),
-                FormatStrings.FormatMillimeterDistanceDisplay((float)SteamEngines[numberofengine].ValveLeadM, IsMetric),
+                FormatStrings.FormatMillimeterDistanceDisplay((float)SteamEngines[numberofengine].SEValveLeadM, IsMetric),
                 Simulator.Catalog.GetString("CCAng"),
                 MathHelper.ToDegrees((float)SteamEngines[numberofengine].CutoffCrankAngleRad),
                 Simulator.Catalog.GetString("AdvAng"),
@@ -9206,7 +9206,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     FormatStrings.FormatPressure(SteamEngines[numberofengine].MeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true)
                         );
 
-                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}/{17}\n",
                     Simulator.Catalog.GetString("NewPress:"),
                     Simulator.Catalog.GetString("Chest"),
                     Simulator.Catalog.GetString("Eng#"),
@@ -9221,7 +9221,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Simulator.Catalog.GetString("Back"),
                     FormatStrings.FormatPressure(SteamEngines[numberofengine].SELogBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("MEP"),
-                    FormatStrings.FormatPressure(SteamEngines[numberofengine].SEMeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true)
+                    FormatStrings.FormatPressure(SteamEngines[numberofengine].SEMeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("StUse"),
+                    FormatStrings.FormatMass(pS.TopH(SteamEngines[numberofengine].SESteamCylinderConsumptionKgpS), IsMetric),
+                    FormatStrings.h
                         );
 
 
@@ -9761,16 +9764,18 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     );
                 }
 
-                    status.AppendFormat("{0}\t{1}\t{2:N0} {5}/{6}\t\t{3}\t{4:N0} \t{7} {8:N2}\n",
+                    status.AppendFormat("{0}\t{1}\t{2:N0} {9}/{10}\t\t{3}\t{4:N1}\t{5}\t{6:N1} \t{7} {8:N2}\n",
                     Simulator.Catalog.GetString("Move:"),
                     Simulator.Catalog.GetString("Piston"),
                     IsMetric ? Me.FromFt(PistonSpeedFtpMin) : PistonSpeedFtpMin,
+                    Simulator.Catalog.GetString("DrvWhl"),
+                    pS.TopM(DrvWheelRevRpS),
                     Simulator.Catalog.GetString("MF-Gear"),
                     MotiveForceGearRatio,
-                    IsMetric ? FormatStrings.m : FormatStrings.ft,
-                    FormatStrings.min,
                     Simulator.Catalog.GetString("Max-SpdF"),
-                    DisplaySpeedFactor
+                    DisplaySpeedFactor,
+                    IsMetric ? FormatStrings.m : FormatStrings.ft,
+                    FormatStrings.min
 
                     );
             }
