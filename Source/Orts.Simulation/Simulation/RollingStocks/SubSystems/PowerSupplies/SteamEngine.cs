@@ -1710,7 +1710,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             f = Math.Max(f, 0.05); // lead
 
-            return maxOpen_m * f * PortWidth_m;
+    //        return maxOpen_m * f * PortWidth_m;
+            return maxOpen_m * PortWidth_m;
         }
 
         // =========================
@@ -1862,7 +1863,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
 
             // multiply by number of cylinders
-            mTotal_kg *= cylinders;
+            mTotal_kg *= cylinders; // The need for 2? is an allowance for double acting this needs to be checked.
 
 
             // =========================
@@ -2067,7 +2068,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
 
       //      Trace.TraceInformation("RPM {0}", pS.TopM(DriveWheelRevRpS));
-
+/*
        //     if (DriveWheelRevRpS >= 55.0 && DriveWheelRevRpS < 55.1 || DriveWheelRevRpS >= 110.0 && DriveWheelRevRpS < 110.1 || DriveWheelRevRpS >= 165.0 && DriveWheelRevRpS < 165.05 || DriveWheelRevRpS >= 220.0 && DriveWheelRevRpS < 220.05)
             if (Locomotive.AbsSpeedMpS > 6 && Locomotive.AbsSpeedMpS <= 6.5f )
             {
@@ -2093,7 +2094,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 Trace.TraceInformation("MEP {0}", MeanEffectivePressurePSI);
             }
-
+*/
 
         }
         
