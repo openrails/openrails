@@ -23,6 +23,7 @@ using System.IO;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
@@ -677,39 +678,19 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         // =========================
         // 1. CONSTANTS
         // =========================
-        const double R_RpJpKgpK = 461.5;              // J/kg·K
-        const double n = 1.3;
+        
         const double PA_TO_PSI = 0.000145038;
         const double PSI_TO_PA = 6894.76;
 
-        const double MIN_PRESSURE = 1.0;
-        const double MIN_VOLUME = 1e-6;
+
 
 
         // =========================
         // 2. INPUTS (Britannia)
         // =========================
 
-        // Geometry
-        double PistonAreaM2;
-
         // Steam circuit
         double SteamChestVolumeM3 = Me3.FromFt3(2.0f);            // Steam Chest = 2 cubic feet for Britannia 
-
-
-        // Steam type
-//        public bool superheated = true;
-
-
-        // Flow tuning
- //       double Cd_base = 0.75;
- //       double regulatorAreaM2 = 0.002;
-
-        // =========================
-        // STATE
-        // =========================
-     //   double pCylinderPa;
-    //    double pChestPa;
 
 
         public enum SettingsFlags
@@ -1629,20 +1610,18 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         double temp_K;
 
         double PortWidth_m = 0.057;          // 2.25 in
-   
-        double regulatorArea_m2 = 0.002;
+        double regulatorArea_m2 = 0.0002;  // Regulator opening on Britannia  is 20.7in2 (133.5cm2) at full throttle.
 
-        double kw = 0.045;   // Hall wire drawing coefficient
+        //      double kw = 0.045;   // Hall wire drawing coefficient
         double kc = 0.02;    // Condensation coefficient
 
         double pBack_Pa;
         double mIn_kgps;
         double mOut_kgps;
-         
 
-    //    double Cd = 0.75f; // Discharge coefficient for flow through the valve, typically around 0.75 for sharp-edged orifices to 0.85
-   //     double Rv_m;
-
+   //     double eta_v;
+        double Cd = 0.75f; // Discharge coefficient for flow through the valve, typically around 0.75 for sharp-edged orifices to 0.85
+   
         double pTarget_Pa;
 
         // =========================
@@ -1664,6 +1643,13 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             double x_m = r_m * (1 - Math.Cos(theta_rad)) + (SEConnectRodLengthM - Math.Sqrt(term));
 
             return Math.Max(0, Math.Min(1, x_m / CylindersStrokeM));
+        }
+
+        double RegulatorArea(double throttle, double Amax)
+        {
+            double n = 2.0; // non-linear opening
+
+            return Amax * Math.Pow(throttle, n);
         }
 
         double CylinderVolume_m3(double frac)
@@ -1695,39 +1681,33 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         // =========================
         double PortArea_m2(double frac, double start, double end, double maxOpen_m)
         {
-            double leakage_m2 = 1e-6;
+            double leakage_m2 = 1e-8;
 
             if (frac < start || frac > end)
                 return leakage_m2;
 
             double mid = 0.5 * (start + end);
 
-            double f;
-            if (frac <= mid)
-                f = (frac - start) / (mid - start + 1e-12);
-            else
-                f = (end - frac) / (end - mid + 1e-12);
+            double f = (frac <= mid) ? (frac - start) / (mid - start) : (end - frac) / (end - mid);
 
-            f = Math.Max(f, 0.05); // lead
+            f = Math.Max(f, 0.0); 
 
-    //        return maxOpen_m * f * PortWidth_m;
-            return maxOpen_m * PortWidth_m;
+            return maxOpen_m * f * PortWidth_m;
         }
 
         // =========================
         // HALL MASS FLOW
         // =========================
-        double HallFlow_kgps(double pup_Pa, double pdown_Pa, double A_m2)
+        double HallFlow_kgps(double kw, double pup_Pa, double pdown_Pa, double A_m2)
         {
             pup_Pa = ClampPressure(pup_Pa);
             pdown_Pa = ClampPressure(pdown_Pa);
 
             if (A_m2 <= 0 || pup_Pa <= pdown_Pa) return 0;
 
-            double dp2 = pup_Pa * pup_Pa - pdown_Pa * pdown_Pa;
+            double dp2 = (pup_Pa * pup_Pa) - (pdown_Pa * pdown_Pa);
             if (dp2 <= 0) return 0;
-
-   //         double kw_exhaust = 0.6 * Cd * Math.Sqrt(2.0 / R_JpkgK);
+                       
             return kw * A_m2 * Math.Sqrt(dp2 / temp_K);
         }
 
@@ -1765,10 +1745,11 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             double omega_radps = 2 * Math.PI * rpm / 60.0;
             double dTheta = Math.PI / 360.0;
+            double dt = dTheta / omega_radps;
 
             double BoilerPressure_Pa = Locomotive.BoilerPressurePSI * PSI_TO_PA;
-            double pCylinder_Pa = 0.9 * Locomotive.BoilerPressurePSI * PSI_TO_PA;
-            double pChest_Pa = Locomotive.BoilerPressurePSI * PSI_TO_PA;
+            double pCylinder_Pa = 0.6 * BoilerPressure_Pa; // Initial guess for cylinder pressure, will be updated iteratively
+            double pChest_Pa = BoilerPressure_Pa;
 
             double pAdmission_Pa = double.NaN;
             double pCutoff_Pa = double.NaN;
@@ -1777,11 +1758,12 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             double prevFrac = 0;
             double prevP = pCylinder_Pa;
-            
+
             int cylinders = Locomotive.MSTSNumCylinders;
             double mTotal_kg = 0;
 
             int steps = 360;
+            pTarget_Pa = double.NaN;
 
             if (Locomotive.HasSuperheater)
             {
@@ -1792,6 +1774,77 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 temp_K = 470;   // K
             }
 
+            // =========================
+            // PASS 1: PORT + PRESSURE ESTIMATION
+            // =========================
+            double sumA = 0;
+            double sumA_sqrtDP = 0;
+            double sum_sqrtDP = 0;
+            double sumP = 0;
+            double totalTime = 0;
+            double KW_Aadm_m2;
+
+            // At 15% cutoff kw ≈ 0.01 – 0.02
+            // At 50 % cutoff kw ≈ 0.02 – 0.035
+            // At 75 % cutoff kw ≈ 0.035 – 0.06
+
+            for (int i = 0; i < steps; i++)
+            {
+                double theta = i * dTheta;
+                double frac = StrokeFraction(theta);
+
+                KW_Aadm_m2 = PortArea_m2(frac, admissionStart, cutoff, AdPortOpenM);
+
+                if (frac >= admissionStart && frac <= cutoff && KW_Aadm_m2 > 1e-8)
+                {
+                    double dp = Math.Max(pChest_Pa * pChest_Pa - pCylinder_Pa * pCylinder_Pa, 0);
+                    double sqrtDP = Math.Sqrt(dp);
+
+                    sumA += KW_Aadm_m2 * dt;
+                    sumA_sqrtDP += KW_Aadm_m2 * sqrtDP * dt;
+                    sum_sqrtDP += sqrtDP * dt;
+                    sumP += pCylinder_Pa * dt;
+                    totalTime += dt;
+                }
+            }
+
+            double eta_port = (sumA_sqrtDP / (sum_sqrtDP + 1e-12)) / (sumA / (totalTime + 1e-12) + 1e-12);
+
+            eta_port = Math.Max(0.05, Math.Min(1.0, eta_port));
+
+            double pMean = sumP / (totalTime + 1e-12);
+
+            // =========================
+            // HALL kw (CORRECT FORM)
+            // =========================
+            double A_mean = sumA / totalTime + 1e-12;
+
+            double V_mean = CylinderVolume_m3(0.5 * cutoff);  // Check logic behind this line
+
+            double tau = V_mean / (A_mean * Math.Sqrt(2.0 * pChest_Pa / (R_JpkgK * temp_K)));
+
+            tau = Math.Max(1e-5, Math.Min(0.05, tau));
+
+            double t_adm = cutoff / omega_radps;
+
+            double eta_time = t_adm / (t_adm + tau);
+
+            double pr = pMean / pChest_Pa;
+
+            double kw_dynamic = Cd * Math.Sqrt(2.0 / R_JpkgK) * eta_port * eta_time;
+
+    //        Console.WriteLine($"Kw {kw_dynamic} : eta_Pressure {eta_pressure} : eta_time {eta_time} : eta_port {eta_port} : Cutoff {cutoff}");
+
+            // -------------------------
+            // FINAL SAFETY
+            // -------------------------
+            if (double.IsNaN(kw_dynamic) || kw_dynamic <= 0)
+                kw_dynamic = 0.01;  // fallback safe value
+
+            // =========================
+            // PASS 2: FULL SIMULATION
+            // =========================
+
             for (int i = 0; i < steps; i++)
             {
                 double thetaRad = i * dTheta;
@@ -1800,7 +1853,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 double frac = StrokeFraction(thetaRad);
                 double V_m3 = CylinderVolume_m3(frac);
                 double dVdt_m3ps = dVdTheta_m3pRad(thetaRad) * omega_radps;
-                double dt = dTheta / omega_radps;
+                
 
                 // Ports
                 double Aadm_m2 = PortArea_m2(frac, admissionStart, cutoff, AdPortOpenM);
@@ -1810,8 +1863,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 pBack_Pa = (15 + 0.08 * rpm + 0.0005 * rpm * rpm) * PSI_TO_PA;
 
                 // Flows
-                mIn_kgps = HallFlow_kgps(pChest_Pa, pCylinder_Pa, Aadm_m2);
-                mOut_kgps = HallFlow_kgps(pCylinder_Pa, pBack_Pa, Aexh_m2);
+                mIn_kgps = HallFlow_kgps(kw_dynamic, pChest_Pa, pCylinder_Pa, Aadm_m2);
+
+                mOut_kgps = HallFlow_kgps(kw_dynamic, pCylinder_Pa, pBack_Pa, Aexh_m2);
 
                 // Steam Consumption
                 mTotal_kg += mIn_kgps * dt;
@@ -1827,13 +1881,17 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 pCylinder_Pa += dp_Pa;
                 pCylinder_Pa = ClampPressure(pCylinder_Pa);
 
-                // Chest
-                double mBoiler_kgps = HallFlow_kgps(BoilerPressure_Pa, pChest_Pa, regulatorArea_m2);
+                // Steam Chest Calculations
+                double kw_reg = 0.8 * Math.Sqrt(2.0 / R_JpkgK); // fixed nozzle estimate for regulator, to be refined with testing and data
+
+                double Areg = RegulatorArea(Locomotive.throttle, regulatorArea_m2); // Adjusts steam chest pressure as throttle increases
+
+                double mBoiler_kgps = HallFlow_kgps(kw_reg,BoilerPressure_Pa, pChest_Pa, Areg);
 
                 double dpChest_Pa = ((R_JpkgK * temp_K / SteamChestVolumeM3) * (mBoiler_kgps - mIn_kgps)) * dt;
 
                 pChest_Pa += dpChest_Pa;
-                pChest_Pa = Math.Min(pChest_Pa, BoilerPressure_Pa);
+                pChest_Pa = ClampPressure(pChest_Pa);
 
                 if (double.IsNaN(pChest_Pa)) 
                     pChest_Pa = BoilerPressure_Pa;
@@ -1849,7 +1907,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 // -------------------------
                 if (double.IsNaN(pTarget_Pa))
                 {
-                    if (prevFrac <= targetStrokeFrac && frac >= targetStrokeFrac)
+                    if ((prevFrac <= targetStrokeFrac && frac >= targetStrokeFrac) || (prevFrac >= targetStrokeFrac && frac <= targetStrokeFrac))
                     {
                         double t =
                             (targetStrokeFrac - prevFrac) /
@@ -1863,7 +1921,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
 
             // multiply by number of cylinders
-            mTotal_kg *= cylinders; // The need for 2? is an allowance for double acting this needs to be checked.
+            mTotal_kg *= cylinders * 2; // The need for 2? is an allowance for double acting this needs to be checked.
 
 
             // =========================
@@ -1879,12 +1937,13 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             Console.WriteLine($"Back Pressure: {pBack_Pa * PA_TO_PSI:F2} psi");
             Console.WriteLine($"Lead: {SEValveLeadM:F2} M");
             Console.WriteLine($"Lap: {SESteamLapM:F2} M");
-            Console.WriteLine($"MaxAdmissionPortOpening: {Me.ToFt((float)AdPortOpenM):F3} ft");
-            Console.WriteLine($"MaxExhaustPortOpening: {Me.ToFt((float)ExPortOpenM):F3} ft");
+            Console.WriteLine($"MaxAdmissionPortOpening: {Me.ToFt((float)AdPortOpenM):F4} ft");
+            Console.WriteLine($"MaxExhaustPortOpening: {Me.ToFt((float)ExPortOpenM):F4} ft");
             Console.WriteLine($"SteamChestVolume: {SteamChestVolumeM3:F3} ft3");
             Console.WriteLine($"MIn: {mIn_kgps:F3}");
             Console.WriteLine($"MOut: {mOut_kgps:F3}");
-            Console.WriteLine($"Kw_Dynamic: {kw:F3}");
+//            Console.WriteLine($"Cutoff: {cutoff * 100:F1}%  Eta_v: {(float)eta_v:F3}");
+            Console.WriteLine($"Kw_Dynamic: {kw_dynamic:F3}");
 
             Console.WriteLine($"Target Stroke Fraction: {targetStrokeFrac * 100:F1}%");
             Console.WriteLine($"Target Cylinder Pressure: {pTarget_Pa * PA_TO_PSI:F2} psi");
