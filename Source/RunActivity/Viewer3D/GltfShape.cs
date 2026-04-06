@@ -776,6 +776,7 @@ namespace Orts.Viewer3D
 
                 object extension = null;
                 var names = gltfFile.Nodes.Select((n, i) => ((n.Extras?.TryGetValue("OPENRAILS_animation_name", out extension) ?? false) && extension is string a ? a : null, i)).Where(n => n.Item1 != null);
+                GltfAnimations.AddRange(names.Select(n => new GltfAnimation(n.Item1) { Channels = { new GltfAnimationChannel() { TargetNode = n.i } } }));
                 MatrixNames.AddRange(names.Select(n => n.Item1));
                 NodeVisibility = (gltfFile.ExtensionsUsed?.Contains("KHR_node_visibility") ?? false)
                     ? gltfFile.Nodes.Select(n => (n.Extensions?.TryGetValue("KHR_node_visibility", out extension) ?? false) &&
