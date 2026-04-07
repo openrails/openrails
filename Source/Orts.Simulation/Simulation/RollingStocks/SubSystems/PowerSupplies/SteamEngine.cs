@@ -674,25 +674,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float SELogPreAdmissionPressurePSI;
         public float SEMeanEffectivePressurePSI;
 
-        // Test Hall equations
-        // =========================
-        // 1. CONSTANTS
-        // =========================
-        
-        const double PA_TO_PSI = 0.000145038;
-        const double PSI_TO_PA = 6894.76;
-
-
-
-
-        // =========================
-        // 2. INPUTS (Britannia)
-        // =========================
-
-        // Steam circuit
-        double SteamChestVolumeM3 = Me3.FromFt3(2.0f);            // Steam Chest = 2 cubic feet for Britannia 
-
-
         public enum SettingsFlags
         {
             NumberCylindersF = 0x0001,
@@ -1596,6 +1577,21 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         }
 
+        // Test Hall equations
+        // =========================
+        // 1. CONSTANTS
+        // =========================
+
+        const double PA_TO_PSI = 0.000145038;
+        const double PSI_TO_PA = 6894.76;
+
+        // =========================
+        // 2. INPUTS (Britannia)
+        // =========================
+
+        // Steam circuit
+        double SteamChestVolumeM3 = Me3.FromFt3(2.0f);            // Steam Chest = 2 cubic feet (0.0566337 m3) for Britannia 
+
         // =========================
         // CONSTANTS (SI)
         // =========================
@@ -1610,7 +1606,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         double temp_K;
 
         double PortWidth_m = 0.057;          // 2.25 in
-        double regulatorArea_m2 = 0.0002;  // Regulator opening on Britannia  is 20.7in2 (133.5cm2) at full throttle.
+        double regulatorArea_m2 = 0.01335f;  // Regulator opening on Britannia  is 20.7in2 (133.5cm2) at full throttle.
 
         //      double kw = 0.045;   // Hall wire drawing coefficient
         double kc = 0.02;    // Condensation coefficient
@@ -1619,7 +1615,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         double mIn_kgps;
         double mOut_kgps;
 
-   //     double eta_v;
         double Cd = 0.75f; // Discharge coefficient for flow through the valve, typically around 0.75 for sharp-edged orifices to 0.85
    
         double pTarget_Pa;
@@ -1683,14 +1678,11 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             double leakage_m2 = 1e-8;
 
-            if (frac < start || frac > end)
+            if (frac < start || frac > end) 
                 return leakage_m2;
 
-            double mid = 0.5 * (start + end);
-
-            double f = (frac <= mid) ? (frac - start) / (mid - start) : (end - frac) / (end - mid);
-
-            f = Math.Max(f, 0.0); 
+            double phase = (frac - start) / (end - start);
+            double f = Math.Sin(Math.PI * phase);   // sinusoidal
 
             return maxOpen_m * f * PortWidth_m;
         }
@@ -1703,7 +1695,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             pup_Pa = ClampPressure(pup_Pa);
             pdown_Pa = ClampPressure(pdown_Pa);
 
-            if (A_m2 <= 0 || pup_Pa <= pdown_Pa) return 0;
+            if (A_m2 <= 0 || pup_Pa <= pdown_Pa * 0.999) return 0;
 
             double dp2 = (pup_Pa * pup_Pa) - (pdown_Pa * pdown_Pa);
             if (dp2 <= 0) return 0;
@@ -1823,7 +1815,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             double tau = V_mean / (A_mean * Math.Sqrt(2.0 * pChest_Pa / (R_JpkgK * temp_K)));
 
-            tau = Math.Max(1e-5, Math.Min(0.05, tau));
+            tau = MathHelper.Clamp((float)tau, 0.001f, 0.02f);
 
             double t_adm = cutoff / omega_radps;
 
@@ -1833,7 +1825,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             double kw_dynamic = Cd * Math.Sqrt(2.0 / R_JpkgK) * eta_port * eta_time;
 
-    //        Console.WriteLine($"Kw {kw_dynamic} : eta_Pressure {eta_pressure} : eta_time {eta_time} : eta_port {eta_port} : Cutoff {cutoff}");
+       //     Console.WriteLine($"Kw {kw_dynamic} : eta_time {eta_time} : eta_port {eta_port} : Cutoff {cutoff}");
 
             // -------------------------
             // FINAL SAFETY
@@ -1927,6 +1919,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             // =========================
             // OUTPUT (PSI)
             // =========================
+
 /*
             Console.WriteLine($"Speed: {Locomotive.AbsSpeedMpS} mph : Cutoff {Locomotive.cutoff * 100} %");
             Console.WriteLine($"Boiler; {Locomotive.BoilerPressurePSI} psi, Steam Chest: {pChest_Pa * PA_TO_PSI} psi");
