@@ -69,7 +69,6 @@ namespace Orts.Viewer3D.Processes
         public static float[] ShadowMapLimit; // diameter of shadow map far edge from camera
         public bool isFullScreen { get; set; }
 
-        public static int MaxLights = 32; // must not be lower than 2.
         public const int MAX_MORPH_BUFFERS = 8;
         public const bool CLEARCOAT = true;
 

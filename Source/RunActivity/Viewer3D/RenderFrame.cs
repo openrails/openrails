@@ -438,8 +438,9 @@ namespace Orts.Viewer3D
         static readonly Func<Material, bool> NonSkyDM = material => !(material is TerrainSharedDistantMountain || material is SkyMaterial || material is MSTSSkyMaterial);
 
         public int NumLights;
+        int LightsTextureHeight = 16;
         Texture2D LightsTexture;
-        LightData[] Lights = new LightData[RenderProcess.MaxLights];
+        LightData[] Lights;
 
         public bool IsScreenChanged { get; internal set; }
         ShadowMapMaterial ShadowMapMaterial;
@@ -497,6 +498,7 @@ namespace Orts.Viewer3D
             XNACameraView = Matrix.Identity;
             XNACameraProjection = Matrix.CreateOrthographic(game.RenderProcess.DisplaySize.X, game.RenderProcess.DisplaySize.Y, 1, 100);
 
+            Lights = new LightData[LightsTextureHeight];
             SetLightsTexture();
 
             ScreenChanged();
@@ -1080,9 +1082,15 @@ namespace Orts.Viewer3D
             if (SceneryShader == null)
                 return;
 
-            if (Lights.Length > RenderProcess.MaxLights)
+            if (Lights.Length > LightsTextureHeight)
             {
-                RenderProcess.MaxLights = Lights.Length;
+                LightsTextureHeight = Lights.Length;
+                SetLightsTexture();
+            }
+            if (NumLights < LightsTextureHeight / 8 && LightsTextureHeight > 32)
+            {
+                LightsTextureHeight /= 4;
+                Array.Resize(ref Lights, LightsTextureHeight);
                 SetLightsTexture();
             }
             LightsTexture.SetData(MemoryMarshal.Cast<LightData, Vector4>(Lights).ToArray());
@@ -1093,10 +1101,8 @@ namespace Orts.Viewer3D
 
         void SetLightsTexture()
         {
-            if (LightsTexture != null)
-                LightsTexture.Dispose();
-
-            LightsTexture = new Texture2D(Game.RenderProcess.GraphicsDevice, 3, RenderProcess.MaxLights, false, SurfaceFormat.Vector4);
+            LightsTexture?.Dispose();
+            LightsTexture = new Texture2D(Game.RenderProcess.GraphicsDevice, 3, LightsTextureHeight, false, SurfaceFormat.Vector4);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
