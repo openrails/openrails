@@ -263,6 +263,8 @@ namespace Orts.Viewer3D
 
                     i++;
                 }
+                if (trainCarShape.SharedShape is GltfShape)
+                    res *= GltfShape.PlusZToForward;
 
                 ShapeXNATranslations[index] = res * xnaDTileTranslation;
             }

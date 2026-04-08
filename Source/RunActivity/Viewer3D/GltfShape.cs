@@ -74,7 +74,7 @@ namespace Orts.Viewer3D
         /// glTF specification declares that the model's forward is +Z. However OpenRails uses -Z as forward,
         /// so we need to apply a 180 degree rotation to turn around every model matrix to conform the spec.
         /// </summary>
-        static Matrix PlusZToForward = Matrix.CreateFromAxisAngle(Vector3.UnitY, MathHelper.Pi);
+        public static Matrix PlusZToForward = Matrix.CreateFromAxisAngle(Vector3.UnitY, MathHelper.Pi);
         static readonly string[] StandardTextureExtensionFilter = new[] { ".png", ".jpg", ".jpeg" };
         static readonly string[] DdsTextureExtensionFilter = new[] { ".dds" };
         public static Texture2D EnvironmentMapSpecularDay;
