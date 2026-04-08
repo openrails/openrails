@@ -423,7 +423,7 @@ namespace Orts.Viewer3D
 
         readonly RenderItemCollection[][] RenderItems = new RenderItemCollection[(int)RenderPrimitiveSequence.Sentinel][];
         readonly ulong[][] RenderItemKeys = new ulong[(int)RenderPrimitiveSequence.Sentinel][];
-        readonly int[] RenderItemCount = new int[(int)RenderPrimitiveSequence.Sentinel];
+        readonly int[] RenderItemsMaxIndex = new int[(int)RenderPrimitiveSequence.Sentinel];
 
         readonly RenderItemCollection[] RenderShadowSceneryItems;
         readonly RenderItemCollection[] RenderShadowPbrNormalMapItems;
@@ -460,7 +460,7 @@ namespace Orts.Viewer3D
             for (int i = 0; i < RenderItems.Length; i++)
             {
                 RenderItemKeys[i] = new ulong[2];
-                RenderItems[i] = new RenderItemCollection[2];
+                RenderItems[i] = new[] { new RenderItemCollection(), new RenderItemCollection() };
             }
 
             if (Game.Settings.DynamicShadows)
@@ -523,10 +523,13 @@ namespace Orts.Viewer3D
             // Clear out (reset) all of the RenderItem lists.
             for (var i = 0; i < RenderItems.Length; i++)
             {
-                for (var j = 0; j < RenderItemCount[i]; j++)
-                    RenderItems[i][j].Clear();
+                for (var j = 0; j < RenderItems[i].Length; j++)
+                {
+                    RenderItems[i][j]?.Clear();
+                    RenderItemKeys[i][j] = 0;
+                }
 
-                RenderItemCount[i] = 0;
+                RenderItemsMaxIndex[i] = -1;
             }
 
             // Clear out (reset) all of the shadow mapping RenderItem lists.
@@ -719,17 +722,12 @@ namespace Orts.Viewer3D
             {
                 var s = (int)(blended ? RenderPrimitive.SequenceForBlended[(int)group] : RenderPrimitive.SequenceForOpaque[(int)group]);
 
-                var index = Array.IndexOf(RenderItemKeys[s], key, 0, RenderItemCount[s]);
+                var index = Array.IndexOf(RenderItemKeys[s], key, 0, RenderItemsMaxIndex[s] + 1);
                 if (index == -1)
-                    index = RenderItemCount[s]++;
-
-                if (RenderItemKeys[s].Length <= index)
                 {
-                    Array.Resize(ref RenderItemKeys[s], RenderItemCount[s] * 2);
-                    Array.Resize(ref RenderItems[s], RenderItemCount[s] * 2);
+                    index = ++RenderItemsMaxIndex[s];
+                    InitNewRenderItemCollection(s, key);
                 }
-                RenderItemKeys[s][index] = key;
-                RenderItems[s][index] = RenderItems[s][index] ?? new RenderItemCollection();
                 return RenderItems[s][index];
             }
         }
@@ -753,6 +751,19 @@ namespace Orts.Viewer3D
                 Debug.Fail("Only scenery, forest and terrain materials allowed in shadow map.");
         }
 
+        void InitNewRenderItemCollection(int index, ulong key)
+        {
+            var length = RenderItemsMaxIndex[index] + 1;
+            if (RenderItemKeys[index].Length < length)
+            {
+                length *= 2;
+                Array.Resize(ref RenderItemKeys[index], length);
+                Array.Resize(ref RenderItems[index], length);
+            }
+            RenderItems[index][RenderItemsMaxIndex[index]] = RenderItems[index][RenderItemsMaxIndex[index]] ?? new RenderItemCollection();
+            RenderItemKeys[index][RenderItemsMaxIndex[index]] = key;
+        }
+
         /// <summary>
         /// Z-sort the blended/transparent primitives for correct rendering.
         /// </summary>
@@ -766,29 +777,27 @@ namespace Orts.Viewer3D
 
             for (var i = 0; i < RenderItems.Length; i++)
             {
-                if (RenderItemKeys[i][0] == BlendedKey)
+                Array.Sort(RenderItemKeys[i], RenderItems[i], 0, RenderItemsMaxIndex[i] + 1);
+
+                // The blended sequence gets moved to MaxIndex.
+                if (RenderItemsMaxIndex[i] >= 0 && RenderItemKeys[i][RenderItemsMaxIndex[i]] == BlendedKey)
                 {
-                    RenderItems[i][0].Sort(RenderItemComparer);
+                    var blendedIndex = RenderItemsMaxIndex[i];
+                    RenderItems[i][blendedIndex].Sort(RenderItemComparer);
 
                     // Blended: multiple materials sorted by depth, create render batches without destroying the ordering.
                     var sortingKey = ulong.MaxValue;
-                    foreach (var renderItem in RenderItems[i][0])
+                    foreach (var renderItem in RenderItems[i][blendedIndex])
                     {
                         if (sortingKey != renderItem.Material.SortingKey)
                         {
                             sortingKey = renderItem.Material.SortingKey;
-                            if (RenderItems[i].Length <= RenderItemCount[i])
-                                Array.Resize(ref RenderItems[i], RenderItemCount[i] * 2);
-                            RenderItemCount[i]++;
+                            ++RenderItemsMaxIndex[i];
+                            InitNewRenderItemCollection(i, BlendedKey);
                         }
-                        RenderItems[i][RenderItemCount[i] - 1] = RenderItems[i][RenderItemCount[i] - 1] ?? new RenderItemCollection();
-                        RenderItems[i][RenderItemCount[i] - 1].Add(renderItem);
+                        RenderItems[i][RenderItemsMaxIndex[i]].Add(renderItem);
                     }
-                    RenderItems[i][0].Clear();
-                }
-                else
-                {
-                    Array.Sort(RenderItemKeys[i], RenderItems[i], 0, RenderItemCount[i]);
+                    RenderItems[i][blendedIndex].Clear();
                 }
             }
         }
@@ -851,7 +860,7 @@ namespace Orts.Viewer3D
             DrawSimple(graphicsDevice, logging);
 
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
-                Game.RenderProcess.PrimitiveCount[i] = RenderItems[i].Take(RenderItemCount[i]).Sum(l => l?.Count ?? 0);
+                Game.RenderProcess.PrimitiveCount[i] = RenderItems[i].Take(RenderItemsMaxIndex[i]).Sum(l => l?.Count ?? 0);
 
             if (logging)
             {
