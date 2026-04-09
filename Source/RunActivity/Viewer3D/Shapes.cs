@@ -235,6 +235,8 @@ namespace Orts.Viewer3D
                 matrix *= SharedShape.Matrices[hi];
                 hi = shapePrimitive.Hierarchy[hi];
             }
+            if (shapes.FirstOrDefault()?.SharedShape is GltfShape)
+                matrix *= GltfShape.PlusZToForward;
 
             var matricies = new Matrix[shapes.Count];
             for (var i = 0; i < shapes.Count; i++)

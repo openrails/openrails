@@ -562,6 +562,9 @@ namespace Orts.Viewer3D
                     if (shape.GetType() != typeof(StaticShape) && shape.GetType() != typeof(StaticTrackShape))
                         continue;
 
+                    if (shape.SharedShape is GltfShape gltfShape && gltfShape.HasLights())
+                        continue;
+
                     // Must have a file path so we can collapse instances on something.
                     var path = shape.SharedShape.FilePath;
                     if (path == null)
