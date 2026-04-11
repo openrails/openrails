@@ -1321,6 +1321,9 @@ namespace Orts.Viewer3D
                 var specularColorFactor = MemoryMarshal.Cast<float, Vector3>(specular?.SpecularColorFactor ?? new[] { 1f, 1f, 1f })[0];
                 var iorFactor = ior?.Ior ?? 1.5f;
 
+                if (specularFactor == 0)
+                    clearcoatFactor = 0;
+
                 switch (baseColorSamplerState.Item2)
                 {
                     case TextureAddressMode.Wrap: options |= SceneryMaterialOptions.TextureAddressModeWrap; break;

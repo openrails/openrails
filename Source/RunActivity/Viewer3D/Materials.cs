@@ -34,7 +34,6 @@ using ORTS.Common;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
-using System.Windows.Forms;
 
 namespace Orts.Viewer3D
 {
@@ -1341,9 +1340,9 @@ namespace Orts.Viewer3D
                 shader.ClearcoatNormalTexture = ClearcoatNormalTexture;
                 shader.ClearcoatNormalScale = ClearcoatNormalScale;
             }
+            shader.SpecularFactor = new Vector4(SpecularColorFactor, SpecularFactor);
             if (SpecularFactor > 0)
             {
-                shader.SpecularFactor = new Vector4(SpecularColorFactor, SpecularFactor);
                 shader.SpecularTexture = SpecularTexture;
                 shader.SpecularColorTexture = SpecularColorTexture;
             }
