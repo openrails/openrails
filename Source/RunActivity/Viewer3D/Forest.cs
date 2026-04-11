@@ -428,6 +428,8 @@ namespace Orts.Viewer3D
             shader.ImageTexture = TreeTexture;
             shader.ReferenceAlpha = 200;
             shader.SetVegetationMaterial();
+            shader.HasNormals = true;
+            shader.HasTangents = true;
 
             // Enable alpha blending for everything: this allows distance scenery to appear smoothly.
             graphicsDevice.BlendState = BlendState.NonPremultiplied;

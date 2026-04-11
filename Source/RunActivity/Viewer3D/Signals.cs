@@ -715,6 +715,8 @@ namespace Orts.Viewer3D
         {
             SceneryShader.CurrentTechnique = Technique;
             SceneryShader.ImageTexture = Texture;
+            SceneryShader.HasNormals = true;
+            SceneryShader.HasTangents = false;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -771,6 +773,8 @@ namespace Orts.Viewer3D
         {
             SceneryShader.CurrentTechnique = Technique;
             SceneryShader.ImageTexture = Texture;
+            SceneryShader.HasNormals = true;
+            SceneryShader.HasTangents = false;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;

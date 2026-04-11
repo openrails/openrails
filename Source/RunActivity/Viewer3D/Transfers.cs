@@ -172,6 +172,8 @@ namespace Orts.Viewer3D
             shader.CurrentTechnique = Technique;
             shader.ImageTexture = Texture;
             shader.ReferenceAlpha = 10;
+            shader.HasNormals = false;
+            shader.HasTangents = false;
 
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = TransferSamplerState;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;

@@ -276,9 +276,8 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 
 void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 {
-	// Project position, normal and copy texture coords
+    Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos.xyz;
 	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
-	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos.xyz;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light.w = 1;
@@ -628,6 +627,10 @@ float3 _PSApplyMstsLights(in float3 diffuseColor, in VERTEX_OUTPUT In, float sha
 	
 	float3 n = In.Normal_Light.xyz;
 	float3 v = normalize(-In.RelPosition.xyz);
+    
+    if (!HasNormals)
+        n = cross(ddx(In.RelPosition.xyz), ddy(In.RelPosition.xyz));
+    n = normalize(n);
 
     float4 lightDirectionInner = LightsTexture.Load(int3(1, 0, 0));
     float4 lightColorOuter = LightsTexture.Load(int3(2, 0, 0));
@@ -951,8 +954,12 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float3 specularEnvironmentR0 = specularColor.rgb;
         float3 specularEnvironmentR90 = float3(1.0, 1.0, 1.0) * reflectance90;
 	
-        float3 normalSample = NormalTexture.Sample(NormalSampler, _PSUV(In.TexCoords, TextureCoordinates1.z)).rgb;
-        float3 n = _PSGetNormal(In, OcclusionFactor.w, normalSample, isFrontFace, TextureCoordinates1.z != -1);
+        bool hasNormalTexture = TextureCoordinates1.z != -1;
+        float3 normalSample = (float3) 0;
+        if (hasNormalTexture)
+            normalSample = NormalTexture.Sample(NormalSampler, _PSUV(In.TexCoords, TextureCoordinates1.z)).rgb;
+        
+        float3 n = _PSGetNormal(In, OcclusionFactor.w, normalSample, isFrontFace, hasNormalTexture);
         float3 v = normalize(-In.RelPosition.xyz);
 
         float NdotV = abs(dot(n, v)) + 0.001;
@@ -983,8 +990,12 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
             clearcoatRoughnessSq = clearcoatAlphaRoughness * clearcoatAlphaRoughness;
 
             // TODO: implement clearcoat texturepacking for being able to check whether the clearcoat normal is the same as the base normal
-            float3 clearcoatNormalSample = ClearcoatNormalTexture.Sample(ClearcoatNormalSampler, _PSUV(In.TexCoords, TextureCoordinates2.z)).rgb;
-            clearcoatNormal = _PSGetNormal(In, ClearcoatNormalScale, clearcoatNormalSample, isFrontFace, TextureCoordinates2.z != -1);
+            bool hasClearcoatNormalTexture = TextureCoordinates2.z != -1;
+            float3 clearcoatNormalSample = (float3) 0;
+            if (hasClearcoatNormalTexture)
+                clearcoatNormalSample = ClearcoatNormalTexture.Sample(ClearcoatNormalSampler, _PSUV(In.TexCoords, TextureCoordinates2.z)).rgb;
+
+            clearcoatNormal = _PSGetNormal(In, ClearcoatNormalScale, clearcoatNormalSample, isFrontFace, hasClearcoatNormalTexture);
             clearcoatNdotV = abs(dot(clearcoatNormal, v)) + 0.001;
 
             float3 Fr = max((float3) (1.0 - clearcoatRoughness), f0) - f0;
