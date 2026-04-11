@@ -789,6 +789,8 @@ namespace Orts.Simulation.RollingStocks
         public double EccentricRodLinkPinDistM;
         public double EccentricRodLengthM;
 
+        public double SteamChestVolumeM3;
+        public double RegulatorMaxAreaM2; // Maximum area of regulator opening - impacts steam flow into steam chest and cylinders
 
         public float wireDrawingLocomotiveConstant;
         public float KEffFactor;
@@ -1150,6 +1152,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 case "engine(ortscylinderexhaustlap": ValveExhaustLapM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(ortswiredrawlocomotiveconstant": wireDrawingLocomotiveConstant = stf.ReadIntBlock(null); break;
                 case "engine(ortssteamchestefficiencyfactor": KEffFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortssteamchestvolume": SteamChestVolumeM3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "engine(ortsregulatormaxarea": RegulatorMaxAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(ortsconnectingrodlength": ConnectRodLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(ortscrankradius": CrankRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
 
@@ -1396,6 +1400,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             ValveMaximumLeadM = locoCopy.ValveMaximumLeadM;
             wireDrawingLocomotiveConstant = locoCopy.wireDrawingLocomotiveConstant;
             KEffFactor = locoCopy.KEffFactor;
+            SteamChestVolumeM3 = locoCopy.SteamChestVolumeM3;
+            RegulatorMaxAreaM2 = locoCopy.RegulatorMaxAreaM2;
             ValveExhaustLapM = locoCopy.ValveExhaustLapM;
             EccentricRodLengthM = locoCopy.EccentricRodLengthM;
             EccentricRodLinkPinDistM = locoCopy.EccentricRodLinkPinDistM;
@@ -9206,7 +9212,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     FormatStrings.FormatPressure(SteamEngines[numberofengine].MeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true)
                         );
 
-                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}/{17}\n",
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}/{21}\t{17}\t{18}\t{19}\t{20}\n",
                     Simulator.Catalog.GetString("NewPress:"),
                     Simulator.Catalog.GetString("Chest"),
                     Simulator.Catalog.GetString("Eng#"),
@@ -9224,6 +9230,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     FormatStrings.FormatPressure(SteamEngines[numberofengine].SEMeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("StUse"),
                     FormatStrings.FormatMass(pS.TopH(SteamEngines[numberofengine].SESteamCylinderConsumptionKgpS), IsMetric),
+                    Simulator.Catalog.GetString("HIHP"),
+                    SteamEngines[numberofengine].HallIHP,
+                    Simulator.Catalog.GetString("HMEP"),
+                    SteamEngines[numberofengine].HallMEP,
                     FormatStrings.h
                         );
 
