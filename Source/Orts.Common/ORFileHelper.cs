@@ -20,7 +20,7 @@ using System.IO;
 
 namespace Orts.Common
 {
-    public class ORFileHelper
+    public static class ORFileHelper
     {
         /// <summary>
         /// Given any file path, returns a path to the same file type and name but contained inside an
