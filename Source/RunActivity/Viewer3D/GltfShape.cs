@@ -1566,8 +1566,8 @@ namespace Orts.Viewer3D
             public readonly Texture2D BonesTexture;
             
             /// <summary>
-            /// Indicates what position in the target a specific vertex attribute is located at. Element [6] is set to 1 if the primitive has a skin.
-            /// [7] is the targets count. [8] is the attributes count per target.
+            /// Indicates what position in the target a specific vertex attribute is located at.
+            /// [6] is the targets count. [7] is the attributes count per target.
             /// </summary>
             readonly float[] MorphConfig;
             readonly float[] MorphWeights;
@@ -1652,13 +1652,17 @@ namespace Orts.Viewer3D
             /// <returns>(morphConfig, weights)</returns>
             public (float[], float[]) GetMorphingData()
             {
+                ActiveWeights = ActiveWeights ?? new float[8];
+
                 if (MorphWeights.Length <= MaxActiveMorphTargets)
-                    return (MorphConfig, MorphWeights);
+                {
+                    Array.Copy(MorphWeights, ActiveWeights, MorphWeights.Length);
+                    return (MorphConfig, ActiveWeights);
+                }
 
                 ActiveVertexBufferBindings = ActiveVertexBufferBindings ?? VertexBufferBindings.ToArray();
-                Array.Resize(ref ActiveVertexBufferBindings, 16); // This is what the vs_4_0 can handle.
-                ActiveWeightIndices = ActiveWeightIndices ?? new int[RenderProcess.MAX_MORPH_BUFFERS];
-                ActiveWeights = ActiveWeights ?? new float[RenderProcess.MAX_MORPH_BUFFERS];
+                Array.Resize(ref ActiveVertexBufferBindings, 16); // Out of these 8 are the morph buffers, this is what vs_4_0 can handle.
+                ActiveWeightIndices = ActiveWeightIndices ?? new int[8];
 
                 // First select the weight indices
                 var w = 0;
