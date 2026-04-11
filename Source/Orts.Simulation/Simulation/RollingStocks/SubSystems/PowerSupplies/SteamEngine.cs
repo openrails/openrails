@@ -642,8 +642,14 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public double FullValveTravelM;
         public float MEPWireDrawingFactor; // Factor to reduce MEP due to wire drawing - drop in pressure as steam flows through valve ports, etc. - typically around 0.85 for a saturated locomotive and 0.9 for a superheated locomotive
 
+        public double SESteamChestVolumeM3;
+        public double SERegulatorMaxAreaM2;
+
         public float SEKEffFactor;
         public float SESteamChestPressurePSI;
+
+        public float HallIHP;
+        public float HallMEP;
 
         public float SESteamCylinderConsumptionKgpS;
 
@@ -831,6 +837,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "cylinderexhaustlap": SEValveExhaustLapM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                     case "wiredrawlocomotiveconstant": SEwireDrawingLocomotiveConstant = stf.ReadIntBlock(null); break;
                     case "steamchestefficiencyfactor": SEKEffFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                    case "steamchestvolume": SESteamChestVolumeM3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                    case "regulatormaximumarea": SERegulatorMaxAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                     case "connectingrodlength": SEConnectRodLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                     case "crankradius": SECrankRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
 
@@ -869,6 +877,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             SEConnectRodLengthM = other.SEConnectRodLengthM;
             SECrankRadiusM = other.SECrankRadiusM;
             SEKEffFactor = other.SEKEffFactor;
+            SESteamChestVolumeM3 = other.SESteamChestVolumeM3;
+            SERegulatorMaxAreaM2 = other.SERegulatorMaxAreaM2;
             SECylinderClearancePC = other.SECylinderClearancePC;
         }
 
@@ -1049,6 +1059,31 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     Trace.TraceInformation("Cylinder Clearance: not found in Steam Engine Configuration: set to default value = {0}", SECylinderClearancePC);
             }
 
+            if (SESteamChestVolumeM3 == 0 && Locomotive.SteamChestVolumeM3 != 0 && Id == 1)
+            {
+                SESteamChestVolumeM3 = Locomotive.SteamChestVolumeM3;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Steam Chest Volume: copied from ENG file and set to value of {0}", FormatStrings.FormatSmallVolume((float)SESteamChestVolumeM3, Locomotive.IsMetric));
+            }
+            else if (SESteamChestVolumeM3 == 0)
+            {
+                SESteamChestVolumeM3 = Me3.FromFt3(2.0f); // default value - 2 cubic feet
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Steam Chest Volume: not found in Steam Engine Configuration: set to default value = {0}", FormatStrings.FormatSmallVolume((float)SESteamChestVolumeM3, Locomotive.IsMetric));
+            }
+
+            if (SERegulatorMaxAreaM2 == 0 && Locomotive.RegulatorMaxAreaM2 != 0 && Id == 1)
+            {
+                SERegulatorMaxAreaM2 = Locomotive.RegulatorMaxAreaM2;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Regulator Maximum Area: copied from ENG file and set to value of {0}", FormatStrings.FormatArea((float)SERegulatorMaxAreaM2, Locomotive.IsMetric));
+            }
+            else if (SERegulatorMaxAreaM2 == 0)
+            {
+                SERegulatorMaxAreaM2 = Me2.FromIn2(20.7f);  // Regulator opening on Britannia  is 20.7in2 (133.5cm2) at full throttle.
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Regulator Maximum Area: copied from ENG file and set to value of {0}", FormatStrings.FormatArea((float)SERegulatorMaxAreaM2, Locomotive.IsMetric));
+            }
 
             //   Locomotive.RodCoGM = 0.4f * SEConnectRodLengthM;   // 0.4 from crank end of rod
 
@@ -1572,382 +1607,556 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             float SteamConsumptionCondensationIncreaseFactor = 1 + NewCylinderCondensationFactor; // This factor is used to increase steam consumption and decrease MEP to allow for cylinder condensation
 
-            RunHall(DriveWheelRevRpS * 60, AdmissionCylinderFraction, ActualCutoffCylinderFraction, ReleaseCylinderFraction, CompressionCylinderFraction, 0.5);
+            Run(DriveWheelRevRpS * 60, AdmissionCylinderFraction, ActualCutoffCylinderFraction, ReleaseCylinderFraction, CompressionCylinderFraction, 0.5);
 
 
         }
 
-        // Test Hall equations
-        // =========================
-        // 1. CONSTANTS
-        // =========================
 
-        const double PA_TO_PSI = 0.000145038;
+        // ============================================================
+        // FULL Hall MASS-BASED STEAM SOLVER WITH:
+        // - RK4 INTEGRATION
+        // - REGULATOR WIRE DRAWING (NONLINEAR)
+        // - STEAM PIPE RESTRICTION
+        // - FULL 0–360° CYCLE
+        // - STROKE-BASED EVENT REPORTING
+        // - STABLE AT 0 RPM
+        // ============================================================
+
+        // =========================
+        // CONSTANTS
+        // =========================
+        const double R_JpkgK = 461.5;
+        const double GAMMA = 1.3;
+
         const double PSI_TO_PA = 6894.76;
+        const double PA_TO_PSI = 1.0 / PSI_TO_PA;
+
+        const double MIN_P = 1000.0;
 
         // =========================
-        // 2. INPUTS (Britannia)
+        // FLOW COEFFICIENTS (FIX 1)
         // =========================
-
-        // Steam circuit
-        double SteamChestVolumeM3 = Me3.FromFt3(2.0f);            // Steam Chest = 2 cubic feet (0.0566337 m3) for Britannia 
-
-        // =========================
-        // CONSTANTS (SI)
-        // =========================
-
-        const double R_JpkgK = 461.5;     // Steam gas constant
-        const double MIN_PRESSURE_PA = 1000.0;
+        const double Cd_port = 0.75;   // ?? NEW: realistic port discharge
+        const double Cd_reg = 0.75;    // ?? NEW: regulator higher efficiency
+        const double Cd_pipe = 0.85;     // ?? NEW: steam pipe flow coefficient
 
         // =========================
-        // USER INPUTS (ALL SI)
+        // USER INPUTS
         // =========================
+
+        public double ConRodLengthM;
+        public double ClearanceFrac;
+
+        //  public double BoilerPressurePSI;
         
-        double temp_K;
+        public double PortWidth_m = Me.FromIn(2.25f);          // 2.25 in;
 
-        double PortWidth_m = 0.057;          // 2.25 in
-        double regulatorArea_m2 = 0.01335f;  // Regulator opening on Britannia  is 20.7in2 (133.5cm2) at full throttle.
+        public double Throttle;
 
-        //      double kw = 0.045;   // Hall wire drawing coefficient
-        double kc = 0.02;    // Condensation coefficient
+        // Superheat / condensation
+        public bool HasSuperheater;
+        public double Superheat_K = 420;           // set externally if desired
+   
+        bool InsideAdmission = false; // Set to true for Stephenson valve gear with inside admission, false for Walschaert and Stephenson with outside admission
+
+        // =========================
+        // RESULTS
+        // =========================
+        public double pAdmission_Pa, pCutoff_Pa, pRelease_Pa, pCompression_Pa, pTarget_Pa;
+        double admissionStartFrac, cutoffFrac, releaseFrac, compressionFrac;
+
+        public double SteamPerRevKgpS, SteamRate_lbhr;
+        public double IHP_W, MEP_Pa;
+        public double ChestPressure_PSI;
+
+        double targetFrac = 0.5; // Target fraction of boiler pressure for iterative solver
+
+        double mTotal_Kg;
+        double pChestSum = 0;
 
         double pBack_Pa;
-        double mIn_kgps;
-        double mOut_kgps;
+        double mBoiler;  // boiler → chest
 
-        double Cd = 0.75f; // Discharge coefficient for flow through the valve, typically around 0.75 for sharp-edged orifices to 0.85
-   
-        double pTarget_Pa;
+        double lastTheta = 0;
+        double lastYi = 0;
+        double lastYo = 0;
 
-        // =========================
-        // SAFE HELPERS
-        // =========================
-        double ClampPressure(double p_Pa) => Math.Max(p_Pa, MIN_PRESSURE_PA);
 
         // =========================
-        // KINEMATICS
+        // HELPERS
         // =========================
-        double StrokeFraction(double theta_rad)
+        double ClampP(double p) => Math.Max(p, MIN_P);
+
+        bool IsFinite(double x)
         {
-            double r_m = CylindersStrokeM / 2.0;
-
-            double term = SEConnectRodLengthM * SEConnectRodLengthM - r_m * r_m * Math.Pow(Math.Sin(theta_rad), 2);
-
-            term = Math.Max(term, 1e-12);
-
-            double x_m = r_m * (1 - Math.Cos(theta_rad)) + (SEConnectRodLengthM - Math.Sqrt(term));
-
-            return Math.Max(0, Math.Min(1, x_m / CylindersStrokeM));
-        }
-
-        double RegulatorArea(double throttle, double Amax)
-        {
-            double n = 2.0; // non-linear opening
-
-            return Amax * Math.Pow(throttle, n);
-        }
-
-        double CylinderVolume_m3(double frac)
-        {
-            double pistonArea_m2 = Math.PI * Math.Pow(CylindersDiameterM / 2.0, 2);
-            double swept_m3 = pistonArea_m2 * CylindersStrokeM;
-
-            return Math.Max(1e-6, swept_m3 * (frac + SECylinderClearancePC));
-        }
-
-        double dVdTheta_m3pRad(double theta_rad)
-        {
-            double r_m = CylindersStrokeM / 2.0;
-
-            double sinT = Math.Sin(theta_rad);
-            double cosT = Math.Cos(theta_rad);
-
-            double denom = Math.Sqrt(Math.Max(SEConnectRodLengthM * SEConnectRodLengthM - r_m * r_m * sinT * sinT, 1e-12));
-
-            double dx_m = r_m * sinT + (r_m * r_m * sinT * cosT) / denom;
-
-            double pistonArea_m2 = Math.PI * Math.Pow(CylindersDiameterM / 2.0, 2);
-
-            return pistonArea_m2 * dx_m;
+            return !(double.IsNaN(x) || double.IsInfinity(x));
         }
 
         // =========================
-        // PORT MODEL (CONTINUOUS)
+        // STEAM PROPERTIES
         // =========================
-        double PortArea_m2(double frac, double start, double end, double maxOpen_m)
+
+        double Tsat_K(double P)
         {
-            double leakage_m2 = 1e-8;
+            double bar = P / 1e5;
+            return 104.87 * Math.Pow(bar, 0.1949) + 273.15;
+        }
 
-            if (frac < start || frac > end) 
-                return leakage_m2;
-
-            double phase = (frac - start) / (end - start);
-            double f = Math.Sin(Math.PI * phase);   // sinusoidal
-
-            return maxOpen_m * f * PortWidth_m;
+        double SteamTemp(double P)
+        {
+            double Ts = Tsat_K(P);
+            return HasSuperheater ? Ts + Superheat_K : Ts;
         }
 
         // =========================
-        // HALL MASS FLOW
+        // REGULATOR
         // =========================
-        double HallFlow_kgps(double kw, double pup_Pa, double pdown_Pa, double A_m2)
+
+        double CalculateRegulatorEffectiveArea(double throttle)
         {
-            pup_Pa = ClampPressure(pup_Pa);
-            pdown_Pa = ClampPressure(pdown_Pa);
+            // NONLINEAR regulator characteristic (NEW)
+            // Realistic: heavily restricted at small openings
 
-            if (A_m2 <= 0 || pup_Pa <= pdown_Pa * 0.999) return 0;
-
-            double dp2 = (pup_Pa * pup_Pa) - (pdown_Pa * pdown_Pa);
-            if (dp2 <= 0) return 0;
-                       
-            return kw * A_m2 * Math.Sqrt(dp2 / temp_K);
+            return SERegulatorMaxAreaM2 * Math.Pow(Math.Max(throttle, 0.0), 2.5);
         }
 
-        // =========================
-        // EVENT DETECTION
-        // =========================
-        void DetectEvent(
-            ref double pEvent_Pa,
-            double eventFrac,
-            double prevFrac,
-            double currFrac,
-            double prevP,
-            double currP)
-        {
-            if (!double.IsNaN(pEvent_Pa)) return;
+        // ============================================================
+        // CYLINDER GEOMETRY
+        // ============================================================
 
-            if (prevFrac <= eventFrac && currFrac >= eventFrac)
+        double StrokeFraction(double theta)
+        {
+            double r = CylindersStrokeM / 2.0;
+            double L = ConRodLengthM;
+
+            double term = Math.Max(L * L - r * r * Math.Pow(Math.Sin(theta), 2), 1e-12);
+
+            double x = r * (1 - Math.Cos(theta)) + (L - Math.Sqrt(term));
+            return Math.Max(0, Math.Min(1, x / CylindersStrokeM));
+        }
+
+        double StrokeFracForward(double theta)
+        {
+            if (theta <= Math.PI)
+                return 0.5 * (1.0 - Math.Cos(theta));   // forward stroke
+            else
+                return 0.5 * (1.0 - Math.Cos(2.0 * Math.PI - theta)); // mirror return stroke
+        }
+
+        double CylinderVolume(double frac)
+        {
+            double A = Math.PI * Math.Pow(CylindersDiameterM / 2, 2);
+            double swept = A * CylindersStrokeM;
+            return Math.Max(1e-6, swept * (frac + ClearanceFrac));
+        }
+
+        /// <summary>
+        /// Calculates the derivative of cylinder volume with respect to crank angle theta.
+        /// </summary>
+        /// <param name="theta">Crank angle in radians.</param>
+        /// <returns>The rate of change of cylinder volume with respect to theta.</returns>
+        double dVdTheta(double theta)
+        {
+            double r = CylindersStrokeM / 2.0;
+            double L = ConRodLengthM;
+
+            double sinT = Math.Sin(theta);
+            double cosT = Math.Cos(theta);
+
+            double denom = Math.Sqrt(Math.Max(L * L - r * r * sinT * sinT, 1e-12));
+            double dx = r * sinT + (r * r * sinT * cosT) / denom;
+
+            double A = Math.PI * Math.Pow(CylindersDiameterM / 2, 2);
+            return A * dx;
+        }
+
+        // ============================================================
+        // HALL VALVE OPENING yi / yo
+        // ============================================================
+
+        double ComputeValveTravelRadius()
+        {
+            // Hall: rv = lap + max port opening
+            return SESteamLapM + AdPortOpenM;
+        }
+
+        double ComputeAngleOfAdvanceRad(bool insideAdmission, double crankangle)
+        {
+            double lap = SESteamLapM;
+            double lead = SEValveLeadM;
+            double rv = ComputeValveTravelRadius();
+
+            double ratio = (lap + lead) / Math.Max(rv, 1e-6);
+            ratio = Math.Max(-1.0, Math.Min(1.0, ratio));
+
+            double alpha = Math.Asin(ratio);
+
+            // Inside admission (Stephenson reversed geometry)
+            if (insideAdmission)
+                alpha = Math.PI - alpha;
+
+            return alpha;
+        }
+
+        double PortOpeningAdmission(double theta, double rv, double alpha)
+        {
+            double xv = rv * Math.Sin(theta + alpha);
+
+            // Hall: opening occurs when displacement exceeds lap
+            double yi = xv - SESteamLapM;
+
+    //        Console.WriteLine($"PortAdmission - yi {Me.ToIn((float)yi)} in : CrankAngle {MathHelper.ToDegrees((float)theta)} deg : AoA {MathHelper.ToDegrees((float)alpha)} deg : xv {Me.ToIn((float)xv)} in : Lap {Me.ToIn((float)SESteamLapM)} in : RV {Me.ToIn((float)rv)} in : AdPortOpenM {Me.ToIn((float)AdPortOpenM)} in");
+
+                
+            return Math.Max(0.0, yi);
+        }
+
+        double PortOpeningExhaust(double theta, double rv, double alpha)
+        {
+            double xv = rv * Math.Sin(theta + alpha);
+
+            double yo;
+
+            if (!InsideAdmission)
             {
-                double t = (eventFrac - prevFrac) / (currFrac - prevFrac + 1e-12);
-                pEvent_Pa = prevP + t * (currP - prevP);
-            }
-        }
-
-        // =========================
-        // MAIN SOLVER
-        // =========================
-        void RunHall(
-            double rpm,
-            double admissionStart,
-            double cutoff,
-            double release,
-            double compression,
-            double targetStrokeFrac
-            )
-        {
-            double omega_radps = 2 * Math.PI * rpm / 60.0;
-            double dTheta = Math.PI / 360.0;
-            double dt = dTheta / omega_radps;
-
-            double BoilerPressure_Pa = Locomotive.BoilerPressurePSI * PSI_TO_PA;
-            double pCylinder_Pa = 0.6 * BoilerPressure_Pa; // Initial guess for cylinder pressure, will be updated iteratively
-            double pChest_Pa = BoilerPressure_Pa;
-
-            double pAdmission_Pa = double.NaN;
-            double pCutoff_Pa = double.NaN;
-            double pRelease_Pa = double.NaN;
-            double pCompression_Pa = double.NaN;
-
-            double prevFrac = 0;
-            double prevP = pCylinder_Pa;
-
-            int cylinders = Locomotive.MSTSNumCylinders;
-            double mTotal_kg = 0;
-
-            int steps = 360;
-            pTarget_Pa = double.NaN;
-
-            if (Locomotive.HasSuperheater)
-            {
-                temp_K = 620;   // K
+                
+                yo = -xv - SEValveExhaustLapM;
             }
             else
             {
-                temp_K = 470;   // K
+                yo = (xv + SEValveExhaustLapM);
             }
 
-            // =========================
-            // PASS 1: PORT + PRESSURE ESTIMATION
-            // =========================
-            double sumA = 0;
-            double sumA_sqrtDP = 0;
-            double sum_sqrtDP = 0;
-            double sumP = 0;
-            double totalTime = 0;
-            double KW_Aadm_m2;
+   //         Console.WriteLine($"Exhaust Port Opening - yo {Me.ToIn((float)yo)} in : CrankAngle {MathHelper.ToDegrees((float)theta)} deg : AoA {MathHelper.ToDegrees((float)alpha)} deg : XV {Me.ToIn((float)xv)} in : Valve Exhaust {Me.ToIn((float)SEValveExhaustLapM)} in : ExPortOpening {Me.ToIn((float)ExPortOpenM)} in");
 
-            // At 15% cutoff kw ≈ 0.01 – 0.02
-            // At 50 % cutoff kw ≈ 0.02 – 0.035
-            // At 75 % cutoff kw ≈ 0.035 – 0.06
+            // yo > 0 → exhaust open
+            // yo → 0 → closure point
+            // yo = 0 → compression begins
 
-            for (int i = 0; i < steps; i++)
+            return Math.Max(0.0, yo);
+        }
+
+        // ============================================================
+        // TRUE COMPRESSIBLE FLOW (HALL BASIS)
+        // ============================================================
+
+        double CriticalPressureRatio()
+        {
+            return Math.Pow(2.0 / (GAMMA + 1.0), GAMMA / (GAMMA - 1.0));
+        }
+
+        double MassFlow(double pup, double pdown, double T, double A)
+        {
+            if (A < 1e-10) return 0;
+
+            pup = ClampP(pup);
+            pdown = ClampP(pdown);
+
+            if (pdown >= pup) return 0;
+
+            double pr = pdown / pup;
+            double crit = CriticalPressureRatio();
+
+            double coeff = A * pup / Math.Sqrt(R_JpkgK * T);
+
+            if (pr <= crit)
             {
-                double theta = i * dTheta;
-                double frac = StrokeFraction(theta);
-
-                KW_Aadm_m2 = PortArea_m2(frac, admissionStart, cutoff, AdPortOpenM);
-
-                if (frac >= admissionStart && frac <= cutoff && KW_Aadm_m2 > 1e-8)
-                {
-                    double dp = Math.Max(pChest_Pa * pChest_Pa - pCylinder_Pa * pCylinder_Pa, 0);
-                    double sqrtDP = Math.Sqrt(dp);
-
-                    sumA += KW_Aadm_m2 * dt;
-                    sumA_sqrtDP += KW_Aadm_m2 * sqrtDP * dt;
-                    sum_sqrtDP += sqrtDP * dt;
-                    sumP += pCylinder_Pa * dt;
-                    totalTime += dt;
-                }
+                // CHOKED FLOW
+                return coeff * Math.Sqrt(GAMMA) * Math.Pow(2.0 / (GAMMA + 1.0), (GAMMA + 1.0) / (2.0 * (GAMMA - 1.0)));
             }
+            else
+            {
+                // SUBSONIC
+                double term = Math.Pow(pr, 2.0 / GAMMA) - Math.Pow(pr, (GAMMA + 1.0) / GAMMA);
+                return coeff * Math.Sqrt(2.0 * GAMMA / (GAMMA - 1.0) * term);
+            }
+        }
 
-            double eta_port = (sumA_sqrtDP / (sum_sqrtDP + 1e-12)) / (sumA / (totalTime + 1e-12) + 1e-12);
+        // =========================
+        // RK4 STEP (MASS-BASED)
+        // =========================
+        void RK4Step(
+            ref double mCyl,
+            ref double mChest,
+            double V,
+            double dVdt,
+            double pBack,
+            double Aadm,
+            double Aexh,
+            double Areg,
+            double PipeArea,
+            double BoilerP,
+            double dt)
+        {
+            Func<double, double, (double dmCyl, double dmChest)> deriv =
+            (mc, mch) =>
+            {
+                double Tcyl = SteamTemp(Math.Max(ClampP(mc * R_JpkgK * 400 / V), MIN_P));
+                double Tch = SteamTemp(Math.Max(ClampP(mch * R_JpkgK * 400 / SESteamChestVolumeM3), MIN_P));
 
-            eta_port = Math.Max(0.05, Math.Min(1.0, eta_port));
+                //Use direct temperature model, not back-calculated pressure:
+               // double Tcyl = HasSuperheater ? Superheat_K : Tsat_K(pCyl);
+               // double Tch = HasSuperheater ? Superheat_K : Tsat_K(pCh);
 
-            double pMean = sumP / (totalTime + 1e-12);
+
+                double pCyl = mc * R_JpkgK * Tcyl / V;
+                double pCh = mch * R_JpkgK * Tch / SESteamChestVolumeM3;
+
+                // Admission to cylinder
+                double mIn = Cd_port * MassFlow(pCh, pCyl, Tch, Aadm); // chest → cylinder
+                // Exhaust
+                double mOut = Cd_port * MassFlow(pCyl, pBack, Tcyl, Aexh); // cylinder → exhaust
+                // Regulator
+                mBoiler = Cd_reg * MassFlow(BoilerP, pCh, Tch, Areg);
+
+                // Pipe restriction
+                double mPipe = Cd_pipe * MassFlow(pCh, pCyl, Tch, PipeArea);
+
+                double dmC = mIn - mOut;
+                double dmCh = mBoiler - mIn;
+
+                return (dmC, dmCh);
+            };
+
+            var k1 = deriv(mCyl, mChest);
+            var k2 = deriv(mCyl + 0.5 * dt * k1.dmCyl, mChest + 0.5 * dt * k1.dmChest);
+            var k3 = deriv(mCyl + 0.5 * dt * k2.dmCyl, mChest + 0.5 * dt * k2.dmChest);
+            var k4 = deriv(mCyl + dt * k3.dmCyl, mChest + dt * k3.dmChest);
+
+            mCyl += dt / 6.0 * (k1.dmCyl + 2 * k2.dmCyl + 2 * k3.dmCyl + k4.dmCyl);
+            mChest += dt / 6.0 * (k1.dmChest + 2 * k2.dmChest + 2 * k3.dmChest + k4.dmChest);
+
+            mCyl = Math.Max(mCyl, 1e-8);
+            mChest = Math.Max(mChest, 1e-6);
+        }
+
+        // ============================================================
+        // MAIN SOLVER (HALL BALANCE)
+        // ============================================================
+
+        public void Run(double rpm, double admissionStart, double cutoff, double release, double compression, double targetFrac)
+        {
+            if (!HasSuperheater) Superheat_K = 0;
+
+            double steps = 720;
+            double omegaRadpS = Math.Max(2 * Math.PI * rpm / 60.0, 0.5); // angular velocity - ?? FIX: stable at 0 rpm
+            double dTheta = 2 * Math.PI / steps;
+            double dt = dTheta / omegaRadpS;
+
+
+            double BoilerP = Locomotive.BoilerPressurePSI * PSI_TO_PA;
+            double pCylinder = BoilerP;
+            double pChest = BoilerP;
+
+            double V0 = CylinderVolume(0.0);
+            double Tcyl0 = SteamTemp(BoilerP);
+
+            // ?? MASS STATE
+            double mCyl = BoilerP * V0 / (R_JpkgK * Tcyl0);
+            double mChest = BoilerP * SESteamChestVolumeM3 / (R_JpkgK * Tcyl0);
+
+        //    Console.WriteLine($"Initial Mass - mCyl {mCyl} kg : mChest {mChest} kg ");
+
+            double work = 0;
+            mTotal_Kg = 0;
+            Throttle = Locomotive.throttle;
+
+            lastTheta = 0;
+            lastYi = 0;
+            lastYo = 0;
+            pChestSum = 0;
+
+            double prevP;
+
+            double theta0 = 2.0 * Math.PI;
+
+            double rv0 = ComputeValveTravelRadius();
+            double AoA0 = ComputeAngleOfAdvanceRad(InsideAdmission, theta0);
+
+            lastYi = PortOpeningAdmission(theta0, rv0, AoA0);
+            lastYo = PortOpeningExhaust(theta0, rv0, AoA0);
+
+            double V0_last = CylinderVolume(StrokeFraction(theta0));
+            double Tcyl_last = SteamTemp(BoilerP);
+            double lastP = BoilerP;
+
+            prevP = lastP;
+
+            pAdmission_Pa = pCutoff_Pa = pRelease_Pa = pCompression_Pa = pTarget_Pa = double.NaN;
+
+            admissionStartFrac = cutoffFrac = releaseFrac = compressionFrac = double.NaN;
 
             // =========================
-            // HALL kw (CORRECT FORM)
+            // PIPE AREAS (NEW)
             // =========================
-            double A_mean = sumA / totalTime + 1e-12;
+            double RegMaxArea = Me2.ToIn2((float)SERegulatorMaxAreaM2) * 0.00064516;
 
-            double V_mean = CylinderVolume_m3(0.5 * cutoff);  // Check logic behind this line
-
-            double tau = V_mean / (A_mean * Math.Sqrt(2.0 * pChest_Pa / (R_JpkgK * temp_K)));
-
-            tau = MathHelper.Clamp((float)tau, 0.001f, 0.02f);
-
-            double t_adm = cutoff / omega_radps;
-
-            double eta_time = t_adm / (t_adm + tau);
-
-            double pr = pMean / pChest_Pa;
-
-            double kw_dynamic = Cd * Math.Sqrt(2.0 / R_JpkgK) * eta_port * eta_time;
-
-       //     Console.WriteLine($"Kw {kw_dynamic} : eta_time {eta_time} : eta_port {eta_port} : Cutoff {cutoff}");
-
-            // -------------------------
-            // FINAL SAFETY
-            // -------------------------
-            if (double.IsNaN(kw_dynamic) || kw_dynamic <= 0)
-                kw_dynamic = 0.01;  // fallback safe value
-
-            // =========================
-            // PASS 2: FULL SIMULATION
-            // =========================
-
+            // Typical pipe areas (GUIDELINE)
+            double PipeArea = 0.6 * RegMaxArea;      // steam pipe
+            
             for (int i = 0; i < steps; i++)
             {
-                double thetaRad = i * dTheta;
+                double CurrentCrankAngleRad = i * dTheta; // crank angle now 0 -> 360 degrees (2 * PI radians) over the course of the loop
 
-                double prevP_Pa = pCylinder_Pa;
-                double frac = StrokeFraction(thetaRad);
-                double V_m3 = CylinderVolume_m3(frac);
-                double dVdt_m3ps = dVdTheta_m3pRad(thetaRad) * omega_radps;
+                double frac = StrokeFraction(CurrentCrankAngleRad); // Return the fraction at the current crank angle, based upon the geometry of the cylinder and connecting rod
+                double V = CylinderVolume(frac); // Return the cylinder volume at the current crank angle, based upon the geometry of the cylinder and connecting rod
+                double dVdt = dVdTheta(CurrentCrankAngleRad) * omegaRadpS; // Return the rate of change of cylinder volume at the current crank angle, based upon the geometry of the cylinder and connecting rod, and the angular velocity
+
+                double rv = ComputeValveTravelRadius();
+                double AoA = ComputeAngleOfAdvanceRad(InsideAdmission, CurrentCrankAngleRad);
+
+                double yi = PortOpeningAdmission(CurrentCrankAngleRad, rv, AoA);
+                double yo = PortOpeningExhaust(CurrentCrankAngleRad, rv, AoA);
+
+                double Aadm = Math.Min(yi * PortWidth_m, PortWidth_m * AdPortOpenM);
+                double Aexh = Math.Min(yo * PortWidth_m, PortWidth_m * ExPortOpenM);
+
+                double pBack = (5 + 0.03 * rpm) * PSI_TO_PA;
+
+     //           Console.WriteLine($"yi {Me.ToIn((float)yi)} in : yo {Me.ToIn((float)yo)} in : CrankAngle {MathHelper.ToDegrees((float) CurrentCrankAngleRad)} deg : AoA {MathHelper.ToDegrees((float)AoA)} deg : PortWidth {Me.ToIn((float)PortWidth_m)} in : AdPortOpening {Me.ToIn((float)AdPortOpenM)} in : ExPortOpening {Me.ToIn((float)ExPortOpenM)} in");
+
+
+
+                // =========================
+                // FLOW PATH (NEW)
+                // =========================
+
+                // Regulator
+                double Areg = CalculateRegulatorEffectiveArea(Throttle);
                 
 
-                // Ports
-                double Aadm_m2 = PortArea_m2(frac, admissionStart, cutoff, AdPortOpenM);
-                double Aexh_m2 = PortArea_m2(frac, release, 1.0, ExPortOpenM);
+                // RK4 MASS UPDATE
+                RK4Step(ref mCyl, ref mChest, V, dVdt, pBack, Aadm, Aexh, Areg, PipeArea, BoilerP, dt);
 
-                // Back pressure
-                pBack_Pa = (15 + 0.08 * rpm + 0.0005 * rpm * rpm) * PSI_TO_PA;
+                //Use direct temperature model, not back-calculated pressure:
+              //  double Tcyl = HasSuperheater ? Superheat_K : Tsat_K(pCyl);
+             //   double Tch = HasSuperheater ? Superheat_K : Tsat_K(pCh);
 
-                // Flows
-                mIn_kgps = HallFlow_kgps(kw_dynamic, pChest_Pa, pCylinder_Pa, Aadm_m2);
+                double Tcyl = SteamTemp(Math.Max(ClampP(mCyl * R_JpkgK * 400 / V), MIN_P));
+                pCylinder = mCyl * R_JpkgK * Tcyl / V;
 
-                mOut_kgps = HallFlow_kgps(kw_dynamic, pCylinder_Pa, pBack_Pa, Aexh_m2);
+                double Tch = SteamTemp(Math.Max(ClampP(mChest * R_JpkgK * 400 / SESteamChestVolumeM3), MIN_P));
+                pChest = mChest * R_JpkgK * Tch / SESteamChestVolumeM3;
 
-                // Steam Consumption
-                mTotal_kg += mIn_kgps * dt;
+           //     Console.WriteLine($"Steam Chest - I {i} : pChest {pChest * PA_TO_PSI} psi : mChest {mChest} kg : Tch {Tch} K : PChest Sum {pChestSum * PA_TO_PSI} psi");
 
-                // Condensation
-                double mCond_kgps = kc * (pCylinder_Pa / BoilerPressure_Pa);
-
-                // Cylinder pressure
-                double dp_Pa = ((R_JpkgK * temp_K / V_m3) * (mIn_kgps - mOut_kgps - mCond_kgps)) * dt - (pCylinder_Pa / V_m3) * dVdt_m3ps * dt;
-                dp_Pa = Math.Max(Math.Min(dp_Pa, 5e5), -5e5);
-
-                prevP = pCylinder_Pa;
-                pCylinder_Pa += dp_Pa;
-                pCylinder_Pa = ClampPressure(pCylinder_Pa);
-
-                // Steam Chest Calculations
-                double kw_reg = 0.8 * Math.Sqrt(2.0 / R_JpkgK); // fixed nozzle estimate for regulator, to be refined with testing and data
-
-                double Areg = RegulatorArea(Locomotive.throttle, regulatorArea_m2); // Adjusts steam chest pressure as throttle increases
-
-                double mBoiler_kgps = HallFlow_kgps(kw_reg,BoilerPressure_Pa, pChest_Pa, Areg);
-
-                double dpChest_Pa = ((R_JpkgK * temp_K / SteamChestVolumeM3) * (mBoiler_kgps - mIn_kgps)) * dt;
-
-                pChest_Pa += dpChest_Pa;
-                pChest_Pa = ClampPressure(pChest_Pa);
-
-                if (double.IsNaN(pChest_Pa)) 
-                    pChest_Pa = BoilerPressure_Pa;
-
-                // Events
-                DetectEvent(ref pAdmission_Pa, admissionStart, prevFrac, frac, prevP, pCylinder_Pa);
-                DetectEvent(ref pCutoff_Pa, cutoff, prevFrac, frac, prevP, pCylinder_Pa);
-                DetectEvent(ref pRelease_Pa, release, prevFrac, frac, prevP, pCylinder_Pa);
-                DetectEvent(ref pCompression_Pa, compression, prevFrac, frac, prevP, pCylinder_Pa);
-
-                // -------------------------
-                // TARGET FRACTION DETECTION
-                // -------------------------
-                if (double.IsNaN(pTarget_Pa))
+                if (Aadm <= 0)
                 {
-                    if ((prevFrac <= targetStrokeFrac && frac >= targetStrokeFrac) || (prevFrac >= targetStrokeFrac && frac <= targetStrokeFrac))
-                    {
-                        double t =
-                            (targetStrokeFrac - prevFrac) /
-                            (frac - prevFrac + 1e-12);
-
-                        pTarget_Pa = prevP_Pa + t * (pCylinder_Pa - prevP_Pa);
-                    }
+                    pChest = BoilerP;
+                    // No flow, so cylinder pressure cannot exceed steam chest pressure
+                    pCylinder = Math.Min(pCylinder, pChest);
                 }
 
-                prevFrac = frac;
+                pBack_Pa = pBack;
+
+                // WORK
+                if (IsFinite(pCylinder))
+                    work += pCylinder * dVdTheta(CurrentCrankAngleRad) * dTheta;
+
+                // =========================
+                // EVENT INTERPOLATION (FIXED)
+                // =========================
+                double interp(double last, double curr)
+                {
+                    if (Math.Abs(last - curr) < 1e-8) return 0;
+                    return last / (last - curr);
+                }
+
+                if (lastYi <= 0 && yi > 0 && double.IsNaN(pAdmission_Pa))
+                {
+                    double f = interp(lastYi, yi);
+                    pAdmission_Pa = prevP + f * (pCylinder - prevP);
+                    admissionStartFrac = StrokeFracForward(CurrentCrankAngleRad);
+                }
+
+                if (lastYi > 0 && yi <= 0 && double.IsNaN(pCutoff_Pa))
+                {
+                    double f = interp(lastYi, yi);
+                    pCutoff_Pa = prevP + f * (pCylinder - prevP);
+                    cutoffFrac = StrokeFracForward(CurrentCrankAngleRad);
+                }
+
+                if (lastYo <= 0 && yo > 0 && double.IsNaN(pRelease_Pa))
+                {
+                    double f = interp(lastYo, yo);
+                    pRelease_Pa = prevP + f * (pCylinder - prevP);
+                    releaseFrac = StrokeFracForward(CurrentCrankAngleRad);
+                }
+
+                if (((lastYo > 0 && yo <= 0) || (lastYo == 0 && yo < 0)) && double.IsNaN(pCompression_Pa))
+                {
+                    double f = interp(lastYo, yo);
+                    pCompression_Pa = prevP + f * (pCylinder - prevP);
+                    compressionFrac = StrokeFracForward(CurrentCrankAngleRad);
+                    //                 Console.WriteLine($"Compression Detection: Compression_Pa {pCompression_Pa * PA_TO_PSI:F2} psi: f {f} : prevP {prevP * PA_TO_PSI:F2} psi : pCylinder {pCylinder * PA_TO_PSI:F2} psi");
+                }
+
+                double targetTheta = targetFrac * Math.PI;
+
+                if (double.IsNaN(pTarget_Pa) && CurrentCrankAngleRad >= targetTheta)
+                {
+                    pTarget_Pa = pCylinder;
+                }
+
+                prevP = pCylinder;
+                lastYi = yi;
+                lastYo = yo;
+
+                mTotal_Kg += mBoiler * dt; // approximate flow tracking
+
+                pChestSum += pChest;
             }
 
-            // multiply by number of cylinders
-            mTotal_kg *= cylinders * 2; // The need for 2? is an allowance for double acting this needs to be checked.
-
-
             // =========================
-            // OUTPUT (PSI)
+            // OUTPUTS
             // =========================
+            SteamPerRevKgpS = mTotal_Kg * NumberCylinders * 2;
+            SteamRate_lbhr = SteamPerRevKgpS * rpm * 60 * 2.20462;
 
-/*
+            double pistonArea = Math.PI * Math.Pow(CylindersDiameterM / 2, 2);
+            double sweptVolume = pistonArea * CylindersStrokeM;
+
+            double cyclesPerSec = rpm / 60.0;
+
+            IHP_W = work * cyclesPerSec * NumberCylinders * 2;
+            MEP_Pa = work / sweptVolume;
+
+            ChestPressure_PSI = (pChestSum / steps) * PA_TO_PSI;
+
+            //       Console.WriteLine($"Chest PSI: {pChestSum * PA_TO_PSI} psi : Steps {steps}");
+
+            // Note solver produces absolute pressures, so we convert to gauge pressure for reporting and comparison with other calculations
+
             Console.WriteLine($"Speed: {Locomotive.AbsSpeedMpS} mph : Cutoff {Locomotive.cutoff * 100} %");
-            Console.WriteLine($"Boiler; {Locomotive.BoilerPressurePSI} psi, Steam Chest: {pChest_Pa * PA_TO_PSI} psi");
-            Console.WriteLine($"Admission Pressure: {admissionStart * 100} %, {pAdmission_Pa * PA_TO_PSI:F2} psi");
-            Console.WriteLine($"Cutoff Pressure: {cutoff * 100} %, {pCutoff_Pa * PA_TO_PSI:F2} psi");
-            Console.WriteLine($"Release Pressure: {release * 100} %, {pRelease_Pa * PA_TO_PSI:F2} psi");
-            Console.WriteLine($"Compression Pressure: {compression * 100} %, {pCompression_Pa * PA_TO_PSI:F2} psi");
-            Console.WriteLine($"Back Pressure: {pBack_Pa * PA_TO_PSI:F2} psi");
-            Console.WriteLine($"Lead: {SEValveLeadM:F2} M");
-            Console.WriteLine($"Lap: {SESteamLapM:F2} M");
-            Console.WriteLine($"MaxAdmissionPortOpening: {Me.ToFt((float)AdPortOpenM):F4} ft");
-            Console.WriteLine($"MaxExhaustPortOpening: {Me.ToFt((float)ExPortOpenM):F4} ft");
-            Console.WriteLine($"SteamChestVolume: {SteamChestVolumeM3:F3} ft3");
-            Console.WriteLine($"MIn: {mIn_kgps:F3}");
-            Console.WriteLine($"MOut: {mOut_kgps:F3}");
-//            Console.WriteLine($"Cutoff: {cutoff * 100:F1}%  Eta_v: {(float)eta_v:F3}");
-            Console.WriteLine($"Kw_Dynamic: {kw_dynamic:F3}");
+            Console.WriteLine($"Boiler; {Locomotive.BoilerPressurePSI} psi, Steam Chest: {ChestPressure_PSI} psi");
+            Console.WriteLine($"Admission Pressure: {admissionStartFrac * 100} %, {pAdmission_Pa * PA_TO_PSI:F2} psi");
+            Console.WriteLine($"Cutoff Pressure: {cutoffFrac * 100} %, {pCutoff_Pa * PA_TO_PSI:F2} psi");
+            Console.WriteLine($"Release Pressure: {releaseFrac * 100} %, {pRelease_Pa * PA_TO_PSI:F2} psi");
+            Console.WriteLine($"Compression Pressure: {compressionFrac * 100} %, {pCompression_Pa * PA_TO_PSI:F2} psi");
+            Console.WriteLine($"Back Pressure: {(float)pBack_Pa * PA_TO_PSI:F2} psi");
+            Console.WriteLine($"Lead: {Me.ToIn((float)SEValveLeadM):F2} in");
+            Console.WriteLine($"Lap: {Me.ToIn((float)SESteamLapM):F2} in");
+            Console.WriteLine($"MaxAdmissionPortOpening: {Me.ToIn((float)AdPortOpenM):F4} in");
+            Console.WriteLine($"MaxExhaustPortOpening: {Me.ToIn((float)ExPortOpenM):F4} in");
+            Console.WriteLine($"SteamChestVolume: {Me3.ToFt3((float)SESteamChestVolumeM3):F3} ft3");
+            Console.WriteLine($"PortWidth: {Me.ToIn((float)PortWidth_m):F3} in");
+            Console.WriteLine($"Regulator Maximum Opening: {Me2.ToIn2((float)SERegulatorMaxAreaM2):F3} in2");
 
-            Console.WriteLine($"Target Stroke Fraction: {targetStrokeFrac * 100:F1}%");
             Console.WriteLine($"Target Cylinder Pressure: {pTarget_Pa * PA_TO_PSI:F2} psi");
 
-            Console.WriteLine($"Steam per revolution: {mTotal_kg:F4} kg/rev");
+            Console.WriteLine($"Steam per rev: {SteamPerRevKgpS:F5} kg");
+            Console.WriteLine($"Steam rate: {SteamRate_lbhr:F2} lb/hr");
 
-            double kg_per_hour = mTotal_kg * rpm * 60.0;
-            Console.WriteLine($"Steam rate: {2.20462 * kg_per_hour:F1} lb/hr");
+            Console.WriteLine($"Theta: {lastTheta:F3}  yi: {lastYi:F5}  yo: {lastYo:F5}");
+     //       Console.WriteLine($"Valve Phase (deg): {phi * 180.0 / Math.PI:F2}");
 
             Console.WriteLine();
-*/
+
+            AdmissionCylinderFraction = admissionStartFrac;
+            ActualCutoffCylinderFraction = cutoffFrac;
+            ReleaseCylinderFraction = releaseFrac;
+            CompressionCylinderFraction = compressionFrac;
 
             if (Locomotive.throttle < 0.01f)
             {
@@ -1960,17 +2169,24 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
             else
             {
-                SESteamChestPressurePSI = (float)(pChest_Pa * PA_TO_PSI); // Convert to absolute pressure for use in other calculations
+                SESteamChestPressurePSI = (float)(ChestPressure_PSI); // Convert to absolute pressure for use in other calculations
                 Pressure_b_AtmPSI = (float)(pCutoff_Pa * PA_TO_PSI) + Locomotive.OneAtmospherePSI; // Convert to absolute pressure for use in other calculations
                 Pressure_c_AtmPSI = (float)(pRelease_Pa * PA_TO_PSI) + Locomotive.OneAtmospherePSI; // Convert to absolute pressure for use in other calculations
                 Pressure_f_AtmPSI = (float)(pCompression_Pa * PA_TO_PSI) + Locomotive.OneAtmospherePSI; // Convert to absolute pressure for use in other calculations
-          //    Pressure_a_AtmPSI = (float)pAdmission + Locomotive.OneAtmospherePSI; // Convert to absolute pressure for use in other calculations
-                SESteamCylinderConsumptionKgpS = (float)(mTotal_kg * rpm / 60.0f); // Total steam consumption in kg/s
+               //    Pressure_a_AtmPSI = (float)pAdmission + Locomotive.OneAtmospherePSI; // Convert to absolute pressure for use in other calculations
+                
+                SESteamCylinderConsumptionKgpS = (float)SteamPerRevKgpS; // Total steam consumption in kg/s
             }
+
+            HallIHP = (float)IHP_W * 0.00134102f;
+            HallMEP = (float)MEP_Pa * (float)PA_TO_PSI;
+
+
         }
 
 
-        
+
+
 
         private void CalculateSingleExpansionCylinderSteamIndicatorDiagram()
         {
@@ -2031,7 +2247,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             // (e) - Compression Pressure 
             // Calculate pre-compression pressure based upon back pressure being equal to it, as steam should be exhausting
-                 Pressure_e_AtmPSI = Pressure_d_AtmPSI;
+            Pressure_e_AtmPSI = Pressure_d_AtmPSI;
 
             SELogPreCompressionPressurePSI = Pressure_e_AtmPSI - Locomotive.OneAtmospherePSI;   // Value for log file
             SELogPreCompressionPressurePSI = MathHelper.Clamp(SELogPreCompressionPressurePSI, 0.00f, SELogPreCompressionPressurePSI); // Clamp so that pre compression pressure does not go negative
@@ -2114,42 +2330,42 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             SEMeanEffectivePressurePSI = TotalWorkInLbs / Me.ToIn(CylindersStrokeM); // MEP doesn't need to be converted from Atm to gauge pressure as it is a differential pressure.
             SEMeanEffectivePressurePSI = MathHelper.Clamp(SEMeanEffectivePressurePSI, 0, Locomotive.MaxBoilerPressurePSI); // Make sure that Cylinder pressure does not go negative
 
-            if( float.IsNaN(SEMeanEffectivePressurePSI) || Locomotive.throttle < 0.01)
+            if (float.IsNaN(SEMeanEffectivePressurePSI) || Locomotive.throttle < 0.01)
             {
                 SEMeanEffectivePressurePSI = 0;
             }
 
-      //      Trace.TraceInformation("RPM {0}", pS.TopM(DriveWheelRevRpS));
-/*
-       //     if (DriveWheelRevRpS >= 55.0 && DriveWheelRevRpS < 55.1 || DriveWheelRevRpS >= 110.0 && DriveWheelRevRpS < 110.1 || DriveWheelRevRpS >= 165.0 && DriveWheelRevRpS < 165.05 || DriveWheelRevRpS >= 220.0 && DriveWheelRevRpS < 220.05)
-            if (Locomotive.AbsSpeedMpS > 6 && Locomotive.AbsSpeedMpS <= 6.5f )
-            {
-                Trace.TraceInformation("***************************************** Single Expansion Steam Locomotive ***************************************************************");
+            //      Trace.TraceInformation("RPM {0}", pS.TopM(DriveWheelRevRpS));
+  /*          
+                   //     if (DriveWheelRevRpS >= 55.0 && DriveWheelRevRpS < 55.1 || DriveWheelRevRpS >= 110.0 && DriveWheelRevRpS < 110.1 || DriveWheelRevRpS >= 165.0 && DriveWheelRevRpS < 165.05 || DriveWheelRevRpS >= 220.0 && DriveWheelRevRpS < 220.05)
+                        if (Locomotive.AbsSpeedMpS > 6 && Locomotive.AbsSpeedMpS <= 6.5f )
+                        {
+                            Trace.TraceInformation("***************************************** Single Expansion Steam Locomotive ***************************************************************");
 
-                Trace.TraceInformation("All pressures in Atmospheric Pressure (ie Added 14.5psi)");
+                            Trace.TraceInformation("All pressures in Atmospheric Pressure (ie Added 14.5psi)");
 
-                Trace.TraceInformation("*********** Operating Conditions *********");
+                            Trace.TraceInformation("*********** Operating Conditions *********");
 
-                Trace.TraceInformation("Boiler Pressure {0}", Locomotive.BoilerPressurePSI);
+                            Trace.TraceInformation("Boiler Pressure {0}", Locomotive.BoilerPressurePSI);
 
-                Trace.TraceInformation("Throttle {0} Cutoff {1}  Revs {2} RelPt {3} Clear {4}", Locomotive.throttle, Locomotive.cutoff, pS.TopM(DriveWheelRevRpS), ReleaseCylinderFraction, SECylinderClearancePC);
+                            Trace.TraceInformation("Throttle {0} Cutoff {1}  Revs {2} RelPt {3} Clear {4}", Locomotive.throttle, Locomotive.cutoff, pS.TopM(DriveWheelRevRpS), ReleaseCylinderFraction, SECylinderClearancePC);
 
-                Trace.TraceInformation("*********** Cylinder *********");
+                            Trace.TraceInformation("*********** Cylinder *********");
 
-                Trace.TraceInformation("Cylinder Pressures: a {0} b {1} c {2} d {3} e {4} f {5}", Pressure_a_AtmPSI, Pressure_b_AtmPSI, Pressure_c_AtmPSI, Pressure_d_AtmPSI, Pressure_e_AtmPSI, Pressure_f_AtmPSI);
+                            Trace.TraceInformation("Cylinder Pressures: a {0} b {1} c {2} d {3} e {4} f {5}", Pressure_a_AtmPSI, Pressure_b_AtmPSI, Pressure_c_AtmPSI, Pressure_d_AtmPSI, Pressure_e_AtmPSI, Pressure_f_AtmPSI);
 
-                Trace.TraceInformation("MeanPressure b-c (Expansion):MeanPressure b-c {0} ExpRatio {1} cutoff {2} Release {3}", MeanPressure_bc_AtmPSI, SERatioOfExpansion_bc, ActualCutoffCylinderFraction, ReleaseCylinderFraction);
+                            Trace.TraceInformation("MeanPressure b-c (Expansion):MeanPressure b-c {0} ExpRatio {1} cutoff {2} Release {3}", MeanPressure_bc_AtmPSI, SERatioOfExpansion_bc, ActualCutoffCylinderFraction, ReleaseCylinderFraction);
 
-                Trace.TraceInformation("MeanPressure e-f (Compression): MeanPressure e-f {0} CompRatio {1} Vol_e {2} Vol_f {3}", MeanPressure_ef_AtmPSI, RatioOfCompression_ef, CylinderVolumePoint_e, CylinderVolumePoint_f);
+                            Trace.TraceInformation("MeanPressure e-f (Compression): MeanPressure e-f {0} CompRatio {1} Vol_e {2} Vol_f {3}", MeanPressure_ef_AtmPSI, RatioOfCompression_ef, CylinderVolumePoint_e, CylinderVolumePoint_f);
 
-                Trace.TraceInformation("Cylinder Works: Total {0} === a-b {1} b-c {2} c-d {3} d-e {4} e-f {5} f-a {6}", TotalWorkInLbs, CylinderWork_ab_InLbs, CylinderWork_bc_InLbs, CylinderWork_cd_InLbs, CylinderWork_de_InLbs, CylinderWork_ef_InLbs, CylinderWork_fa_InLbs);
+                            Trace.TraceInformation("Cylinder Works: Total {0} === a-b {1} b-c {2} c-d {3} d-e {4} e-f {5} f-a {6}", TotalWorkInLbs, CylinderWork_ab_InLbs, CylinderWork_bc_InLbs, CylinderWork_cd_InLbs, CylinderWork_de_InLbs, CylinderWork_ef_InLbs, CylinderWork_fa_InLbs);
 
-                Trace.TraceInformation("MEP {0}", MeanEffectivePressurePSI);
-            }
-*/
+                            Trace.TraceInformation("MEP {0}", SEMeanEffectivePressurePSI);
+                        }
+            */
 
         }
-        
+
 
         /// <summary>
         /// Find Crank Angle @ a certain cutoff point. 
@@ -2180,6 +2396,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public double CalculateAngleOfAdvance(double crankangle, double steamlap, double valvelead)
         {
             double angleofadvancerad = Math.Atan(Math.Sin(crankangle) / ((steamlap / (steamlap + valvelead)) - Math.Cos(crankangle)));
+
+            // should formula be (steamlap / (steamlap + 1))??
 
             return angleofadvancerad;
         }
