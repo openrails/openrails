@@ -816,7 +816,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                         }
                         break;
 
-                    case "engine(ortssteamlocomotivevalvegeartype":
+                    case "steamlocomotivevalvegeartype":
                         stf.MustMatch("(");
                         var steamLocomotiveValveGearType = stf.ReadString();
                         try
@@ -2127,7 +2127,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             //       Console.WriteLine($"Chest PSI: {pChestSum * PA_TO_PSI} psi : Steps {steps}");
 
             // Note solver produces absolute pressures, so we convert to gauge pressure for reporting and comparison with other calculations
-
+/*
             Console.WriteLine($"Speed: {Locomotive.AbsSpeedMpS} mph : Cutoff {Locomotive.cutoff * 100} %");
             Console.WriteLine($"Boiler; {Locomotive.BoilerPressurePSI} psi, Steam Chest: {ChestPressure_PSI} psi");
             Console.WriteLine($"Admission Pressure: {admissionStartFrac * 100} %, {pAdmission_Pa * PA_TO_PSI:F2} psi");
@@ -2152,6 +2152,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
      //       Console.WriteLine($"Valve Phase (deg): {phi * 180.0 / Math.PI:F2}");
 
             Console.WriteLine();
+
+            */
 
             AdmissionCylinderFraction = admissionStartFrac;
             ActualCutoffCylinderFraction = cutoffFrac;
