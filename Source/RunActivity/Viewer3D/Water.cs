@@ -184,6 +184,8 @@ namespace Orts.Viewer3D
             shader.CurrentTechnique = Technique;
             shader.ImageTexture = WaterTexture;
             shader.ReferenceAlpha = 10;
+            shader.HasNormals = true;
+            shader.HasTangents = false;
 
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearWrap;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;

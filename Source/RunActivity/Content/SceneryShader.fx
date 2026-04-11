@@ -276,9 +276,8 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 
 void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 {
-	// Project position, normal and copy texture coords
+    Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos.xyz;
 	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
-	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos.xyz;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light.w = 1;
@@ -628,6 +627,10 @@ float3 _PSApplyMstsLights(in float3 diffuseColor, in VERTEX_OUTPUT In, float sha
 	
 	float3 n = In.Normal_Light.xyz;
 	float3 v = normalize(-In.RelPosition.xyz);
+    
+    if (!HasNormals)
+        n = cross(ddx(In.RelPosition.xyz), ddy(In.RelPosition.xyz));
+    n = normalize(n);
 
     float4 lightDirectionInner = LightsTexture.Load(int3(1, 0, 0));
     float4 lightColorOuter = LightsTexture.Load(int3(2, 0, 0));
@@ -927,38 +930,64 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         float roughnessSq = alphaRoughness * alphaRoughness;
 	
         metallic = clamp(metallic * OcclusionFactor.z, 0.0, 1.0);
-        
-#ifdef IOR_SPECULAR
-        float3 specularColorFactor = SpecularFactor.xyz;
-        specularColorFactor *= SpecularColorTexture.Sample(SpecularColorSampler, _PSUV(In.TexCoords, TextureCoordinates3.y)).rgb;
 
-        float specularFactor = SpecularFactor.w;
-        specularFactor *= SpecularTexture.Sample(SpecularSampler, _PSUV(In.TexCoords, TextureCoordinates3.x)).a;
-
-        float3 f0 = min((float3) EmissiveIorFactor.w * specularColorFactor, (float3) 1.0) * specularFactor;
-        float3 f90 = (float3) specularFactor;
-#else
-        float3 f0 = (float3) 0.04; // (float3)(pow((ior - 1) / (ior + 1), 2)) = (float3)0.04, if ior = 1.5
-        float3 f90 = (float3) 1.0;
-#endif
-        
-        float3 diffuseColor = Color.rgb * (f90 - f0);
+        float3 diffuseColor = Color.rgb;
         diffuseColor *= 1.0 - metallic;
-	
-        float3 specularColor = lerp(f0, Color.rgb, metallic);
-        float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
-        float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
-        float3 specularEnvironmentR0 = specularColor.rgb;
-        float3 specularEnvironmentR90 = float3(1.0, 1.0, 1.0) * reflectance90;
-	
-        float3 normalSample = NormalTexture.Sample(NormalSampler, _PSUV(In.TexCoords, TextureCoordinates1.z)).rgb;
-        float3 n = _PSGetNormal(In, OcclusionFactor.w, normalSample, isFrontFace, TextureCoordinates1.z != -1);
+
+        bool hasNormalTexture = TextureCoordinates1.z != -1;
+        float3 normalSample = (float3) 0;
+        if (hasNormalTexture)
+            normalSample = NormalTexture.Sample(NormalSampler, _PSUV(In.TexCoords, TextureCoordinates1.z)).rgb;
+        
+        float3 n = _PSGetNormal(In, OcclusionFactor.w, normalSample, isFrontFace, hasNormalTexture);
         float3 v = normalize(-In.RelPosition.xyz);
 
         float NdotV = abs(dot(n, v)) + 0.001;
 
         float3 reflection = normalize(reflect(-v, n));
-        litColor = _PSGetIBLSpecular(specularColor, NdotV, perceptualRoughness, reflection);
+
+        float3 f0;
+        float3 f90;
+        float3 specularEnvironmentR0;
+        float3 specularEnvironmentR90;
+        
+        if (SpecularFactor.w > 0)
+        {
+#ifdef IOR_SPECULAR
+            float specularFactor = SpecularFactor.w;
+            specularFactor *= SpecularTexture.Sample(SpecularSampler, _PSUV(In.TexCoords, TextureCoordinates3.x)).a;
+
+            float3 specularColorFactor = SpecularFactor.xyz;
+            specularColorFactor *= SpecularColorTexture.Sample(SpecularColorSampler, _PSUV(In.TexCoords, TextureCoordinates3.y)).rgb;
+
+            f0 = min((float3) EmissiveIorFactor.w * specularColorFactor, (float3) 1.0) * specularFactor;
+            f90 = (float3) specularFactor;
+#else
+            float3 f0 = (float3) 0.04; // (float3)(pow((ior - 1) / (ior + 1), 2)) = (float3)0.04, if ior = 1.5
+            float3 f90 = (float3) 1.0;
+#endif
+
+            diffuseColor *= f90 - f0;
+
+            float3 specularColor = lerp(f0, Color.rgb, metallic);
+
+            float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
+            float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
+            specularEnvironmentR0 = specularColor.rgb;
+            specularEnvironmentR90 = float3(1.0, 1.0, 1.0) * reflectance90;
+ 
+            litColor = _PSGetIBLSpecular(specularColor, NdotV, perceptualRoughness, reflection);
+        }
+        else
+        {
+            f0 = (float3) 0;
+            f90 = (float3) 0;
+            specularEnvironmentR0 = (float3) 0;
+            specularEnvironmentR90 = (float3) 0;
+            
+            litColor = (float3) 0;
+        }
+
         litColor += _PSGetIBLDiffuse(diffuseColor, n);
         // Occlusion doesn't apply to lights, so do it in advance
         litColor = lerp(litColor, litColor * occlusion, OcclusionFactor.x);
@@ -983,8 +1012,12 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
             clearcoatRoughnessSq = clearcoatAlphaRoughness * clearcoatAlphaRoughness;
 
             // TODO: implement clearcoat texturepacking for being able to check whether the clearcoat normal is the same as the base normal
-            float3 clearcoatNormalSample = ClearcoatNormalTexture.Sample(ClearcoatNormalSampler, _PSUV(In.TexCoords, TextureCoordinates2.z)).rgb;
-            clearcoatNormal = _PSGetNormal(In, ClearcoatNormalScale, clearcoatNormalSample, isFrontFace, TextureCoordinates2.z != -1);
+            bool hasClearcoatNormalTexture = TextureCoordinates2.z != -1;
+            float3 clearcoatNormalSample = (float3) 0;
+            if (hasClearcoatNormalTexture)
+                clearcoatNormalSample = ClearcoatNormalTexture.Sample(ClearcoatNormalSampler, _PSUV(In.TexCoords, TextureCoordinates2.z)).rgb;
+
+            clearcoatNormal = _PSGetNormal(In, ClearcoatNormalScale, clearcoatNormalSample, isFrontFace, hasClearcoatNormalTexture);
             clearcoatNdotV = abs(dot(clearcoatNormal, v)) + 0.001;
 
             float3 Fr = max((float3) (1.0 - clearcoatRoughness), f0) - f0;
@@ -1007,6 +1040,8 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 
         float3 diffuseContrib = (float3) 0;
         float3 specContrib = (float3) 0;
+        float fPow = 0;
+        float3 F = (float3) 0;
         float3 l = lightDirectionInner.xyz; // normalized point-to-light
         float attenuation = 1;
 
@@ -1061,18 +1096,22 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
             float LdotH = clamp(dot(l, h), 0.0, 1.0);
             float VdotH = clamp(dot(v, h), 0.0, 1.0);
 
-            float fPow = pow5(clamp(1.0 - VdotH, 0.0, 1.0));
-            float3 F = specularEnvironmentR0 + (specularEnvironmentR90 - specularEnvironmentR0) * fPow;
+            if (SpecularFactor.w > 0)
+            {
+                fPow = pow5(clamp(1.0 - VdotH, 0.0, 1.0));
+                F = specularEnvironmentR0 + (specularEnvironmentR90 - specularEnvironmentR0) * fPow;
 
-            float attenuationL = 2.0 * NdotL / (NdotL + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotL * NdotL)));
-            float attenuationV = 2.0 * NdotV / (NdotV + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotV * NdotV)));
-            float G = attenuationL * attenuationV;
+                float attenuationL = 2.0 * NdotL / (NdotL + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotL * NdotL)));
+                float attenuationV = 2.0 * NdotV / (NdotV + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotV * NdotV)));
+                float G = attenuationL * attenuationV;
 
-            float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
-            float D = roughnessSq / (M_PI * f * f);
+                float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
+                float D = roughnessSq / (M_PI * f * f);
 
+                specContrib += intensity * NdotL * F * G * D / (4.0 * NdotL * NdotV + 0.0001) * shadowFactor;
+            }
+            
             diffuseContrib += intensity * NdotL * (1.0 - F) * diffuseColor / M_PI * diffuseShadowFactor;
-            specContrib += intensity * NdotL * F * G * D / (4.0 * NdotL * NdotV + 0.0001) * shadowFactor;
 
 #ifdef CLEARCOAT
             if (ClearcoatFactor > 0)
@@ -1082,12 +1121,12 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
 
                 F = clearcoatF0 + (f90 - clearcoatF0) * fPow;
 
-                attenuationL = 2.0 * clearcoatNdotL / (clearcoatNdotL + sqrt(clearcoatRoughnessSq + (1.0 - clearcoatRoughnessSq) * (clearcoatNdotL * clearcoatNdotL)));
-                attenuationV = 2.0 * clearcoatNdotV / (clearcoatNdotV + sqrt(clearcoatRoughnessSq + (1.0 - clearcoatRoughnessSq) * (clearcoatNdotV * clearcoatNdotV)));
-                G = attenuationL * attenuationV;
+                float attenuationL = 2.0 * clearcoatNdotL / (clearcoatNdotL + sqrt(clearcoatRoughnessSq + (1.0 - clearcoatRoughnessSq) * (clearcoatNdotL * clearcoatNdotL)));
+                float attenuationV = 2.0 * clearcoatNdotV / (clearcoatNdotV + sqrt(clearcoatRoughnessSq + (1.0 - clearcoatRoughnessSq) * (clearcoatNdotV * clearcoatNdotV)));
+                float G = attenuationL * attenuationV;
 
-                f = (clearcoatNdotH * clearcoatRoughnessSq - clearcoatNdotH) * clearcoatNdotH + 1.0;
-                D = clearcoatRoughnessSq / (M_PI * f * f);
+                float f = (clearcoatNdotH * clearcoatRoughnessSq - clearcoatNdotH) * clearcoatNdotH + 1.0;
+                float D = clearcoatRoughnessSq / (M_PI * f * f);
 
                 clearcoat += intensity * clearcoatNdotL * F * G * D / (4.0 * clearcoatNdotL * clearcoatNdotV) * shadowFactor;
             }

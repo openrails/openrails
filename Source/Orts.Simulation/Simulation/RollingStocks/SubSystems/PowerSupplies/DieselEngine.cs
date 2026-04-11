@@ -102,6 +102,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case "engine(ortsdieselengines":
                     stf.MustMatch("(");
                     int count = stf.ReadInt(0);
+                    DEList.Clear(); // Remove any existing diesel engines to prevent errors
                     for (int i = 0; i < count; i++)
                     {
                         string setting = stf.ReadString().ToLower();

@@ -533,6 +533,8 @@ namespace Orts.Viewer3D
             shader.ImageTexture = PatchTexture;
             shader.OverlayTexture = PatchTextureOverlay;
             shader.OverlayScale = OverlayScale;
+            shader.HasNormals = true;
+            shader.HasTangents = false;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;

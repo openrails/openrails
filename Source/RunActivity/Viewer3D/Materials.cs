@@ -870,6 +870,8 @@ namespace Orts.Viewer3D
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
         readonly float LightingSpecular;
         protected float LightingDiffuse;
+        protected bool HasNormals;
+        protected bool HasTangents;
 
         protected RasterizerState RasterizerState;
         protected BlendState BlendState;
@@ -939,6 +941,8 @@ namespace Orts.Viewer3D
             }
 
             LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
+            HasNormals = true;
+            HasTangents = false;
 
             // Record the number of bits in the alpha channel of the original ace file
             var texture = SharedMaterialManager.MissingTexture;
@@ -1048,6 +1052,8 @@ namespace Orts.Viewer3D
             shader.ImageTexture = shader.ImageTextureIsNight ? NightTexture : Texture;
             shader.LightingSpecular = LightingSpecular;
             shader.LightingDiffuse = LightingDiffuse;
+            shader.HasNormals = HasNormals;
+            shader.HasTangents = HasTangents;
 
             var transparentPass = previousMaterial != null;
 
@@ -1276,6 +1282,8 @@ namespace Orts.Viewer3D
             TexCoords3 = texCoords3;
 
             LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
+            HasNormals = (Options & SceneryMaterialOptions.PbrHasNormals) != 0;
+            HasTangents = (Options & SceneryMaterialOptions.PbrHasTangents) != 0;
 
             RasterizerState = doubleSided ? RasterizerState.CullNone :
                 ((Options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
@@ -1325,8 +1333,8 @@ namespace Orts.Viewer3D
             shader.OcclusionTexture = OcclusionTexture;
             shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
             shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, NormalScale);
-            shader.HasNormals = (Options & SceneryMaterialOptions.PbrHasNormals) != 0;
-            shader.HasTangents = (Options & SceneryMaterialOptions.PbrHasTangents) != 0;
+            shader.HasNormals = HasNormals;
+            shader.HasTangents = HasTangents;
             shader.ClearcoatFactor = ClearcoatFactor;
             if (ClearcoatFactor > 0 && RenderProcess.CLEARCOAT)
             {
@@ -1336,9 +1344,9 @@ namespace Orts.Viewer3D
                 shader.ClearcoatNormalTexture = ClearcoatNormalTexture;
                 shader.ClearcoatNormalScale = ClearcoatNormalScale;
             }
+            shader.SpecularFactor = new Vector4(SpecularColorFactor, SpecularFactor);
             if (SpecularFactor > 0)
             {
-                shader.SpecularFactor = new Vector4(SpecularColorFactor, SpecularFactor);
                 shader.SpecularTexture = SpecularTexture;
                 shader.SpecularColorTexture = SpecularColorTexture;
             }
