@@ -1152,8 +1152,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 case "engine(ortscylinderexhaustlap": ValveExhaustLapM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(ortswiredrawlocomotiveconstant": wireDrawingLocomotiveConstant = stf.ReadIntBlock(null); break;
                 case "engine(ortssteamchestefficiencyfactor": KEffFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(ortssteamchestvolume": SteamChestVolumeM3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "engine(ortsregulatormaxarea": RegulatorMaxAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
+                case "engine(ortssteamchestvolume": SteamChestVolumeM3 = Me3.FromFt3( stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
+                case "engine(ortsregulatormaxarea": RegulatorMaxAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.Area, null); break;
                 case "engine(ortsconnectingrodlength": ConnectRodLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(ortscrankradius": CrankRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
 
@@ -6549,7 +6549,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 #if DEBUG_LOCO_STEAM_MEP
                 if (DebugWheelRevs >= 55.0 && DebugWheelRevs < 55.1 | DebugWheelRevs >= 110.0 && DebugWheelRevs < 110.1 | DebugWheelRevs >= 165.0 && DebugWheelRevs < 165.05 | DebugWheelRevs >= 220.0 && DebugWheelRevs < 220.05)
                  {
-                     Trace.TraceInformation("***************************************** Single Expansion Steam Locomotive ***************************************************************");
+                     Trace.TraceInformation("***************************************** Single Expansion Steam Locomotive - Old Events  ***************************************************************");
  
                     Trace.TraceInformation("All pressures in Atmospheric Pressure (ie Added 14.5psi)");
 
@@ -6557,11 +6557,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
  
                     Trace.TraceInformation("Boiler Pressure {0} Initial/Cutoff Factor {1}", BoilerPressurePSI, CutoffPressureDropRatio);
 
+                    Trace.TraceInformation("Cylnder Events - Admission {0} Cutoff {1} Release {2} Compression {3}", CylinderAdmissionOpenFactor * 100, cutoff * 100, CylinderExhaustOpenFactor * 100, CylinderCompressionCloseFactor * 100);
+
                      Trace.TraceInformation("Throttle {0} Cutoff {1}  Revs {2} RelPt {3} Clear {4}", throttle, cutoff, pS.TopM(DrvWheelRevRpS), CylinderExhaustOpenFactor, CylinderClearancePC);
  
                      Trace.TraceInformation("*********** Cylinder *********");
  
-                    Trace.TraceInformation("Cylinder Pressures: a {0} b {1} c {2} d {3} e {4} f {5}", Pressure_a_AtmPSI, Pressure_b_AtmPSI , Pressure_c_AtmPSI , Pressure_d_AtmPSI , Pressure_e_AtmPSI , Pressure_f_AtmPSI);
+                    Trace.TraceInformation("Cylinder Pressures: a {0} b {1} c {2} d {3} e {4} f {5}", SteamEngines[numberofengine].Pressure_a_AtmPSI, SteamEngines[numberofengine].Pressure_b_AtmPSI , SteamEngines[numberofengine].Pressure_c_AtmPSI , SteamEngines[numberofengine].Pressure_d_AtmPSI , SteamEngines[numberofengine].Pressure_e_AtmPSI , SteamEngines[numberofengine].Pressure_f_AtmPSI);
  
                     Trace.TraceInformation("MeanPressure b-c (Expansion):MeanPressure b-c {0} ExpRatio {1} cutoff {2} Release {3}", MeanPressure_bc_AtmPSI, RatioOfExpansion_bc, cutoff, CylinderExhaustOpenFactor);
  
