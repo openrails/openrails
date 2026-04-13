@@ -27,6 +27,8 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using glTFLoader.Schema;
+using Orts.Viewer3D;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.Processes;
@@ -354,7 +356,7 @@ namespace Orts.Viewer3D
             BlackTexture.Name = nameof(BlackTexture);
         }
 
-        public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null)
+        public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null, Gltf gltfFile = null)
         {
             var materialKey = (materialName, textureName?.ToLowerInvariant(), options, mipMapBias, effect);
             if (!Materials.ContainsKey(materialKey))
@@ -391,6 +393,9 @@ namespace Orts.Viewer3D
                     case "Scenery":
                         Materials[materialKey] = new SceneryMaterial(Viewer, textureName, (SceneryMaterialOptions)options, mipMapBias);
                         break;
+                    case "PBR":
+                        Materials[materialKey] = new PbrMaterial(Viewer, textureName?.ToLowerInvariant(), (SceneryMaterialOptions)options, mipMapBias, gltfFile);
+                        break;
                     case "ShadowMap":
                         Materials[materialKey] = new ShadowMapMaterial(Viewer);
                         break;
@@ -426,73 +431,6 @@ namespace Orts.Viewer3D
                         break;
                     case "Screen":
                         Materials[materialKey] = new ScreenMaterial(Viewer, textureName, options);
-                        break;
-                    default:
-                        Trace.TraceInformation("Skipped unknown material type {0}", materialName);
-                        Materials[materialKey] = new YellowMaterial(Viewer);
-                        break;
-                }
-            }
-            return Materials[materialKey];
-        }
-
-        /// <summary>
-        /// This method is used to initialize a metallic-roughness material from a glTF 2.0 source. 
-        /// </summary>
-        public Material Load(string materialName, string materialUniqueId, int options, float mipMapBias,
-            Texture2D baseColorTexture, Vector4 baseColorFactor,
-            Texture2D metallicRoughnessTexture, float metallicFactor, float roughnessFactor,
-            Texture2D normalTexture, float normalScale,
-            Texture2D occlusionTexture, float occlusionStrength,
-            Texture2D emissiveTexture, Vector3 emissiveFactor,
-            Texture2D clearcoatTexture, float clearcoatFactor,
-            Texture2D clearcoatRoughnessTexture, float clearcoatRoughnessFactor,
-            Texture2D clearcoatNormalTexture, float clearcoatNormalScale,
-            Texture2D specularTexture, float specularFactor,
-            Texture2D specularColorTexture, Vector3 specularColorFactor, float ior,
-            float referenceAlpha, bool doubleSided,
-            Vector4 texCoords1, Vector4 texCoords2, Vector4 texCoords3,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateNormal,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateOcclusion,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoat,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatRoughness,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecular,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecularColor)
-        {
-            var materialKey = (materialName, materialUniqueId?.ToLower(), options, mipMapBias, (Effect)null);
-
-            if (!Materials.ContainsKey(materialKey))
-            {
-                switch (materialName)
-                {
-                    case "PBR":
-                        Materials[materialKey] = new PbrMaterial(Viewer, materialUniqueId?.ToLower(), (SceneryMaterialOptions)options, mipMapBias,
-                            baseColorTexture, baseColorFactor,
-                            metallicRoughnessTexture, metallicFactor, roughnessFactor,
-                            normalTexture, normalScale,
-                            occlusionTexture, occlusionStrength,
-                            emissiveTexture, emissiveFactor,
-                            clearcoatTexture, clearcoatFactor,
-                            clearcoatRoughnessTexture, clearcoatRoughnessFactor,
-                            clearcoatNormalTexture, clearcoatNormalScale,
-                            specularTexture, specularFactor,
-                            specularColorTexture, specularColorFactor, ior,
-                            referenceAlpha, doubleSided,
-                            texCoords1, texCoords2, texCoords3,
-                            samplerStateBaseColor,
-                            samplerStateMetallicRoughness,
-                            samplerStateNormal,
-                            samplerStateOcclusion,
-                            samplerStateEmissive,
-                            samplerStateClearcoat,
-                            samplerStateClearcoatRoughness,
-                            samplerStateClearcoatNormal,
-                            samplerStateSpecular,
-                            samplerStateSpecularColor);
                         break;
                     default:
                         Trace.TraceInformation("Skipped unknown material type {0}", materialName);
@@ -862,7 +800,7 @@ namespace Orts.Viewer3D
 
     public class SceneryMaterial : Material
     {
-        public readonly SceneryMaterialOptions Options;
+        public SceneryMaterialOptions Options;
         readonly float MipMapBias;
         protected Texture2D Texture;
         private readonly string TexturePath;
@@ -1170,19 +1108,35 @@ namespace Orts.Viewer3D
 
     public class PbrMaterial : SceneryMaterial
     {
-        protected readonly Texture2D MetallicRoughnessTexture;
-        protected readonly Texture2D NormalTexture;
-        protected readonly Texture2D OcclusionTexture;
-        protected readonly Texture2D EmissiveTexture;
-        protected readonly Texture2D ClearcoatTexture;
-        protected readonly Texture2D ClearcoatRoughnessTexture;
-        protected readonly Texture2D ClearcoatNormalTexture;
-        protected readonly Texture2D SpecularTexture;
-        protected readonly Texture2D SpecularColorTexture;
+        protected Texture2D MetallicRoughnessTexture;
+        protected Texture2D NormalTexture;
+        protected Texture2D OcclusionTexture;
+        protected Texture2D EmissiveTexture;
+        protected Texture2D ClearcoatTexture;
+        protected Texture2D ClearcoatRoughnessTexture;
+        protected Texture2D ClearcoatNormalTexture;
+        protected Texture2D SpecularTexture;
+        protected Texture2D SpecularColorTexture;
 
+        /// <summary>
+        /// x: baseColor, y: roughness-metallic, z: normal, w: emissive
+        /// </summary>
         protected readonly Vector4 TexCoords1;
+        /// <summary>
+        /// x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
+        /// </summary>
         protected readonly Vector4 TexCoords2;
+        /// <summary>
+        /// x: specular, y: specularColor, z: transmission, w: texture-packing
+        /// </summary>
         protected readonly Vector4 TexCoords3;
+        // Texture packing:
+        // 0: occlusion (R), roughnessMetallic (GB) together, normal (RGB) separate, this is the standard
+        // 1: roughnessMetallicOcclusion together, normal (RGB) separate
+        // 2: normalRoughnessMetallic (RG+B+A) together, occlusion (R) separate
+        // 3: occlusionRoughnessMetallic together, normal (RGB) separate
+        // 4: roughnessMetallicOcclusion together, normal (RG) 2 channel separate
+        // 5: occlusionRoughnessMetallic together, normal (RG) 2 channel separate
 
         // Animatable attributes
         protected Vector4 BaseColorFactor;
@@ -1199,6 +1153,30 @@ namespace Orts.Viewer3D
         protected float Ior;
 
         bool EmissiveFollowsDayNightCycle;
+        readonly Gltf GltfFile;
+        readonly string ShapeFilePath;
+        readonly string ShapeFileDir;
+        // baseColor texture is 8 bit sRGB + A. Needs decoding to linear in the shader.
+        // metallicRoughness texture: G = roughness, B = metalness, linear, may be > 8 bit.
+        // normal texture is RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
+        // occlusion texture is linear R channel only, = 1.0 + strength * (sampledValue - 1.0)
+        // emissive texture is 8 bit sRGB. Needs decoding to linear in the shader.
+        // clearcoat texture is R channel only, linear.
+        // clearcoatRoughness texture is G channel only, linear.
+        // clearcoatNormal texture is RGB linear.
+        // specular strength is A channel only, linear.
+        // specularColor is storged in the RGB channels, encoded in sRGB.
+        int BaseColorTextureIndex = -1;
+        int MetallicRoughnessTextureIndex = -1;
+        int NormalTextureIndex = -1;
+        int OcclusionTextureIndex = -1;
+        int EmissiveTextureIndex = -1;
+        int ClearcoatTextureIndex = -1;
+        int ClearcoatRoughnessTextureIndex = -1;
+        int ClearcoatNormalTextureIndex = -1;
+        int SpecularTextureIndex = -1;
+        int SpecularColorTextureIndex = -1;
+
 
         protected readonly SamplerState SamplerStateMetallicRoughness;
         protected readonly SamplerState SamplerStateNormal;
@@ -1228,110 +1206,268 @@ namespace Orts.Viewer3D
         public void SetSpecularColorFactor(Vector3 value) => SpecularColorFactor = value;
         public void SetIor(float value) => Ior = value;
 
-        static readonly Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState> GltfSamplerStates = new Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState>();
-
-        public PbrMaterial(Viewer viewer, string materialUniqueId, SceneryMaterialOptions options, float mipMapBias,
-            Texture2D baseColorTexture, Vector4 baseColorFactor,
-            Texture2D metallicRoughnessTexture, float metallicFactor, float roughnessFactor,
-            Texture2D normalTexture, float normalScale,
-            Texture2D occlusionTexture, float occlusionStrength,
-            Texture2D emissiveTexture, Vector3 emissiveFactor,
-            Texture2D clearcoatTexture, float clearcoatFactor,
-            Texture2D clearcoatRoughnessTexture, float clearcoatRoughnessFactor,
-            Texture2D clearcoatNormalTexture, float clearcoatNormalScale,
-            Texture2D specularTexture, float specularFactor,
-            Texture2D specularColorTexture, Vector3 specularColorFactor, float ior,
-            float referenceAlpha, bool doubleSided,
-            Vector4 texCoords1, Vector4 texCoords2, Vector4 texCoords3,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateBaseColor,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateMetallicRoughness,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateNormal,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateOcclusion,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateEmissive,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoat,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatRoughness,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateClearcoatNormal,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecular,
-            (TextureFilter, TextureAddressMode, TextureAddressMode) samplerStateSpecularColor)
-            : base(viewer, null, options, mipMapBias, (int)(referenceAlpha * 255f))
+        static readonly Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState> GltfSamplerStates = new Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState>()
         {
-            Texture = baseColorTexture;
-            BaseColorFactor = baseColorFactor;
-            MetallicRoughnessTexture = metallicRoughnessTexture;
-            MetallicFactor = metallicFactor;
-            RoughnessFactor = roughnessFactor;
-            NormalTexture = normalTexture;
-            NormalScale = normalScale;
-            OcclusionTexture = occlusionTexture;
-            OcclusionStrength = occlusionStrength;
-            EmissiveTexture = emissiveTexture;
-            EmissiveFactor = emissiveFactor;
-            ClearcoatTexture = clearcoatTexture;
-            ClearcoatFactor = clearcoatFactor;
-            ClearcoatRoughnessTexture = clearcoatRoughnessTexture;
-            ClearcoatRoughnessFactor = clearcoatRoughnessFactor;
-            ClearcoatNormalTexture = clearcoatNormalTexture;
-            ClearcoatNormalScale = clearcoatNormalScale;
-            SpecularTexture = specularTexture;
-            SpecularFactor = specularFactor;
-            SpecularColorTexture = specularColorTexture;
-            SpecularColorFactor = specularColorFactor;
-            Ior = ior;
-            TexCoords1 = texCoords1;
-            TexCoords2 = texCoords2;
-            TexCoords3 = texCoords3;
+            [(TextureFilter.Linear, TextureAddressMode.Wrap, TextureAddressMode.Wrap)] = new SamplerState { Filter = TextureFilter.Linear, AddressU = TextureAddressMode.Wrap, AddressV = TextureAddressMode.Wrap, MaxAnisotropy = 16 },
+        };
 
-            LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
-            HasNormals = (Options & SceneryMaterialOptions.PbrHasNormals) != 0;
-            HasTangents = (Options & SceneryMaterialOptions.PbrHasTangents) != 0;
+        static readonly string[] StandardTextureExtensionFilter = new[] { ".png", ".jpg", ".jpeg" };
+        static readonly string[] DdsTextureExtensionFilter = new[] { ".dds" };
+
+        public PbrMaterial(Viewer viewer, string materialUniqueId, SceneryMaterialOptions options, float mipMapBias, Gltf gltfFile)
+            : base(viewer, null, options, mipMapBias, 0)
+        {
+            GltfFile = gltfFile;
+            var info = materialUniqueId.Split('#');
+            var materialRef = int.Parse(info[1].Trim('#'));
+            ShapeFilePath = info[0].Trim('#');
+            ShapeFileDir = Path.GetDirectoryName(ShapeFilePath);
+
+            var material = gltfFile.Materials[materialRef];
+            materialUniqueId += "#" + material.Name;
+
+            if (!(gltfFile.ExtensionsUsed?.Contains("KHR_materials_unlit") & material.Extensions?.ContainsKey("KHR_materials_unlit") ?? false))
+                options |= SceneryMaterialOptions.Diffuse;
+
+            var doubleSided = material.DoubleSided;
+
+            switch (material.AlphaMode)
+            {
+                case glTFLoader.Schema.Material.AlphaModeEnum.BLEND:
+                    options |= SceneryMaterialOptions.AlphaBlendingBlend;
+                    break;
+                case glTFLoader.Schema.Material.AlphaModeEnum.MASK:
+                    options |= SceneryMaterialOptions.AlphaTest;
+                    DefaultAlphaCutOff = (int)(material.AlphaCutoff * 255f);
+                    break;
+                case glTFLoader.Schema.Material.AlphaModeEnum.OPAQUE:
+                default: break;
+            }
+
+            MaterialNormalTextureInfo msftNormalInfo = null;
+            TextureInfo msftOrmInfo = null;
+            TextureInfo msftRmoInfo = null;
+            object extension = null;
+            if (gltfFile.ExtensionsUsed?.Contains("MSFT_packing_normalRoughnessMetallic") & material.Extensions?.TryGetValue("MSFT_packing_normalRoughnessMetallic", out extension) ?? false)
+                msftNormalInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_normalRoughnessMetallic>(extension.ToString(), GltfShape.PopulateDefaults)?.NormalRoughnessMetallicTexture;
+            else if (gltfFile.ExtensionsUsed?.Contains("MSFT_packing_occlusionRoughnessMetallic") & material.Extensions?.TryGetValue("MSFT_packing_occlusionRoughnessMetallic", out extension) ?? false)
+            {
+                var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_occlusionRoughnessMetallic>(extension.ToString(), GltfShape.PopulateDefaults);
+                msftOrmInfo = ext?.OcclusionRoughnessMetallicTexture;
+                msftRmoInfo = ext?.RoughnessMetallicOcclusionTexture;
+                msftNormalInfo = ext?.NormalTexture;
+            }
+
+            TexCoords3.W =
+                msftOrmInfo != null ? msftNormalInfo != null ? 5 : 3 :
+                msftRmoInfo != null ? msftNormalInfo != null ? 4 : 1 :
+                                      msftNormalInfo != null ? 2 : 0;
+
+            KHR_materials_clearcoat clearcoat = null;
+            if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_clearcoat") & material.Extensions?.TryGetValue("KHR_materials_clearcoat", out extension) ?? false)
+                clearcoat = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_clearcoat>(extension.ToString(), GltfShape.PopulateDefaults);
+
+            KHR_materials_specular specular = null;
+            if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_specular") & material.Extensions?.TryGetValue("KHR_materials_specular", out extension) ?? false)
+                specular = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_specular>(extension.ToString(), GltfShape.PopulateDefaults);
+
+            KHR_materials_ior ior = null;
+            if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_ior") & material.Extensions?.TryGetValue("KHR_materials_ior", out extension) ?? false)
+                ior = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_ior>(extension.ToString(), GltfShape.PopulateDefaults);
+
+            var emissiveStrength = 1f;
+            if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_emissive_strength") & material.Extensions?.TryGetValue("KHR_materials_emissive_strength", out extension) ?? false)
+                emissiveStrength = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_emissive_strength>(extension.ToString(), GltfShape.PopulateDefaults)?.EmissiveStrength ?? 1;
+
+            (TexCoords1.X, BaseColorTextureIndex, SamplerStateBaseColor) = GetTextureInfo(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture, anisotropic: true);
+            (TexCoords1.Y, MetallicRoughnessTextureIndex, SamplerStateMetallicRoughness) = GetTextureInfo(gltfFile, msftRmoInfo ?? msftOrmInfo ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture);
+            (TexCoords1.Z, NormalTextureIndex, SamplerStateNormal) = GetTextureInfo(gltfFile, msftNormalInfo ?? material.NormalTexture);
+            (TexCoords1.W, EmissiveTextureIndex, SamplerStateEmissive) = GetTextureInfo(gltfFile, material.EmissiveTexture);
+            (TexCoords2.W, OcclusionTextureIndex, SamplerStateOcclusion) = msftOrmInfo != null
+                ? GetTextureInfo(gltfFile, msftOrmInfo)
+                : GetTextureInfo(gltfFile, material.OcclusionTexture);
+            (TexCoords2.X, ClearcoatTextureIndex, SamplerStateClearcoat) = GetTextureInfo(gltfFile, clearcoat?.ClearcoatTexture);
+            (TexCoords2.Y, ClearcoatRoughnessTextureIndex, SamplerStateClearcoatRoughness) = GetTextureInfo(gltfFile, clearcoat?.ClearcoatRoughnessTexture);
+            (TexCoords2.Z, ClearcoatNormalTextureIndex, SamplerStateClearcoatNormal) = GetTextureInfo(gltfFile, clearcoat?.ClearcoatNormalTexture);
+            (TexCoords3.X, SpecularTextureIndex, SamplerStateSpecular) = GetTextureInfo(gltfFile, specular?.SpecularTexture);
+            (TexCoords3.Y, SpecularColorTextureIndex, SamplerStateSpecularColor) = GetTextureInfo(gltfFile, specular?.SpecularColorTexture);
+
+            if (NormalTextureIndex == -1)
+                TexCoords1.Z = -1;
+            if (ClearcoatNormalTextureIndex == -1)
+                TexCoords2.Z = -1;
+
+            BaseColorFactor = MemoryMarshal.Cast<float, Vector4>(material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f })[0];
+            MetallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
+            RoughnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
+            NormalScale = material.NormalTexture?.Scale ?? 1f;
+            OcclusionStrength = material.OcclusionTexture?.Strength ?? 1;
+            EmissiveFactor = MemoryMarshal.Cast<float, Vector3>(material.EmissiveFactor ?? new[] { 0f, 0f, 0f })[0] * emissiveStrength;
+            ClearcoatFactor = clearcoat?.ClearcoatFactor ?? 0;
+            ClearcoatRoughnessFactor = clearcoat?.ClearcoatRoughnessFactor ?? 0;
+            ClearcoatNormalScale = clearcoat?.ClearcoatNormalTexture?.Scale ?? 1f;
+            SpecularFactor = specular?.SpecularFactor ?? 1f;
+            SpecularColorFactor = MemoryMarshal.Cast<float, Vector3>(specular?.SpecularColorFactor ?? new[] { 1f, 1f, 1f })[0];
+            Ior = ior?.Ior ?? 1.5f;
+
+            if (SpecularFactor == 0)
+                ClearcoatFactor = 0;
+
+            if (Ior == 0)
+                Ior = float.PositiveInfinity; // By the specification
+
+            switch (SamplerStateBaseColor.AddressU)
+            {
+                case TextureAddressMode.Wrap: options |= SceneryMaterialOptions.TextureAddressModeWrap; break;
+                case TextureAddressMode.Clamp: options |= SceneryMaterialOptions.TextureAddressModeClamp; break;
+                case TextureAddressMode.Mirror: options |= SceneryMaterialOptions.TextureAddressModeMirror; break;
+            }
+
+            LightingDiffuse = (options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
+            HasNormals = (options & SceneryMaterialOptions.PbrHasNormals) != 0;
+            HasTangents = (options & SceneryMaterialOptions.PbrHasTangents) != 0;
 
             RasterizerState = doubleSided ? RasterizerState.CullNone :
-                ((Options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
-
-            samplerStateBaseColor.Item1 = ChangeToAnisitropic(samplerStateBaseColor.Item1);
-
-            if (!GltfSamplerStates.TryGetValue(samplerStateBaseColor, out SamplerStateBaseColor)) GltfSamplerStates.Add(samplerStateBaseColor, SamplerStateBaseColor = GetNewSamplerState(samplerStateBaseColor));
-            if (!GltfSamplerStates.TryGetValue(samplerStateMetallicRoughness, out SamplerStateMetallicRoughness)) GltfSamplerStates.Add(samplerStateMetallicRoughness, SamplerStateMetallicRoughness = GetNewSamplerState(samplerStateMetallicRoughness));
-            if (!GltfSamplerStates.TryGetValue(samplerStateNormal, out SamplerStateNormal)) GltfSamplerStates.Add(samplerStateNormal, SamplerStateNormal = GetNewSamplerState(samplerStateNormal));
-            if (!GltfSamplerStates.TryGetValue(samplerStateOcclusion, out SamplerStateOcclusion)) GltfSamplerStates.Add(samplerStateOcclusion, SamplerStateOcclusion = GetNewSamplerState(samplerStateOcclusion));
-            if (!GltfSamplerStates.TryGetValue(samplerStateEmissive, out SamplerStateEmissive)) GltfSamplerStates.Add(samplerStateEmissive, SamplerStateEmissive = GetNewSamplerState(samplerStateEmissive));
-            if (!GltfSamplerStates.TryGetValue(samplerStateClearcoat, out SamplerStateClearcoat)) GltfSamplerStates.Add(samplerStateClearcoat, SamplerStateClearcoat = GetNewSamplerState(samplerStateClearcoat));
-            if (!GltfSamplerStates.TryGetValue(samplerStateClearcoatRoughness, out SamplerStateClearcoatRoughness)) GltfSamplerStates.Add(samplerStateClearcoatRoughness, SamplerStateClearcoatRoughness = GetNewSamplerState(samplerStateClearcoatRoughness));
-            if (!GltfSamplerStates.TryGetValue(samplerStateClearcoatNormal, out SamplerStateClearcoatNormal)) GltfSamplerStates.Add(samplerStateClearcoatNormal, SamplerStateClearcoatNormal = GetNewSamplerState(samplerStateClearcoatNormal));
-            if (!GltfSamplerStates.TryGetValue(samplerStateSpecular, out SamplerStateSpecular)) GltfSamplerStates.Add(samplerStateSpecular, SamplerStateSpecular = GetNewSamplerState(samplerStateSpecular));
-            if (!GltfSamplerStates.TryGetValue(samplerStateSpecularColor, out SamplerStateSpecularColor)) GltfSamplerStates.Add(samplerStateSpecularColor, SamplerStateSpecularColor = GetNewSamplerState(samplerStateSpecularColor));
+                ((options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
 
             var shader = Viewer.MaterialManager.SceneryShader;
 
-            if ((Options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
+            if ((options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
                 Technique = shader.Techniques["PbrMorphed"];
-            else if ((Options & SceneryMaterialOptions.PbrHasSkin) != 0)
+            else if ((options & SceneryMaterialOptions.PbrHasSkin) != 0)
                 Technique = shader.Techniques["PbrSkinned"];
-            else if ((Options & SceneryMaterialOptions.PbrHasTexCoord1) != 0)
+            else if ((options & SceneryMaterialOptions.PbrHasTexCoord1) != 0)
                 Technique = shader.Techniques["PbrNormalMap"];
             else
                 Technique = shader.Techniques["PbrBaseColorMap"];
+
+            Options = options;
 
             SetupStates();
             SetupSorting();
         }
 
+        public void FlipNormals(float flipSign)
+        {
+            NormalScale *= flipSign;
+            ClearcoatNormalScale *= flipSign;
+        }
+
         public override bool GetBlending() => (Options & SceneryMaterialOptions.AlphaBlendingBlend) != 0;
-        
+
+        public void LoadTextures()
+        {
+            if (Texture == null || Texture == SharedMaterialManager.MissingTexture)
+                Texture = GetTexture(BaseColorTextureIndex, SharedMaterialManager.WhiteTexture, true);
+
+            MetallicRoughnessTexture = MetallicRoughnessTexture ?? GetTexture(MetallicRoughnessTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            NormalTexture = NormalTexture ?? GetTexture(NormalTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            OcclusionTexture = OcclusionTexture ?? GetTexture(OcclusionTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            EmissiveTexture = EmissiveTexture ?? GetTexture(EmissiveTextureIndex, SharedMaterialManager.WhiteTexture, true);
+            ClearcoatTexture = ClearcoatTexture ?? GetTexture(ClearcoatTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            ClearcoatRoughnessTexture = ClearcoatRoughnessTexture ?? GetTexture(ClearcoatRoughnessTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            ClearcoatNormalTexture = ClearcoatNormalTexture ?? GetTexture(ClearcoatNormalTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            SpecularTexture = SpecularTexture ?? GetTexture(SpecularTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            SpecularColorTexture = SpecularColorTexture ?? GetTexture(SpecularColorTextureIndex, SharedMaterialManager.WhiteTexture, true);
+        }
+
+        Texture2D GetTexture(int? textureIndex, Texture2D defaultTexture, bool srgbColors)
+        {
+            if (textureIndex != null && textureIndex >= 0)
+            {
+                var texture = GltfFile.Textures[(int)textureIndex];
+                var source = texture?.Source;
+                var extensionFilter = StandardTextureExtensionFilter;
+                object extension = null;
+                if (GltfFile.ExtensionsUsed?.Contains("MSFT_texture_dds") & texture?.Extensions?.TryGetValue("MSFT_texture_dds", out extension) ?? false)
+                {
+                    var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_texture_dds>(extension.ToString(), GltfShape.PopulateDefaults);
+                    source = ext?.Source ?? source;
+                    extensionFilter = DdsTextureExtensionFilter;
+                }
+                if (source != null)
+                {
+                    var image = GltfFile.Images[(int)source];
+                    if (image.Uri != null)
+                    {
+                        var imagePath = source != null ? Path.Combine(ShapeFileDir, Uri.UnescapeDataString(image.Uri)) : "";
+
+                        // The standard accordance must be preserved, must not load a dds texture where only a jpg or png is allowed.
+                        if (extensionFilter != null && !extensionFilter.Contains(Path.GetExtension(imagePath).ToLowerInvariant()))
+                            return defaultTexture;
+
+                        if (File.Exists(imagePath))
+                        {
+                            // We refuse to load textures containing "../" in their path, because although it would be possible,
+                            // it would break compatibility with the existing glTF viewers, including the Windows 3D Viewer,
+                            // the VS Code glTF Tools and the reference Khronos glTF-Sample-Viewer.
+                            var strippedImagePath = imagePath.Replace("../", "").Replace(@"..\", "").Replace("..", "");
+                            if (File.Exists(strippedImagePath))
+                                return Viewer.TextureManager.Get(strippedImagePath, defaultTexture, srgb: srgbColors);
+
+                            Trace.TraceWarning($"glTF: refusing to load texture {imagePath} in file {ShapeFilePath}, using \"../\" in the path is discouraged due to compatibility reasons.");
+                            return SharedMaterialManager.MissingTexture;
+                        }
+                        else
+                        {
+                            try
+                            {
+                                using (var stream = glTFLoader.Interface.OpenImageFile(GltfFile, (int)source, ShapeFilePath))
+                                {
+                                    var texture2D = srgbColors
+                                        ? Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream)
+                                        : Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                                    texture2D.Name = imagePath;
+                                    return texture2D;
+                                }
+                            }
+                            catch
+                            {
+                                Trace.TraceWarning($"glTF: missing texture {imagePath} in file {ShapeFilePath}");
+                                return SharedMaterialManager.MissingTexture;
+                            }
+                        }
+                    }
+                    else if (image.BufferView != null)
+                    {
+                        try
+                        {
+                            using (var stream = glTFLoader.Interface.OpenImageFile(GltfFile, (int)source, ShapeFilePath))
+                            {
+                                var texture2D = srgbColors
+                                    ? Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream)
+                                    : Texture2D.FromStream(Viewer.GraphicsDevice, stream);
+                                texture2D.Name = $"{ShapeFilePath}:{image.BufferView}";
+                                return texture2D;
+                            }
+                        }
+                        catch
+                        {
+                            Trace.TraceWarning($"glTF: missing image {image.BufferView} in file {ShapeFilePath}");
+                            return SharedMaterialManager.MissingTexture;
+                        }
+                    }
+                }
+            }
+            return defaultTexture;
+        }
+
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
 
             shader.CurrentTechnique = Technique;;
+
             shader.ImageTexture = Texture;
-            shader.BaseColorFactor = BaseColorFactor;
             shader.NormalTexture = NormalTexture;
             shader.EmissiveTexture = EmissiveTexture;
-            shader.EmissiveIorFactor = new Vector4(
-                !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground() ? EmissiveFactor : Vector3.Zero,
-                (float)Math.Pow((Ior - 1) / (Ior + 1), 2));
             shader.OcclusionTexture = OcclusionTexture;
             shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
+
+            shader.BaseColorFactor = BaseColorFactor;
+            shader.EmissiveIorFactor = new Vector4(
+                !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground() ? EmissiveFactor : Vector3.Zero,
+                float.IsPositiveInfinity(Ior) ? 1 : Ior < 1 ? 0 : (float)Math.Pow((Ior - 1) / (Ior + 1), 2));
             shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, NormalScale);
             shader.HasNormals = HasNormals;
             shader.HasTangents = HasTangents;
@@ -1340,8 +1476,9 @@ namespace Orts.Viewer3D
             {
                 shader.ClearcoatTexture = ClearcoatTexture;
                 shader.ClearcoatRoughnessTexture = ClearcoatRoughnessTexture;
-                shader.ClearcoatRoughnessFactor = ClearcoatRoughnessFactor;
                 shader.ClearcoatNormalTexture = ClearcoatNormalTexture;
+
+                shader.ClearcoatRoughnessFactor = ClearcoatRoughnessFactor;
                 shader.ClearcoatNormalScale = ClearcoatNormalScale;
             }
             shader.SpecularFactor = new Vector4(SpecularColorFactor, SpecularFactor);
@@ -1383,20 +1520,85 @@ namespace Orts.Viewer3D
             }
         }
 
-        // Currently isn't possible to set a glTF to anisotropic filtering, so this is a hack against the spec:
-        static TextureFilter ChangeToAnisitropic(TextureFilter textureFilter) => textureFilter == TextureFilter.Linear ? TextureFilter.Anisotropic : textureFilter;
-
-        static SamplerState GetNewSamplerState((TextureFilter, TextureAddressMode, TextureAddressMode) samplerAttributes)
+        static SamplerState GetNewSamplerState((TextureFilter filter, TextureAddressMode addressU, TextureAddressMode addressV) samplerAttributes)
         {
-           return new SamplerState
+            return new SamplerState
             {
-                Filter = samplerAttributes.Item1,
-                AddressU = samplerAttributes.Item2,
-                AddressV = samplerAttributes.Item3,
+                Filter = samplerAttributes.filter,
+                AddressU = samplerAttributes.addressU,
+                AddressV = samplerAttributes.addressV,
                 MaxAnisotropy = 16,
             };
         }
-        
+
+        (int texCoord, int textureIndex, SamplerState samplerState) GetTextureInfo(Gltf gltf, int? texCoord, int? index, bool anisotropic = false)
+        {
+            var texture = index ?? -1;
+            if (texture == -1)
+                texCoord = 0;
+            var samplerState = GltfSamplerStates.ElementAtOrDefault(0).Value; // default to linear wrap
+            if (gltf.Samplers?.ElementAtOrDefault(gltf.Textures?.ElementAtOrDefault(index ?? -1)?.Sampler ?? -1) is Sampler sampler)
+            {
+                var samplerStateTuple = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
+                // Currently it isn't possible to set a glTF to anisotropic filtering, so this is a hack against the spec:
+                if (anisotropic && samplerStateTuple.Item1 == TextureFilter.Linear)
+                    samplerStateTuple.Item1 = TextureFilter.Anisotropic;
+                if (!GltfSamplerStates.TryGetValue(samplerStateTuple, out samplerState))
+                    GltfSamplerStates.Add(samplerStateTuple, samplerState = GetNewSamplerState(samplerStateTuple));
+            }
+            return (texCoord ?? 0, texture, samplerState);
+        }
+        (int texCoord, int textureIndex, SamplerState samplerState) GetTextureInfo(Gltf gltf, TextureInfo textureInfo, bool anisotropic = false)
+            => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, anisotropic);
+        (int texCoord, int textureIndex, SamplerState samplerState) GetTextureInfo(Gltf gltf, MaterialNormalTextureInfo textureInfo)
+            => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, false);
+        (int texCoord, int textureIndex, SamplerState samplerState) GetTextureInfo(Gltf gltf, MaterialOcclusionTextureInfo textureInfo)
+            => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, false);
+
+        TextureAddressMode GetTextureAddressMode(Sampler.WrapTEnum wrapEnum) => GetTextureAddressMode((Sampler.WrapSEnum)wrapEnum);
+        TextureAddressMode GetTextureAddressMode(Sampler.WrapSEnum wrapEnum)
+        {
+            //if (Shape.MsfsFlavoured) return TextureAddressMode.Clamp;
+            switch (wrapEnum)
+            {
+                case Sampler.WrapSEnum.REPEAT: return TextureAddressMode.Wrap;
+                case Sampler.WrapSEnum.CLAMP_TO_EDGE: return TextureAddressMode.Clamp;
+                case Sampler.WrapSEnum.MIRRORED_REPEAT: return TextureAddressMode.Mirror;
+                default: return TextureAddressMode.Wrap;
+            }
+        }
+
+        TextureFilter GetTextureFilter(Sampler sampler)
+        {
+            if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR)
+                return TextureFilter.Linear;
+            if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_LINEAR)
+                return TextureFilter.Linear;
+            if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_NEAREST)
+                return TextureFilter.LinearMipPoint;
+            if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_LINEAR)
+                return TextureFilter.MinPointMagLinearMipLinear;
+            if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_NEAREST)
+                return TextureFilter.MinPointMagLinearMipPoint;
+            if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_LINEAR)
+                return TextureFilter.MinLinearMagPointMipLinear;
+            if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_NEAREST)
+                return TextureFilter.MinLinearMagPointMipPoint;
+            if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_LINEAR)
+                return TextureFilter.PointMipLinear;
+            if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_NEAREST)
+                return TextureFilter.Point;
+            if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST)
+                return TextureFilter.Point;
+
+            if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST)
+                return TextureFilter.MinPointMagLinearMipLinear;
+            if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR)
+                return TextureFilter.MinLinearMagPointMipLinear;
+
+            return TextureFilter.Linear;
+        }
+
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;

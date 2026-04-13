@@ -46,6 +46,7 @@ namespace Orts.Viewer3D
             "KHR_materials_emissive_strength",
             "KHR_materials_ior",
             "KHR_materials_specular",
+            "KHR_materials_variants",
             "KHR_node_visibility",
             "MSFT_lod",
             "MSFT_texture_dds",
@@ -75,8 +76,6 @@ namespace Orts.Viewer3D
         /// so we need to apply a 180 degree rotation to turn around every model matrix to conform the spec.
         /// </summary>
         public static Matrix PlusZToForward = Matrix.CreateFromAxisAngle(Vector3.UnitY, MathHelper.Pi);
-        static readonly string[] StandardTextureExtensionFilter = new[] { ".png", ".jpg", ".jpeg" };
-        static readonly string[] DdsTextureExtensionFilter = new[] { ".dds" };
         public static Texture2D EnvironmentMapSpecularDay;
         public static TextureCube EnvironmentMapDiffuseDay;
         public static Texture2D BrdfLutTexture;
@@ -293,12 +292,12 @@ namespace Orts.Viewer3D
                             object extension = null;
                             if (gltfFile.ExtensionsUsed?.Contains("MSFT_lod") & rootNode.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
                             {
-                                var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString(), JsonDeserializerSettings);
+                                var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString(), PopulateDefaults);
                                 if (ext?.Ids != null)
                                     internalLodsNumber = ext.Ids.Length + 1;
                                 var screenCoverages = DefaultScreenCoverages;
                                 if (rootNode.Extras?.TryGetValue("MSFT_screencoverage", out extension) ?? false)
-                                    screenCoverages = Newtonsoft.Json.JsonConvert.DeserializeObject<float[]>(extension.ToString(), JsonDeserializerSettings);
+                                    screenCoverages = Newtonsoft.Json.JsonConvert.DeserializeObject<float[]>(extension.ToString(), PopulateDefaults);
                                 shape.MinimumScreenCoverages = new float[internalLodsNumber];
                                 Array.Copy(screenCoverages, shape.MinimumScreenCoverages, internalLodsNumber);
                             }
@@ -352,6 +351,9 @@ namespace Orts.Viewer3D
             internal List<GltfAnimation> GltfAnimations;
             internal bool[] NodeVisibility;
 
+            internal readonly KHR_materials_variants_name[] MaterialVariants;
+
+            // Back references
             internal readonly Viewer Viewer;
             internal readonly GltfShape Shape;
 
@@ -386,9 +388,6 @@ namespace Orts.Viewer3D
 
                 TempStack.Clear();
                 Array.ForEach(GltfFile.Scenes.ElementAtOrDefault(GltfFile.Scene ?? 0).Nodes, node => TempStack.Push(node));
-                KHR_lights gltfLights = null;
-                if (gltfFile.ExtensionsUsed?.Contains("KHR_lights_punctual") & GltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
-                    gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString(), JsonDeserializerSettings);
                 while (TempStack.Any())
                 {
                     var nodeNumber = TempStack.Pop();
@@ -408,7 +407,7 @@ namespace Orts.Viewer3D
 
                     if (gltfFile.ExtensionsUsed?.Contains("MSFT_lod") & node.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
                     {
-                        var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString(), JsonDeserializerSettings);
+                        var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString(), PopulateDefaults);
                         var ids = ext?.Ids;
                         if (ids.Any())
                         {
@@ -431,12 +430,16 @@ namespace Orts.Viewer3D
 
                         if (gltfFile.ExtensionsUsed?.Contains("KHR_lights_punctual") & node.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
                         {
-                            var lightId = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual_index>(extension.ToString(), JsonDeserializerSettings)?.light;
-                            if (lightId != null)
-                                lights.Add(nodeNumber, (int)lightId);
+                            if (Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual_index>(extension.ToString(), PopulateDefaults)?.light is int lightId)
+                                lights.Add(nodeNumber, lightId);
                         }
                     }
                 }
+
+                KHR_materials_variants variants = null;
+                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_variants") & gltfFile.Extensions?.TryGetValue("KHR_materials_variants", out extension) ?? false)
+                    variants = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_variants>(extension.ToString(), PopulateDefaults);
+                MaterialVariants = variants?.Variants;
 
                 GltfSubObject subObject;
                 var subObjects = new List<SubObject>();
@@ -448,11 +451,14 @@ namespace Orts.Viewer3D
 
                     for (var i = 0; i < mesh.Primitives.Length; i++)
                     {
-                        subObjects.Add(subObject = new GltfSubObject(mesh.Primitives[i], $"{mesh.Name}[{i}]", hierIndex, hierarchy, Helpers.TextureFlags.None, GltfFile, Shape, this, skin));
+                        subObjects.Add(subObject = new GltfSubObject(mesh.Primitives[i], $"{mesh.Name}[{i}]", hierIndex, hierarchy, GltfFile, Shape, this, skin));
                         if (!shape.Meshes.ContainsKey((int)node.Mesh) && subObject.ShapePrimitives?.FirstOrDefault() is GltfPrimitive primitive)
                             shape.Meshes.Add((int)node.Mesh, primitive);
                     }
                 }
+                KHR_lights gltfLights = null;
+                if (gltfFile.ExtensionsUsed?.Contains("KHR_lights_punctual") & GltfFile.Extensions?.TryGetValue("KHR_lights_punctual", out extension) ?? false)
+                    gltfLights = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights>(extension.ToString(), PopulateDefaults);
                 foreach (var hierIndex in lights.Keys)
                 {
                     subObjects.Add(subObject = new GltfSubObject(gltfLights.lights[lights[hierIndex]], hierIndex, hierarchy, GltfFile, Shape, this));
@@ -780,7 +786,7 @@ namespace Orts.Viewer3D
                 MatrixNames.AddRange(names.Select(n => n.Item1));
                 NodeVisibility = (gltfFile.ExtensionsUsed?.Contains("KHR_node_visibility") ?? false)
                     ? gltfFile.Nodes.Select(n => (n.Extensions?.TryGetValue("KHR_node_visibility", out extension) ?? false) &&
-                        Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_node_Visibility>(extension.ToString(), JsonDeserializerSettings).Visible is bool v ? v : true).ToArray()
+                        Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_node_Visibility>(extension.ToString(), PopulateDefaults).Visible is bool v ? v : true).ToArray()
                     : Enumerable.Repeat(true, gltfFile.Nodes.Length).ToArray();
             }
 
@@ -1019,144 +1025,6 @@ namespace Orts.Viewer3D
                 ["JOINTS"] = VertexElementUsage.BlendIndices,
                 ["WEIGHTS"] = VertexElementUsage.BlendWeight,
             };
-
-            internal Texture2D GetTexture(Gltf gltf, int? textureIndex, Texture2D defaultTexture, bool srgbColors)
-            {
-                if (textureIndex != null)
-                {
-                    var texture = gltf.Textures[(int)textureIndex];
-                    var source = texture?.Source;
-                    var extensionFilter = StandardTextureExtensionFilter;
-                    object extension = null;
-                    if (gltf.ExtensionsUsed?.Contains("MSFT_texture_dds") & texture?.Extensions?.TryGetValue("MSFT_texture_dds", out extension) ?? false)
-                    {
-                        var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_texture_dds>(extension.ToString(), JsonDeserializerSettings);
-                        source = ext?.Source ?? source;
-                        extensionFilter = DdsTextureExtensionFilter;
-                    }
-                    if (source != null)
-                    {
-                        var image = gltf.Images[(int)source];
-                        if (image.Uri != null)
-                        {
-                            var imagePath = source != null ? Path.Combine(GltfDir, Uri.UnescapeDataString(image.Uri)) : "";
-
-                            // The standard accordance must be preserved, must not load a dds texture where only a jpg or png is allowed.
-                            if (extensionFilter != null && !extensionFilter.Contains(Path.GetExtension(imagePath).ToLowerInvariant()))
-                                return defaultTexture;
-
-                            if (File.Exists(imagePath))
-                            {
-                                // We refuse to load textures containing "../" in their path, because although it would be possible,
-                                // it would break compatibility with the existing glTF viewers, including the Windows 3D Viewer,
-                                // the VS Code glTF Tools and the reference Khronos glTF-Sample-Viewer.
-                                var strippedImagePath = imagePath.Replace("../", "").Replace(@"..\", "").Replace("..", "");
-                                if (File.Exists(strippedImagePath))
-                                    return Viewer.TextureManager.Get(strippedImagePath, defaultTexture, srgb: srgbColors);
-                                else
-                                    Trace.TraceWarning($"glTF: refusing to load texture {imagePath} in file {GltfFileName}, using \"../\" in the path is discouraged due to compatibility reasons.");
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
-                                    {
-                                        var texture2D = srgbColors
-                                            ? Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream)
-                                            : Texture2D.FromStream(Viewer.GraphicsDevice, stream);
-                                        texture2D.Name = imagePath;
-                                        return texture2D;
-                                    }
-                                }
-                                catch
-                                {
-                                    Trace.TraceWarning($"glTF: missing texture {imagePath} in file {GltfFileName}");
-                                }
-                            }
-                        }
-                        else if (image.BufferView != null)
-                        {
-                            try
-                            {
-                                using (var stream = glTFLoader.Interface.OpenImageFile(gltf, (int)source, GltfFileName))
-                                {
-                                    var texture2D = srgbColors
-                                        ? Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream)
-                                        : Texture2D.FromStream(Viewer.GraphicsDevice, stream);
-                                    texture2D.Name = $"{GltfFileName}:{image.BufferView}";
-                                    return texture2D;
-                                }
-                            }
-                            catch
-                            {
-                                Trace.TraceWarning($"glTF: missing image {image.BufferView} in file {GltfFileName}");
-                            }
-                        }
-                    }
-                }
-                return defaultTexture;
-            }
-
-            internal TextureFilter GetTextureFilter(Sampler sampler)
-            {
-                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR)
-                    return TextureFilter.Linear;
-                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_LINEAR)
-                    return TextureFilter.Linear;
-                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_NEAREST)
-                    return TextureFilter.LinearMipPoint;
-                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_LINEAR)
-                    return TextureFilter.MinPointMagLinearMipLinear;
-                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_NEAREST)
-                    return TextureFilter.MinPointMagLinearMipPoint;
-                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_LINEAR)
-                    return TextureFilter.MinLinearMagPointMipLinear;
-                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR_MIPMAP_NEAREST)
-                    return TextureFilter.MinLinearMagPointMipPoint;
-                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_LINEAR)
-                    return TextureFilter.PointMipLinear;
-                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST_MIPMAP_NEAREST)
-                    return TextureFilter.Point;
-                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST)
-                    return TextureFilter.Point;
-
-                if (sampler.MagFilter == Sampler.MagFilterEnum.LINEAR && sampler.MinFilter == Sampler.MinFilterEnum.NEAREST)
-                    return TextureFilter.MinPointMagLinearMipLinear;
-                if (sampler.MagFilter == Sampler.MagFilterEnum.NEAREST && sampler.MinFilter == Sampler.MinFilterEnum.LINEAR)
-                    return TextureFilter.MinLinearMagPointMipLinear;
-
-                return TextureFilter.Linear;
-            }
-
-            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, int? texCoord, int? index, Texture2D defaultTexture, bool srgb)
-            {
-                var texture = GetTexture(gltf, index, defaultTexture, srgb);
-                if (texture == defaultTexture)
-                    texCoord = 0;
-                var sampler = gltf.Samplers?.ElementAtOrDefault(gltf.Textures?.ElementAtOrDefault(index ?? -1)?.Sampler ?? -1) ?? GltfSubObject.DefaultGltfSampler;
-                var samplerState = (GetTextureFilter(sampler), GetTextureAddressMode(sampler.WrapS), GetTextureAddressMode(sampler.WrapT));
-                return (texCoord ?? 0, texture, samplerState);
-            }
-            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, TextureInfo textureInfo, Texture2D defaultTexture, bool srgb = false)
-                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture, srgb);
-            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, MaterialNormalTextureInfo textureInfo, Texture2D defaultTexture)
-                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture, false);
-            internal (int, Texture2D, (TextureFilter, TextureAddressMode, TextureAddressMode)) GetTextureInfo(Gltf gltf, MaterialOcclusionTextureInfo textureInfo, Texture2D defaultTexture)
-                => GetTextureInfo(gltf, textureInfo?.TexCoord, textureInfo?.Index, defaultTexture, false);
-
-            internal TextureAddressMode GetTextureAddressMode(Sampler.WrapTEnum wrapEnum) => GetTextureAddressMode((Sampler.WrapSEnum)wrapEnum);
-            internal TextureAddressMode GetTextureAddressMode(Sampler.WrapSEnum wrapEnum)
-            {
-                if (Shape.MsfsFlavoured) return TextureAddressMode.Clamp;
-                switch (wrapEnum)
-                {
-                    case Sampler.WrapSEnum.REPEAT: return TextureAddressMode.Wrap;
-                    case Sampler.WrapSEnum.CLAMP_TO_EDGE: return TextureAddressMode.Clamp;
-                    case Sampler.WrapSEnum.MIRRORED_REPEAT: return TextureAddressMode.Mirror;
-                    default: return TextureAddressMode.Wrap;
-                }
-            }
         }
 
         public class GltfSubObject : SubObject
@@ -1164,6 +1032,8 @@ namespace Orts.Viewer3D
             public readonly Vector4 MinPosition;
             public readonly Vector4 MaxPosition;
             public readonly int HierarchyIndex;
+
+            readonly KHR_materials_variants_mapping[] MaterialVariantsMappings;
 
             static readonly ConcurrentQueue<VertexBuffer> Disposables = new ConcurrentQueue<VertexBuffer>();
 
@@ -1183,7 +1053,12 @@ namespace Orts.Viewer3D
                 WrapT = Sampler.WrapTEnum.REPEAT,
                 Name = nameof(DefaultGltfSampler)
             };
-            
+            public static readonly glTFLoader.Schema.Gltf DefaultGltfFile = new glTFLoader.Schema.Gltf
+            {
+                Materials = new[] { DefaultGltfMaterial },
+                Samplers = new[] { DefaultGltfSampler }
+            };
+
             static readonly List<string> MorphTargetAttributes = new List<string>() { "POSITION", "NORMAL", "TANGENT", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0" };
 
             public GltfSubObject(KHR_lights_punctual light, int hierarchyIndex, int[] hierarchy, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel)
@@ -1192,144 +1067,16 @@ namespace Orts.Viewer3D
                 ShapePrimitives = new[] { new GltfPrimitive(light, gltfFile, distanceLevel, hierarchyIndex, hierarchy) };
             }
 
-            public GltfSubObject(MeshPrimitive meshPrimitive, string name, int hierarchyIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel, Skin skin)
+            public GltfSubObject(MeshPrimitive meshPrimitive, string name, int hierarchyIndex, int[] hierarchy, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel, Skin skin)
             {
-                HierarchyIndex = hierarchyIndex;
-                
-                var material = meshPrimitive.Material == null ? DefaultGltfMaterial : gltfFile.Materials[(int)meshPrimitive.Material];
-
                 var options = SceneryMaterialOptions.None;
-
-                if (!(gltfFile.ExtensionsUsed?.Contains("KHR_materials_unlit") & material.Extensions?.ContainsKey("KHR_materials_unlit") ?? false))
-                    options |= SceneryMaterialOptions.Diffuse;
 
                 if (skin != null)
                     options |= SceneryMaterialOptions.PbrHasSkin;
-                if (meshPrimitive.Targets != null && meshPrimitive.Targets.Length > 0)
+                if (meshPrimitive.Targets?.Length > 0)
                     options |= SceneryMaterialOptions.PbrHasMorphTargets;
 
-                var flipNormals = 1f;
-                if (!shape.MsfsFlavoured && distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant() > 0)
-                    // This is according to the glTF spec
-                    options |= SceneryMaterialOptions.PbrCullClockWise;
-                else if (shape.MsfsFlavoured && distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant() < 0)
-                    // Msfs seems to be using this reversed
-                    options |= SceneryMaterialOptions.PbrCullClockWise;
-                else
-                    flipNormals = -1f;
-
-                var referenceAlpha = 0f;
-                var doubleSided = material.DoubleSided;
-
-                switch (material.AlphaMode)
-                {
-                    case glTFLoader.Schema.Material.AlphaModeEnum.BLEND: options |= SceneryMaterialOptions.AlphaBlendingBlend; break;
-                    case glTFLoader.Schema.Material.AlphaModeEnum.MASK: options |= SceneryMaterialOptions.AlphaTest; referenceAlpha = material.AlphaCutoff; break;
-                    case glTFLoader.Schema.Material.AlphaModeEnum.OPAQUE:
-                    default: break;
-                }
-
-                var texCoords1 = Vector4.Zero; // x: baseColor, y: roughness-metallic, z: normal, w: emissive
-                var texCoords2 = Vector4.Zero; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
-                var texCoords3 = Vector4.Zero; // x: specular, y: specularColor, z: transmission, w: texture-packing
-
-                MaterialNormalTextureInfo msftNormalInfo = null;
-                TextureInfo msftOrmInfo = null;
-                TextureInfo msftRmoInfo = null;
-                object extension = null;
-                if (gltfFile.ExtensionsUsed?.Contains("MSFT_packing_normalRoughnessMetallic") & material.Extensions?.TryGetValue("MSFT_packing_normalRoughnessMetallic", out extension) ?? false)
-                    msftNormalInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_normalRoughnessMetallic>(extension.ToString(), JsonDeserializerSettings)?.NormalRoughnessMetallicTexture;
-                else if (gltfFile.ExtensionsUsed?.Contains("MSFT_packing_occlusionRoughnessMetallic") & material.Extensions?.TryGetValue("MSFT_packing_occlusionRoughnessMetallic", out extension) ?? false)
-                {
-                    var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_packing_occlusionRoughnessMetallic>(extension.ToString(), JsonDeserializerSettings);
-                    msftOrmInfo = ext?.OcclusionRoughnessMetallicTexture;
-                    msftRmoInfo = ext?.RoughnessMetallicOcclusionTexture;
-                    msftNormalInfo = ext?.NormalTexture;
-                }
-
-                /// <summary>
-                /// Texture packing:
-                /// 0: occlusion (R), roughnessMetallic (GB) together, normal (RGB) separate, this is the standard
-                /// 1: roughnessMetallicOcclusion together, normal (RGB) separate
-                /// 2: normalRoughnessMetallic (RG+B+A) together, occlusion (R) separate
-                /// 3: occlusionRoughnessMetallic together, normal (RGB) separate
-                /// 4: roughnessMetallicOcclusion together, normal (RG) 2 channel separate
-                /// 5: occlusionRoughnessMetallic together, normal (RG) 2 channel separate
-                /// </summary>
-                texCoords3.W =
-                    msftOrmInfo != null ? msftNormalInfo != null ? 5 : 3 :
-                    msftRmoInfo != null ? msftNormalInfo != null ? 4 : 1 :
-                                          msftNormalInfo != null ? 2 : 0;
-
-                // baseColor texture is 8 bit sRGB + A. Needs decoding to linear in the shader.
-                // metallicRoughness texture: G = roughness, B = metalness, linear, may be > 8 bit.
-                // normal texture is RGB linear, B should be >= 0.5. All channels need mapping from the [0.0..1.0] to the [-1.0..1.0] range, = sampledValue * 2.0 - 1.0
-                // occlusion texture is linear R channel only, = 1.0 + strength * (sampledValue - 1.0)
-                // emissive texture is 8 bit sRGB. Needs decoding to linear in the shader.
-                // clearcoat texture is R channel only, linear.
-                // clearcoatRoughness texture is G channel only, linear.
-                // clearcoatNormal texture is RGB linear.
-                // specular strength is A channel only, linear.
-                // specularColor is storged in the RGB channels, encoded in sRGB.
-                Texture2D baseColorTexture = null, metallicRoughnessTexture = null, normalTexture = null, occlusionTexture = null, emissiveTexture = null, clearcoatTexture = null, clearcoatRoughnessTexture = null, clearcoatNormalTexture = null, specularTexture = null, specularColorTexture = null;
-                (TextureFilter, TextureAddressMode, TextureAddressMode) baseColorSamplerState = default, metallicRoughnessSamplerState = default, normalSamplerState = default, occlusionSamplerState = default, emissiveSamplerState = default, clearcoatSamplerState = default, clearcoatRoughnessSamplerState = default, clearcoatNormalSamplerState = default, specularSamplerState = default, specularColorSamplerState = default;
-
-                KHR_materials_clearcoat clearcoat = null;
-                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_clearcoat") & material.Extensions?.TryGetValue("KHR_materials_clearcoat", out extension) ?? false)
-                    clearcoat = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_clearcoat>(extension.ToString(), JsonDeserializerSettings);
-
-                KHR_materials_specular specular = null;
-                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_specular") & material.Extensions?.TryGetValue("KHR_materials_specular", out extension) ?? false)
-                    specular = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_specular>(extension.ToString(), JsonDeserializerSettings);
-
-                KHR_materials_ior ior = null;
-                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_ior") & material.Extensions?.TryGetValue("KHR_materials_ior", out extension) ?? false)
-                    ior = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_ior>(extension.ToString(), JsonDeserializerSettings);
-
-                var emissiveStrength = 1f;
-                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_emissive_strength") & material.Extensions?.TryGetValue("KHR_materials_emissive_strength", out extension) ?? false)
-                    emissiveStrength = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_emissive_strength>(extension.ToString(), JsonDeserializerSettings)?.EmissiveStrength ?? 1;
-
-                (texCoords1.X, baseColorTexture, baseColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.PbrMetallicRoughness?.BaseColorTexture, SharedMaterialManager.WhiteTexture, true);
-                (texCoords1.Y, metallicRoughnessTexture, metallicRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, msftRmoInfo ?? msftOrmInfo ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture, SharedMaterialManager.WhiteTexture);
-                (texCoords1.Z, normalTexture, normalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, msftNormalInfo ?? material.NormalTexture, SharedMaterialManager.WhiteTexture);
-                (texCoords1.W, emissiveTexture, emissiveSamplerState) = distanceLevel.GetTextureInfo(gltfFile, material.EmissiveTexture, SharedMaterialManager.WhiteTexture, true);
-                (texCoords2.W, occlusionTexture, occlusionSamplerState) = msftOrmInfo != null
-                    ? distanceLevel.GetTextureInfo(gltfFile, msftOrmInfo, SharedMaterialManager.WhiteTexture)
-                    : distanceLevel.GetTextureInfo(gltfFile, material.OcclusionTexture, SharedMaterialManager.WhiteTexture);
-                (texCoords2.X, clearcoatTexture, clearcoatSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatTexture, SharedMaterialManager.WhiteTexture);
-                (texCoords2.Y, clearcoatRoughnessTexture, clearcoatRoughnessSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatRoughnessTexture, SharedMaterialManager.WhiteTexture);
-                (texCoords2.Z, clearcoatNormalTexture, clearcoatNormalSamplerState) = distanceLevel.GetTextureInfo(gltfFile, clearcoat?.ClearcoatNormalTexture, SharedMaterialManager.WhiteTexture);
-                (texCoords3.X, specularTexture, specularSamplerState) = distanceLevel.GetTextureInfo(gltfFile, specular?.SpecularTexture, SharedMaterialManager.WhiteTexture);
-                (texCoords3.Y, specularColorTexture, specularColorSamplerState) = distanceLevel.GetTextureInfo(gltfFile, specular?.SpecularColorTexture, SharedMaterialManager.WhiteTexture, true);
-
-                if (normalTexture == SharedMaterialManager.WhiteTexture)
-                    texCoords1.Z = -1;
-                if (clearcoatNormalTexture == SharedMaterialManager.WhiteTexture)
-                    texCoords2.Z = -1;
-
-                var baseColorFactor = MemoryMarshal.Cast<float, Vector4>(material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f })[0];
-                var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
-                var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
-                var normalScale = flipNormals * (material.NormalTexture?.Scale ?? 1f);
-                var occlusionStrength = material.OcclusionTexture?.Strength ?? 1;
-                var emissiveFactor = MemoryMarshal.Cast<float, Vector3>(material.EmissiveFactor ?? new[] { 0f, 0f, 0f })[0] * emissiveStrength;
-                var clearcoatFactor = clearcoat?.ClearcoatFactor ?? 0;
-                var clearcoatRoughnessFactor = clearcoat?.ClearcoatRoughnessFactor ?? 0;
-                var clearcoatNormalScale = flipNormals * (clearcoat?.ClearcoatNormalTexture?.Scale ?? 1f);
-                var specularFactor = specular?.SpecularFactor ?? 1f;
-                var specularColorFactor = MemoryMarshal.Cast<float, Vector3>(specular?.SpecularColorFactor ?? new[] { 1f, 1f, 1f })[0];
-                var iorFactor = ior?.Ior ?? 1.5f;
-
-                if (specularFactor == 0)
-                    clearcoatFactor = 0;
-
-                switch (baseColorSamplerState.Item2)
-                {
-                    case TextureAddressMode.Wrap: options |= SceneryMaterialOptions.TextureAddressModeWrap; break;
-                    case TextureAddressMode.Clamp: options |= SceneryMaterialOptions.TextureAddressModeClamp; break;
-                    case TextureAddressMode.Mirror: options |= SceneryMaterialOptions.TextureAddressModeMirror; break;
-                }
+                HierarchyIndex = hierarchyIndex;
 
                 var indexBufferSet = new GltfIndexBufferSet();
                 var indexCount = 0;
@@ -1508,39 +1255,67 @@ namespace Orts.Viewer3D
                     default: indexBufferSet.PrimitiveType = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = verticesDrawn / 2; break;
                 }
 
-                var key = $"{shape.FilePath}#{material.Name}#{meshPrimitive.Material ?? -1}";
+                var shapePrimitive = new GltfPrimitive(vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, morphConfig);
 
-                var sceneryMaterial = shape.Viewer.MaterialManager.Load("PBR", key, (int)options, 0,
-                    baseColorTexture, baseColorFactor,
-                    metallicRoughnessTexture, metallicFactor, roughtnessFactor,
-                    normalTexture, normalScale,
-                    occlusionTexture, occlusionStrength,
-                    emissiveTexture, emissiveFactor,
-                    clearcoatTexture, clearcoatFactor,
-                    clearcoatRoughnessTexture, clearcoatRoughnessFactor,
-                    clearcoatNormalTexture, clearcoatNormalScale,
-                    specularTexture, specularFactor,
-                    specularColorTexture, specularColorFactor, iorFactor,
-                    referenceAlpha, doubleSided,
-                    texCoords1, texCoords2, texCoords3,
-                    baseColorSamplerState,
-                    metallicRoughnessSamplerState,
-                    normalSamplerState,
-                    occlusionSamplerState,
-                    emissiveSamplerState,
-                    clearcoatSamplerState,
-                    clearcoatRoughnessSamplerState,
-                    clearcoatNormalSamplerState,
-                    specularSamplerState,
-                    specularColorSamplerState);
+                var flipNormals = 1f;
+                var determinant = distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant();
+                if (!shape.MsfsFlavoured && determinant > 0) // This is according to the glTF spec
+                    options |= SceneryMaterialOptions.PbrCullClockWise;
+                else if (shape.MsfsFlavoured && determinant < 0) // Msfs seems to be using this reversed
+                    options |= SceneryMaterialOptions.PbrCullClockWise;
+                else
+                    flipNormals = -1f;
 
-                if (meshPrimitive.Material != null && !shape.Materials.ContainsKey((int)meshPrimitive.Material) && sceneryMaterial is PbrMaterial pbrMaterial)
-                    shape.Materials.Add((int)meshPrimitive.Material, pbrMaterial);
+                object extension = null;
+                KHR_materials_variants variants = null;
+                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_variants") & meshPrimitive.Extensions?.TryGetValue("KHR_materials_variants", out extension) ?? false)
+                    variants = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_variants>(extension.ToString(), PopulateDefaults);
+                MaterialVariantsMappings = variants?.Mappings ?? new KHR_materials_variants_mapping[0];
+                MaterialVariantsMappings = MaterialVariantsMappings.Append(new KHR_materials_variants_mapping() { Material = meshPrimitive.Material, Variants = null }).ToArray();
+                foreach (var mapping in MaterialVariantsMappings)
+                {
+                    if (!shapePrimitive.Materials.ContainsKey(mapping.Material ?? -1))
+                        shapePrimitive.Materials.Add(mapping.Material ?? -1, shape.Viewer.MaterialManager.Load("PBR",
+                            $"{shape.FilePath}#{mapping.Material ?? 0}", // Index 0 is the default material number in the default gltf file.
+                            (int)options, 0, null, mapping.Material == null ? DefaultGltfFile : gltfFile) as PbrMaterial);
+                }
 
-                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, morphConfig) };
+                var materialIndex = meshPrimitive.Material ?? -1;
+
+                if (distanceLevel.MaterialVariants?.Length > 0)
+                {
+                    var weather = Helpers.GetTextureFile(shape.Viewer.Simulator, (Helpers.TextureFlags)int.MaxValue, "", "").Trim('\\');
+                    var variant = shape.ReferencePath ?? "";
+                    var variantIndex = Array.FindIndex(distanceLevel.MaterialVariants, v => v.Name == $"{variant}/{weather}");
+                    if (variantIndex != -1 && MaterialVariantsMappings.FirstOrDefault(m => m.Variants.Contains(variantIndex)) is var mapping1 && mapping1?.Material is int mi)
+                    {
+                        materialIndex = mi;
+                    }
+                    else
+                    {
+                        variantIndex = Array.FindIndex(distanceLevel.MaterialVariants, v => v.Name == weather);
+                        if (variantIndex != -1 && MaterialVariantsMappings.FirstOrDefault(m => m.Variants.Contains(variantIndex)) is var mapping2 && mapping2?.Material is int mi2)
+                        {
+                            materialIndex = mi2;
+                        }
+                        else
+                        {
+                            variantIndex = Array.FindIndex(distanceLevel.MaterialVariants, v => v.Name == variant);
+                            if (variantIndex != -1 && MaterialVariantsMappings.FirstOrDefault(m => m.Variants.Contains(variantIndex)) is var mapping3 && mapping3?.Material is int mi3)
+                            {
+                                materialIndex = mi3;
+                            }
+                        }
+                    }
+                }
+                var sceneryMaterial = shapePrimitive.Materials[materialIndex];
+                sceneryMaterial?.FlipNormals(flipNormals);
+
+                shapePrimitive.SetMaterial(materialIndex);
+
+                ShapePrimitives = new[] { shapePrimitive };
                 ShapePrimitives[0].SortIndex = 0;
             }
-
         }
 
 
@@ -1573,9 +1348,10 @@ namespace Orts.Viewer3D
             readonly float[] MorphWeights;
             readonly float MaxActiveMorphTargets;
 
+            public readonly Dictionary<int, PbrMaterial> Materials;
 
             public GltfPrimitive(KHR_lights_punctual light, Gltf gltfFile, GltfDistanceLevel distanceLevel, int hierarchyIndex, int[] hierarchy)
-                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Array.Empty<float>())
+                : this(Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Array.Empty<float>())
             {
                 object extension = null;
                 AttachedLight = new StaticLight
@@ -1593,16 +1369,18 @@ namespace Orts.Viewer3D
                     distanceLevel.MatrixNames.Add(AttachedLight.ManagedName);
             }
 
-            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, float[] morphConfig)
+            public GltfPrimitive(List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, float[] morphConfig)
                 : base(vertexAttributes.ToArray())
             {
-                Material = material;
+                Material = new EmptyMaterial(distanceLevel.Shape.Viewer);
                 IndexBuffer = indexBufferSet.IndexBuffer;
                 PrimitiveCount = indexBufferSet.PrimitiveCount;
                 PrimitiveOffset = indexBufferSet.PrimitiveOffset;
                 PrimitiveType = indexBufferSet.PrimitiveType;
                 Hierarchy = hierarchy;
                 HierarchyIndex = hierarchyIndex;
+
+                Materials = new Dictionary<int, PbrMaterial>();
 
                 if (skin == null)
                 {
@@ -1616,7 +1394,7 @@ namespace Orts.Viewer3D
                     Joints = skin.Joints;
                     RenderBonesAltered = Enumerable.Repeat(Matrix.Identity, Joints.Length).ToArray();
                     RenderBonesRendered = Enumerable.Repeat(Matrix.Identity, Joints.Length).ToArray();
-                    BonesTexture = Joints.Length > 0 ? new Texture2D(material.Viewer.GraphicsDevice, 4, Joints.Length, false, SurfaceFormat.Vector4) : null;
+                    BonesTexture = Joints.Length > 0 ? new Texture2D(distanceLevel.Shape.Viewer.GraphicsDevice, 4, Joints.Length, false, SurfaceFormat.Vector4) : null;
 
                     if (!distanceLevel.InverseBindMatrices.TryGetValue((int)skin.InverseBindMatrices, out InverseBindMatrices))
                     {
@@ -1703,6 +1481,15 @@ namespace Orts.Viewer3D
                 return (MorphConfig, ActiveWeights);
             }
 
+            public void SetMaterial(int materialIndex)
+            {
+                if (Materials.TryGetValue(materialIndex, out PbrMaterial material))
+                {
+                    material.LoadTextures();
+                    Material = material;
+                }
+            }
+
             public bool HasMorphTargets() => MorphWeights.Length > 0;
 
             public override void Draw(GraphicsDevice graphicsDevice)
@@ -1731,106 +1518,8 @@ namespace Orts.Viewer3D
             public int PrimitiveCount;
             public PrimitiveType PrimitiveType;
         }
-        
-        class MSFT_texture_dds
-        {
-            public int Source { get; set; }
-        }
 
-        class MSFT_packing_normalRoughnessMetallic
-        {
-            public MaterialNormalTextureInfo NormalRoughnessMetallicTexture { get; set; }
-        }
-
-        class MSFT_packing_occlusionRoughnessMetallic
-        {
-            public TextureInfo OcclusionRoughnessMetallicTexture { get; set; }
-            public TextureInfo RoughnessMetallicOcclusionTexture { get; set; }
-            public MaterialNormalTextureInfo NormalTexture { get; set; }
-        }
-
-        class MSFT_lod
-        {
-            public int[] Ids { get; set; }
-        }
-
-        class KHR_lights_punctual_index
-        {
-            public int light { get; set; }
-        }
-
-        public class KHR_lights_punctual
-        {
-            public LightMode type { get; set; }
-            [DefaultValue("")]
-            public string name { get; set; }
-            [DefaultValue(new[] { 1f, 1f, 1f })]
-            public float[] color { get; set; }
-            [DefaultValue(1)]
-            public float intensity { get; set; }
-            [DefaultValue(float.MaxValue)]
-            public float range { get; set; }
-
-            public KHR_lights_punctual_spot spot { get; set; }
-
-            public Dictionary<string, object> Extras { get; set; }
-        }
-
-        public class KHR_lights_punctual_spot
-        {
-            [DefaultValue(0)]
-            public float innerConeAngle { get; set; }
-            [DefaultValue(MathHelper.PiOver4)]
-            public float outerConeAngle { get; set; }
-        }
-
-        class KHR_lights
-        {
-            public KHR_lights_punctual[] lights { get; set; }
-        }
-
-        public class KHR_materials_clearcoat
-        {
-            public float ClearcoatFactor { get; set; }
-            public TextureInfo ClearcoatTexture { get; set; }
-            public float ClearcoatRoughnessFactor { get; set; }
-            public TextureInfo ClearcoatRoughnessTexture { get; set; }
-            public MaterialNormalTextureInfo ClearcoatNormalTexture { get; set; }
-        }
-
-        public class KHR_materials_specular
-        {
-            [DefaultValue(1)]
-            public float SpecularFactor { get; set; }
-            public TextureInfo SpecularTexture { get; set; }
-            [DefaultValue(new[] { 1f, 1f, 1f })]
-            public float[] SpecularColorFactor { get; set; }
-            public TextureInfo SpecularColorTexture { get; set; }
-        }
-
-        public class KHR_materials_ior
-        {
-            public float Ior { get; set; }
-        }
-
-        public class KHR_materials_emissive_strength
-        {
-            [DefaultValue(1)]
-            public float EmissiveStrength { get; set; }
-        }
-
-        class KHR_node_Visibility
-        {
-            public bool Visible { get; set; }
-        }
-
-        public class KHR_animation_pointer
-        {
-            [DefaultValue("")]
-            public string Pointer { get; set; }
-        }
-
-        public static readonly Newtonsoft.Json.JsonSerializerSettings JsonDeserializerSettings = new Newtonsoft.Json.JsonSerializerSettings
+        public static readonly Newtonsoft.Json.JsonSerializerSettings PopulateDefaults = new Newtonsoft.Json.JsonSerializerSettings
         {
             DefaultValueHandling = Newtonsoft.Json.DefaultValueHandling.Populate
         };
@@ -2126,5 +1815,127 @@ namespace Orts.Viewer3D
         public Action<Quaternion> SetTargetQuaternion;
         public Action<int, float> SetTargetFloatVector;
         public int TargetFloatVectorLength;
+    }
+
+    class MSFT_texture_dds
+    {
+        public int Source { get; set; }
+    }
+
+    class MSFT_packing_normalRoughnessMetallic
+    {
+        public MaterialNormalTextureInfo NormalRoughnessMetallicTexture { get; set; }
+    }
+
+    class MSFT_packing_occlusionRoughnessMetallic
+    {
+        public TextureInfo OcclusionRoughnessMetallicTexture { get; set; }
+        public TextureInfo RoughnessMetallicOcclusionTexture { get; set; }
+        public MaterialNormalTextureInfo NormalTexture { get; set; }
+    }
+
+    class MSFT_lod
+    {
+        public int[] Ids { get; set; }
+    }
+
+    class KHR_lights_punctual_index
+    {
+        public int light { get; set; }
+    }
+
+    public class KHR_lights_punctual
+    {
+        public LightMode type { get; set; }
+        [DefaultValue("")]
+        public string name { get; set; }
+        [DefaultValue(new[] { 1f, 1f, 1f })]
+        public float[] color { get; set; }
+        [DefaultValue(1)]
+        public float intensity { get; set; }
+        [DefaultValue(float.MaxValue)]
+        public float range { get; set; }
+
+        public KHR_lights_punctual_spot spot { get; set; }
+
+        public Dictionary<string, object> Extras { get; set; }
+    }
+
+    public class KHR_lights_punctual_spot
+    {
+        [DefaultValue(0)]
+        public float innerConeAngle { get; set; }
+        [DefaultValue(MathHelper.PiOver4)]
+        public float outerConeAngle { get; set; }
+    }
+
+    class KHR_lights
+    {
+        public KHR_lights_punctual[] lights { get; set; }
+    }
+
+    public class KHR_materials_clearcoat
+    {
+        public float ClearcoatFactor { get; set; }
+        public TextureInfo ClearcoatTexture { get; set; }
+        public float ClearcoatRoughnessFactor { get; set; }
+        public TextureInfo ClearcoatRoughnessTexture { get; set; }
+        public MaterialNormalTextureInfo ClearcoatNormalTexture { get; set; }
+    }
+
+    public class KHR_materials_specular
+    {
+        [DefaultValue(1)]
+        public float SpecularFactor { get; set; }
+        public TextureInfo SpecularTexture { get; set; }
+        [DefaultValue(new[] { 1f, 1f, 1f })]
+        public float[] SpecularColorFactor { get; set; }
+        public TextureInfo SpecularColorTexture { get; set; }
+    }
+
+    public class KHR_materials_ior
+    {
+        public float Ior { get; set; }
+    }
+
+    public class KHR_materials_emissive_strength
+    {
+        [DefaultValue(1)]
+        public float EmissiveStrength { get; set; }
+    }
+
+    class KHR_node_Visibility
+    {
+        public bool Visible { get; set; }
+    }
+
+    public class KHR_animation_pointer
+    {
+        [DefaultValue("")]
+        public string Pointer { get; set; }
+    }
+
+    public class KHR_materials_variants
+    {
+        /// <summary>
+        /// Valid in the top level "extensions" entry only.
+        /// </summary>
+        public KHR_materials_variants_name[] Variants { get; set; }
+
+        /// <summary>
+        /// Valid in the "primitives" "extensions" entry only.
+        /// </summary>
+        public KHR_materials_variants_mapping[] Mappings { get; set; }
+    }
+
+    public class KHR_materials_variants_name
+    {
+        public string Name { get; set; }
+    }
+
+    public class KHR_materials_variants_mapping
+    {
+        public int[] Variants { get; set; }
+        public int? Material { get; set; }
     }
 }
