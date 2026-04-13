@@ -46,6 +46,7 @@ namespace Orts.Viewer3D
             "KHR_materials_emissive_strength",
             "KHR_materials_ior",
             "KHR_materials_specular",
+            "KHR_materials_variants",
             "KHR_node_visibility",
             "MSFT_lod",
             "MSFT_texture_dds",
@@ -95,8 +96,6 @@ namespace Orts.Viewer3D
         readonly Dictionary<int, string> ExternalLods = new Dictionary<int, string>();
         int LastLod = -1;
         bool LodChanged;
-
-        List<string> MaterialVariants;
 
         /// <summary>
         /// glTF shape from file
@@ -452,7 +451,7 @@ namespace Orts.Viewer3D
 
                     for (var i = 0; i < mesh.Primitives.Length; i++)
                     {
-                        subObjects.Add(subObject = new GltfSubObject(mesh.Primitives[i], $"{mesh.Name}[{i}]", hierIndex, hierarchy, Helpers.TextureFlags.None, GltfFile, Shape, this, skin));
+                        subObjects.Add(subObject = new GltfSubObject(mesh.Primitives[i], $"{mesh.Name}[{i}]", hierIndex, hierarchy, GltfFile, Shape, this, skin));
                         if (!shape.Meshes.ContainsKey((int)node.Mesh) && subObject.ShapePrimitives?.FirstOrDefault() is GltfPrimitive primitive)
                             shape.Meshes.Add((int)node.Mesh, primitive);
                     }
@@ -1068,13 +1067,13 @@ namespace Orts.Viewer3D
                 ShapePrimitives = new[] { new GltfPrimitive(light, gltfFile, distanceLevel, hierarchyIndex, hierarchy) };
             }
 
-            public GltfSubObject(MeshPrimitive meshPrimitive, string name, int hierarchyIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel, Skin skin)
+            public GltfSubObject(MeshPrimitive meshPrimitive, string name, int hierarchyIndex, int[] hierarchy, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel, Skin skin)
             {
                 var options = SceneryMaterialOptions.None;
 
                 if (skin != null)
                     options |= SceneryMaterialOptions.PbrHasSkin;
-                if (meshPrimitive.Targets != null && meshPrimitive.Targets.Length > 0)
+                if (meshPrimitive.Targets?.Length > 0)
                     options |= SceneryMaterialOptions.PbrHasMorphTargets;
 
                 HierarchyIndex = hierarchyIndex;
@@ -1256,11 +1255,7 @@ namespace Orts.Viewer3D
                     default: indexBufferSet.PrimitiveType = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = verticesDrawn / 2; break;
                 }
 
-                object extension = null;
-                KHR_materials_variants variants = null;
-                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_variants") & meshPrimitive.Extensions?.TryGetValue("KHR_materials_variants", out extension) ?? false)
-                    variants = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_variants>(extension.ToString(), PopulateDefaults);
-                MaterialVariantsMappings = variants?.Mappings;
+                var shapePrimitive = new GltfPrimitive(vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, morphConfig);
 
                 var flipNormals = 1f;
                 var determinant = distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant();
@@ -1271,15 +1266,54 @@ namespace Orts.Viewer3D
                 else
                     flipNormals = -1f;
 
-                var key = $"{shape.FilePath}#{meshPrimitive.Material ?? 0}";
+                object extension = null;
+                KHR_materials_variants variants = null;
+                if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_variants") & meshPrimitive.Extensions?.TryGetValue("KHR_materials_variants", out extension) ?? false)
+                    variants = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_variants>(extension.ToString(), PopulateDefaults);
+                MaterialVariantsMappings = variants?.Mappings ?? new KHR_materials_variants_mapping[0];
+                MaterialVariantsMappings = MaterialVariantsMappings.Append(new KHR_materials_variants_mapping() { Material = meshPrimitive.Material, Variants = null }).ToArray();
+                foreach (var mapping in MaterialVariantsMappings)
+                {
+                    if (!shapePrimitive.Materials.ContainsKey(mapping.Material ?? -1))
+                        shapePrimitive.Materials.Add(mapping.Material ?? -1, shape.Viewer.MaterialManager.Load("PBR",
+                            $"{shape.FilePath}#{mapping.Material ?? 0}", // Index 0 is the default material number in the default gltf file.
+                            (int)options, 0, null, mapping.Material == null ? DefaultGltfFile : gltfFile) as PbrMaterial);
+                }
 
-                var sceneryMaterial = shape.Viewer.MaterialManager.Load("PBR", key, (int)options, 0, null, meshPrimitive.Material == null ? DefaultGltfFile : gltfFile);
-                (sceneryMaterial as PbrMaterial)?.FlipNormals(flipNormals);
+                var materialIndex = meshPrimitive.Material ?? -1;
 
-                if (meshPrimitive.Material != null && !shape.Materials.ContainsKey((int)meshPrimitive.Material) && sceneryMaterial is PbrMaterial pbrMaterial)
-                    shape.Materials.Add((int)meshPrimitive.Material, pbrMaterial);
+                if (distanceLevel.MaterialVariants?.Length > 0)
+                {
+                    var weather = Helpers.GetTextureFile(shape.Viewer.Simulator, (Helpers.TextureFlags)int.MaxValue, "", "").Trim('\\');
+                    var variant = shape.ReferencePath ?? "";
+                    var variantIndex = Array.FindIndex(distanceLevel.MaterialVariants, v => v.Name == $"{variant}/{weather}");
+                    if (variantIndex != -1 && MaterialVariantsMappings.FirstOrDefault(m => m.Variants.Contains(variantIndex)) is var mapping1 && mapping1?.Material is int mi)
+                    {
+                        materialIndex = mi;
+                    }
+                    else
+                    {
+                        variantIndex = Array.FindIndex(distanceLevel.MaterialVariants, v => v.Name == weather);
+                        if (variantIndex != -1 && MaterialVariantsMappings.FirstOrDefault(m => m.Variants.Contains(variantIndex)) is var mapping2 && mapping2?.Material is int mi2)
+                        {
+                            materialIndex = mi2;
+                        }
+                        else
+                        {
+                            variantIndex = Array.FindIndex(distanceLevel.MaterialVariants, v => v.Name == variant);
+                            if (variantIndex != -1 && MaterialVariantsMappings.FirstOrDefault(m => m.Variants.Contains(variantIndex)) is var mapping3 && mapping3?.Material is int mi3)
+                            {
+                                materialIndex = mi3;
+                            }
+                        }
+                    }
+                }
+                var sceneryMaterial = shapePrimitive.Materials[materialIndex];
+                sceneryMaterial?.FlipNormals(flipNormals);
 
-                ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, morphConfig) };
+                shapePrimitive.SetMaterial(materialIndex);
+
+                ShapePrimitives = new[] { shapePrimitive };
                 ShapePrimitives[0].SortIndex = 0;
             }
         }
@@ -1314,8 +1348,10 @@ namespace Orts.Viewer3D
             readonly float[] MorphWeights;
             readonly float MaxActiveMorphTargets;
 
+            public readonly Dictionary<int, PbrMaterial> Materials;
+
             public GltfPrimitive(KHR_lights_punctual light, Gltf gltfFile, GltfDistanceLevel distanceLevel, int hierarchyIndex, int[] hierarchy)
-                : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Array.Empty<float>())
+                : this(Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Array.Empty<float>())
             {
                 object extension = null;
                 AttachedLight = new StaticLight
@@ -1333,16 +1369,18 @@ namespace Orts.Viewer3D
                     distanceLevel.MatrixNames.Add(AttachedLight.ManagedName);
             }
 
-            public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, float[] morphConfig)
+            public GltfPrimitive(List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, float[] morphConfig)
                 : base(vertexAttributes.ToArray())
             {
-                Material = material;
+                Material = new EmptyMaterial(distanceLevel.Shape.Viewer);
                 IndexBuffer = indexBufferSet.IndexBuffer;
                 PrimitiveCount = indexBufferSet.PrimitiveCount;
                 PrimitiveOffset = indexBufferSet.PrimitiveOffset;
                 PrimitiveType = indexBufferSet.PrimitiveType;
                 Hierarchy = hierarchy;
                 HierarchyIndex = hierarchyIndex;
+
+                Materials = new Dictionary<int, PbrMaterial>();
 
                 if (skin == null)
                 {
@@ -1356,7 +1394,7 @@ namespace Orts.Viewer3D
                     Joints = skin.Joints;
                     RenderBonesAltered = Enumerable.Repeat(Matrix.Identity, Joints.Length).ToArray();
                     RenderBonesRendered = Enumerable.Repeat(Matrix.Identity, Joints.Length).ToArray();
-                    BonesTexture = Joints.Length > 0 ? new Texture2D(material.Viewer.GraphicsDevice, 4, Joints.Length, false, SurfaceFormat.Vector4) : null;
+                    BonesTexture = Joints.Length > 0 ? new Texture2D(distanceLevel.Shape.Viewer.GraphicsDevice, 4, Joints.Length, false, SurfaceFormat.Vector4) : null;
 
                     if (!distanceLevel.InverseBindMatrices.TryGetValue((int)skin.InverseBindMatrices, out InverseBindMatrices))
                     {
@@ -1441,6 +1479,15 @@ namespace Orts.Viewer3D
                     ActiveVertexBufferBindings[i] = VertexBufferBindings[8];
 
                 return (MorphConfig, ActiveWeights);
+            }
+
+            public void SetMaterial(int materialIndex)
+            {
+                if (Materials.TryGetValue(materialIndex, out PbrMaterial material))
+                {
+                    material.LoadTextures();
+                    Material = material;
+                }
             }
 
             public bool HasMorphTargets() => MorphWeights.Length > 0;
@@ -1889,6 +1936,6 @@ namespace Orts.Viewer3D
     public class KHR_materials_variants_mapping
     {
         public int[] Variants { get; set; }
-        public int Material { get; set; }
+        public int? Material { get; set; }
     }
 }

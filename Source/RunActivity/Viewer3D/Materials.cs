@@ -1339,7 +1339,6 @@ namespace Orts.Viewer3D
 
             Options = options;
 
-            LoadTextures();
             SetupStates();
             SetupSorting();
         }
@@ -1401,8 +1400,9 @@ namespace Orts.Viewer3D
                             var strippedImagePath = imagePath.Replace("../", "").Replace(@"..\", "").Replace("..", "");
                             if (File.Exists(strippedImagePath))
                                 return Viewer.TextureManager.Get(strippedImagePath, defaultTexture, srgb: srgbColors);
-                            else
-                                Trace.TraceWarning($"glTF: refusing to load texture {imagePath} in file {ShapeFilePath}, using \"../\" in the path is discouraged due to compatibility reasons.");
+
+                            Trace.TraceWarning($"glTF: refusing to load texture {imagePath} in file {ShapeFilePath}, using \"../\" in the path is discouraged due to compatibility reasons.");
+                            return SharedMaterialManager.MissingTexture;
                         }
                         else
                         {
