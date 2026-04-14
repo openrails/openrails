@@ -708,57 +708,55 @@ float2 _PSUV(float4 inTexCoords, float texCoordsSelector)
     return lerp(inTexCoords.xy, inTexCoords.zw, texCoordsSelector);
 }
 
-float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, float normalScale, float3 normalSample, bool isFrontFace, bool hasNormalTexture)
+float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, float normalScale, float3 normalSample, bool isBackFace, bool hasNormalTexture)
 {
-	float3x3 tbn = float3x3(In.Tangent.xyz, In.Bitangent.xyz, In.Normal_Light.xyz);
-    if (!HasTangents || !HasNormals)
-	{
-		float3 ng;
-		if (HasNormals)
-			ng = normalize(In.Normal_Light.xyz);
-		else
-			ng = normalize(cross(ddx(In.RelPosition.xyz), ddy(-In.RelPosition.xyz)));
-		tbn[2].xyz = ng;
-		
-        if (hasNormalTexture)
-		{
-            float3 pos_dx = ddx(In.Position.xyz);
-            float3 pos_dy = ddy(In.Position.xyz);
-            float3 tex_dx = -ddx(float3(In.TexCoords.xy, 0.0));
-			float3 tex_dy = -ddy(float3(In.TexCoords.xy, 0.0));
-            float tex_dxy = tex_dx.x * tex_dy.y - tex_dy.x * tex_dx.y;
-            float3 t = (tex_dy.y * pos_dx - tex_dx.y * pos_dy) / tex_dxy;
-
-			if (HasTangents)
-				t = In.Tangent.xyz;
-			else
-				t = normalize(t - ng * dot(ng, t));
-			tbn[0].xyz = t;
-			tbn[1].xyz = sign(tex_dxy) * normalize(cross(ng, t));
-		}
+    float3 n = In.Normal_Light.xyz;
+    if (!HasNormals)
+        n = cross(ddx(In.RelPosition.xyz), ddy(In.RelPosition.xyz));
+    n = normalize(n);
+    if (!hasNormalTexture)
+    {
+        if (isBackFace)
+            n = -n;
+        return n;
     }
-	if (isFrontFace) // Does it work reversed?! We should negate in case of back face...
-	{
-		tbn[0] *= -1;
-		tbn[1] *= -1;
-		tbn[2] *= -1;
-	}
-    float3 n = normalSample;
-    if (hasNormalTexture)
-	{
-        n = 2.0 * n - 1.0; // Could be uploaded in SurfaceFormat.NormalizedByte4 or similar to avoid this unpacking, but it is not 
-		if (TextureCoordinates3.w == 2 || TextureCoordinates3.w == 4 || TextureCoordinates3.w == 5)
-		{
-			n.z = sqrt(saturate(1.0 - dot(n.xy, n.xy)));
-		}
-		n = normalize(mul((n * float3(normalScale, normalScale, 1.0)), tbn));
-	}
-	else
-	{
-		n = tbn[2].xyz * sign(normalScale);
-	}
+    
+    float3 t = In.Tangent.xyz;
+    float3 b = In.Bitangent.xyz;
+    if (!HasTangents)
+    {
+        float3 pos_dx = ddx(In.RelPosition.xyz);
+        float3 pos_dy = ddy(In.RelPosition.xyz);
+        float2 tex_dx = ddx(In.TexCoords.xy);
+        float2 tex_dy = ddy(In.TexCoords.xy);
 
-    return n;
+        if (isBackFace)
+        {
+            pos_dy = -pos_dy;
+            tex_dy = -tex_dy;
+        }
+
+        float det = tex_dx.x * tex_dy.y - tex_dy.x * tex_dx.y;
+
+        t = (tex_dy.y * pos_dx - tex_dx.y * pos_dy) / det;
+        t = t - n * dot(n, t);
+        b = sign(det) * cross(n, t);
+    }
+    t = normalize(t);
+    b = normalize(b);
+    
+    float3x3 tbn = float3x3(t, b, n);
+    
+    float3 tangentNormal = normalSample * 2.0 - 1.0;
+    tangentNormal.xy *= normalScale;
+    tangentNormal.z = sqrt(saturate(1.0 - dot(tangentNormal.xy, tangentNormal.xy)));
+
+    n = mul(tangentNormal, tbn);
+    if (isBackFace)
+    {
+        n = -n;
+    }
+    return normalize(n);
 }
 
 float2 _PSCartesianToPolar(float3 n)
@@ -846,8 +844,10 @@ float4 PSImageClamp(in VERTEX_OUTPUT In) : COLOR0
     return PSImage(true, In);
 }
 
-float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR0
+float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
 {
+    // We get isBackFace from SV_isFrontFace
+
 	// This is for being able to call the original functions for the ambient lighting:
 	VERTEX_OUTPUT InGeneral = (VERTEX_OUTPUT)0;
 	InGeneral.Position = In.Position;
@@ -939,7 +939,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
         if (hasNormalTexture)
             normalSample = NormalTexture.Sample(NormalSampler, _PSUV(In.TexCoords, TextureCoordinates1.z)).rgb;
         
-        float3 n = _PSGetNormal(In, OcclusionFactor.w, normalSample, isFrontFace, hasNormalTexture);
+        float3 n = _PSGetNormal(In, OcclusionFactor.w, normalSample, isBackFace, hasNormalTexture);
         float3 v = normalize(-In.RelPosition.xyz);
 
         float NdotV = abs(dot(n, v)) + 0.001;
@@ -1017,7 +1017,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isFrontFace : SV_IsFrontFace) : COLOR
             if (hasClearcoatNormalTexture)
                 clearcoatNormalSample = ClearcoatNormalTexture.Sample(ClearcoatNormalSampler, _PSUV(In.TexCoords, TextureCoordinates2.z)).rgb;
 
-            clearcoatNormal = _PSGetNormal(In, ClearcoatNormalScale, clearcoatNormalSample, isFrontFace, hasClearcoatNormalTexture);
+            clearcoatNormal = _PSGetNormal(In, ClearcoatNormalScale, clearcoatNormalSample, isBackFace, hasClearcoatNormalTexture);
             clearcoatNdotV = abs(dot(clearcoatNormal, v)) + 0.001;
 
             float3 Fr = max((float3) (1.0 - clearcoatRoughness), f0) - f0;
