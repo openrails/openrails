@@ -379,8 +379,9 @@ namespace Menu
 
         public virtual void OnRefreshUpdates(EventArgs e)
         {
+            var currentChannel = UpdateManager.ChannelName;
             // Force a Refresh of the notifications, which will check for updates and show the notification pages if there are any new notifications.
-            UpdateManager.SetChannel("Unstable"); // The 'Refresh' button is only available for the 'Unstable' mode.
+            UpdateManager.SetChannel(currentChannel); // The 'Refresh' button is only available for the 'Unstable' mode.
             UpdateManager.Check();
 
             // Reload the notifications and show them as the 'Latest version available' may have changed.
