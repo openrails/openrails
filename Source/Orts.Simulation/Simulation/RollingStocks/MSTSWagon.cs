@@ -739,11 +739,14 @@ namespace Orts.Simulation.RollingStocks
             var (brakeMode, maxMass) = BrakeSystems?.Count > 0 ? BrakeSystems.Keys.FirstOrDefault() : default;
             SetBrakeSystemMode(brakeMode, maxMass, forceSwitch: true);
 
+            // Determine whether or not to use the Davis friction model. Must come after freight animations are initialized.
+            IsDavisFriction = DavisAN.HasValue && DavisBNSpM.HasValue && DavisCNSSpMM.HasValue && DavisDragConstant.HasValue;
+
             LoadFullMassKg = LoadEmptyMassKg = MassKG;
-            LoadFullORTSDavis_A = LoadEmptyORTSDavis_A = DavisAN;
-            LoadFullORTSDavis_B = LoadEmptyORTSDavis_B = DavisBNSpM;
-            LoadFullORTSDavis_C = LoadEmptyORTSDavis_C = DavisCNSSpMM;
-            LoadFullDavisDragConstant = LoadEmptyDavisDragConstant = DavisDragConstant;
+            LoadFullORTSDavis_A = LoadEmptyORTSDavis_A = DavisAN = DavisAN ?? 0;
+            LoadFullORTSDavis_B = LoadEmptyORTSDavis_B = DavisBNSpM = DavisBNSpM ?? 0;
+            LoadFullORTSDavis_C = LoadEmptyORTSDavis_C = DavisCNSSpMM = DavisCNSSpMM ?? 0;
+            LoadFullDavisDragConstant = LoadEmptyDavisDragConstant = DavisDragConstant = DavisDragConstant ?? 0;
             LoadFullWagonFrontalAreaM2 = LoadEmptyWagonFrontalAreaM2 = WagonFrontalAreaM2;
             LoadFullCentreOfGravityM_Y = LoadEmptyCentreOfGravityM_Y = CentreOfGravityM.Y;
 
@@ -893,9 +896,6 @@ namespace Orts.Simulation.RollingStocks
                     SetBrakeSystemMode(BrakeSystem.BrakeMode, InitialMassKG, forceSwitch: true);
                 }
             }
-
-            // Determine whether or not to use the Davis friction model. Must come after freight animations are initialized.
-            IsDavisFriction = DavisAN.HasValue && DavisBNSpM.HasValue && DavisCNSSpMM.HasValue && DavisDragConstant.HasValue;
 
             if (TrackGaugeM <= 0) // Use gauge of route/sim settings if gauge wasn't defined
                 TrackGaugeM = Simulator.RouteTrackGaugeM;
