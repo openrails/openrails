@@ -1152,7 +1152,7 @@ namespace Orts.Viewer3D
         protected Vector3 SpecularColorFactor;
         protected float Ior;
 
-        bool EmissiveFollowsDayNightCycle;
+        bool EmissiveFollowsDayNightCycle = true;
         readonly Gltf GltfFile;
         readonly string ShapeFilePath;
         readonly string ShapeFileDir;
@@ -1224,12 +1224,9 @@ namespace Orts.Viewer3D
             ShapeFileDir = Path.GetDirectoryName(ShapeFilePath);
 
             var material = gltfFile.Materials[materialRef];
-            materialUniqueId += "#" + material.Name;
 
             if (!(gltfFile.ExtensionsUsed?.Contains("KHR_materials_unlit") & material.Extensions?.ContainsKey("KHR_materials_unlit") ?? false))
                 options |= SceneryMaterialOptions.Diffuse;
-
-            var doubleSided = material.DoubleSided;
 
             switch (material.AlphaMode)
             {
@@ -1257,6 +1254,9 @@ namespace Orts.Viewer3D
                 msftRmoInfo = ext?.RoughnessMetallicOcclusionTexture;
                 msftNormalInfo = ext?.NormalTexture;
             }
+
+            if (material.Extras?.TryGetValue("OPENRAILS_material_day_night_switch", out extension) ?? false)
+                EmissiveFollowsDayNightCycle = Newtonsoft.Json.JsonConvert.DeserializeObject<bool>(extension.ToString());
 
             TexCoords3.W =
                 msftOrmInfo != null ? msftNormalInfo != null ? 5 : 3 :
@@ -1316,18 +1316,11 @@ namespace Orts.Viewer3D
             if (Ior == 0)
                 Ior = float.PositiveInfinity; // By the specification
 
-            switch (SamplerStateBaseColor.AddressU)
-            {
-                case TextureAddressMode.Wrap: options |= SceneryMaterialOptions.TextureAddressModeWrap; break;
-                case TextureAddressMode.Clamp: options |= SceneryMaterialOptions.TextureAddressModeClamp; break;
-                case TextureAddressMode.Mirror: options |= SceneryMaterialOptions.TextureAddressModeMirror; break;
-            }
-
             LightingDiffuse = (options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
             HasNormals = (options & SceneryMaterialOptions.PbrHasNormals) != 0;
             HasTangents = (options & SceneryMaterialOptions.PbrHasTangents) != 0;
 
-            RasterizerState = doubleSided ? RasterizerState.CullNone :
+            RasterizerState = material.DoubleSided ? RasterizerState.CullNone :
                 ((options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
 
             var shader = Viewer.MaterialManager.SceneryShader;
@@ -1345,12 +1338,6 @@ namespace Orts.Viewer3D
 
             SetupStates();
             SetupSorting();
-        }
-
-        public void FlipNormals(float flipSign)
-        {
-            NormalScale *= flipSign;
-            ClearcoatNormalScale *= flipSign;
         }
 
         public override bool GetBlending() => (Options & SceneryMaterialOptions.AlphaBlendingBlend) != 0;

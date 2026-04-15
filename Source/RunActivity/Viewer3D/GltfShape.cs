@@ -54,9 +54,6 @@ namespace Orts.Viewer3D
             "MSFT_packing_occlusionRoughnessMetallic",
         };
 
-        // Settings
-        public static bool TangentsAlwaysCalculatedPerPixel { get; set; }
-
         string FileDir { get; set; }
         public bool MsfsFlavoured;
 
@@ -118,8 +115,6 @@ namespace Orts.Viewer3D
         protected override void LoadContent()
         {
             Trace.Write("G");
-
-            TangentsAlwaysCalculatedPerPixel = Viewer.Game.Settings.GltfTangentsAlwaysCalculatedPerPixel;
 
             FileDir = Path.GetDirectoryName(FilePath);
             var inputFilename = Path.GetFileNameWithoutExtension(FilePath).ToUpper();
@@ -1096,13 +1091,15 @@ namespace Orts.Viewer3D
                     .ToList();
                 var vertexCount = vertexAttributes.FirstOrDefault().VertexBuffer?.VertexCount ?? 0;
 
+                // Over-provisioning:
                 // Currently the below PBR vertex input combinations are possible. Any model must use one of those pipelines.
-                // If vertex attribute buffer(s) are missing to match one of these, dummy one(s) must be added.
+                // If vertex attribute buffers are missing to match one of these, dummy one(s) must be added.
                 // The order of the vertex buffers is unimportant, the shader will attach by semantics.
                 // If more combinations to be added in the future, there must be support for them both in SceneryShader and ShadowMapShader.
                 //
                 // ===================================================================================
                 // PositionNormalTexture | NormalMapColor     | Skinned            | Morphed          
+                //                       | PbrHasTexCoord1    | PbrHasSkin         | PbrHasMorphTargets // This is the SceneryMaterialOptions selector
                 // ===================================================================================
                 //  Position             | Position           | Position           | All skinned + 8 morph targets, can be any of:
                 //  Normal               | Normal             | Normal             |                  
@@ -1119,81 +1116,63 @@ namespace Orts.Viewer3D
 
                 // Cannot proceed without vertex Positions, nor can add fake ones, exiting.
                 if (!meshPrimitive.Attributes.TryGetValue("POSITION", out var accessorPosition))
-                    throw new InvalidDataException("One of the glTF mesh primitives has no positions.");
-                else
-                {
-                    var a = gltfFile.Accessors[accessorPosition];
-                    MinPosition = new Vector4(a.Min[0], a.Min[1], a.Min[2], 1);
-                    MaxPosition = new Vector4(a.Max[0], a.Max[1], a.Max[2], 1);
-                }
+                    throw new InvalidDataException($"One of the glTF mesh primitives has no positions in file {shape.FilePath}");
 
-                // Cannot proceed without Normal either, must add a dummy one.
-                if (!vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.Normal)))
+                var ap = gltfFile.Accessors[accessorPosition];
+                MinPosition = new Vector4(ap.Min[0], ap.Min[1], ap.Min[2], 1);
+                MaxPosition = new Vector4(ap.Max[0], ap.Max[1], ap.Max[2], 1);
+
+                if (vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.Normal)))
+                    options |= SceneryMaterialOptions.PbrHasNormals;
+                if (vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.Tangent)))
+                    options |= SceneryMaterialOptions.PbrHasTangents;
+
+                // Need a Normal, must add a dummy one if not exists.
+                if ((options & SceneryMaterialOptions.PbrHasNormals) == 0)
                 {
                     vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
-                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Normal, 0)), vertexCount, BufferUsage.None) { Name = "NORMAL_DUMMY" }));
+                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Normal, 0)), vertexCount, BufferUsage.None)
+                    { Name = "NORMAL_DUMMY" }));
                     // Do not set the SceneryMaterialOptions.PbrHasNormals flag here, so that the shader will know to calculate its own normals. (See: Fox)
                 }
-                else
-                    options |= SceneryMaterialOptions.PbrHasNormals;
 
-                // Cannot proceed without TexCoord_0 neither, must add a dummy one.
+                // Cannot proceed without TexCoord_0 either, must add a dummy one.
                 if (!vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.TextureCoordinate && e.UsageIndex == 0)))
                 {
                     vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
-                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 0)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_0_DUMMY" }));
+                        new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 0)), vertexCount, BufferUsage.None)
+                    { Name = "TEXCOORD_0_DUMMY" }));
                 }
 
                 // If we have skins or Color_0 or TexCoord_1, but don't have Tangent, then we must add a dummy one to run through the NormalMapColor pipeline. (See: MorphStressTest with spare TexCoord_1)
-                if ((options & (SceneryMaterialOptions.PbrHasSkin | SceneryMaterialOptions.PbrHasMorphTargets)) != 0 || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
-                {
-                    options |= SceneryMaterialOptions.PbrHasTexCoord1; // With this we request to call the NormalMapColor pipeline
-
-                    if (!vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.Tangent)))
-                        vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
-                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Tangent, 0)), vertexCount, BufferUsage.WriteOnly)
-                        { Name = "TANGENT_DUMMY" })); // VertexElementFormat.Color is actually unsigned Byte4 normalized.
-                    else if (!TangentsAlwaysCalculatedPerPixel)
-                        options |= SceneryMaterialOptions.PbrHasTangents;
-                }
-
-                if (meshPrimitive.Attributes.ContainsKey("TANGENT"))
-                {
-                    // Per-pixel tangent calculation gives better result. In that case we are not using the provided Tangent vertex attribute at all, so it can be removed. (See BoomBox)
-                    if (TangentsAlwaysCalculatedPerPixel && !meshPrimitive.Attributes.ContainsKey("COLOR_0") && !meshPrimitive.Attributes.ContainsKey("TEXCOORD_1")
-                        && (options & (SceneryMaterialOptions.PbrHasSkin | SceneryMaterialOptions.PbrHasMorphTargets)) == 0)
-                    {
-                        var removables = vertexAttributes.Where(b => {
-                            var ve = b.VertexBuffer.VertexDeclaration.GetVertexElements();
-                            return ve.Count() == 1 && ve.Any(e => e.VertexElementUsage == VertexElementUsage.Tangent);
-                        });
-                        foreach (var r in removables)
-                            Disposables.Enqueue(r.VertexBuffer);
-                        if (vertexAttributes.RemoveAll(b => removables.Contains(b)) == 0)
-                            // Unsuccessful removal because the buffers are interleaved
-                            options |= SceneryMaterialOptions.PbrHasTangents;
-                    }
-                    else
-                        options |= SceneryMaterialOptions.PbrHasTangents;
-                }
-
-                // When we have a Tangent, must also make sure to have TexCoord_1 and Color_0
                 if ((options & (SceneryMaterialOptions.PbrHasTangents | SceneryMaterialOptions.PbrHasSkin | SceneryMaterialOptions.PbrHasMorphTargets)) != 0
                     || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
                 {
+                    options |= SceneryMaterialOptions.PbrHasTexCoord1;
+
+                    // In this pipeline definitely need a dummy Tangent.
+                    if ((options & SceneryMaterialOptions.PbrHasTangents) == 0)
+                        vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Tangent, 0)), vertexCount, BufferUsage.WriteOnly)
+                        { Name = "TANGENT_DUMMY" })); // VertexElementFormat.Color is actually unsigned Byte4 normalized.
+
+                    // Need a dummy Texcoord_1 as well.
                     if (vertexAttributes.Sum(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Count(e => e.VertexElementUsage == VertexElementUsage.TextureCoordinate)) < 2)
                     {
                         vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
-                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 1)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_1_DUMMY" }));
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 1)), vertexCount, BufferUsage.None)
+                        { Name = "TEXCOORD_1_DUMMY" }));
                     }
+
+                    // And a dummy Color too
                     if (!vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.Color)))
                     {
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice,
-                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Color, 0)), vertexCount, BufferUsage.None) { Name = "COLOR_0_DUMMY" };
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Color, 0)), vertexCount, BufferUsage.None)
+                        { Name = "COLOR_0_DUMMY" };
                         vertexBuffer.SetData(Enumerable.Repeat(byte.MaxValue, vertexCount * 4).ToArray()); // Init the colors with white, because it is a multiplier to the sampled colors.
                         vertexAttributes.Add(new VertexBufferBinding(vertexBuffer));
                     }
-                    options |= SceneryMaterialOptions.PbrHasTexCoord1;
                 }
 
                 // Indicates what position in the target a specific vertex attribute is located at. [6] is the targets count. [7] is the attributes count per target.
@@ -1202,13 +1181,15 @@ namespace Orts.Viewer3D
                 // When having morph targets, make sure we have exactly 8 of them.
                 if ((options & SceneryMaterialOptions.PbrHasMorphTargets) != 0)
                 {
-                    // Have to add fake JOINT_0 and WEIGHTS_0 buffers in case we don't have them.
+                    // Have to add fake JOINT_0 and WEIGHTS_0 buffers here.
                     if ((options & SceneryMaterialOptions.PbrHasSkin) == 0)
                     {
                         vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
-                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Byte4, VertexElementUsage.BlendIndices, 0)), vertexCount, BufferUsage.None) { Name = "JOINTS_DUMMY" }));
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Byte4, VertexElementUsage.BlendIndices, 0)), vertexCount, BufferUsage.None)
+                        { Name = "JOINTS_DUMMY" }));
                         vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
-                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.BlendWeight, 0)), vertexCount, BufferUsage.None) { Name = "WEIGHTS_DUMMY" }));
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.BlendWeight, 0)), vertexCount, BufferUsage.None)
+                        { Name = "WEIGHTS_DUMMY" }));
                     }
 
                     vertexAttributes.AddRange(meshPrimitive.Targets
@@ -1257,14 +1238,11 @@ namespace Orts.Viewer3D
 
                 var shapePrimitive = new GltfPrimitive(vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, morphConfig);
 
-                var flipNormals = 1f;
                 var determinant = distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant();
                 if (!shape.MsfsFlavoured && determinant > 0) // This is according to the glTF spec
                     options |= SceneryMaterialOptions.PbrCullClockWise;
                 else if (shape.MsfsFlavoured && determinant < 0) // Msfs seems to be using this reversed
                     options |= SceneryMaterialOptions.PbrCullClockWise;
-                else
-                    flipNormals = -1f;
 
                 object extension = null;
                 KHR_materials_variants variants = null;
@@ -1275,9 +1253,14 @@ namespace Orts.Viewer3D
                 foreach (var mapping in MaterialVariantsMappings)
                 {
                     if (!shapePrimitive.Materials.ContainsKey(mapping.Material ?? -1))
-                        shapePrimitive.Materials.Add(mapping.Material ?? -1, shape.Viewer.MaterialManager.Load("PBR",
-                            $"{shape.FilePath}#{mapping.Material ?? 0}", // Index 0 is the default material number in the default gltf file.
-                            (int)options, 0, null, mapping.Material == null ? DefaultGltfFile : gltfFile) as PbrMaterial);
+                    {
+                        var materialGltf = mapping.Material == null ? DefaultGltfFile : gltfFile;
+                        var materialRefIndex = mapping.Material ?? 0; // Index 0 is the default material number in the default gltf file.
+                        var pbrMaterial = shape.Viewer.MaterialManager.Load("PBR",
+                            $"{shape.FilePath}#{materialRefIndex}#{gltfFile.Materials?.ElementAtOrDefault(materialRefIndex)?.Name ?? ""}",
+                            (int)options, 0, null, materialGltf) as PbrMaterial;
+                        shapePrimitive.Materials.Add(mapping.Material ?? -1, pbrMaterial);
+                    }
                 }
 
                 var materialIndex = meshPrimitive.Material ?? -1;
@@ -1308,10 +1291,11 @@ namespace Orts.Viewer3D
                         }
                     }
                 }
-                var sceneryMaterial = shapePrimitive.Materials[materialIndex];
-                sceneryMaterial?.FlipNormals(flipNormals);
-
                 shapePrimitive.SetMaterial(materialIndex);
+
+                // FIXME: This structure cannot handle the situation, when a material is used for e.g. both skinned and non-skinned primitives. This is valid in gltf, but here we cannot handle this.
+                if (!shape.Materials.ContainsKey(materialIndex))
+                    shape.Materials.Add(materialIndex, shapePrimitive.Material as PbrMaterial);
 
                 ShapePrimitives = new[] { shapePrimitive };
                 ShapePrimitives[0].SortIndex = 0;
