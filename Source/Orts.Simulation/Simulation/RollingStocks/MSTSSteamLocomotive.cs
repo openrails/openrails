@@ -9251,11 +9251,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     FormatStrings.FormatPressure(SteamEngines[numberofengine].MeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true)
                         );
 
-                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}/{21}\t{17}\t{18}\t{19}\t{20}\n",
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}/{22}\t{17}\t{18}\t{19}\t{20}\t{21}\n",
                     Simulator.Catalog.GetString("NewPress:"),
                     Simulator.Catalog.GetString("Chest"),
                     Simulator.Catalog.GetString("Eng#"),
                     numberofengine + 1,
+                    Simulator.Catalog.GetString("Chest"),
                     FormatStrings.FormatPressure(SteamEngines[numberofengine].SELogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("Initial"),
                     FormatStrings.FormatPressure(SteamEngines[numberofengine].SELogInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
