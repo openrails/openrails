@@ -1610,8 +1610,13 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             float SteamConsumptionCondensationIncreaseFactor = 1 + NewCylinderCondensationFactor; // This factor is used to increase steam consumption and decrease MEP to allow for cylinder condensation
 
-            Run(DriveWheelRevRpS * 60, AdmissionCylinderFraction, ActualCutoffCylinderFraction, ReleaseCylinderFraction, CompressionCylinderFraction, 0.5);
+            if (Locomotive.throttle > 0.001)
+            {
 
+                float TargetFraction = 0.5f; // Target fraction of boiler pressure for iterative solver
+
+                Run(DriveWheelRevRpS * 60, TargetFraction);
+            }
 
         }
 
@@ -1630,19 +1635,52 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         // CONSTANTS
         // =========================
         const double R_JpkgK = 461.5;
-        const double GAMMA = 1.3;
+
+        // Cd terms → control how fast mass moves
+        // Cv, Cp, γ → control how pressure reacts
+        // Typically γ  ~1.25 – 1.35
+
+        const double GAMMA = 1.3; // Ratio of Specific Heats
+
+        const double Cv = R_JpkgK / (GAMMA - 1.0); // Specific heat at constant volume for steam
+        const double Cp = GAMMA * R_JpkgK / (GAMMA - 1.0); // Specific heat at constant volume and pressure for steam
+
+        // =========================
+        // FLOW COEFFICIENTS (FIX 1)
+        // =========================
+
+        // Cd_reg ≈ 0.6 – 0.8, Cd_pipe ≈ 0.4 – 0.7, Cd_port ≈ 0.7 – 0.9
+
+        // | Problem                  | Fix                  |
+        //         | ------------------------ | -------------------- |
+        //         | Chest pressure too high  | ↓ Cd_reg or Cd_pipe  |
+        //         | Cylinder pressure spikes | ↓ Cd_port            |
+        //         | Solver unstable          | ↓ all Cd OR ↓ Δt     |
+        //         | Power too low            | ↑ Cd_port slightly   |
+        //| No wire-drawing effect   | ↓ Cd_port and Cd_reg |   
+
+        const double Cd_port = 1.0;   // ?? NEW: realistic port discharge
+        const double Cd_reg = 0.7;    // ?? NEW: regulator higher efficiency
+        const double Cd_pipe = 1.0;     // ?? NEW: steam pipe flow coefficient	​
+
+
+        // WALL / CONDENSATION MODEL
+        const double Htc = 250.0;          // W/m²K (tunable)
+        const double WallTemp_K = 450.0;   // cylinder wall temp (~350–450 K typical)
+        const double LatentHeat = 2.0e6;   // J/kg (steam approx)
+
+        double mCyl, mChest;
+ 
 
         const double PSI_TO_PA = 6894.76;
         const double PA_TO_PSI = 1.0 / PSI_TO_PA;
 
         const double MIN_P = 1000.0;
 
-        // =========================
-        // FLOW COEFFICIENTS (FIX 1)
-        // =========================
-        const double Cd_port = 0.75;   // ?? NEW: realistic port discharge
-        const double Cd_reg = 0.75;    // ?? NEW: regulator higher efficiency
-        const double Cd_pipe = 0.85;     // ?? NEW: steam pipe flow coefficient
+        // ENERGY STATE
+        double uCyl, uChest;
+
+
 
         // =========================
         // USER INPUTS
@@ -1651,9 +1689,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public double ClearanceFrac;
 
         //  public double BoilerPressurePSI;
-        
-        public double PortWidth_m = Me.FromIn(2.25f);          // 2.25 in;
-
+               
         public double Throttle;
 
         // Superheat / condensation
@@ -1674,17 +1710,25 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         double targetFrac = 0.5; // Target fraction of boiler pressure for iterative solver
 
+        double mPipe;
+        double mPort;
+        double mIn;  // Mass flow through the admission port, Controlled by:Cd_port, Port opening area(Aadm), Pressure ratio(pChest vs pCylinder)
+        double mOut; // Mass flow through the exhaust port, Controlled by:Cd_port, Exhaust opening(Aexh), Back pressure(pBack), Cylinder pressure(pCylinder)
+
         double mTotal_Kg;
         double pChestSum = 0;
 
         double pBack_Pa;
-        double mBoiler;  // boiler → chest
+        double mBoiler;  // boiler → chest Mass flow through the exhaust port, Controlled by: Exhaust opening(Aexh), Back pressure(pBack), Cylinder pressure(pCylinder)
 
         double lastTheta;
         double lastYi = 0;
         double lastYo = 0;
 
+        double Tch;
+        double Tcyl;
         double Tcyl_prev;
+        double Tch_prev;
         double V_prev;
 
 
@@ -1696,6 +1740,24 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         bool IsFinite(double x)
         {
             return !(double.IsNaN(x) || double.IsInfinity(x));
+        }
+
+        // ===== STABILITY FIX (1): SAFE TEMPERATURE =====
+        double SafeTemperature(double u, double m)
+        {
+            if (m < 1e-6) return 300.0;
+
+            double T = u / (m * Cv);
+
+            if (!IsFinite(T)) return 300.0;
+
+            return Math.Max(250.0, Math.Min(T, 1200.0));
+        }
+
+        // ===== STABILITY FIX (2): DAMPING =====
+        double Damp(double prev, double current)
+        {
+            return 0.7 * prev + 0.3 * current;
         }
 
         // =========================
@@ -1721,7 +1783,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         double SteamTemp(double P)
         {
             double Ts = Tsat_K(P);
-            return HasSuperheater ? Ts + Superheat_K : Ts;
+            return Ts + Superheat_K;
         }
 
         // =========================
@@ -1775,13 +1837,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             // (starting at 1.0 at TDC return and going to 0.0)
             return theta <= Math.PI ? fraction : (1.0 - fraction);
 
-
-            /*
-            if (theta <= Math.PI)
-                return 0.5 * (1.0 - Math.Cos(theta));   // forward stroke
-            else
-                return 0.5 * (1.0 - Math.Cos(2.0 * Math.PI - theta)); // mirror return stroke
-            */
         }
 
         double CylinderVolume(double frac)
@@ -1886,19 +1941,19 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             return Math.Pow(2.0 / (GAMMA + 1.0), GAMMA / (GAMMA - 1.0));
         }
 
-        double MassFlow(double pup, double pdown, double T, double A)
+        double MassFlow(double pHigh, double pLow, double Temp, double Area)
         {
-            if (A < 1e-10) return 0;
+            if (Area < 1e-10) return 0;
 
-            pup = ClampP(pup);
-            pdown = ClampP(pdown);
+            pHigh = ClampP(pHigh);
+            pLow = ClampP(pLow);
 
-            if (pdown >= pup) return 0;
+            if (pLow >= pHigh * 0.999) return 0;
 
-            double pr = pdown / pup;
+            double pr = pLow / pHigh;
             double crit = CriticalPressureRatio();
 
-            double coeff = A * pup / Math.Sqrt(R_JpkgK * T);
+            double coeff = Area * pHigh / Math.Sqrt(R_JpkgK * Temp);
 
             if (pr <= crit)
             {
@@ -1919,6 +1974,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         void RK4Step(
             ref double mCyl,
             ref double mChest,
+            ref double uCyl,
+            ref double uChest,
             double V,
             double dVdt,
             double pBack,
@@ -1929,101 +1986,241 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             double BoilerP,
             double dt)
         {
-            Func<double, double, (double dmCyl, double dmChest)> deriv =
-            (mc, mch) =>
+
+            double Tboiler = SteamTemp(BoilerP);
+            double UCyl;   // internal energy of cylinder (J)
+
+            // =========================
+            // SIGNED FLOW FUNCTION
+            // =========================
+            double FlowSigned(double p1, double p2, double T, double A)
             {
+                if (A < 1e-10) return 0;
 
-                //Use direct temperature model, not back-calculated pressure:
-                // Estimate pressure using previous temperature (predictor)
-                double pCyl_est = mc * R_JpkgK * 400.0 / V;
-                double pCh_est = mch * R_JpkgK * 400.0 / SESteamChestVolumeM3;
+                p1 = ClampP(p1);
+                p2 = ClampP(p2);
 
-                // Detect closed cylinder (true thermodynamic phase)
-                bool cylinderClosed = (Aadm < 1e-10) && (Aexh < 1e-10);
+                double dp = p1 - p2;
 
-                double Tcyl;
+                // Deadband to prevent oscillation
+                if (Math.Abs(dp) < 500.0) return 0;
 
-                if (cylinderClosed)
-                {
-                    // TRUE adiabatic evolution using real previous state
-                    double ratio = Math.Max(V_prev / V, 1e-6);
-
-                    // Limit extreme numerical spikes
-                    ratio = Math.Max(0.2, Math.Min(5.0, ratio));
-
-                    Tcyl = Tcyl_prev * Math.Pow(ratio, GAMMA - 1.0);
-                }
+                if (dp > 0)
+                    return MassFlow(p1, p2, T, A);
                 else
+                    return -MassFlow(p2, p1, T, A);
+            }
+
+            Func<double, double, double, double, (double dmC, double dmCh, double dUC, double dUCh)> deriv =
+                (mc, mch, uc, uch) =>
                 {
-                    // Flowing steam resets thermodynamic state
-                    Tcyl = HasSuperheater ? Superheat_K : Tsat_K(ClampP(pCyl_est));
-                }
 
-                double Tch = HasSuperheater ? Superheat_K : Tsat_K(ClampP(pCh_est));
+                    // ?? STATE TEMPERATURES FROM ENERGY
+                    // ===== STABILITY FIX (3): SAFE TEMPERATURE =====
+                    double Tc = SafeTemperature(uc, mc);
+                    Tch = SafeTemperature(uch, mch);
 
-                // Now recompute pressure consistently
-                double pCyl = mc * R_JpkgK * Tcyl / V;
-                double pCh = mch * R_JpkgK * Tch / SESteamChestVolumeM3;
+                    double pC = mc * R_JpkgK * Tc / V;
+                    double pCh = mch * R_JpkgK * Tch / SESteamChestVolumeM3;
 
-                // Admission to cylinder
-                // Two-stage restriction: pipe + port - flow is limited by: regulator, pipe valve and port
-                double mPipe = Cd_pipe * MassFlow(pCh, pCyl, Tch, PipeArea);
-                double mPort = Cd_port * MassFlow(pCh, pCyl, Tch, Aadm);
+                    // ===== STABILITY FIX (4): PRESSURE CLAMP =====
+                    pCh = Math.Max(MIN_P, Math.Min(pCh, BoilerP));
+                    pC = Math.Max(MIN_P, Math.Min(pC, pCh));
 
-                // True inflow limited by smallest restriction
-                double mIn = Math.Min(mPipe, mPort); // chest → cylinder
+                    // ===== NEW: CLOSED CYLINDER STABILISATION =====
+                    bool closed =
+                        (Aadm < 1e-8) && (Aexh < 1e-8);
 
-                // Exhaust
-                double mOut = Cd_port * MassFlow(pCyl, pBack, Tcyl, Aexh); // cylinder → exhaust
-                // Regulator
-                mBoiler = Cd_reg * MassFlow(BoilerP, pCh, Tch, Areg);
+                    if (closed)
+                    {
+                        // enforce near-isentropic behaviour
+                        double gamma_eff = GAMMA;
 
-                double dmC = mIn - mOut;
-                double dmCh = mBoiler - mIn;
-                
-                return (dmC, dmCh);
-            };
+                        double p_expected = pC * Math.Pow(V_prev / V, gamma_eff);
 
-            var k1 = deriv(mCyl, mChest);
-            var k2 = deriv(mCyl + 0.5 * dt * k1.dmCyl, mChest + 0.5 * dt * k1.dmChest);
-            var k3 = deriv(mCyl + 0.5 * dt * k2.dmCyl, mChest + 0.5 * dt * k2.dmChest);
-            var k4 = deriv(mCyl + dt * k3.dmCyl, mChest + dt * k3.dmChest);
+                        double u_expected = p_expected * V / (GAMMA - 1.0);
 
-            mCyl += dt / 6.0 * (k1.dmCyl + 2 * k2.dmCyl + 2 * k3.dmCyl + k4.dmCyl);
-            mChest += dt / 6.0 * (k1.dmChest + 2 * k2.dmChest + 2 * k3.dmChest + k4.dmChest);
+                        // blend toward physical solution
+                        uc = 0.7 * uc + 0.3 * u_expected;
+                    }
 
+                    // ============================================================
+                    // TRUE SERIES FLOW: Boiler → Reg → Pipe → Chest → Port → Cylinder
+                    // ============================================================
+
+
+
+                    // ===== STABILITY FIX (5): PIPE LIMITING =====
+                    double mPortRaw = Cd_port * FlowSigned(pCh, pC, Tch, Aadm);
+                    double mPipeMax = Cd_pipe * FlowSigned(pCh, pC, Tch, PipeArea);
+
+                    // Pipe acts as capacity limit (not parallel flow)
+                    mIn = Math.Sign(mPortRaw) * Math.Min(Math.Abs(mPortRaw), Math.Abs(mPipeMax));
+
+                    // Keep for debug if needed
+                    mPort = mPortRaw;
+                    mPipe = mPipeMax;
+
+                    // ===== FIX: ALLOW STRONG INITIAL ADMISSION =====
+                    double mIn_raw = Cd_port * FlowSigned(pCh, pC, Tch, Aadm);
+
+                    // allow pipe limit ONLY when flowing strongly
+                    if (Math.Abs(mIn_raw) > Math.Abs(mPipeMax))
+                        mIn = mPipeMax;
+                    else
+                        mIn = mIn_raw;
+
+                    mOut = Cd_port * FlowSigned(pC, pBack, Tc, Aexh);
+
+
+                    // Steam will flow from the boiler into the steam chest whenever the chest pressure is below the boiler pressure, but the flow will be limited by the regulator area and the pipe capacity. This creates a dynamic lag in steam delivery to the chest, and thus to the cylinder, which affects performance, especially at high speeds and with small regulator openings.
+
+                    mBoiler = 0.0;
+
+                    //   Console.WriteLine($"MBoiler#1 - mBoiler {mBoiler} kg : pCh {pCh * PA_TO_PSI:F2} psi : BoilerP {BoilerP * PA_TO_PSI} psi : TBoiler {Tboiler} K : AReg {Areg} m2");
+                    if (pCh < BoilerP * 0.98)
+                    {
+                        mBoiler = Cd_reg * FlowSigned(BoilerP, pCh, Tboiler, Areg);
+                        //      Console.WriteLine($"MBoiler#2 - mBoiler {mBoiler} kg : pCh {pCh * PA_TO_PSI:F2} psi : BoilerP {BoilerP * PA_TO_PSI} psi : TBoiler {Tboiler} K : AReg {Areg} m2 : Throttle {Throttle} ");
+                    }
+
+
+                    // =========================
+                    // ?? ENTHALPY FLOWS (WIRE DRAWING PHYSICS)
+                    // =========================
+                    double h_boiler = Cp * Tboiler;
+                    double h_ch = Cp * Tch;
+                    double h_cyl = Cp * Tc;
+
+                    // =========================
+                    // ===== NEW: SIGNED ENERGY FLOW =====
+                    // =========================
+                    double Qin = 0.0;
+                    double Qout = 0.0;
+
+                    if (mIn > 0)
+                        Qin = mIn * h_ch;
+                    else
+                        Qout = (-mIn) * h_cyl;
+
+                    if (mOut > 0)
+                        // ===== FIX: STRONGER ENERGY REMOVAL ON EXHAUST =====
+                        Qout += mOut * (h_cyl + 0.5 * Cp * (Tc - WallTemp_K));
+                    else
+                        Qin += (-mOut) * h_ch;
+
+                    // =========================
+                    // ===== FIX: REALISTIC HEAT LOSS =====
+                    // =========================
+                    double AreaWall = Math.Pow(V, 2.0 / 3.0);
+
+                    double Qcond = Htc * AreaWall * (Tc - WallTemp_K);
+
+                    // clamp so it never heats cylinder
+                    Qcond = Math.Max(0.0, Qcond);
+
+
+                    // =========================
+                    // MASS
+                    // =========================
+                    double dmC = mIn - mOut;
+                    double dmCh = mBoiler - mIn;
+
+                    // =========================
+                    // ===== FIX: ENERGY BALANCE =====
+                    // =========================
+                    double dUC =
+                          Qin
+                        - Qout
+                        - pC * dVdt
+                        - Qcond;
+
+                    double dUCh =
+                          mBoiler * h_boiler
+                        - mIn * h_ch;
+
+                    // ===== NEW: CHEST ENERGY DAMPING =====
+                    dUCh *= 0.98;
+
+                    // =========================
+                    // ENERGY FLOOR
+                    // =========================
+                    uc = Math.Max(uc, mc * Cv * 250.0);
+                    uch = Math.Max(uch, mch * Cv * 300.0);
+
+
+                    return (dmC, dmCh, dUC, dUCh);
+
+                };
+
+
+            var k1 = deriv(mCyl, mChest, uCyl, uChest);
+            var k2 = deriv(
+                mCyl + 0.5 * dt * k1.dmC,
+                mChest + 0.5 * dt * k1.dmCh,
+                uCyl + 0.5 * dt * k1.dUC,
+                uChest + 0.5 * dt * k1.dUCh);
+
+            var k3 = deriv(
+                mCyl + 0.5 * dt * k2.dmC,
+                mChest + 0.5 * dt * k2.dmCh,
+                uCyl + 0.5 * dt * k2.dUC,
+                uChest + 0.5 * dt * k2.dUCh);
+
+            var k4 = deriv(
+                mCyl + dt * k3.dmC,
+                mChest + dt * k3.dmCh,
+                uCyl + dt * k3.dUC,
+                uChest + dt * k3.dUCh);
+
+            mCyl += dt / 6.0 * (k1.dmC + 2 * k2.dmC + 2 * k3.dmC + k4.dmC);
+            mChest += dt / 6.0 * (k1.dmCh + 2 * k2.dmCh + 2 * k3.dmCh + k4.dmCh);
+
+            uCyl += dt / 6.0 * (k1.dUC + 2 * k2.dUC + 2 * k3.dUC + k4.dUC);
+            uChest += dt / 6.0 * (k1.dUCh + 2 * k2.dUCh + 2 * k3.dUCh + k4.dUCh);
+
+            // safety
             mCyl = Math.Max(mCyl, 1e-8);
             mChest = Math.Max(mChest, 1e-6);
 
-            
+            // ===== STABILITY FIX (7): ENERGY FLOOR (POST STEP) =====
+            uCyl = Math.Max(uCyl, mCyl * Cv * 250.0);
+            uChest = Math.Max(uChest, mChest * Cv * 300.0);
+
         }
 
         // ============================================================
         // MAIN SOLVER (HALL BALANCE)
         // ============================================================
 
-        public void Run(double rpm, double admissionStart, double cutoff, double release, double compression, double targetFrac)
+        public void Run(double rpm, double targetFrac)
         {
-            if (!HasSuperheater) Superheat_K = 0;
+            if (!HasSuperheater) Superheat_K = 422; // Extra 300 deg F superheat to match cylinder temperature of 550 K at 200 psi boiler pressure, which is typical for a non-superheated steam locomotive under load
 
             double steps = 720;
             double omegaRadpS = Math.Max(2 * Math.PI * rpm / 60.0, 0.5); // angular velocity - ?? FIX: stable at 0 rpm
             double dTheta = 2 * Math.PI / steps;
             double dt = dTheta / omegaRadpS;
 
-
+            // Set initially for first pass through solver - will be updated each step
             double BoilerP = Locomotive.BoilerPressurePSI * PSI_TO_PA;
-            double pCylinder = BoilerP;
-            double pChest = BoilerP;
+            double pCylinder = BoilerP * 0.8;
+            double pChest = BoilerP * 0.9;
+            Tch_prev = SteamTemp(BoilerP);
 
             double V0 = CylinderVolume(0.0);
             double Tcyl0 = SteamTemp(BoilerP);
 
             // ?? MASS STATE
-            double mCyl = BoilerP * V0 / (R_JpkgK * Tcyl0);
-            double mChest = BoilerP * SESteamChestVolumeM3 / (R_JpkgK * Tcyl0);
+            mCyl = BoilerP * V0 / (R_JpkgK * Tcyl0);
+            mChest = BoilerP * SESteamChestVolumeM3 / (R_JpkgK * Tcyl0);
 
-        //    Console.WriteLine($"Initial Mass - mCyl {mCyl} kg : mChest {mChest} kg ");
+            // initialise energy
+            uCyl = mCyl * Cv * Tcyl0;
+            uChest = mChest * Cv * Tcyl0;
+
+
+            //    Console.WriteLine($"Initial Mass - mCyl {mCyl} kg : mChest {mChest} kg ");
 
             double work = 0;
             mTotal_Kg = 0;
@@ -2079,12 +2276,10 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 double yi = PortOpeningAdmission(CurrentCrankAngleRad, rv, AoA);
                 double yo = PortOpeningExhaust(CurrentCrankAngleRad, rv, AoA);
 
-                double Aadm = Math.Min(yi * PortWidth_m, PortWidth_m * AdPortOpenM);
-                double Aexh = Math.Min(yo * PortWidth_m, PortWidth_m * ExPortOpenM);
+                double Aadm = Math.Min(yi * SEValvePortWidthM, SEValvePortWidthM * AdPortOpenM);
+               double Aexh = Math.Min(yo * SEValvePortWidthM, SEValvePortWidthM * ExPortOpenM);
 
                 double pBack = (5 + 0.03 * rpm) * PSI_TO_PA;
-
-     //           Console.WriteLine($"yi {Me.ToIn((float)yi)} in : yo {Me.ToIn((float)yo)} in : CrankAngle {MathHelper.ToDegrees((float) CurrentCrankAngleRad)} deg : AoA {MathHelper.ToDegrees((float)AoA)} deg : PortWidth {Me.ToIn((float)PortWidth_m)} in : AdPortOpening {Me.ToIn((float)AdPortOpenM)} in : ExPortOpening {Me.ToIn((float)ExPortOpenM)} in");
 
                 // =========================
                 // FLOW PATH (NEW)
@@ -2092,22 +2287,34 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 // Regulator
                 double Areg = CalculateRegulatorEffectiveArea(Throttle);
-                
+
 
                 // RK4 MASS UPDATE
-                RK4Step(ref mCyl, ref mChest, V, dVdt, pBack, Aadm, Aexh, Areg, PipeAreaM2, BoilerP, dt);
+                RK4Step(ref mCyl, ref mChest, ref uCyl, ref uChest, V, dVdt, pBack, Aadm, Aexh, Areg, PipeAreaM2, BoilerP, dt);
 
-                //Use direct temperature model, not back-calculated pressure:
-              //  double Tcyl = HasSuperheater ? Superheat_K : Tsat_K(pCyl);
-             //   double Tch = HasSuperheater ? Superheat_K : Tsat_K(pCh);
-
-                double Tcyl = SteamTemp(Math.Max(ClampP(mCyl * R_JpkgK * 400 / V), MIN_P));
-                pCylinder = mCyl * R_JpkgK * Tcyl / V;
-
-                double Tch = SteamTemp(Math.Max(ClampP(mChest * R_JpkgK * 400 / SESteamChestVolumeM3), MIN_P));
+                Tch = SafeTemperature(uChest, mChest);
                 pChest = mChest * R_JpkgK * Tch / SESteamChestVolumeM3;
 
-           //     Console.WriteLine($"Steam Chest - I {i} : pChest {pChest * PA_TO_PSI} psi : mChest {mChest} kg : Tch {Tch} K : PChest Sum {pChestSum * PA_TO_PSI} psi");
+                // optional clamp
+                pChest = Math.Max(MIN_P, Math.Min(pChest, BoilerP * 1.05));
+
+                // TRUE TEMPERATURE FROM ENERGY
+                // ===== STABILITY FIX (8): SAFE TEMPERATURE + DAMPING =====
+                Tcyl = SafeTemperature(uCyl, mCyl);
+                Tch = SafeTemperature(uChest, mChest);
+
+                Tcyl = Damp(Tcyl_prev, Tcyl);
+                Tcyl = Math.Min(Tcyl, 900.0);
+
+                Tch = Damp(Tch_prev, Tch);
+
+                pCylinder = mCyl * R_JpkgK * Tcyl / V;
+                // ===== NEW: ONLY LIMIT DURING ADMISSION =====
+                if (Aadm > 1e-8)
+                    pCylinder = Math.Min(pCylinder, BoilerP * 1.05);
+
+
+                //     Console.WriteLine($"Steam Chest - I {i} : pChest {pChest * PA_TO_PSI} psi : mChest {mChest} kg : Tch {Tch} K : PChest Sum {pChestSum * PA_TO_PSI} psi");
 
                 pBack_Pa = pBack;
 
@@ -2115,8 +2322,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 V_prev = V;
 
                 // WORK
-                if (IsFinite(pCylinder))
-                    work += pCylinder * dVdTheta(CurrentCrankAngleRad) * dTheta;
+                // ===== NEW: ONLY INTEGRATE WHEN FINITE =====
+                if (IsFinite(pCylinder) && IsFinite(dVdt))
+                    work += pCylinder * dVdt * dt;
 
                 // =========================
                 // EVENT INTERPOLATION (FIXED)
@@ -2127,10 +2335,10 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     return last / (last - curr);
                 }
 
-              // yi > 0 → admission port open
-              // yi ≤ 0 → admission port closed
-              // yo > 0 → exhaust port open
-              // yo ≤ 0 → exhaust port closed
+                // yi > 0 → admission port open
+                // yi ≤ 0 → admission port closed
+                // yo > 0 → exhaust port open
+                // yo ≤ 0 → exhaust port closed
 
                 // Pressures are at the opening or closing of the respective valves
 
@@ -2140,6 +2348,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     double f = interp(lastYi, yi);
                     pAdmission_Pa = prevP + f * (pCylinder - prevP);
                     admissionStartFrac = StrokeFracForward(CurrentCrankAngleRad);
+                 //   Console.WriteLine($"Admission Detection");
                 }
 
                 // Admission port closes (cutoff)
@@ -2148,6 +2357,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     double f = interp(lastYi, yi);
                     pCutoff_Pa = prevP + f * (pCylinder - prevP);
                     cutoffFrac = StrokeFracForward(CurrentCrankAngleRad);
+                  //  Console.WriteLine($"Cutoff Detection");
                 }
 
 
@@ -2157,6 +2367,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     double f = interp(lastYo, yo);
                     pRelease_Pa = prevP + f * (pCylinder - prevP);
                     releaseFrac = StrokeFracForward(CurrentCrankAngleRad);
+                  //  Console.WriteLine($"Release Detection");
                 }
 
                 // Exhaust port closes (compression begins)
@@ -2166,6 +2377,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     pCompression_Pa = prevP + f * (pCylinder - prevP);
                     compressionFrac = StrokeFracForward(CurrentCrankAngleRad);
                     //                 Console.WriteLine($"Compression Detection: Compression_Pa {pCompression_Pa * PA_TO_PSI:F2} psi: f {f} : prevP {prevP * PA_TO_PSI:F2} psi : pCylinder {pCylinder * PA_TO_PSI:F2} psi");
+                   // Console.WriteLine($"Compression Detection");
                 }
 
                 // In real engines: Compression pressure determines: cushioning, efficiency, wire drawing at admission, indicator diagram shape
@@ -2186,7 +2398,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
          //       Console.WriteLine($" lastTheta {MathHelper.ToDegrees((float)lastTheta)} deg, CurrentCrankAngleRad {MathHelper.ToDegrees((float)CurrentCrankAngleRad)} deg, Speed: {Locomotive.AbsSpeedMpS} mph, Cutoff: {Locomotive.cutoff * 100} %"); 
 
-                if (lastTheta > (1.5 * Math.PI) && CurrentCrankAngleRad < (0.5 * Math.PI))
+                if (lastTheta > (1.9 * Math.PI) && CurrentCrankAngleRad < (0.1 * Math.PI))
                 {
                     // Linear interpolation across wrap
                     double total = (2 * Math.PI - lastTheta) + CurrentCrankAngleRad;
@@ -2215,12 +2427,19 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 lastTheta = CurrentCrankAngleRad;
 
-                double mBoiler_inst = Cd_reg * MassFlow(BoilerP, pChest, Tch, Areg);
-                mTotal_Kg += mBoiler_inst * dt;
+                mTotal_Kg += mBoiler * dt;
 
                 pChestSum += pChest;
 
                 Tcyl_prev = Tcyl;
+                Tch_prev = Tch;
+
+                // Debug output for each step
+
+         //       Console.WriteLine($"yi {Me.ToIn((float)yi):F2} in : yo {Me.ToIn((float)yo):F2} in : CrankAngle {MathHelper.ToDegrees((float)CurrentCrankAngleRad):F2} deg : AoA {MathHelper.ToDegrees((float)AoA):F2} deg : PortWidth {Me.ToIn((float)SEValvePortWidthM):F2} in : AdPortOpening {Me.ToIn((float)AdPortOpenM):F2} in : ExPortOpening {Me.ToIn((float)ExPortOpenM):F2} in : Areg {Me2.ToIn2((float)Areg):F2} in2 mIn {mIn:F3} kg : mOut {mOut:F3} kg : MBoiler {mBoiler:F2} kg : mPipe {mPipe:F3} kg : mPort {mPort:F3} kg : mChest {mChest:F3} kg : BoilerP {BoilerP * PA_TO_PSI:F2} psi : pCyl {pCylinder * PA_TO_PSI:F2} psi : Pchest {pChest * PA_TO_PSI:F2} psi : Tcyl {Tcyl:F2} K : Tch {Tch} : work {work}");
+
+
+
             }
 
             // =========================
@@ -2243,10 +2462,10 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             // Note solver produces absolute pressures, so we need to convert to gauge pressure for reporting and comparison with other calculations
 
-            /*
+ /*        
 
             Console.WriteLine($"Speed: {Locomotive.AbsSpeedMpS} mph : Cutoff {Locomotive.cutoff * 100} %");
-            Console.WriteLine($"Boiler; {Locomotive.BoilerPressurePSI} psi, Steam Chest: {ChestPressure_PSI} psi");
+            Console.WriteLine($"Boiler; {Locomotive.BoilerPressurePSI} psi, Steam Chest (Sum): {ChestPressure_PSI} psi : Pchest {pChest * PA_TO_PSI:F2} psi");
             Console.WriteLine($"Admission Pressure: {admissionStartFrac * 100} %, {pAdmission_Pa * PA_TO_PSI:F2} psi");
             Console.WriteLine($"Cutoff Pressure: {cutoffFrac * 100} %, {pCutoff_Pa * PA_TO_PSI:F2} psi");
             Console.WriteLine($"Release Pressure: {releaseFrac * 100} %, {pRelease_Pa * PA_TO_PSI:F2} psi");
@@ -2259,7 +2478,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             Console.WriteLine($"MaxAdmissionPortOpening: {Me.ToIn((float)AdPortOpenM):F4} in");
             Console.WriteLine($"MaxExhaustPortOpening: {Me.ToIn((float)ExPortOpenM):F4} in");
             Console.WriteLine($"SteamChestVolume: {Me3.ToIn3((float)SESteamChestVolumeM3):F3} in3");
-            Console.WriteLine($"PortWidth: {Me.ToIn((float)PortWidth_m):F3} in");
+            Console.WriteLine($"PortWidth: {Me.ToIn((float)SEValvePortWidthM):F3} in");
             Console.WriteLine($"Regulator Maximum Opening Area: {Me2.ToIn2((float)SERegulatorMaxAreaM2):F3} in2");
             Console.WriteLine($"Pipe Area: {Me2.ToIn2((float)PipeAreaM2):F3} in2");
 
@@ -2268,8 +2487,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             Console.WriteLine($"Steam per rev: {SteamPerRevKgpS:F5} kg");
             Console.WriteLine($"Steam rate: {SteamRate_lbhr:F2} lb/hr");
 
-            Console.WriteLine($"Theta: {lastTheta:F3}  yi: {lastYi:F5}  yo: {lastYo:F5}");
-     //       Console.WriteLine($"Valve Phase (deg): {phi * 180.0 / Math.PI:F2}");
+       //     Console.WriteLine($"Theta: {lastTheta:F3}  yi: {lastYi:F5}  yo: {lastYo:F5}");
+            Console.WriteLine($"IHP: {W.ToHp((float)IHP_W):F2} hp :  MEP {MEP_Pa * PA_TO_PSI:F2} psi");
 
             Console.WriteLine();
 
@@ -2288,6 +2507,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Pressure_c_AtmPSI = 0; // No steam flow, so no pressure in cylinder at release
                 Pressure_f_AtmPSI = 0; // No steam flow, so no pressure in cylinder at compression
                 SESteamCylinderConsumptionKgpS = 0; // No steam flow, so no steam consumption in cylinder
+                BoilerP = Locomotive.BoilerPressurePSI * PSI_TO_PA;
+                pChest = 0; // No steam flow, so no pressure in cylinder steam chest
+                pCylinder = 0; // No steam flow, so no pressure in cylinder
 
             }
             else
@@ -2300,9 +2522,10 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Pressure_f_AtmPSI = (float)(pAdmission_Pa * PA_TO_PSI); // Convert to absolute pressure for use in other calculations
                 
                 SESteamCylinderConsumptionKgpS = (float)SteamPerRevKgpS; // Total steam consumption in kg/s
+
             }
 
-            HallIHP = (float)IHP_W * 0.00134102f;
+            HallIHP = W.ToHp((float)IHP_W);
             HallMEP = (float)MEP_Pa * (float)PA_TO_PSI;
 
 
