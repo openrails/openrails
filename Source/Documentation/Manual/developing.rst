@@ -97,12 +97,13 @@ Additionally to the S file format used in MSTS, Openrails is able to read the
 glTF format shape files. However there are some conceptual differences between
 the two formats that the content developers need to be aware of when creating
 such files.
+
 - +Z is the forward direction in glTF models, as opposed to S, where the
   forward was -Z.
 - The following texture rgb channels are in sRGB color space:
   base color, emissive, specular color. 
   The alpha channels and any other textures are in linear space.
-- The texture format can be png, jpg or dds. The `MSFT_texture_dds <https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/MSFT_texture_dds/README.md>`
+- The texture format can be png, jpg or dds. The `MSFT_texture_dds <https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/MSFT_texture_dds/README.md>`_
   extension must be used for referencing a dds texture, it is not just a 
   drop-in file replacement as for the s files. For final game content try to 
   avoid using png and jpg formats at least for the base, emissive and specular 
@@ -114,9 +115,9 @@ such files.
   for night illumination. The emissive texture display is switched off 
   automatically at daytime, unless otherwise specified in the material::
 
-  “extras”: { “OPENRAILS_material_day_night_switch” : false },
+  "extras": { "OPENRAILS_material_day_night_switch": false },
 
-- Seasonal textures (like “Snow”) are managed via the `KHR_materials_variants <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_variants/README.md>`
+- Seasonal textures (like “Snow”) are managed via the `KHR_materials_variants <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_variants/README.md>`_
   extension. A primitive can have multiple materials, each mapped to one or 
   more “variants”. The appropriate variant (e.g. “Snow”) will be activated 
   at load time.
@@ -136,7 +137,7 @@ such files.
   animation can have multiple target nodes via its multiple “channels”.
 - Node animations “nodes” are to be marked with the syntax::
 
-  “extras”: { "OPENRAILS_animation_name": “WHEELS1” },
+  "extras": { "OPENRAILS_animation_name": "WHEELS1" },
 
   The traditional naming pattern applies here.
   (Note, the nodes “name” attributes are not used for anything, unlike in stf.)
@@ -158,17 +159,18 @@ such files.
   (Note, in this case the usual extension usage criteria applies, specifically 
   the important one is the requirement to register the extension used into 
   the "extensionsUsed" array of the gltf.)
-- Active light sources can be attached to a gltf file as in the `KHR_lights_punctual <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md>`
-  extension. Or even a light-only gltf can be created and used in a W file::
+- Active light sources can be attached to a gltf file as in the `KHR_lights_punctual <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md>`_
+  extension. Or even a light-only gltf can be created and used in a W file:
 
-  {
-  "asset": { "version": "2.0" },
-  "extensionsUsed": [ "KHR_lights_punctual" ],
-  "scenes": [ { "nodes": [0] } ],
-  "nodes": [ { "translation": [0, 5, 0], "rotation": [-0.7071, 0, 0, 0.7071], "extensions": { "KHR_lights_punctual": { "light": 0 } } } ],
-  "extensions": { "KHR_lights_punctual": { "lights": [ { "type": "spot", "range": 500.0, "color": [1.0, 0.9, 0.8], "intensity": 50.0, "spot": { "outerConeAngle": 1.5 } } ] } }
-  }
+  .. code-block:: json
 
+    {
+    "asset": { "version": "2.0" },
+    "extensionsUsed": [ "KHR_lights_punctual" ],
+    "scenes": [ { "nodes": [0] } ],
+    "nodes": [ { "translation": [0, 5, 0], "rotation": [-0.7071, 0, 0, 0.7071], "extensions": { "KHR_lights_punctual": { "light": 0 } } } ],
+    "extensions": { "KHR_lights_punctual": { "lights": [ { "type": "spot", "range": 500.0, "color": [1.0, 0.9, 0.8], "intensity": 50.0, "spot": { "outerConeAngle": 1.5 } } ] } }
+    }
 
 
 Open Rails Best Practices

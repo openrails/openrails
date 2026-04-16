@@ -718,7 +718,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, float normalScale, float3 normalSam
     {
         if (isBackFace)
             n = -n;
-        return n;
+        return n * normalScale;
     }
     
     float3 t = In.Tangent.xyz;

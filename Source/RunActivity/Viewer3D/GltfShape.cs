@@ -1257,7 +1257,7 @@ namespace Orts.Viewer3D
                         var materialGltf = mapping.Material == null ? DefaultGltfFile : gltfFile;
                         var materialRefIndex = mapping.Material ?? 0; // Index 0 is the default material number in the default gltf file.
                         var pbrMaterial = shape.Viewer.MaterialManager.Load("PBR",
-                            $"{shape.FilePath}#{materialRefIndex}#{gltfFile.Materials?.ElementAtOrDefault(materialRefIndex)?.Name ?? ""}",
+                            $"{shape.FilePath}#{materialRefIndex}#{materialGltf.Materials?.ElementAtOrDefault(materialRefIndex)?.Name ?? ""}",
                             (int)options, 0, null, materialGltf) as PbrMaterial;
                         shapePrimitive.Materials.Add(mapping.Material ?? -1, pbrMaterial);
                     }
@@ -1293,7 +1293,8 @@ namespace Orts.Viewer3D
                 }
                 shapePrimitive.SetMaterial(materialIndex);
 
-                // FIXME: This structure cannot handle the situation, when a material is used for e.g. both skinned and non-skinned primitives. This is valid in gltf, but here we cannot handle this.
+                // FIXME: This structure cannot handle the situation when a material is used with different shaders, for e.g. both skinned and non-skinned primitives.
+                // This is valid in gltf, but here we cannot handle this, because the shader type is tied to the material, but shouldn't be.
                 if (!shape.Materials.ContainsKey(materialIndex))
                     shape.Materials.Add(materialIndex, shapePrimitive.Material as PbrMaterial);
 
