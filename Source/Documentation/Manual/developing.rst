@@ -90,6 +90,87 @@ Testing and Debugging Tools
 As listed :ref:`here <driving-analysis>`, a rich and powerful set of analysis 
 tools eases the testing and debugging of content under development.
 
+3D shape files
+==============
+
+Additionally to the S file format used in MSTS, Openrails is able to read the
+glTF format shape files. However there are some conceptual differences between
+the two formats that the content developers need to be aware of when creating
+such files.
+- +Z is the forward direction in glTF models, as opposed to S, where the
+  forward was -Z.
+- The following texture rgb channels are in sRGB color space:
+  base color, emissive, specular color. 
+  The alpha channels and any other textures are in linear space.
+- The texture format can be png, jpg or dds. The `MSFT_texture_dds <https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/MSFT_texture_dds/README.md>`
+  extension must be used for referencing a dds texture, it is not just a 
+  drop-in file replacement as for the s files. For final game content try to 
+  avoid using png and jpg formats at least for the base, emissive and specular 
+  textures, because as sRGB types they can only be loaded in two passes, 
+  because the dotnet built-in loader is unable to declare sRGB surface format 
+  at load time, and the whole pixel data must be copied a second time. 
+  Png and jpg formats also lack the ability to store mipmaps.
+- Instead of the night texture set, the authors can use an emissive texture 
+  for night illumination. The emissive texture display is switched off 
+  automatically at daytime, unless otherwise specified in the material::
+
+  “extras”: { “OPENRAILS_material_day_night_switch” : false },
+
+- Seasonal textures (like “Snow”) are managed via the `KHR_materials_variants <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_variants/README.md>`
+  extension. A primitive can have multiple materials, each mapped to one or 
+  more “variants”. The appropriate variant (e.g. “Snow”) will be activated 
+  at load time.
+- The animation driving array is in seconds, unlike in s, where that was the 
+  frame number. The author may create any number of frames, even with unequal 
+  time intervals between them, this will not be counted by the program. Rather 
+  it will precisely interpolate to a required time moment to get the pose, 
+  even if then is no assigned frame there. So e.g. for a 8-notched throttle 
+  controller one can skip all the intermediate frames and define only the 
+  first (at 0 second) and last one (at 8 seconds), it will still work. 
+  Looped animations can have any time length, they will still be considered one
+  loop regardless.
+- Defined animations are designated with the “animations” “name” attributes. 
+  The parent-child relations of the defined animations or the nodes they target
+  are irrelevant, it can be flattened if the author wishes to. A node will not 
+  be animated just because it is a child of another animated node. Instead an 
+  animation can have multiple target nodes via its multiple “channels”.
+- Node animations “nodes” are to be marked with the syntax::
+
+  “extras”: { "OPENRAILS_animation_name": “WHEELS1” },
+
+  The traditional naming pattern applies here.
+  (Note, the nodes “name” attributes are not used for anything, unlike in stf.)
+- LOD-s can be defined either as internals via the MSFT_lod extension, or 
+  externals by creating multiple gltf files and adding the suffixes of pattern 
+  <name>LOD01.gltf, <name>_LOD02.gltf, etc… The author still needs to define 
+  the displaying criteria in the root node of the LOD 0, as defined in the 
+  extension, using a line like::
+
+  "extras": { "MSFT_screencoverage": [ 0.2, 0.05, 0.001 ] },
+
+  In the prior case, for internal LOD-s, the author needs to define the root 
+  nodes of the various LOD-s in the root node of the LOD 0. E.g. if node 
+  0 is the root of LOD 0, then to declare node 1 for LOD 1 and node 2 for LOD 2
+  as their root nodes, looks like this::
+
+  "extensions": { "MSFT_lod": { "ids": [ 1, 2 ] } },
+
+  (Note, in this case the usual extension usage criteria applies, specifically 
+  the important one is the requirement to register the extension used into 
+  the "extensionsUsed" array of the gltf.)
+- Active light sources can be attached to a gltf file as in the `KHR_lights_punctual <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md>`
+  extension. Or even a light-only gltf can be created and used in a W file::
+
+  {
+  "asset": { "version": "2.0" },
+  "extensionsUsed": [ "KHR_lights_punctual" ],
+  "scenes": [ { "nodes": [0] } ],
+  "nodes": [ { "translation": [0, 5, 0], "rotation": [-0.7071, 0, 0, 0.7071], "extensions": { "KHR_lights_punctual": { "light": 0 } } } ],
+  "extensions": { "KHR_lights_punctual": { "lights": [ { "type": "spot", "range": 500.0, "color": [1.0, 0.9, 0.8], "intensity": 50.0, "spot": { "outerConeAngle": 1.5 } } ] } }
+  }
+
+
+
 Open Rails Best Practices
 =========================
 
