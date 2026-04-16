@@ -816,11 +816,6 @@ namespace Orts.Viewer3D
         protected EffectTechnique Technique;
         EffectTechnique VegetationTechnique;
 
-        public static readonly DepthStencilState DepthReadCompareLess = new DepthStencilState
-        {
-            DepthBufferWriteEnable = false,
-            DepthBufferFunction = CompareFunction.Less,
-        };
         private static readonly Dictionary<TextureAddressMode, Dictionary<float, SamplerState>> SamplerStates = new Dictionary<TextureAddressMode, Dictionary<float, SamplerState>>();
         protected int DefaultAlphaCutOff;
         protected readonly int ReferenceAlphaTransparentPass = 10; // ie default lightcone's are 9 in full transparent areas
@@ -924,7 +919,7 @@ namespace Orts.Viewer3D
                 DefaultAlphaCutOff = 250;
 
                 if ((Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingBlend)
-                    DepthStencilStateTransparentPass = DepthReadCompareLess;
+                    DepthStencilStateTransparentPass = DepthStencilState.DepthRead;
             }
             else
             {
@@ -1251,8 +1246,8 @@ namespace Orts.Viewer3D
                 msftNormalInfo = ext?.NormalTexture;
             }
 
-            if (material.Extras?.TryGetValue("OPENRAILS_material_day_night_switch", out extension) ?? false)
-                EmissiveFollowsDayNightCycle = Newtonsoft.Json.JsonConvert.DeserializeObject<bool>(extension.ToString());
+            if (material.Extras?.TryGetValue("OPENRAILS_material_day_night_switch", out extension) ?? false && extension is bool)
+                EmissiveFollowsDayNightCycle = (bool)extension;
 
             TexCoords3.W =
                 msftOrmInfo != null ? msftNormalInfo != null ? 5 : 3 :
@@ -1318,6 +1313,12 @@ namespace Orts.Viewer3D
 
             RasterizerState = material.DoubleSided ? RasterizerState.CullNone :
                 ((options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
+
+            if ((options & SceneryMaterialOptions.PbrCullClockWise) == 0)
+            {
+                NormalScale = -NormalScale;
+                ClearcoatNormalScale = -ClearcoatNormalScale;
+            }
 
             var shader = Viewer.MaterialManager.SceneryShader;
 
