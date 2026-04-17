@@ -119,7 +119,7 @@ such files.
   for night illumination. The emissive texture display is switched off 
   automatically at daytime, unless otherwise specified in the material:
 
-.. code-block:: json
+  .. code-block:: json
 
     "extras": { "OPENRAILS_material_day_night_switch": false },
 
@@ -129,7 +129,7 @@ such files.
   `KHR_materials_emissive_strength <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_emissive_strength/README.md>`_.
   With this the author can achieve any strength.
 
-.. code-block:: json
+  .. code-block:: json
 
     "extensions": { "KHR_materials_emissive_strength": { "emissiveStrength": 5.0 },
 
@@ -153,7 +153,7 @@ such files.
   animation can have multiple target nodes via its multiple “channels”.
 - Node animations “nodes” are to be marked with the syntax:
 
-.. code-block:: json
+  .. code-block:: json
 
     "extras": { "OPENRAILS_animation_name": "WHEELS1" },
 
@@ -165,7 +165,7 @@ such files.
   the displaying criteria in the root node of the LOD 0, as defined in the 
   extension, using a line like:
 
-.. code-block:: json
+  .. code-block:: json
 
     "extras": { "MSFT_screencoverage": [ 0.2, 0.05, 0.001 ] },
 
@@ -174,7 +174,7 @@ such files.
   0 is the root of LOD 0, then to declare node 1 for LOD 1 and node 2 for LOD 2
   as their root nodes, looks like this:
 
-.. code-block:: json
+  .. code-block:: json
 
     "extensions": { "MSFT_lod": { "ids": [ 1, 2 ] } },
 
