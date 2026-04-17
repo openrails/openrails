@@ -76,6 +76,10 @@ The parameters used in content files have been mentioned throughout this manual 
 +------------------------------+-----------------------------+
 | sound management             |        sms                  |
 +------------------------------+-----------------------------+
+| world tile                   |        w                    |
++------------------------------+-----------------------------+
+| 3D shape                     |        s, gltf, glb         |
++------------------------------+-----------------------------+
 | train timetable              |        timetable-or         |
 +------------------------------+-----------------------------+
 
@@ -113,9 +117,21 @@ such files.
   Png and jpg formats also lack the ability to store mipmaps.
 - Instead of the night texture set, the authors can use an emissive texture 
   for night illumination. The emissive texture display is switched off 
-  automatically at daytime, unless otherwise specified in the material::
+  automatically at daytime, unless otherwise specified in the material:
+
+.. code-block:: json
 
   "extras": { "OPENRAILS_material_day_night_switch": false },
+
+  The max value of the emissive strength is 1 by the standard, but sometimes 
+  a bigger glow is needed for being distinctively visible at daytime. 
+  (LED panels, etc...) To achieve this there is an extension available: 
+  `KHR_materials_emissive_strength <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_emissive_strength/README.md>`_.
+  With this the author can achieve any strength.
+
+.. code-block:: json
+
+  "extensions": { "KHR_materials_emissive_strength": { "emissiveStrength": 5.0 },
 
 - Seasonal textures (like “Snow”) are managed via the `KHR_materials_variants <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_variants/README.md>`_
   extension. A primitive can have multiple materials, each mapped to one or 
@@ -135,7 +151,9 @@ such files.
   are irrelevant, it can be flattened if the author wishes to. A node will not 
   be animated just because it is a child of another animated node. Instead an 
   animation can have multiple target nodes via its multiple “channels”.
-- Node animations “nodes” are to be marked with the syntax::
+- Node animations “nodes” are to be marked with the syntax:
+
+.. code-block:: json
 
   "extras": { "OPENRAILS_animation_name": "WHEELS1" },
 
@@ -145,32 +163,36 @@ such files.
   externals by creating multiple gltf files and adding the suffixes of pattern 
   <name>LOD01.gltf, <name>_LOD02.gltf, etc… The author still needs to define 
   the displaying criteria in the root node of the LOD 0, as defined in the 
-  extension, using a line like::
+  extension, using a line like:
+
+.. code-block:: json
 
   "extras": { "MSFT_screencoverage": [ 0.2, 0.05, 0.001 ] },
 
   In the prior case, for internal LOD-s, the author needs to define the root 
   nodes of the various LOD-s in the root node of the LOD 0. E.g. if node 
   0 is the root of LOD 0, then to declare node 1 for LOD 1 and node 2 for LOD 2
-  as their root nodes, looks like this::
+  as their root nodes, looks like this:
+
+.. code-block:: json
 
   "extensions": { "MSFT_lod": { "ids": [ 1, 2 ] } },
 
-  (Note, in this case the usual extension usage criteria applies, specifically 
+  (Note for all extensions, the usual extension usage criteria applies, specifically 
   the important one is the requirement to register the extension used into 
   the "extensionsUsed" array of the gltf.)
 - Active light sources can be attached to a gltf file as in the `KHR_lights_punctual <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md>`_
   extension. Or even a light-only gltf can be created and used in a W file:
 
-  .. code-block:: json
+.. code-block:: json
 
-    {
-    "asset": { "version": "2.0" },
-    "extensionsUsed": [ "KHR_lights_punctual" ],
-    "scenes": [ { "nodes": [0] } ],
-    "nodes": [ { "translation": [0, 5, 0], "rotation": [-0.7071, 0, 0, 0.7071], "extensions": { "KHR_lights_punctual": { "light": 0 } } } ],
-    "extensions": { "KHR_lights_punctual": { "lights": [ { "type": "spot", "range": 500.0, "color": [1.0, 0.9, 0.8], "intensity": 50.0, "spot": { "outerConeAngle": 1.5 } } ] } }
-    }
+  {
+  "asset": { "version": "2.0" },
+  "extensionsUsed": [ "KHR_lights_punctual" ],
+  "scenes": [ { "nodes": [0] } ],
+  "nodes": [ { "translation": [0, 5, 0], "rotation": [-0.7071, 0, 0, 0.7071], "extensions": { "KHR_lights_punctual": { "light": 0 } } } ],
+  "extensions": { "KHR_lights_punctual": { "lights": [ { "type": "spot", "range": 500.0, "color": [1.0, 0.9, 0.8], "intensity": 50.0, "spot": { "outerConeAngle": 1.5 } } ] } }
+  }
 
 
 Open Rails Best Practices
