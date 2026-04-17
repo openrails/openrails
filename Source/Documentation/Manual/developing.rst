@@ -121,7 +121,7 @@ such files.
 
 .. code-block:: json
 
-  "extras": { "OPENRAILS_material_day_night_switch": false },
+    "extras": { "OPENRAILS_material_day_night_switch": false },
 
   The max value of the emissive strength is 1 by the standard, but sometimes 
   a bigger glow is needed for being distinctively visible at daytime. 
@@ -131,7 +131,7 @@ such files.
 
 .. code-block:: json
 
-  "extensions": { "KHR_materials_emissive_strength": { "emissiveStrength": 5.0 },
+    "extensions": { "KHR_materials_emissive_strength": { "emissiveStrength": 5.0 },
 
 - Seasonal textures (like “Snow”) are managed via the `KHR_materials_variants <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_variants/README.md>`_
   extension. A primitive can have multiple materials, each mapped to one or 
@@ -155,7 +155,7 @@ such files.
 
 .. code-block:: json
 
-  "extras": { "OPENRAILS_animation_name": "WHEELS1" },
+    "extras": { "OPENRAILS_animation_name": "WHEELS1" },
 
   The traditional naming pattern applies here.
   (Note, the nodes “name” attributes are not used for anything, unlike in stf.)
@@ -167,7 +167,7 @@ such files.
 
 .. code-block:: json
 
-  "extras": { "MSFT_screencoverage": [ 0.2, 0.05, 0.001 ] },
+    "extras": { "MSFT_screencoverage": [ 0.2, 0.05, 0.001 ] },
 
   In the prior case, for internal LOD-s, the author needs to define the root 
   nodes of the various LOD-s in the root node of the LOD 0. E.g. if node 
@@ -176,7 +176,7 @@ such files.
 
 .. code-block:: json
 
-  "extensions": { "MSFT_lod": { "ids": [ 1, 2 ] } },
+    "extensions": { "MSFT_lod": { "ids": [ 1, 2 ] } },
 
   (Note for all extensions, the usual extension usage criteria applies, specifically 
   the important one is the requirement to register the extension used into 
