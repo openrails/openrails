@@ -6963,7 +6963,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         float crankAngleRad = (float)(LocalAxlePostionRad + WheelCrankAngleDiffRad[i]);
 
                         crankAngleRad = (float)(MathHelper.WrapAngle(crankAngleRad)); // Ensures that crank angle is in the range 0 - 180 - 0
-
+                                               
                         float crankCylinderPressure = (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate); // fallback default value
 
                         // Calculate cylinder position in relation to crank (and hence wheel) position.
@@ -7004,7 +7004,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                         // forward stroke
                         if (slipcutoff > forwardCylinderPosition) // pressure will be in cutoff section of cylinder
-                        {
+                        {          
                             // In cutoff section of cylinder pressure follows a straight line representation between initial pressure and cutoff pressure
                             float pressureGradient = (slipCutoffPressureAtmPSI - slipInitialPressureAtmPSI) / (slipcutoff + CylinderClearancePC - CylinderClearancePC);
                             forwardCylinderPressure = slipInitialPressureAtmPSI + pressureGradient * (forwardCylinderPosition - CylinderClearancePC);
