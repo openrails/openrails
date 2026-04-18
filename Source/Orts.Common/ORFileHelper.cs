@@ -24,13 +24,20 @@ namespace Orts.Common
     {
         /// <summary>
         /// Given any file path, returns a path to the same file type and name but contained inside an
-        /// "OpenRails" subfolder inside the same folder as the original file. Usually used to specify
-        /// an "Open Rails only" file to be loaded instead of an original MSTS file.
+        /// "OpenRails" subfolder inside the same folder as the original file. Usually used to determine
+        /// the location of an "Open Rails specific" version of a file to load alongside the original
+        /// "MSTS specific" file. <br />
+        /// (See <see cref="FindORTSFile(string)"/> if the ORTS-specific file should not be returned
+        /// unless it exists.)
         /// 
-        /// eg: Given "MSTS\TRAINS\TRAINSET\DASH9\dash9.eng", returns "MSTS\TRAINS\TRAINSET\DASH9\OpenRails\dash9.eng"
+        /// <para>
+        /// eg: Given <c>"MSTS\TRAINS\TRAINSET\DASH9\dash9.eng"</c>, returns <c>"MSTS\TRAINS\TRAINSET\DASH9\OpenRails\dash9.eng"</c>
+        /// </para>
+        /// 
+        /// See pull request #1215 for additional context.
         /// </summary>
-        /// <param name="path">File path to the "MSTS" file to be replaced with an "OpenRails" file.</param>
-        /// <returns>File path string pointing to the same file given in the 'path' parameter,
+        /// <param name="path">File path to a file that an OR-specific equivalent is desired for.</param>
+        /// <returns>File path string pointing to the same file given in the <paramref name="path"/> parameter,
         /// but contained inside an "OpenRails" subfolder.</returns>
         public static string GetORTSFilePath(string path)
         {
@@ -41,11 +48,24 @@ namespace Orts.Common
         }
 
         /// <summary>
+        /// <para>
         /// Given any file path, returns a path to the same file type and name but contained inside an
-        /// "OpenRails" subfolder if such a file exists. Otherwise, returns the original file path.
+        /// "OpenRails" subfolder if such a file exists. Otherwise, returns the original file path. Usually
+        /// used to determine which file should be loaded in any case where an "Open Rails specific" file
+        /// should outright replace an "MSTS specific" file. <br />
+        /// (See <see cref="GetORTSFilePath(string)"/> if the OR-specific file path should be returned
+        /// even if it does not exist.)
+        /// </para>
+        /// 
+        /// <para>
+        /// eg: Given <c>"MSTS\TRAINS\TRAINSET\DASH9\dash9.eng"</c>, returns <c>"MSTS\TRAINS\TRAINSET\DASH9\OpenRails\dash9.eng"</c>
+        /// if that file exists, else returns <c>"MSTS\TRAINS\TRAINSET\DASH9\dash9.eng"</c>
+        /// </para>
+        /// 
+        /// See pull request #1215 for additional context.
         /// </summary>
-        /// <param name="path">File path to the "MSTS" file to be replaced with an "OpenRails" file.</param>
-        /// <returns>If it exists, file path string pointing to the same file given in the 'path' parameter,
+        /// <param name="path">File path to a file to be replaced with an OR-specific file, if available.</param>
+        /// <returns>If it exists, file path string pointing to the same file given in the <paramref name="path"/> parameter,
         /// but contained inside an "OpenRails" subfolder. Otherwise, returns original path.</returns>
         public static string FindORTSFile(string path)
         {
