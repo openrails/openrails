@@ -6954,7 +6954,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     for (int i = 0; i < SteamEngines[numberofengine].NumberCylinders; i++)
                     {
                        
-                        // This feature sues some different reference angles as follows:
+                        // This feature uses some different reference angles as follows:
                         // AxlePositionRad - comes from the axle module and is -180 - 0 - 180
                         // Crank Angle - converts the above range to 0 - 180 - 0 - this is the principle reference used so that it lines up with reference
                         // tables used to buold this function
