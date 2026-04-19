@@ -116,8 +116,8 @@ such files.
   at load time, and the whole pixel data must be copied a second time. 
   Png and jpg formats also lack the ability to store mipmaps.
 - Instead of the night texture set, the authors can use an emissive texture 
-  for night illumination. The emissive texture display is switched off 
-  automatically at daytime, unless otherwise specified in the material:
+  for night illumination. The emissive texture display can be switched off 
+  automatically at daytime if specified in the material:
 
   .. code-block:: json
 
@@ -159,11 +159,11 @@ such files.
 
   The traditional naming pattern applies here.
   (Note, the nodes “name” attributes are not used for anything, unlike in stf.)
-- LOD-s can be defined either as internals via the MSFT_lod extension, or 
-  externals by creating multiple gltf files and adding the suffixes of pattern 
-  <name>LOD01.gltf, <name>_LOD02.gltf, etc… The author still needs to define 
-  the displaying criteria in the root node of the LOD 0, as defined in the 
-  extension, using a line like:
+- LOD-s can be defined either as internals via the `MSFT_lod <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/MSFT_lod/README.md>`_
+  extension, or externals by creating multiple gltf files and adding the 
+  suffixes of pattern <name>_LOD01.gltf, <name>_LOD02.gltf, etc… The author 
+  may still define the displaying criteria in the root node of the LOD 0, 
+  as described in the extension, using a line like:
 
   .. code-block:: json
 

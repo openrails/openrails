@@ -1143,7 +1143,7 @@ namespace Orts.Viewer3D
         protected Vector3 SpecularColorFactor;
         protected float Ior;
 
-        bool EmissiveFollowsDayNightCycle = true;
+        bool EmissiveFollowsDayNightCycle = false;
         readonly Gltf GltfFile;
         readonly string ShapeFilePath;
         readonly string ShapeFileDir;
