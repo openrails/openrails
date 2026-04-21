@@ -971,8 +971,10 @@ namespace Orts.Viewer3D
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
 #else
             graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
+            graphicsDevice.DepthStencilState.StencilMask = 0x07; // 3 bits must be enough for this, maybe 1 too? Masking, because need some more bits for tagging the specular bloom pixels. 
+            graphicsDevice.DepthStencilState.StencilWriteMask = 0x07;
             graphicsDevice.DepthStencilState.StencilFunction = CompareFunction.Always;
-            graphicsDevice.DepthStencilState.StencilPass = StencilOperation.Increment;
+            graphicsDevice.DepthStencilState.StencilPass = StencilOperation.IncrementSaturation;
             graphicsDevice.DepthStencilState.DepthBufferFunction = CompareFunction.Greater;
             graphicsDevice.BlendState = BlendState_SourceZeroDestOne;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: (CircleSegments + 2) * State, startIndex: 0, primitiveCount: 2 * CircleSegments);

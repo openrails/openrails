@@ -395,10 +395,10 @@ namespace Orts.Viewer3D
         static RenderTarget2D ShadowMap;
         static RenderTarget2D ShadowMapRenderTarget;
         static Vector3 SteppedSolarDirection = Vector3.UnitX;
-        static readonly Vector3 SunColor = Vector3.One;
-        static readonly Vector3 MoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
-        const float SunIntensity = 1;
-        const float MoonIntensity = SunIntensity / 380000;
+        static readonly Vector3 BaseSunColor = Vector3.One;
+        static readonly Vector3 BaseMoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
+        const float BaseSunIntensity = 1;
+        const float BaseMoonIntensity = BaseSunIntensity / 380000;
         //public const float HeadLightIntensity = 250000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
         public const float HeadLightIntensity = 4; // Using the old linear attenuation model
 
@@ -425,6 +425,14 @@ namespace Orts.Viewer3D
         readonly ulong[][] RenderItemKeys = new ulong[(int)RenderPrimitiveSequence.Sentinel][];
         readonly int[] RenderItemsMaxIndex = new int[(int)RenderPrimitiveSequence.Sentinel];
 
+        internal RenderTarget2D RenderSurfaceBloomCombine;
+        internal RenderTarget2D BloomSurfaceMip0;
+        internal RenderTarget2D BloomSurfaceMip1;
+        internal RenderTarget2D BloomSurfaceMip2;
+        internal RenderTarget2D BloomSurfaceMip3;
+        internal RenderTarget2D BloomSurfaceMip4;
+        internal RenderTarget2D BloomSurfaceMip5;
+
         readonly RenderItemCollection[] RenderShadowSceneryItems;
         readonly RenderItemCollection[] RenderShadowPbrNormalMapItems;
         readonly RenderItemCollection[] RenderShadowPbrSkinnedItems;
@@ -446,7 +454,10 @@ namespace Orts.Viewer3D
         ShadowMapMaterial ShadowMapMaterial;
         SceneryShader SceneryShader;
         ShadowMapShader ShadowMapShader;
-        Vector3 SolarDirection;
+        BloomMaterial BloomMaterial;
+        BloomShader BloomShader;
+
+        public Vector3 SolarDirection { get; private set; }
         Camera Camera;
         Vector3 CameraLocation;
         Vector3 XNACameraLocation;
@@ -506,16 +517,58 @@ namespace Orts.Viewer3D
 
         void ScreenChanged()
         {
-            RenderSurface = new RenderTarget2D(
-                Game.RenderProcess.GraphicsDevice,
-                Game.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferWidth,
-                Game.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferHeight,
-                false,
+            DisposeRenderSurfaces();
+
+            var width = Game.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferWidth;
+            var height = Game.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferHeight;
+
+            RenderSurface = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, width, height, false,
                 Game.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferFormat,
                 Game.RenderProcess.GraphicsDevice.PresentationParameters.DepthStencilFormat,
                 Game.RenderProcess.GraphicsDevice.PresentationParameters.MultiSampleCount,
                 RenderTargetUsage.PreserveContents
             );
+
+            RenderSurfaceBloomCombine = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, width, height, false,
+                RenderSurface.Format,
+                RenderSurface.DepthStencilFormat,
+                RenderSurface.MultiSampleCount,
+                RenderTargetUsage.PreserveContents
+            );
+
+            BloomSurfaceMip0 = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, width, height, false,
+                RenderSurface.Format,
+                RenderSurface.DepthStencilFormat,
+                RenderSurface.MultiSampleCount,
+                RenderTargetUsage.PreserveContents
+            );
+            BloomSurfaceMip1 = new RenderTarget2D(Game.RenderProcess.GraphicsDevice,
+                width / 2,
+                height / 2, false, RenderSurface.Format, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+            BloomSurfaceMip2 = new RenderTarget2D(Game.RenderProcess.GraphicsDevice,
+                width / 4,
+                height / 4, false, RenderSurface.Format, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+            BloomSurfaceMip3 = new RenderTarget2D(Game.RenderProcess.GraphicsDevice,
+                width / 8,
+                height / 8, false, RenderSurface.Format, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+            BloomSurfaceMip4 = new RenderTarget2D(Game.RenderProcess.GraphicsDevice,
+                width / 16,
+                height / 16, false, RenderSurface.Format, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+            BloomSurfaceMip5 = new RenderTarget2D(Game.RenderProcess.GraphicsDevice,
+                width / 32,
+                height / 32, false, RenderSurface.Format, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+        }
+
+        void DisposeRenderSurfaces()
+        {
+            RenderSurface?.Dispose();
+            RenderSurfaceBloomCombine?.Dispose();
+            BloomSurfaceMip0?.Dispose();
+            BloomSurfaceMip1?.Dispose();
+            BloomSurfaceMip2?.Dispose();
+            BloomSurfaceMip3?.Dispose();
+            BloomSurfaceMip4?.Dispose();
+            BloomSurfaceMip5?.Dispose();
         }
 
         public void Clear()
@@ -551,30 +604,31 @@ namespace Orts.Viewer3D
 
         public void PrepareFrame(Viewer viewer)
         {
-            if (RenderSurfaceMaterial == null)
-                RenderSurfaceMaterial = new SpriteBatchMaterial(viewer, BlendState.Opaque);
+            RenderSurfaceMaterial = RenderSurfaceMaterial ?? new SpriteBatchMaterial(viewer, BlendState.Opaque);
+            SceneryShader = SceneryShader ?? viewer.MaterialManager.SceneryShader;
+            ShadowMapMaterial = ShadowMapMaterial ?? (ShadowMapMaterial)viewer.MaterialManager.Load("ShadowMap");
+            ShadowMapShader = ShadowMapShader ?? viewer.MaterialManager.ShadowMapShader;
+            BloomMaterial = BloomMaterial ?? (BloomMaterial)viewer.MaterialManager.Load("Bloom");
+            BloomShader = BloomShader ?? viewer.MaterialManager.BloomShader;
 
-            if (viewer.Settings.UseMSTSEnv == false)
-                SolarDirection = viewer.World.Sky.SolarDirection;
-            else
-                SolarDirection = viewer.World.MSTSSky.mstsskysolarDirection;
+            SolarDirection = viewer.Settings.UseMSTSEnv ? viewer.World.MSTSSky.mstsskysolarDirection : viewer.World.Sky.SolarDirection;
 
-            if (ShadowMapMaterial == null)
-                ShadowMapMaterial = (ShadowMapMaterial)viewer.MaterialManager.Load("ShadowMap");
-            if (SceneryShader == null)
-                SceneryShader = viewer.MaterialManager.SceneryShader;
-            if (ShadowMapShader == null)
-                ShadowMapShader = viewer.MaterialManager.ShadowMapShader;
+            viewer.Simulator.Weather.UpdateLightingFactors(SolarDirection);
+
+            var lightColor = viewer.Simulator.Weather.DirectLightingPale;
+            var lightIntensity = viewer.Simulator.Weather.DirectLightingIntensity;
+            var sunWeight = MathHelper.Clamp((SolarDirection.Y + 0.15f) / 0.3f, 0, 1);
+            var moonWeight = 1.0f - sunWeight;
 
             // Ensure that the first light is always the sun/moon, because the ambient and shadow effects will be calculated based on the first light.
-            if (SolarDirection.Y > -0.05)
+            if (sunWeight > 0)
             {
-                AddLight(LightMode.Directional, Vector3.Zero, SolarDirection, SunColor, SunIntensity, 0, 0, 0, 1, true);
+                AddLight(LightMode.Directional, Vector3.Zero, SolarDirection, BaseSunColor * lightColor, BaseSunIntensity * lightIntensity * sunWeight, 0, 0, 0, 1, true);
             }
-            else
+            if (moonWeight > 0)
             {
                 var moonDirection = viewer.Settings.UseMSTSEnv ? viewer.World.MSTSSky.mstsskylunarDirection : viewer.World.Sky.LunarDirection;
-                AddLight(LightMode.Directional, Vector3.Zero, moonDirection, MoonGlow, MoonIntensity, 0, 0, 0, 1, true);
+                AddLight(LightMode.Directional, Vector3.Zero, moonDirection, BaseMoonGlow * lightColor, BaseMoonIntensity * lightIntensity * moonWeight, 0, 0, 0, 1, sunWeight <= 0);
             }
 
             if (SolarDirection.Y <= -0.05)
@@ -964,7 +1018,7 @@ namespace Orts.Viewer3D
         {
             if (RenderSurfaceMaterial != null)
             {
-                graphicsDevice.SetRenderTarget(RenderSurface);
+                graphicsDevice.SetRenderTargets(RenderSurface, BloomSurfaceMip0);
             }
 
             graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
@@ -991,6 +1045,9 @@ namespace Orts.Viewer3D
 
             if (RenderSurfaceMaterial != null)
             {
+                BloomMaterial.ApplyBloom(graphicsDevice, RenderSurface, BloomSurfaceMip0, BloomSurfaceMip1, BloomSurfaceMip2, BloomSurfaceMip3, BloomSurfaceMip4, BloomSurfaceMip5, RenderSurfaceBloomCombine);
+                (RenderSurface, RenderSurfaceBloomCombine) = (RenderSurfaceBloomCombine, RenderSurface);
+
                 graphicsDevice.SetRenderTarget(null);
                 graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
                 RenderSurfaceMaterial.SetState(graphicsDevice, null);
@@ -1002,6 +1059,7 @@ namespace Orts.Viewer3D
         void DrawSequences(GraphicsDevice graphicsDevice, ref Matrix projection, bool logging, Func<Material, bool> excludeMaterial)
         {
             SceneryShader?.SetPerFrame(ref XNACameraView, ref projection);
+            BloomShader?.SetPerFrame(Camera.Exposure);
             
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
             {

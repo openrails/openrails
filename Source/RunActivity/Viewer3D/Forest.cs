@@ -427,7 +427,7 @@ namespace Orts.Viewer3D
             shader.CurrentTechnique = Technique;
             shader.ImageTexture = TreeTexture;
             shader.ReferenceAlpha = 200;
-            shader.SetVegetationMaterial();
+            shader.SetVegetationMaterial(1);
             shader.HasNormals = true;
             shader.HasTangents = true;
 

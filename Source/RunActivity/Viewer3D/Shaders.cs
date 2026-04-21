@@ -139,7 +139,6 @@ namespace Orts.Viewer3D
         readonly EffectParameter lightsTexture;
 
         Vector3 _eyeVector;
-        Vector4 _zBias_Lighting;
         Vector3 _sunDirection;
         bool _imageTextureIsNight;
 
@@ -204,7 +203,7 @@ namespace Orts.Viewer3D
             }
         }
 
-        public void SetVegetationMaterial()
+        public void SetVegetationMaterial(float lightingDiffuse)
         {
             int vIn = Program.Simulator.Settings.DayAmbientLight;
 
@@ -213,7 +212,7 @@ namespace Orts.Viewer3D
 
             vegetationAmbientModifier.SetValue(_imageTextureIsNight
                 ? FullBrightness
-                : MathHelper.Lerp(ShadowBrightness, FullBrightness, _zBias_Lighting.Y));
+                : MathHelper.Lerp(ShadowBrightness, FullBrightness, lightingDiffuse));
         }
 
         public void SetShadowMap(Matrix[] shadowProjections, Texture2D textures, float[] limits)
@@ -246,7 +245,7 @@ namespace Orts.Viewer3D
 
         public float SignalLightIntensity { set { signalLightIntensity.SetValue(value); } }
 
-        public float Overcast { set { overcast.SetValue(new Vector2(value, value / 2)); } }
+        public Vector2 Overcast { set { overcast.SetValue(value); } }
 
         public Color Fog { set { fog.SetValue(value.ToVector3()); } }
 
@@ -379,6 +378,46 @@ namespace Orts.Viewer3D
             brdfLutTexture = Parameters["BrdfLutTexture"];
             numLights = Parameters["NumLights"];
             lightsTexture = Parameters["LightsTexture"];
+        }
+    }
+
+    [CallOnThread("Render")]
+    public class BloomShader : Shader
+    {
+        readonly EffectParameter bloomTexture;
+        readonly EffectParameter screenTexture;
+        readonly EffectParameter inverseResolution;
+        readonly EffectParameter threshold;
+        readonly EffectParameter radius;
+        readonly EffectParameter strength;
+        readonly EffectParameter streakLength;
+        readonly EffectParameter exposure;
+
+        public BloomShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "Bloom")
+        {
+            bloomTexture = Parameters["BloomTexture"];
+            screenTexture = Parameters["ScreenTexture"];
+            inverseResolution = Parameters["InverseResolution"];
+            threshold = Parameters["Threshold"];
+            radius = Parameters["Radius"];
+            strength = Parameters["Strength"];
+            streakLength = Parameters["StreakLength"];
+            exposure = Parameters["Exposure"];
+        }
+
+        public Texture2D BloomTexture { set => bloomTexture.SetValue(value); }
+        public Texture2D ScreenTexture { set => screenTexture.SetValue(value); }
+        Vector2 InverseResolutionField;
+        public Vector2 InverseResolution { get => InverseResolutionField; set => inverseResolution.SetValue(InverseResolutionField = value); }
+        public float Radius { set => radius.SetValue(value); }
+        public float Strength { set => strength.SetValue(value); }
+        public float StreakLength { set => streakLength.SetValue(value); }
+        public float Exposure { set => exposure.SetValue(value); }
+
+        public void SetPerFrame(float exposure)
+        {
+            Exposure = exposure;
         }
     }
 

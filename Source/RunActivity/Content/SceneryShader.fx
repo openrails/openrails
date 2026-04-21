@@ -40,7 +40,7 @@ cbuffer PerFramePS
     float4x4 ShadowMatrices[4]; // world -> light view -> light projection -> shadow map projection
     float4 ShadowMapLimit;
     float3 Fog; // linear color of fog
-    float2 Overcast; // lower saturation & brightness when overcast, x: FullBrightness, y: HalfBrightness
+    float2 Overcast; // lower saturation & brightness when overcast, x: overcast, y: ambient intensity
     float ZFar;
     float NumLights; // The number of the lights used
     float NightColorModifier;
@@ -235,6 +235,12 @@ struct VERTEX_OUTPUT_PBR
 	float4 Shadow       : TEXCOORD3; // Level9_1<shadow map texture and depth x, y, z> Level9_3<abs position x, y, z, w>
     float4 Tangent      : TEXCOORD4; // normal map tangents xyz, fog w
     float3 Bitangent    : TEXCOORD5; // normal map bitangents
+};
+
+struct PIXEL_OUTPUT
+{
+    float4 Color : SV_Target0;
+    float4 Bloom : SV_Target1;
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
@@ -798,7 +804,7 @@ float3 _PSGetIBLDiffuse(float3 diffuseColor, float3 n)
 	return diffuseLight * diffuseColor;
 }
 
-float4 PSImage(uniform bool ClampTexCoords, in VERTEX_OUTPUT In) : COLOR0
+PIXEL_OUTPUT PSImage(uniform bool ClampTexCoords, in VERTEX_OUTPUT In)
 {
 	float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
 
@@ -831,20 +837,24 @@ float4 PSImage(uniform bool ClampTexCoords, in VERTEX_OUTPUT In) : COLOR0
 #ifdef DEBUG_SHADOW_COLORS
 	_PSApplyShadowColor(litColor, In);
 #endif
-	return float4(litColor, Color.a);
+    
+    PIXEL_OUTPUT Out;
+    Out.Color = float4(litColor, Color.a);
+    Out.Bloom = float4(0, 0, 0, 1);
+	return Out;
 }
 
-float4 PSImageNoClamp(in VERTEX_OUTPUT In) : COLOR0
+PIXEL_OUTPUT PSImageNoClamp(in VERTEX_OUTPUT In)
 {
     return PSImage(false, In);
 }
 
-float4 PSImageClamp(in VERTEX_OUTPUT In) : COLOR0
+PIXEL_OUTPUT PSImageClamp(in VERTEX_OUTPUT In)
 {
     return PSImage(true, In);
 }
 
-float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
+PIXEL_OUTPUT PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace)
 {
     // We get isBackFace from SV_isFrontFace
 
@@ -872,7 +882,8 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
 	///////////////////////
 	
     float3 litColor;
-    
+    float3 emissiveContrib = float3(0, 0, 0);
+
     [branch]
     if (!LightingDiffuse)
     {
@@ -951,6 +962,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
         float3 specularEnvironmentR0;
         float3 specularEnvironmentR90;
         
+        [branch]
         if (SpecularFactor.w > 0)
         {
 #ifdef IOR_SPECULAR
@@ -989,6 +1001,9 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
         }
 
         litColor += _PSGetIBLDiffuse(diffuseColor, n);
+        // Ambient light modifier:
+        litColor *= Overcast.y;
+        
         // Occlusion doesn't apply to lights, so do it in advance
         litColor = lerp(litColor, litColor * occlusion, OcclusionFactor.x);
 
@@ -1000,6 +1015,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
         float clearcoatNdotV = NdotV;
         float clearcoatFactor = ClearcoatFactor;
 
+        [branch]
         if (ClearcoatFactor > 0)
         {
             clearcoatFactor *= ClearcoatTexture.Sample(ClearcoatSampler, _PSUV(In.TexCoords, TextureCoordinates2.x)).r;
@@ -1096,6 +1112,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
             float LdotH = clamp(dot(l, h), 0.0, 1.0);
             float VdotH = clamp(dot(v, h), 0.0, 1.0);
 
+            [branch]
             if (SpecularFactor.w > 0)
             {
                 fPow = pow5(clamp(1.0 - VdotH, 0.0, 1.0));
@@ -1114,6 +1131,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
             diffuseContrib += intensity * NdotL * (1.0 - F) * diffuseColor / M_PI * diffuseShadowFactor;
 
 #ifdef CLEARCOAT
+            [branch]
             if (ClearcoatFactor > 0)
             {
                 float clearcoatNdotL = clamp(dot(clearcoatNormal, l), 0.001, 1.0);
@@ -1132,10 +1150,14 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
             }
 #endif
         }
-        litColor += diffuseContrib + specContrib;
-        litColor += EmissiveTexture.Sample(EmissiveSampler, _PSUV(In.TexCoords, TextureCoordinates1.w)).rgb * EmissiveIorFactor.xyz;
+        [branch]
+        if (any(EmissiveIorFactor.xyz))
+            emissiveContrib = EmissiveTexture.Sample(EmissiveSampler, _PSUV(In.TexCoords, TextureCoordinates1.w)).rgb * EmissiveIorFactor.xyz;
+
+        litColor += diffuseContrib + specContrib + emissiveContrib;
 
 #ifdef CLEARCOAT
+        [branch]
         if (ClearcoatFactor > 0)
         {
             float3 clearcoatF = clearcoatF0 + (f90 - clearcoatF0) * pow5(clamp(1.0 - clearcoatNdotV, 0.0, 1.0));
@@ -1148,7 +1170,7 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
 	///////////////////////
 	// Contributions from the OpenRails environment:
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
-	litColor = lerp(litColor, _PSGetOvercastColor(Color, InGeneral), Overcast.x);
+	//litColor = lerp(litColor, _PSGetOvercastColor(Color, InGeneral), Overcast.x);
 	// And fogging is last.
 	_PSApplyFog(litColor, InGeneral);
 #ifdef DEBUG_SHADOW_COLORS
@@ -1156,13 +1178,15 @@ float4 PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace) : COLOR0
 #endif
 	///////////////////////
 
-	// Transform back to sRGB:
 	litColor = _PSLinearToSrgb(litColor);
 
-	return float4(litColor, fade);
+    PIXEL_OUTPUT Out;
+    Out.Color = float4(litColor, fade);
+    Out.Bloom = float4(emissiveContrib, 1);
+	return Out;
 }
 
-float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
+PIXEL_OUTPUT PSVegetation(in VERTEX_OUTPUT In)
 {
 	float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
     // Alpha testing:
@@ -1179,10 +1203,14 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
-	return float4(litColor, Color.a);
+
+    PIXEL_OUTPUT Out;
+    Out.Color = float4(litColor, Color.a);
+    Out.Bloom = float4(0, 0, 0, 1);
+    return Out;
 }
 
-float4 PSTerrain(in VERTEX_OUTPUT In) : COLOR0
+PIXEL_OUTPUT PSTerrain(in VERTEX_OUTPUT In)
 {
     float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
@@ -1202,10 +1230,14 @@ float4 PSTerrain(in VERTEX_OUTPUT In) : COLOR0
 #ifdef DEBUG_SHADOW_COLORS
 	_PSApplyShadowColor(litColor, In);
 #endif
-	return float4(litColor, Color.a);
+
+    PIXEL_OUTPUT Out;
+    Out.Color = float4(litColor, Color.a);
+    Out.Bloom = float4(0, 0, 0, 1);
+    return Out;
 }
 
-float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
+PIXEL_OUTPUT PSDarkShade(in VERTEX_OUTPUT In)
 {
     float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
     // Alpha testing:
@@ -1222,10 +1254,14 @@ float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
-	return float4(litColor, Color.a);
+
+    PIXEL_OUTPUT Out;
+    Out.Color = float4(litColor, Color.a);
+    Out.Bloom = float4(0, 0, 0, 1);
+    return Out;
 }
 
-float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
+PIXEL_OUTPUT PSHalfBright(in VERTEX_OUTPUT In)
 {
 	const float HalfShadowBrightness = 0.75;
 
@@ -1236,7 +1272,7 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 	float3 litColor = Color.rgb * HalfShadowBrightness;
 	// No specular effect for half-bright.
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
-	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), Overcast.y);
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), Overcast.x / 2);
 	// Night-time darkens everything, except night-time textures.
 	litColor *= HalfNightColorModifier;
 	// Headlights effect use original Color.
@@ -1244,10 +1280,14 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
-	return float4(litColor, Color.a);
+
+    PIXEL_OUTPUT Out;
+    Out.Color = float4(litColor, Color.a);
+    Out.Bloom = float4(0, 0, 0, 1);
+    return Out;
 }
 
-float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
+PIXEL_OUTPUT PSFullBright(in VERTEX_OUTPUT In)
 {
     float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
     // Alpha testing:
@@ -1262,10 +1302,14 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
-	return float4(litColor, Color.a);
+
+    PIXEL_OUTPUT Out;
+    Out.Color = float4(litColor, Color.a);
+    Out.Bloom = float4(0, 0, 0, 1);
+    return Out;
 }
 
-float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
+PIXEL_OUTPUT PSSignalLight(in VERTEX_OUTPUT In)
 {
     float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
     // Alpha testing:
@@ -1274,7 +1318,11 @@ float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 	// Apply signal coloring effect.
 	float3 litColor = lerp(Color.rgb, In.Color.rgb, Color.r);
 	// No specular effect, overcast effect, night-time darkening, headlights or fogging effect for signal lights.
-	return float4(litColor, Color.a * SignalLightIntensity);
+
+    PIXEL_OUTPUT Out;
+    Out.Color = float4(litColor, Color.a * SignalLightIntensity);
+    Out.Bloom = float4(0, 0, 0, 1);
+    return Out;
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
