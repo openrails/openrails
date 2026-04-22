@@ -1038,7 +1038,13 @@ namespace Orts.Viewer3D
                 DoubleSided = false,
                 AlphaMode = glTFLoader.Schema.Material.AlphaModeEnum.OPAQUE,
                 EmissiveFactor = new[] {0f, 0f, 0f},
-                Name = nameof(DefaultGltfMaterial)
+                Name = nameof(DefaultGltfMaterial),
+                PbrMetallicRoughness = new glTFLoader.Schema.MaterialPbrMetallicRoughness
+                {
+                    BaseColorFactor = new[] {1f, 1f, 1f, 1f},
+                    MetallicFactor = 0, // This is against the spec, but for a default material we don't need metalness
+                    RoughnessFactor = 1f
+                }
             };
             public static readonly glTFLoader.Schema.Sampler DefaultGltfSampler = new glTFLoader.Schema.Sampler
             {
