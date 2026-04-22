@@ -272,6 +272,9 @@ namespace Orts.Simulation.RollingStocks
                 DieselEngines[0].Initialize();
             }
 
+            EnginesRPM = new float[DieselEngines.Count];
+            EnginesPower = new float[DieselEngines.Count];
+            EnginesTorque = new float[DieselEngines.Count];
 
             // Check initialization of power values for diesel engines
             for (int i = 0; i < DieselEngines.Count; i++)
@@ -712,7 +715,14 @@ namespace Orts.Simulation.RollingStocks
         {
             EngineRPMRatio = (DieselEngines[0].RealRPM - DieselEngines[0].IdleRPM) / (DieselEngines[0].MaxRPM - DieselEngines[0].IdleRPM);
 
-            Variable1 = ThrottlePercent / 100.0f;
+            for (int i = 0; i < DieselEngines.Count; i++)
+            {
+                EnginesRPM[i] = DieselEngines[i].RealRPM;
+                EnginesPower[i] = DieselEngines[i].OutputPowerW / 1000.0f; // Convert to kW
+                EnginesTorque[i] = DieselEngines[i].OutputPowerW / (DieselEngines[i].RealRPM * (2.0f * (float)Math.PI / 60.0f));
+            }
+
+            Variable1[0] = ThrottlePercent / 100.0f;
             // else Variable1 = MotiveForceN / MaxForceN; // Gearbased, Variable1 proportional to motive force
             // allows for motor volume proportional to effort.
 

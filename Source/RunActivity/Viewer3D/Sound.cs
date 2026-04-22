@@ -1469,9 +1469,9 @@ namespace Orts.Viewer3D
                 {
                     float x = 0;
                     if (SoundSource.Car != null)
-                        x = ReadValue(MSTSStream.FrequencyCurve.Control, SoundSource.Car);
+                        x = ReadValue(MSTSStream.FrequencyCurve, SoundSource.Car);
                     else if (SoundSource.Viewer.Camera.AttachedCar != null)
-                        x = ReadValue(MSTSStream.FrequencyCurve.Control, (MSTSWagon)SoundSource.Viewer.Camera.AttachedCar);
+                        x = ReadValue(MSTSStream.FrequencyCurve, (MSTSWagon)SoundSource.Viewer.Camera.AttachedCar);
                     float y = Interpolate(x, MSTSStream.FrequencyCurve);
                     if (SoundSource.MstsMonoTreatment && ALSoundSource.MstsMonoTreatment)
                         y *= 2;
@@ -1488,9 +1488,9 @@ namespace Orts.Viewer3D
                 {
                     float x;
                     if (SoundSource.Car != null)
-                        x = ReadValue(MSTSStream.VolumeCurves[i].Control, SoundSource.Car);
+                        x = ReadValue(MSTSStream.VolumeCurves[i], SoundSource.Car);
                     else if (SoundSource.Viewer.Camera.AttachedCar != null)
-                        x = ReadValue(MSTSStream.VolumeCurves[i].Control, (MSTSWagon)SoundSource.Viewer.Camera.AttachedCar);
+                        x = ReadValue(MSTSStream.VolumeCurves[i], (MSTSWagon)SoundSource.Viewer.Camera.AttachedCar);
                     else
                         x = SoundSource.DistanceSquared;
 
@@ -1594,30 +1594,32 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Read a variable from the attached TrainCar data
         /// </summary>
-        /// <param name="control"></param>
+        /// <param name="curve"></param>
         /// <param name="car"></param>
         /// <returns></returns>
-        private float ReadValue(Orts.Formats.Msts.VolumeCurve.Controls control, MSTSWagon car)
+        private float ReadValue(VolumeCurve curve, MSTSWagon car)
         {
-            switch (control)
+            switch (curve.Control)
             {
-                case Orts.Formats.Msts.VolumeCurve.Controls.DistanceControlled: return SoundSource.DistanceSquared;
-                case Orts.Formats.Msts.VolumeCurve.Controls.SpeedControlled: return car.AbsSpeedMpS;
-                case Orts.Formats.Msts.VolumeCurve.Controls.Variable1Controlled: return car.Variable1;
-                case Orts.Formats.Msts.VolumeCurve.Controls.Variable1_2Controlled: return car.Variable1_2;
-                case Orts.Formats.Msts.VolumeCurve.Controls.Variable1_3Controlled: return car.Variable1_3;
-                case Orts.Formats.Msts.VolumeCurve.Controls.Variable1_4Controlled: return car.Variable1_4;
-                case Orts.Formats.Msts.VolumeCurve.Controls.Variable2BoosterControlled: return car.Variable2_Booster;
-                case Orts.Formats.Msts.VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
-                case Orts.Formats.Msts.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
-                case Orts.Formats.Msts.VolumeCurve.Controls.BrakeCylControlled: return car.BrakeSystem.GetCylPressurePSI();
-                case Orts.Formats.Msts.VolumeCurve.Controls.CurveForceControlled: return car.CurveForceNFiltered;
-                case Orts.Formats.Msts.VolumeCurve.Controls.AngleofAttackControlled: return car.CurveSquealAoAmRadFiltered;
-                case Orts.Formats.Msts.VolumeCurve.Controls.CarFrictionControlled: return car.Train.WagonCoefficientFriction;
-                case Orts.Formats.Msts.VolumeCurve.Controls.WheelRpMControlled: var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS / (2 * Math.PI * car.WheelRadiusM))); return wheelRpM;
-                case Orts.Formats.Msts.VolumeCurve.Controls.CarDistanceTrackControlled: return car.CarTrackControlledDistanceM;
-                case Orts.Formats.Msts.VolumeCurve.Controls.CarTunnelDistanceControlled: return car.CarTunnelDistanceM;
-                case Orts.Formats.Msts.VolumeCurve.Controls.BackPressureControlled: return car.BackPressurePSIG;
+                case VolumeCurve.Controls.DistanceControlled: return SoundSource.DistanceSquared;
+                case VolumeCurve.Controls.SpeedControlled: return car.AbsSpeedMpS;
+                case VolumeCurve.Controls.Variable1Controlled: return car.Variable1.ElementAtOrDefault(curve.SourceID);
+                case VolumeCurve.Controls.Variable2BoosterControlled: return car.Variable2_Booster;
+                case VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
+                case VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
+                case VolumeCurve.Controls.BrakeCylControlled: return car.BrakeSystem.GetCylPressurePSI();
+                case VolumeCurve.Controls.CurveForceControlled: return car.CurveForceNFiltered;
+                case VolumeCurve.Controls.AngleofAttackControlled: return car.CurveSquealAoAmRadFiltered;
+                case VolumeCurve.Controls.CarFrictionControlled: return car.Train.WagonCoefficientFriction;
+                case VolumeCurve.Controls.WheelRpMControlled: var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS / (2 * Math.PI * car.WheelRadiusM))); return wheelRpM;
+                case VolumeCurve.Controls.CarDistanceTrackControlled: return car.CarTrackControlledDistanceM;
+                case VolumeCurve.Controls.CarTunnelDistanceControlled: return car.CarTunnelDistanceM;
+                case VolumeCurve.Controls.BackPressureControlled: return car.BackPressurePSIG;
+                case VolumeCurve.Controls.TractiveEffortControlled: return car.MotiveForceN / 1000.0f * Math.Sign(car.WheelSpeedMpS); // Convert to kN, ensure positive for traction, negative for dynamics
+                case VolumeCurve.Controls.TractivePowerControlled: return car.MotiveForceN * car.WheelSpeedMpS / 1000.0f; // Convert to kW
+                case VolumeCurve.Controls.EngineRPMControlled: return car.EnginesRPM.ElementAtOrDefault(curve.SourceID);
+                case VolumeCurve.Controls.EnginePowerControlled: return car.EnginesPower.ElementAtOrDefault(curve.SourceID);
+                case VolumeCurve.Controls.EngineTorqueControlled: return car.EnginesTorque.ElementAtOrDefault(curve.SourceID);
                 default: return 0;
             }
         }
@@ -2590,16 +2592,22 @@ namespace Orts.Viewer3D
 
             switch (SMS.Event)
             {
-                case Orts.Formats.Msts.Variable_Trigger.Events.Distance_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Speed_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_2_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_3_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_4_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:                
+                case Variable_Trigger.Events.Distance_Dec_Past:
+                case Variable_Trigger.Events.Speed_Dec_Past:
+                case Variable_Trigger.Events.Variable1_Dec_Past:
+                case Variable_Trigger.Events.Variable2_Dec_Past:
+                case Variable_Trigger.Events.Variable3_Dec_Past:
+                case Variable_Trigger.Events.BrakeCyl_Dec_Past:
+                case Variable_Trigger.Events.CurveForce_Dec_Past:
+                case Variable_Trigger.Events.AngleofAttack_Dec_Past:
+                case Variable_Trigger.Events.WheelRPM_Dec_Past:
+                case Variable_Trigger.Events.ConcreteSleepers_Dec_Past:
+                case Variable_Trigger.Events.CarInTunnel_Dec_Past:
+                case Variable_Trigger.Events.TractiveEffort_Dec_Past:
+                case Variable_Trigger.Events.TractivePower_Dec_Past:
+                case Variable_Trigger.Events.EngineRPM_Dec_Past:
+                case Variable_Trigger.Events.EnginePower_Dec_Past:
+                case Variable_Trigger.Events.EngineTorque_Dec_Past:
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
@@ -2607,20 +2615,22 @@ namespace Orts.Viewer3D
                             triggered = true;
                     }
                     break;
-                case Orts.Formats.Msts.Variable_Trigger.Events.Distance_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Speed_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_2_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_3_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_4_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.WheelRPM_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:                
+                case Variable_Trigger.Events.Distance_Inc_Past:
+                case Variable_Trigger.Events.Speed_Inc_Past:
+                case Variable_Trigger.Events.Variable1_Inc_Past:
+                case Variable_Trigger.Events.Variable2_Inc_Past:
+                case Variable_Trigger.Events.Variable3_Inc_Past:
+                case Variable_Trigger.Events.BrakeCyl_Inc_Past:
+                case Variable_Trigger.Events.CurveForce_Inc_Past:
+                case Variable_Trigger.Events.AngleofAttack_Inc_Past:
+                case Variable_Trigger.Events.WheelRPM_Inc_Past:
+                case Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
+                case Variable_Trigger.Events.CarInTunnel_Inc_Past:
+                case Variable_Trigger.Events.TractiveEffort_Inc_Past:
+                case Variable_Trigger.Events.TractivePower_Inc_Past:
+                case Variable_Trigger.Events.EngineRPM_Inc_Past:
+                case Variable_Trigger.Events.EnginePower_Inc_Past:
+                case Variable_Trigger.Events.EngineTorque_Inc_Past:
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
@@ -2674,50 +2684,56 @@ namespace Orts.Viewer3D
         {
             switch (SMS.Event)
             {
-                case Orts.Formats.Msts.Variable_Trigger.Events.Distance_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Distance_Inc_Past:
+                case Variable_Trigger.Events.Distance_Dec_Past:
+                case Variable_Trigger.Events.Distance_Inc_Past:
                     return SoundStream.SoundSource.DistanceSquared;
-                case Orts.Formats.Msts.Variable_Trigger.Events.Speed_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Speed_Inc_Past:
+                case Variable_Trigger.Events.Speed_Dec_Past:
+                case Variable_Trigger.Events.Speed_Inc_Past:
                     return car.AbsSpeedMpS;
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Inc_Past:
-                    return car.Variable1;
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_2_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_2_Inc_Past:
-                    return car.Variable1_2;
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_3_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_3_Inc_Past:
-                    return car.Variable1_3;
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_4_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_4_Inc_Past:
-                    return car.Variable1_4;
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Inc_Past:
+                case Variable_Trigger.Events.Variable1_Dec_Past:
+                case Variable_Trigger.Events.Variable1_Inc_Past:
+                    return car.Variable1.ElementAtOrDefault(SMS.SourceID);
+                case Variable_Trigger.Events.Variable2_Dec_Past:
+                case Variable_Trigger.Events.Variable2_Inc_Past:
                     return car.Variable2;
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Inc_Past:
+                case Variable_Trigger.Events.Variable3_Dec_Past:
+                case Variable_Trigger.Events.Variable3_Inc_Past:
                     return car.Variable3;
-                case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Inc_Past:
+                case Variable_Trigger.Events.BrakeCyl_Dec_Past:
+                case Variable_Trigger.Events.BrakeCyl_Inc_Past:
                     return car.BrakeSystem.GetCylPressurePSI();
-                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
+                case Variable_Trigger.Events.CurveForce_Dec_Past:
+                case Variable_Trigger.Events.CurveForce_Inc_Past:
                     return car.CurveForceNFiltered;
-                case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Inc_Past:
+                case Variable_Trigger.Events.AngleofAttack_Dec_Past:
+                case Variable_Trigger.Events.AngleofAttack_Inc_Past:
                     return car.CurveSquealAoAmRadFiltered;
-                case Orts.Formats.Msts.Variable_Trigger.Events.WheelRpM_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.WheelRPM_Inc_Past:
+                case Variable_Trigger.Events.WheelRPM_Dec_Past:
+                case Variable_Trigger.Events.WheelRPM_Inc_Past:
                     var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS /
                     (2 * Math.PI * car.WheelRadiusM)));
                     return wheelRpM;
-                case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
+                case Variable_Trigger.Events.ConcreteSleepers_Dec_Past:
+                case Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
                     return SharedSMSFileManager.ConcreteSleepers;
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
+                case Variable_Trigger.Events.CarInTunnel_Dec_Past:
+                case Variable_Trigger.Events.CarInTunnel_Inc_Past:
                     return car.TrackSoundInTunnelTriggered;
+                case Variable_Trigger.Events.TractiveEffort_Inc_Past:
+                case Variable_Trigger.Events.TractiveEffort_Dec_Past:
+                    return car.MotiveForceN / 1000.0f * Math.Sign(car.WheelSpeedMpS); // Convert to kN, ensure positive for traction, negative for dynamics
+                case Variable_Trigger.Events.TractivePower_Inc_Past:
+                case Variable_Trigger.Events.TractivePower_Dec_Past:
+                    return car.MotiveForceN * car.WheelSpeedMpS / 1000.0f; // Convert to kW
+                case Variable_Trigger.Events.EngineRPM_Inc_Past:
+                case Variable_Trigger.Events.EngineRPM_Dec_Past:
+                    return car.EnginesRPM.ElementAtOrDefault(SMS.SourceID);
+                case Variable_Trigger.Events.EnginePower_Inc_Past:
+                case Variable_Trigger.Events.EnginePower_Dec_Past:
+                    return car.EnginesPower.ElementAtOrDefault(SMS.SourceID);
+                case Variable_Trigger.Events.EngineTorque_Inc_Past:
+                case Variable_Trigger.Events.EngineTorque_Dec_Past:
+                    return car.EnginesTorque.ElementAtOrDefault(SMS.SourceID);
                 default:
                     return 0;
             }

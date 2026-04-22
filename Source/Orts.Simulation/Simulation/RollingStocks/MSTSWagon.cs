@@ -114,15 +114,14 @@ namespace Orts.Simulation.RollingStocks
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
         float TempMassDiffRatio;
 
-        // simulation parameters
-        public float Variable1;  // used to convey status to soundsource
+        // sound system variables
+        public float[] Variable1 = new float[1];
         public float Variable2;
-        public float Variable3;
-        // additional engines
-        public float Variable1_2;
-        public float Variable1_3;
-        public float Variable1_4;
         public float Variable2_Booster;
+        public float Variable3;
+        public float[] EnginesRPM = new float[1];
+        public float[] EnginesPower = new float[1];
+        public float[] EnginesTorque = new float[1];
 
         // wag file data
         public string MainShapeFileName;
@@ -1951,13 +1950,21 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
-            outf.Write(Variable1);
+            outf.Write(Variable1.Length);
+            foreach (float v1 in Variable1)
+                outf.Write(v1);
             outf.Write(Variable2);
             outf.Write(Variable2_Booster);
             outf.Write(Variable3);
-            outf.Write(Variable1_2);
-            outf.Write(Variable1_3);
-            outf.Write(Variable1_4);
+            outf.Write(EnginesRPM.Length);
+            foreach (float rpm in EnginesRPM)
+                outf.Write(rpm);
+            outf.Write(EnginesPower.Length);
+            foreach (float power in EnginesPower)
+                outf.Write(power);
+            outf.Write(EnginesTorque.Length);
+            foreach (float torque in EnginesTorque)
+                outf.Write(torque);
             outf.Write(Friction0N);
             outf.Write(DavisAN.Value);
             outf.Write(DavisBNSpM.Value);
@@ -2010,13 +2017,25 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Restore(BinaryReader inf)
         {
-            Variable1 = inf.ReadSingle();
+            int v1Count = inf.ReadInt32();
+            Variable1 = new float[v1Count];
+            for (int v = 0; v < v1Count; v++)
+                Variable1[v] = inf.ReadSingle();
             Variable2 = inf.ReadSingle();
             Variable2_Booster = inf.ReadSingle();
             Variable3 = inf.ReadSingle();
-            Variable1_2 = inf.ReadSingle();
-            Variable1_3 = inf.ReadSingle();
-            Variable1_4 = inf.ReadSingle();
+            int rpmCount = inf.ReadInt32();
+            EnginesRPM = new float[rpmCount];
+            for (int r = 0; r < rpmCount; r++)
+                EnginesRPM[r] = inf.ReadSingle();
+            int powerCount = inf.ReadInt32();
+            EnginesPower = new float[powerCount];
+            for (int p = 0; p < powerCount; p++)
+                EnginesPower[p] = inf.ReadSingle();
+            int torqueCount = inf.ReadInt32();
+            EnginesTorque = new float[torqueCount];
+            for (int t = 0; t < torqueCount; t++)
+                EnginesTorque[t] = inf.ReadSingle();
             Friction0N = inf.ReadSingle();
             DavisAN = inf.ReadSingle();
             DavisBNSpM = inf.ReadSingle();

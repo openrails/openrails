@@ -15,13 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -77,7 +71,33 @@ namespace Orts.Formats.Msts
                 });
         }
 
-	} // class SMSFile
+        /// <summary>
+        /// Attemps to extract an integer index contained in the middle of a given string by
+        /// removing specified text from the beginning and end of the string to isolate the
+        /// index in the middle. Returns 0 if the value in the middle could not be interpreted
+        /// as a number.
+        /// </summary>
+        /// <param name="main">The complete string to return an integer from.</param>
+        /// <param name="beginning">The (case-insensitive) part of the string that occurs before the index.</param>
+        /// <param name="end">The (case-insensitive) part of the string that occurs after the index.</param>
+        /// <returns>The integer value contained within the middle of the string,
+        /// or 0 if no such value could be found.</returns>
+        public static int GetIndexInString(string main, string beginning, string end)
+        {
+            // Replace the specified beginning and end strings inside the main string with empty space
+            // Resulting string should contain only the desired index, nothing else
+            string indexStr = main.ToLower().Replace(beginning.ToLower(), "").Replace(end.ToLower(), "");
+
+            // If index can't be determined, assume the user wanted the first thing
+            if (!int.TryParse(indexStr, out int index))
+                index = 1;
+
+            index--; // User input will be 1-indexed, but code needs this value as a 0-index
+
+            return index;
+        }
+
+    } // class SMSFile
 
     public class Tr_SMS
     {
@@ -244,10 +264,33 @@ namespace Orts.Formats.Msts
 
     public class VolumeCurve
     {
-        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled, WheelRpMControlled, CarDistanceTrackControlled, CarTunnelDistanceControlled, BackPressureControlled };
+        public enum Controls
+        {
+            None,
+            DistanceControlled,
+            SpeedControlled,
+            Variable1Controlled,
+            Variable2Controlled,
+            Variable2BoosterControlled,
+            Variable3Controlled,
+            BrakeCylControlled,
+            CurveForceControlled,
+            AngleofAttackControlled,
+            CarFrictionControlled,
+            WheelRpMControlled,
+            CarDistanceTrackControlled,
+            CarTunnelDistanceControlled,
+            BackPressureControlled,
+            TractiveEffortControlled,
+            TractivePowerControlled,
+            EngineRPMControlled,
+            EnginePowerControlled,
+            EngineTorqueControlled
+        };
 
         public Controls Control = Controls.None;
         public float Granularity = 1.0f;
+        public int SourceID = -1;
 
         public CurvePoint[] CurvePoints;
 
@@ -259,10 +302,7 @@ namespace Orts.Formats.Msts
             {
                 case "distancecontrolled": Control = Controls.DistanceControlled; break;
                 case "speedcontrolled": Control = Controls.SpeedControlled; break;
-                case "variable1controlled": Control = Controls.Variable1Controlled; break;
-                case "variable1_2controlled": Control = Controls.Variable1_2Controlled; break;
-                case "variable1_3controlled": Control = Controls.Variable1_3Controlled; break;
-                case "variable1_4controlled": Control = Controls.Variable1_4Controlled; break;
+                case "variable1controlled": Control = Controls.Variable1Controlled; SourceID = 0; break;
                 case "variable2controlled": Control = Controls.Variable2Controlled; break;
                 case "variable2boostercontrolled": Control = Controls.Variable2BoosterControlled; break;
                 case "variable3controlled": Control = Controls.Variable3Controlled; break;
@@ -274,7 +314,30 @@ namespace Orts.Formats.Msts
                 case "cardistancetrackcontrolled": Control = Controls.CarDistanceTrackControlled; break;
                 case "cartunneldistancecontrolled": Control = Controls.CarTunnelDistanceControlled; break;
                 case "backpressurecontrolled": Control = Controls.BackPressureControlled; break;
-                default: STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type); stf.SkipRestOfBlock(); return;
+                case "tractiveeffortcontrolled": Control = Controls.TractiveEffortControlled; break;
+                case "tractivepowercontrolled": Control = Controls.TractivePowerControlled; break;
+                // Below are special cases for curve controls that can accept arbitrary syntax
+                case string s when s.StartsWith("variable1_") && s.EndsWith("controlled"): // Variable1_[X]Controlled, eg: Variable1_5Controlled
+                    Control = Controls.Variable1Controlled;
+                    SourceID = SoundManagmentFile.GetIndexInString(type, "variable1_", "controlled");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("rpmcontrolled"): // Engine[X]RPMControlled, eg: Engine5RPMControlled
+                    Control = Controls.EngineRPMControlled;
+                    SourceID = SoundManagmentFile.GetIndexInString(type, "engine", "rpmcontrolled");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("powercontrolled"): // Engine[X]PowerControlled, eg: Engine5PowerControlled
+                    Control = Controls.EnginePowerControlled;
+                    SourceID = SoundManagmentFile.GetIndexInString(type, "engine", "powercontrolled");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("torquecontrolled"): // Engine[X]TorqueControlled, eg: Engine5TorqueControlled
+                    Control = Controls.EngineTorqueControlled;
+                    SourceID = SoundManagmentFile.GetIndexInString(type, "engine", "torquecontrolled");
+                    break;
+
+                default:
+                    STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type);
+                    stf.SkipRestOfBlock();
+                    return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("granularity", ()=>{ Granularity = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
@@ -409,12 +472,45 @@ namespace Orts.Formats.Msts
 
     public class Variable_Trigger : Trigger
     {
-        public enum Events { Speed_Inc_Past, Speed_Dec_Past, Distance_Inc_Past, Distance_Dec_Past,
-            Variable1_Inc_Past, Variable1_2_Inc_Past, Variable1_3_Inc_Past, Variable1_4_Inc_Past, Variable1_Dec_Past, Variable1_2_Dec_Past, Variable1_3_Dec_Past, Variable1_4_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past, AngleofAttack_Inc_Past, AngleofAttack_Dec_Past, WheelRpM_Dec_Past, WheelRPM_Inc_Past, ConcreteSleepers_Inc_Past, ConcreteSleepers_Dec_Past, CarInTunnel_Inc_Past, CarInTunnel_Dec_Past
+        public enum Events
+        {
+            Speed_Inc_Past,
+            Speed_Dec_Past,
+            Distance_Inc_Past,
+            Distance_Dec_Past,
+            Variable1_Inc_Past,
+            Variable1_Dec_Past,
+            Variable2_Inc_Past,
+            Variable2_Dec_Past,
+            Variable3_Inc_Past,
+            Variable3_Dec_Past,
+            BrakeCyl_Inc_Past,
+            BrakeCyl_Dec_Past,
+            CurveForce_Inc_Past,
+            CurveForce_Dec_Past,
+            AngleofAttack_Inc_Past,
+            AngleofAttack_Dec_Past,
+            WheelRPM_Inc_Past,
+            WheelRPM_Dec_Past,
+            ConcreteSleepers_Inc_Past,
+            ConcreteSleepers_Dec_Past,
+            CarInTunnel_Inc_Past,
+            CarInTunnel_Dec_Past,
+            TractiveEffort_Inc_Past,
+            TractiveEffort_Dec_Past,
+            TractivePower_Inc_Past,
+            TractivePower_Dec_Past,
+            EngineRPM_Inc_Past,
+            EngineRPM_Dec_Past,
+            EnginePower_Inc_Past,
+            EnginePower_Dec_Past,
+            EngineTorque_Inc_Past,
+            EngineTorque_Dec_Past
         };
 
         public Events Event;
         public float Threshold;
+        public int SourceID = -1;
 
         public Variable_Trigger(STFReader f)
         {
@@ -440,14 +536,8 @@ namespace Orts.Formats.Msts
                         Threshold = Threshold * Threshold;
                         break;
                     }
-                case "variable1_inc_past": Event = Events.Variable1_Inc_Past; break;
-                case "variable1_2_inc_past": Event = Events.Variable1_2_Inc_Past; break;
-                case "variable1_3_inc_past": Event = Events.Variable1_3_Inc_Past; break;
-                case "variable1_4_inc_past": Event = Events.Variable1_4_Inc_Past; break;
-                case "variable1_dec_past": Event = Events.Variable1_Dec_Past; break;
-                case "variable1_2_dec_past": Event = Events.Variable1_2_Dec_Past; break;
-                case "variable1_3_dec_past": Event = Events.Variable1_3_Dec_Past; break;
-                case "variable1_4_dec_past": Event = Events.Variable1_4_Dec_Past; break;
+                case "variable1_inc_past": Event = Events.Variable1_Inc_Past; SourceID = 0; break;
+                case "variable1_dec_past": Event = Events.Variable1_Dec_Past; SourceID = 0; break;
                 case "variable2_inc_past": Event = Events.Variable2_Inc_Past; break;
                 case "variable2_dec_past": Event = Events.Variable2_Dec_Past; break;
                 case "variable3_inc_past": Event = Events.Variable3_Inc_Past; break;
@@ -459,11 +549,48 @@ namespace Orts.Formats.Msts
                 case "angleofattack_inc_past": Event = Events.AngleofAttack_Inc_Past; break;
                 case "angleofattack_dec_past": Event = Events.AngleofAttack_Dec_Past; break;
                 case "wheelrpm_inc_past": Event = Events.WheelRPM_Inc_Past; break;
-                case "wheelrpm_dec_past": Event = Events.WheelRpM_Dec_Past; break;
+                case "wheelrpm_dec_past": Event = Events.WheelRPM_Dec_Past; break;
                 case "concretesleepers_inc_past": Event = Events.ConcreteSleepers_Inc_Past; break;
                 case "concretesleepers_dec_past": Event = Events.ConcreteSleepers_Dec_Past; break;
                 case "carintunnel_inc_past": Event = Events.CarInTunnel_Inc_Past; break;
                 case "carintunnel_dec_past": Event = Events.CarInTunnel_Dec_Past; break;
+                case "tractiveeffort_inc_past": Event = Events.TractiveEffort_Inc_Past; break;
+                case "tractiveeffort_dec_past": Event = Events.TractiveEffort_Dec_Past; break;
+                case "tractivepower_inc_past": Event = Events.TractivePower_Inc_Past; break;
+                case "tractivepower_dec_past": Event = Events.TractivePower_Dec_Past; break;
+                // Below are special cases for triggers that can accept arbitrary syntax
+                case string s when s.StartsWith("variable1_") && s.EndsWith("_inc_past"): // Variable1_[X]_Inc_Past, eg: Variable1_5_Inc_Past
+                    Event = Events.Variable1_Inc_Past;
+                    SourceID = SoundManagmentFile.GetIndexInString(eventString, "variable1_", "_inc_past");
+                    break;
+                case string s when s.StartsWith("variable1_") && s.EndsWith("_dec_past"): // Variable1_[X]_Dec_Past, eg: Variable1_5_Dec_Past
+                    Event = Events.Variable1_Dec_Past;
+                    SourceID = SoundManagmentFile.GetIndexInString(eventString, "variable1_", "_dec_past");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("rpm_inc_past"): // Engine[X]RPM_Inc_Past, eg: Engine5RPM_Inc_Past
+                    Event = Events.EngineRPM_Inc_Past;
+                    SourceID = SoundManagmentFile.GetIndexInString(eventString, "engine", "rpm_inc_past");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("rpm_dec_past"): // Engine[X]RPM_Dec_Past, eg: Engine5RPM_Dec_Past
+                    Event = Events.EngineRPM_Dec_Past;
+                    SourceID = SoundManagmentFile.GetIndexInString(eventString, "engine", "rpm_dec_past");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("power_inc_past"): // Engine[X]Power_Inc_Past, eg: Engine5Power_Inc_Past
+                    Event = Events.EnginePower_Inc_Past;
+                    SourceID = SoundManagmentFile.GetIndexInString(eventString, "engine", "power_inc_past");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("power_dec_past"): // Engine[X]Power_Dec_Past, eg: Engine5Power_Dec_Past
+                    Event = Events.EnginePower_Dec_Past;
+                    SourceID = SoundManagmentFile.GetIndexInString(eventString, "engine", "power_dec_past");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("torque_inc_past"): // Engine[X]Torque_Inc_Past, eg: Engine5Torque_Inc_Past
+                    Event = Events.EngineTorque_Inc_Past;
+                    SourceID = SoundManagmentFile.GetIndexInString(eventString, "engine", "torque_inc_past");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("torque_dec_past"): // Engine[X]Torque_Dec_Past, eg: Engine5Torque_Dec_Past
+                    Event = Events.EngineTorque_Dec_Past;
+                    SourceID = SoundManagmentFile.GetIndexInString(eventString, "engine", "torque_dec_past");
+                    break;
             }
 
             while (!f.EndOfBlock())
