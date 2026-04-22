@@ -17,12 +17,12 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Orts.Simulation.RollingStocks;
-using ORTS.Common;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using Orts.Formats.Msts;
+using Orts.Simulation.RollingStocks;
+using ORTS.Common;
 
 namespace Orts.Viewer3D.Debugging
 {
@@ -32,9 +32,8 @@ namespace Orts.Viewer3D.Debugging
 
         private Timer UITimer;
         private double lastUpdateTime = 0;
+        private int UpdateCounter = -1;
 
-        private List<SoundSource> ActiveSoundSources;
-        private List<SoundSource> InactiveSoundSources;
         private SoundSource selectedSoundSource;
 
         public SoundDebugForm(Viewer viewer)
@@ -48,9 +47,6 @@ namespace Orts.Viewer3D.Debugging
 
             Viewer = viewer;
 
-            ActiveSoundSources = new List<SoundSource>();
-            InactiveSoundSources = new List<SoundSource>();
-
             //foreach (string eventName in Enum.GetNames(typeof(Event)))
             //    discreteTriggersList.Items.Add(eventName);
             //discreteTriggersList.SelectedIndex = 0;
@@ -58,15 +54,27 @@ namespace Orts.Viewer3D.Debugging
             // initialise the timer used to handle user input
             UITimer = new Timer();
             UITimer.Interval = 100;
-            UITimer.Tick += new System.EventHandler(UITimer_Tick);
+            UITimer.Tick += new EventHandler(UITimer_Tick);
             UITimer.Start();
         }
 
         void UITimer_Tick(object sender, EventArgs e)
         {
             Visible = Viewer.SoundDebugFormEnabled;
-            if (!Visible || Program.Simulator.GameTime - lastUpdateTime < 0.1) return;
-            lastUpdateTime = Program.Simulator.GameTime;
+            if (!Visible)
+            {
+                // Reset the tree when closing the window
+                if (activeSoundList.Nodes.Count > 0)
+                    activeSoundList.Nodes.Clear();
+                if (inactiveSoundList.Nodes.Count > 0)
+                    inactiveSoundList.Nodes.Clear();
+                UpdateCounter = -1;
+
+                return;
+            }
+            if (Program.Viewer.RealTime - lastUpdateTime < 0.1)
+                return;
+            lastUpdateTime = Program.Viewer.RealTime;
 
             UpdateContent();
         }
@@ -80,64 +88,94 @@ namespace Orts.Viewer3D.Debugging
             activeSoundList.BeginUpdate();
             inactiveSoundList.BeginUpdate();
 
-            for (int i = 0; i < activeSoundList.Nodes.Count; i++)
-                activeSoundList.Nodes[i].Nodes.Clear();
-            for (int i = 0; i < inactiveSoundList.Nodes.Count; i++)
-                inactiveSoundList.Nodes[i].Nodes.Clear();
+            int sourceIndex = 0;
 
             foreach (var src in soundSources.Values)
+            {
                 foreach (var ssb in src)
                 {
-                    if (ssb is SoundSource)
+                    if (ssb is SoundSource ss)
                     {
-                        var ss = (SoundSource)ssb;
+                        // Lag reduction: Only update 1/10th of the sound streams each update,
+                        // except on the first update, and except for the selected sound source
+                        sourceIndex++;
+                        if (UpdateCounter > -1 && (sourceIndex + UpdateCounter) % 10 != 0 && ss != selectedSoundSource)
+                            continue;
+
                         TreeNode node;
 
-                        var nodeString = String.Format("{0}: {1} ", ss.Car != null ? ss.Car.UiD.ToString() : "-", ss.SMSFileName);
-                        var nodeKey = nodeString + ss.GetHashCode().ToString();
+                        string nodeString = String.Format("{0}: {1} ", ss.Car != null ? ss.Car.UiD.ToString() : "-", ss.SMSFileName);
+                        string nodeKey = nodeString + ss.GetHashCode().ToString();
 
-                        if (ss.Active)
+                        if (ss.SoundStreams.Count > 0)
                         {
-                            int index = activeSoundList.Nodes.IndexOfKey(nodeKey);
-                            if (index == -1)
+                            if (ss.Active)
                             {
-                                activeSoundList.Nodes.Add(nodeKey, nodeString);
-                                index = activeSoundList.Nodes.IndexOfKey(nodeKey);
+                                int index = activeSoundList.Nodes.IndexOfKey(nodeKey);
+                                if (index == -1)
+                                {
+                                    node = activeSoundList.Nodes.Add(nodeKey, nodeString);
+                                    node.Tag = ss;
+                                }
+                                else
+                                    node = activeSoundList.Nodes[index];
+
+                                inactiveSoundList.Nodes.RemoveByKey(nodeKey);
                             }
-                            node = activeSoundList.Nodes[index];
+                            else
+                            {
+                                int index = inactiveSoundList.Nodes.IndexOfKey(nodeKey);
+                                if (index == -1)
+                                {
+                                    node = inactiveSoundList.Nodes.Add(nodeKey, nodeString);
+                                    node.Tag = ss;
+                                }
+                                else
+                                    node = inactiveSoundList.Nodes[index];
+
+                                activeSoundList.Nodes.RemoveByKey(nodeKey);
+                            }
+
+                            int activeSS = 0;
+                            int streamIndex = 0;
+                            foreach (var soundStream in ss.SoundStreams)
+                            {
+                                string[] playingData = soundStream.ALSoundSource.GetPlayingData();
+                                if (playingData[0] != "-1")
+                                    activeSS++;
+                                if (node.IsExpanded || node.Nodes.Count < ss.SoundStreams.Count)
+                                {
+                                    // Only update sound stream nodes one time unless main node is expanded
+                                    string streamString = String.Format("{0} {1} (cue: {2}) {3}", playingData);
+                                    string streamKey = streamIndex.ToString() + soundStream.GetHashCode().ToString();
+
+                                    TreeNode streamNode;
+
+                                    int streamNodeIndex = node.Nodes.IndexOfKey(streamKey);
+                                    if (streamNodeIndex == -1)
+                                    {
+                                        streamNode = node.Nodes.Add(streamKey, streamString);
+                                        streamNode.Tag = soundStream;
+                                    }
+                                    else
+                                    {
+                                        streamNode = node.Nodes[streamNodeIndex];
+                                        streamNode.Text = streamString;
+                                    }
+                                }
+                                streamIndex++;
+                            }
+                            node.Text = string.Format("{0}({1}{2}{3})", node.Text.Split('(')[0], activeSS, @"@", ss.SoundStreams.Count);
                         }
                         else
                         {
-                            int index = inactiveSoundList.Nodes.IndexOfKey(nodeKey);
-                            if (index == -1)
-                            {
-                                inactiveSoundList.Nodes.Add(nodeKey, nodeString);
-                                index = inactiveSoundList.Nodes.IndexOfKey(nodeKey);
-                            }
-                            node = inactiveSoundList.Nodes[index];
+                            // Don't list sound sources with no sound streams
+                            activeSoundList.Nodes.RemoveByKey(nodeKey);
+                            inactiveSoundList.Nodes.RemoveByKey(nodeKey);
                         }
-                        node.Tag = ss;
-
-                        var activeSS = 0;
-                        foreach (var soundStream in ss.SoundStreams)
-                        {
-                            var playingData = soundStream.ALSoundSource.GetPlayingData();
-                            if (playingData[0] != "-1")
-                                activeSS++;
-                            var streamString = String.Format("{0} {1} (cue: {2}) {3}", playingData);
-                            var streamKey = streamString + soundStream.GetHashCode().ToString();
-                            node.Nodes.Add(streamKey, streamString);
-                            node.Nodes[streamKey].Tag = soundStream;
-                        }
-                        node.Text = string.Format("{0}({1}{2}", node.Text.Split('(')[0], activeSS, @"@");
-                    }
-                    else
-                    {
                     }
                 }
-
-            CleanUp(activeSoundList.Nodes);
-            CleanUp(inactiveSoundList.Nodes);
+            }
 
             // Fill selected node's data
             var selectedNode = activeSoundList.SelectedNode;
@@ -173,69 +211,124 @@ namespace Orts.Viewer3D.Debugging
                     OpenAL.alGetListener3f(OpenAL.AL_POSITION, out lpos[0], out lpos[1], out lpos[2]);
                     for (var j = 0; j < 3; j++)
                         pos[j] -= lpos[j];
-                    distance.Text = Math.Sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]).ToString("F1");
+                    double squareDistance = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
+
+                    distance.Text = Math.Sqrt(squareDistance).ToString("0.0");
+                    distanceSquared.Text = squareDistance.ToString("0");
                 }
                 else
                 {
                     distance.Text = "-";
+                    distanceSquared.Text = "-";
                 }
 
-                int relative;
-                OpenAL.alGetSourcei(soundSourceID, OpenAL.AL_SOURCE_RELATIVE, out relative);
+                OpenAL.alGetSourcei(soundSourceID, OpenAL.AL_SOURCE_RELATIVE, out int relative);
                 sound3D.Checked = relative == OpenAL.AL_FALSE;
 
                 if (selectedSoundSource.Car != null)
                 {
-                    speed.Text = Math.Abs(selectedSoundSource.Car.SpeedMpS).ToString("F1");
-                    var Variable1 = selectedSoundSource.Car.Variable1;
-                    var Variable2 = selectedSoundSource.Car.Variable2;
-                    var Variable3 = selectedSoundSource.Car.Variable3;
+                    speed.Text = Math.Abs(selectedSoundSource.Car.SpeedMpS).ToString("0.0");
+                    wheelRPM.Text = pS.TopM((float)(selectedSoundSource.Car.AbsSpeedMpS / (2 * Math.PI * selectedSoundSource.Car.WheelRadiusM))).ToString("0.0");
+
+                    tractiveEffort.Text = (selectedSoundSource.Car.MotiveForceN / 1000.0f * Math.Sign(selectedSoundSource.Car.WheelSpeedMpS)).ToString("0.0"); // Convert to kN, ensure positive for traction, negative for dynamics
+                    tractivePower.Text = (selectedSoundSource.Car.MotiveForceN * selectedSoundSource.Car.WheelSpeedMpS / 1000.0f).ToString("0"); // Convert to kW
+
+                    float[] Variable1 = selectedSoundSource.Car.Variable1;
+                    float Variable2 = selectedSoundSource.Car.Variable2;
+                    float Variable2Booster = selectedSoundSource.Car.Variable2_Booster;
+                    float Variable3 = selectedSoundSource.Car.Variable3;
 
                     if (selectedSoundSource.Car is MSTSSteamLocomotive)
                     {
-                        Variable1 /= 100f;
+                        for (int v1 = 0; v1 < Variable1.Length; v1++)
+                            Variable1[v1] /= 100f;
                         Variable2 /= 100f;
+                        Variable2Booster /= 100f;
                         Variable3 /= 100f;
                     }
                     if (selectedSoundSource.Car is MSTSElectricLocomotive)
                     {
-                        Variable1 /= 100f;
+                        for (int v1 = 0; v1 < Variable1.Length; v1++)
+                            Variable1[v1] /= 100f;
                         Variable2 /= 100f;
                     }
 
-                    variable1.Text = Variable1.ToString("0.#%");
-                    variable2.Text = Variable2.ToString("0.#%");
-                    variable3.Text = Variable3.ToString("0.#%");
+                    string variable1Text = Variable1[0].ToString("0.000");
+                    for (int v1 = 1; v1 < Variable1.Length; v1++)
+                        variable1Text = variable1Text + ", " + Variable1[v1].ToString("0.000");
+                    variable1.Text = variable1Text;
+                    variable2.Text = Variable2.ToString("0.000");
+                    variable2Booster.Text = Variable2.ToString("0.000");
+                    variable3.Text = Variable3.ToString("0.000");
+
+                    string engineRPMText = selectedSoundSource.Car.EnginesRPM[0].ToString("0.0");
+                    for (int r = 1; r < selectedSoundSource.Car.EnginesRPM.Length; r++)
+                        engineRPMText = engineRPMText + ", " + selectedSoundSource.Car.EnginesRPM[r].ToString("0.0");
+                    engineRPM.Text = engineRPMText;
+                    string enginePowerText = selectedSoundSource.Car.EnginesPower[0].ToString("0");
+                    for (int p = 1; p < selectedSoundSource.Car.EnginesPower.Length; p++)
+                        enginePowerText = enginePowerText + ", " + selectedSoundSource.Car.EnginesPower[p].ToString("0");
+                    enginePower.Text = enginePowerText;
+                    string engineTorqueText = selectedSoundSource.Car.EnginesTorque[0].ToString("0");
+                    for (int t = 1; t < selectedSoundSource.Car.EnginesTorque.Length; t++)
+                        engineTorqueText = engineTorqueText + ", " + selectedSoundSource.Car.EnginesTorque[t].ToString("0");
+                    engineTorque.Text = engineTorqueText;
+
+                    backPressure.Text = selectedSoundSource.Car.BackPressurePSIG.ToString("0.0");
+
+                    brakeCyl.Text = selectedSoundSource.Car.BrakeSystem.GetCylPressurePSI().ToString("0.0");
+                    carFriction.Text = selectedSoundSource.Car.Train.WagonCoefficientFriction.ToString("0.000");
+
+                    curveForce.Text = selectedSoundSource.Car.CurveForceNFiltered.ToString("0");
+                    angleOfAttack.Text = selectedSoundSource.Car.CurveSquealAoAmRadFiltered.ToString("0.0");
+
+                    carTunnelDistance.Text = selectedSoundSource.Car.CarTunnelDistanceM.ToString("0.0");
+
+                    concreteSleepers.Checked = SharedSMSFileManager.ConcreteSleepers == 1.0f;
+                    carInTunnel.Checked = selectedSoundSource.Car.TrackSoundInTunnelTriggered == 1.0f;
                 }
                 else
                 {
                     speed.Text = "0";
+                    wheelRPM.Text = "-";
+                    tractiveEffort.Text = "-";
+                    tractivePower.Text = "-";
+
                     variable1.Text = "-";
                     variable2.Text = "-";
+                    variable2Booster.Text = "-";
                     variable3.Text = "-";
+
+                    backPressure.Text = "-";
+
+                    engineRPM.Text = "-";
+                    enginePower.Text = "-";
+                    engineTorque.Text = "-";
+
+                    brakeCyl.Text = "-";
+                    carFriction.Text = "-";
+
+                    curveForce.Text = "-";
+                    angleOfAttack.Text = "-";
+
+                    distanceSquared.Text = "-";
+                    carTunnelDistance.Text = "-";
+
+                    concreteSleepers.Checked = false;
+                    carInTunnel.Checked = false;
                 }
 
-                float gain;
-                OpenAL.alGetSourcef(soundSourceID, OpenAL.AL_GAIN, out gain);
+                OpenAL.alGetSourcef(soundSourceID, OpenAL.AL_GAIN, out float gain);
                 smsVolume.Text = gain.ToString("0.#%");
             }
+
+            waves.Text = SoundItem.AllPieces.Count.ToString();
+            alSources.Text = ALSoundSource.ActiveCount.ToString();
 
             activeSoundList.EndUpdate();
             inactiveSoundList.EndUpdate();
 
-            waves.Text = SoundItem.AllPieces.Count.ToString();
-            alSources.Text = ALSoundSource.ActiveCount.ToString();
-        }
-
-        private void CleanUp(TreeNodeCollection nodes)
-        {
-            for (int i = 0; i < nodes.Count; i++)
-            {
-                if (nodes[i].Nodes.Count == 0)
-                    nodes[i].Remove();
-                else
-                    nodes[i].Text = String.Format("{0}{1})", nodes[i].Text.Split('/')[0], nodes[i].Nodes.Count);
-            }
+            UpdateCounter = (UpdateCounter + 1) % 10;
         }
 
         private void SoundDebugForm_FormClosing(object sender, FormClosingEventArgs e)

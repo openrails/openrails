@@ -21892,24 +21892,30 @@ namespace Orts.Simulation.Physics
                         {
                             if (car is MSTSElectricLocomotive)
                             {
-                                (car as MSTSElectricLocomotive).Variable1 = 70;
+                                (car as MSTSElectricLocomotive).Variable1[0] = 70;
                                 (car as MSTSElectricLocomotive).Variable2 = 70;
                             }
                             else if (car is MSTSDieselLocomotive)
                             {
-                                (car as MSTSDieselLocomotive).Variable1 = 0.7f;
+                                (car as MSTSDieselLocomotive).Variable1[0] = 0.7f;
                                 (car as MSTSDieselLocomotive).Variable2 = 0.7f;
+                                (car as MSTSDieselLocomotive).EnginesRPM[0] = (car as MSTSDieselLocomotive).MaxRPM * 0.7f;
+                                (car as MSTSDieselLocomotive).EnginesPower[0] = (car as MSTSDieselLocomotive).MaxPowerW * 0.7f / 1000.0f; // Convert to kW
+                                (car as MSTSDieselLocomotive).EnginesTorque[0] = (car as MSTSDieselLocomotive).MaxPowerW / ((car as MSTSDieselLocomotive).MaxRPM * (2.0f * (float)Math.PI) / 60.0f);
                             }
                             else if (car is MSTSSteamLocomotive)
                             {
-                                (car as MSTSSteamLocomotive).Variable1 = car.AbsSpeedMpS / car.DriverWheelRadiusM / MathHelper.Pi * 5;
+                                (car as MSTSSteamLocomotive).Variable1[0] = car.AbsSpeedMpS / car.DriverWheelRadiusM / MathHelper.Pi * 5;
                                 (car as MSTSSteamLocomotive).Variable2 = 70f;
                             }
                         }
                         else if (car is MSTSLocomotive)
                         {
-                            (car as MSTSLocomotive).Variable1 = 0;
+                            (car as MSTSLocomotive).Variable1[0] = 0;
                             (car as MSTSLocomotive).Variable2 = 0;
+                            (car as MSTSLocomotive).EnginesRPM[0] = 0;
+                            (car as MSTSLocomotive).EnginesPower[0] = 0;
+                            (car as MSTSLocomotive).EnginesTorque[0] = 0;
                         }
                     }
 #if INDIVIDUAL_CONTROL
