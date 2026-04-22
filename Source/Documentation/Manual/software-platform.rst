@@ -199,11 +199,15 @@ Note: To avoid overloading the simulator, please keep API calls to once or twice
        | page by page, where ``<n>`` is the HUD page number 0 to 7.
      - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .HudApiArray``
    * - | GET
-     - | ``/API/TRAINMONITOR``
+     - | ``/API/TRACKMONITORDISPLAY``
        | or ``/API/TRAININFO``
-     - | Retrieves information rendered on the Track Monitor, such as speed,
-       | acceleration, grade, and upcoming hazards.
+       | or ``/API/TRAINDRIVINGDISPLAY``
+       | or ``/API/TRAINDPUDISPLAY``
+     - | Retrieves information on the Player Train, such as speed,
+       | acceleration, grade, throttle, brakes, upcoming hazards, etc,
+       | as rendered on the Track Monitor, Train Driving and Train DPU displays.
      - | ``Orts.Simulation.Physics .Train.TrainInfo``
+       | ``Orts.Simulation.RollingStocks .TrainCar .MSTSLocomotive``
    * - | GET
      - | ``/API/TIME``
      - | Retrieves the simulation time in seconds since midnight.
