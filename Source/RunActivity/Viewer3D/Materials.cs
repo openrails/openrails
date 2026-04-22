@@ -1457,7 +1457,9 @@ namespace Orts.Viewer3D
         {
             var shader = Viewer.MaterialManager.SceneryShader;
 
-            shader.CurrentTechnique = Technique;;
+            shader.CurrentTechnique = Technique;
+
+            var emissiveOn = EmissiveFactor.LengthSquared() > 0 && !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground();
 
             shader.ImageTexture = Texture;
             shader.NormalTexture = NormalTexture;
@@ -1467,7 +1469,7 @@ namespace Orts.Viewer3D
 
             shader.BaseColorFactor = BaseColorFactor;
             shader.EmissiveIorFactor = new Vector4(
-                !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground() ? EmissiveFactor : Vector3.Zero,
+                emissiveOn ? EmissiveFactor : Vector3.Zero,
                 float.IsPositiveInfinity(Ior) ? 1 : Ior < 1 ? 0 : (float)Math.Pow((Ior - 1) / (Ior + 1), 2));
             shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, NormalScale);
             shader.HasNormals = HasNormals;
@@ -1496,8 +1498,8 @@ namespace Orts.Viewer3D
 
             var transparentPass = previousMaterial != null;
 
-            shader.ReferenceAlpha = !transparentPass ? DefaultAlphaCutOff : ReferenceAlphaTransparentPass;
-            graphicsDevice.DepthStencilState = !transparentPass ? DepthStencilStateOpaquePass : DepthStencilStateTransparentPass;
+            shader.ReferenceAlpha = transparentPass ? ReferenceAlphaTransparentPass : DefaultAlphaCutOff;
+            graphicsDevice.DepthStencilState = transparentPass ? DepthStencilStateTransparentPass : DepthStencilStateOpaquePass;
             graphicsDevice.RasterizerState = RasterizerState;
             graphicsDevice.BlendState = BlendState;
 
@@ -1519,10 +1521,6 @@ namespace Orts.Viewer3D
                 graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Specular] = SamplerStateSpecular;
                 graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.SpecularColor] = SamplerStateSpecularColor;
             }
-
-            // Tag the emissive pixels for the bloom filter later.
-            if (EmissiveFactor.LengthSquared() > 0 && graphicsDevice.DepthStencilState == DepthStencilState.Default)
-                graphicsDevice.DepthStencilState = EmissiveStencilState;
         }
 
         static SamplerState GetNewSamplerState((TextureFilter filter, TextureAddressMode addressU, TextureAddressMode addressV) samplerAttributes)
@@ -1643,15 +1641,6 @@ namespace Orts.Viewer3D
             base.ResetState(graphicsDevice);
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         }
-
-        public DepthStencilState EmissiveStencilState = new DepthStencilState()
-        {
-            StencilEnable = true,
-            StencilMask = 0x08,
-            StencilWriteMask = 0x08,
-            StencilFunction = CompareFunction.Always,
-            StencilPass = StencilOperation.IncrementSaturation,
-        };
     }
 
     public class BloomMaterial : Material

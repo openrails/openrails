@@ -116,12 +116,12 @@ such files.
   at load time, and the whole pixel data must be copied a second time. 
   Png and jpg formats also lack the ability to store mipmaps.
 - Instead of the night texture set, the authors can use an emissive texture 
-  for night illumination. The emissive texture display can be switched off 
-  automatically at daytime if specified in the material:
+  for night illumination. The emissive texture display can be made to 
+  switch on-off automatically at day-night change if specified in the material:
 
   .. code-block:: json
 
-    "extras": { "OPENRAILS_material_day_night_switch": false },
+    "extras": { "OPENRAILS_material_day_night_switch": true },
 
   The max value of the emissive strength is 1 by the standard, but sometimes 
   a bigger glow is needed for being distinctively visible at daytime. 
