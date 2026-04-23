@@ -135,6 +135,12 @@ namespace ORTS.Updater
             Force = true;
         }
 
+        public void ForceCheck()
+        {
+            Force = true;
+            Check();
+        }
+
         public void Check()
         {
             // If there's no updater file or the update channel is not correctly configured, exit without error.
@@ -188,7 +194,7 @@ namespace ORTS.Updater
                 // Check it's all good.
                 ValidateLastUpdate();
 
-                CacheUpdate(updateData);
+                CacheUpdate(updateData); // Reset Force
             }
             catch (Exception error)
             {

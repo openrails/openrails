@@ -112,11 +112,10 @@ namespace Menu.Notifications
             {
                 Error = null;
                 ArePagesVisible = false;
-                CurrentPageIndex = 0;
                 Notifications = GetNotifications();
                 ParameterDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-                // To support testing, add any overriding values to the ParameterDictionary
+                // To support testing, adds any overriding values to the ParameterDictionary
                 GetOverrideParameters()?.ParameterValueList.ForEach(i => ParameterDictionary.Add(i.Parameter, i.Value));
                 LogOverrideParameters();
 
@@ -402,6 +401,10 @@ namespace Menu.Notifications
             else if (item is Update update)
             {
                 Page.NDetailList.Add(new NUpdateControl(Page, item.Label, item.Indent, update.Value, MainForm));
+            }
+            else if (item is Refresh refresh)
+            {
+                Page.NDetailList.Add(new NRefreshControl(Page, item.Label, item.Indent, refresh.Value, MainForm));
             }
             else if (item is Heading heading)
             {

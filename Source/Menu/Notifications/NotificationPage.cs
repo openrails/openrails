@@ -280,6 +280,15 @@ namespace Menu.Notifications
                 ButtonCount++;
             }
         }
+        public class NRefreshControl : NButtonControl
+        {
+            public NRefreshControl(NotificationPage page, string legend, int width, string description, MainForm mainForm)
+            : base(page.Panel, legend, width, description, mainForm)
+            {
+                page.ButtonDictionary.Add(ButtonCount, this);
+                ButtonCount++;
+            }
+        }
         public class NRetryControl : NButtonControl
         {
             public NRetryControl(NotificationPage page, string legend, int width, string description, MainForm mainForm)
@@ -298,6 +307,8 @@ namespace Menu.Notifications
                 dialogControl.Show();
             else if (button is NUpdateControl)
                 updateManager.Update();
+            else if (button is NRefreshControl)
+                MainForm.OnCheckUpdatesAgain(EventArgs.Empty);
             else if (button is NRetryControl)
             {
                 MainForm.OnCheckUpdatesAgain(EventArgs.Empty);

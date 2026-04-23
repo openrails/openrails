@@ -69,6 +69,9 @@ namespace Menu.Notifications
     class Update : ValueItem
     {
     }
+    class Refresh : ValueItem
+    {
+    }
     abstract class ValueItem : Item
     {
         public string Value { get; set; }

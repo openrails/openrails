@@ -334,17 +334,20 @@ namespace Menu
                 File.Delete(file);
         }
 
-        void CheckForUpdate()
+        void CheckForUpdate(bool force = false)
         {
             // Uses a custom Task class which pre-dates the System.Threading.Task but provides much the same features.
             new Task<UpdateManager>(this, () =>
             {
-                UpdateManager.Check();
+                if (force)
+                    UpdateManager.ForceCheck();
+                else
+                    UpdateManager.Check();
                 return null;
             }, _ =>
             {
                 NotificationManager.CheckNotifications();
-                UpdateNotificationPageAlert();
+                ShowNotificationPages();
             });
         }
 
@@ -353,7 +356,7 @@ namespace Menu
 
         public virtual void OnCheckUpdatesAgain(EventArgs e)
         {
-            CheckForUpdate();
+            CheckForUpdate(true);
         }
 
         void CheckForTelemetry()
