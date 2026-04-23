@@ -300,6 +300,47 @@ namespace Orts.Viewer3D
         public static Texture2D WhiteTexture;
         public static Texture2D BlackTexture;
 
+        static Texture2D EnvironmentMapSpecularDay;
+        static TextureCube EnvironmentMapDiffuseDay;
+        static Texture2D BrdfLutTexture;
+
+        static readonly Vector3[] ShDay = new[]
+        {
+            new Vector3(0.933248f,  0.827154f,  0.734785f), // L0,0
+            new Vector3(0.149667f,  0.182847f,  0.222186f), // L1,-1
+            new Vector3(0.072382f,  0.070470f,  0.052508f), // L1,0
+            new Vector3(0.009977f,  0.018481f,  0.022093f), // L1,1
+            new Vector3(-0.004932f, -0.003692f, 0.000172f), // L2,-2
+            new Vector3(-0.025539f, -0.016006f, -0.009408f),// L2,-1
+            new Vector3(0.015451f,  0.015465f,  0.024591f), // L2,0
+            new Vector3(0.006221f,  0.011580f,  0.012703f), // L2,1
+            new Vector3(0.027432f,  0.010342f,  0.003231f)  // L2,2
+        };
+
+        static readonly Vector3[] ShNight = new[]
+        {
+            new Vector3(0.080f, 0.110f, 0.180f), 
+            new Vector3(0.015f, 0.025f, 0.045f), // L1,-1
+            new Vector3(-0.020f, -0.030f, -0.060f), // L1,0
+            new Vector3(0.010f, 0.015f, 0.025f), // L1,1
+            new Vector3(-0.002f, -0.003f, -0.005f), // L2,-2
+            new Vector3(-0.005f, -0.007f, -0.012f), // L2,-1
+            new Vector3(0.004f, 0.006f, 0.010f),    // L2,0
+            new Vector3(0.002f, 0.003f, 0.005f),    // L2,1
+            new Vector3(0.005f, 0.007f, 0.012f)     // L2,2
+        };
+        Matrix ShRed, ShGreen, ShBlue;
+
+        static readonly Dictionary<string, CubeMapFace> EnvironmentMapFaces = new Dictionary<string, CubeMapFace>
+        {
+            ["px"] = CubeMapFace.PositiveX,
+            ["nx"] = CubeMapFace.NegativeX,
+            ["py"] = CubeMapFace.PositiveY,
+            ["ny"] = CubeMapFace.NegativeY,
+            ["pz"] = CubeMapFace.PositiveZ,
+            ["nz"] = CubeMapFace.NegativeZ
+        };
+
         [CallOnThread("Render")]
         public SharedMaterialManager(Viewer viewer)
         {
@@ -550,17 +591,59 @@ namespace Orts.Viewer3D
                 sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
 
             SceneryShader.SetLightVector_ZFar(sunDirection, Viewer.Settings.ViewingDistance);
+
+            var sunWeight = MathHelper.Clamp((sunDirection.Y + 0.15f) / 0.3f, 0, 1);
+
+            var currentSH = new Vector3[9];
+
+            for (int i = 0; i < ShDay.Length; i++)
+                currentSH[i] = Vector3.Lerp(ShNight[i], ShDay[i], sunWeight);
+
+            SceneryShader.ShRed = ShRed = getSHMatrix(currentSH, 0);
+            SceneryShader.ShGreen = ShGreen = getSHMatrix(currentSH, 1);
+            SceneryShader.ShBlue = ShBlue = getSHMatrix(currentSH, 2);
+
+            if (EnvironmentMapSpecularDay == null)
+            {
+                // TODO: split the equirectangular specular panorama image to a cube map for saving the pixel shader instructions of converting the
+                // cartesian cooridinates to polar for sampling. Couldn't find a converter though that also supports RGBD color encoding.
+                // RGBD is an encoding where a divider [0..1] is stored in the alpha channel to reconstruct the High Dynamic Range of the RGB colors.
+                // A HDR to TGA-RGBD converter is available here: https://seenax.com/portfolio/cpp.php , this can be further converted to PNG by e.g. GIMP.
+                EnvironmentMapSpecularDay = Texture2D.FromStream(Viewer.GraphicsDevice, File.OpenRead(Path.Combine(Viewer.Game.ContentPath, "EnvMapDay/specular-RGBD.png")));
+
+                // Possible TODO: replace the diffuse map with spherical harmonics coefficients (9x float3), as defined in EXT_lights_image_based.
+                // See shader implementation e.g. here: https://github.com/CesiumGS/cesium/pull/7172
+                EnvironmentMapDiffuseDay = new TextureCube(Viewer.GraphicsDevice, 128, false, SurfaceFormat.ColorSRgb);
+                foreach (var face in EnvironmentMapFaces.Keys)
+                {
+                    using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/diffuse_{face}_0.jpg")))
+                    using (var tex = Texture2D.FromStream(Viewer.GraphicsDevice, stream))
+                    {
+                        var data = new Color[tex.Width * tex.Height];
+                        tex.GetData(data);
+                        EnvironmentMapDiffuseDay.SetData(EnvironmentMapFaces[face], data);
+                    }
+                }
+            }
+            if (BrdfLutTexture == null)
+            {
+                using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/brdfLUT.png")))
+                {
+                    BrdfLutTexture = Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream);
+                }
+            }
+
+            SceneryShader.BrdfLutTexture = BrdfLutTexture;
+
             if (sunDirection.Y > -0.05)
             {
-                SceneryShader.EnvironmentMapSpecularTexture = GltfShape.EnvironmentMapSpecularDay;
-                SceneryShader.EnvironmentMapDiffuseTexture = GltfShape.EnvironmentMapDiffuseDay;
-                SceneryShader.BrdfLutTexture = GltfShape.BrdfLutTexture;
+                SceneryShader.EnvironmentMapSpecularTexture = EnvironmentMapSpecularDay;
+                SceneryShader.EnvironmentMapDiffuseTexture = EnvironmentMapDiffuseDay;
             }
             else
             {
                 SceneryShader.EnvironmentMapSpecularTexture = BlackTexture;
                 SceneryShader.EnvironmentMapDiffuseTexture = BlackCubeTexture;
-                SceneryShader.BrdfLutTexture = BlackTexture;
             }
 
             SceneryShader.Fog = FogColor;
@@ -578,6 +661,18 @@ namespace Orts.Viewer3D
                 SceneryShader.Overcast = new Vector2(Viewer.World.MSTSSky.mstsskyovercastFactor, ambientLightIntensity);
                 ParticleEmitterShader.SetFog(Viewer.World.MSTSSky.mstsskyfogDistance, ref SharedMaterialManager.FogColor);
                 SceneryShader.SetViewerPos(Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation), Viewer.World.MSTSSky.mstsskyfogDistance);
+            }
+
+            // Spherical harmonics calculation for IBL diffuse ambient lighting.
+            Matrix getSHMatrix(Vector3[] harmonics, int channel)
+            {
+                float c(int index) => channel == 0 ? harmonics[index].X : (channel == 1 ? harmonics[index].Y : harmonics[index].Z);
+                return new Matrix(
+                     c(8), c(4), c(7), c(3),
+                     c(4), -c(8), c(5), c(1),
+                     c(7), c(5), c(6), c(2),
+                     c(3), c(1), c(2), c(0)
+                );
             }
         }
     }

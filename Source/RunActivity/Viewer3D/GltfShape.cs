@@ -73,19 +73,6 @@ namespace Orts.Viewer3D
         /// so we need to apply a 180 degree rotation to turn around every model matrix to conform the spec.
         /// </summary>
         public static Matrix PlusZToForward = Matrix.CreateFromAxisAngle(Vector3.UnitY, MathHelper.Pi);
-        public static Texture2D EnvironmentMapSpecularDay;
-        public static TextureCube EnvironmentMapDiffuseDay;
-        public static Texture2D BrdfLutTexture;
-        static readonly Dictionary<string, CubeMapFace> EnvironmentMapFaces = new Dictionary<string, CubeMapFace>
-        {
-            ["px"] = CubeMapFace.PositiveX,
-            ["nx"] = CubeMapFace.NegativeX,
-            ["py"] = CubeMapFace.PositiveY,
-            ["ny"] = CubeMapFace.NegativeY,
-            ["pz"] = CubeMapFace.PositiveZ,
-            ["nz"] = CubeMapFace.NegativeZ
-        };
-
         List<GltfAnimation> GltfAnimations;
         public Vector4[] BoundingBoxNodes;
 
@@ -135,35 +122,6 @@ namespace Orts.Viewer3D
                 ExternalLods.Add(0, FilePath);
             LodControls = new[] { new GltfLodControl(this, ExternalLods) };
             SetLod(0);
-
-            if (EnvironmentMapSpecularDay == null)
-            {
-                // TODO: split the equirectangular specular panorama image to a cube map for saving the pixel shader instructions of converting the
-                // cartesian cooridinates to polar for sampling. Couldn't find a converter though that also supports RGBD color encoding.
-                // RGBD is an encoding where a divider [0..1] is stored in the alpha channel to reconstruct the High Dynamic Range of the RGB colors.
-                // A HDR to TGA-RGBD converter is available here: https://seenax.com/portfolio/cpp.php , this can be further converted to PNG by e.g. GIMP.
-                EnvironmentMapSpecularDay = Texture2D.FromStream(Viewer.GraphicsDevice, File.OpenRead(Path.Combine(Viewer.Game.ContentPath, "EnvMapDay/specular-RGBD.png")));
-                // Possible TODO: replace the diffuse map with spherical harmonics coefficients (9x float3), as defined in EXT_lights_image_based.
-                // See shader implementation e.g. here: https://github.com/CesiumGS/cesium/pull/7172
-                EnvironmentMapDiffuseDay = new TextureCube(Viewer.GraphicsDevice, 128, false, SurfaceFormat.ColorSRgb);
-                foreach (var face in EnvironmentMapFaces.Keys)
-                {
-                    using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/diffuse_{face}_0.jpg")))
-                    using (var tex = Texture2D.FromStream(Viewer.GraphicsDevice, stream))
-                    {
-                        var data = new Color[tex.Width * tex.Height];
-                        tex.GetData(data);
-                        EnvironmentMapDiffuseDay.SetData(EnvironmentMapFaces[face], data);
-                    }
-                }
-            }
-            if (BrdfLutTexture == null)
-            {
-                using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/brdfLUT.png")))
-                {
-                    BrdfLutTexture = Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream);
-                }
-            }
         }
 
         public override Matrix SetRenderMatrices(ShapePrimitive baseShapePrimitive, Matrix[] animatedMatrices, ref Matrix tileTranslation)
