@@ -45,6 +45,11 @@ cbuffer PerFramePS
     float NumLights; // The number of the lights used
     float NightColorModifier;
     float HalfNightColorModifier;
+    
+    // These might be changeable per material in the future
+    float4x4 ShRed; // spherical harmonics coefficients
+    float4x4 ShGreen;
+    float4x4 ShBlue;
 };
 
 // PS only
@@ -135,9 +140,11 @@ SamplerState LinearClampSampler
     AddressW = Clamp;
 };
 
-Texture2D BrdfLutTexture;
+const float EnvironmentTextureMipCount = 0;
+
 Texture2D EnvironmentMapSpecularTexture;
 TextureCube EnvironmentMapDiffuseTexture;
+Texture2D BrdfLutTexture;
 Texture2D BonesTexture; // 4 channels of 32 bit float, containing the 4x4 matrix palette for skinned models
 Texture2D LightsTexture; // 4 channels of 32 bit float, 3 pixels in a row containing 1 light source, row 0 is always the sun/moon.
                          // pixel 0 xyz: position, w: 1 / range
@@ -793,15 +800,27 @@ float3 _PSGetIBLSpecular(float3 specularColor, float NdotV, float perceptualRoug
 	float2 val = float2(NdotV, 1.0 - perceptualRoughness);
     float3 brdf = BrdfLutTexture.Sample(LinearClampSampler, val).rgb;
 
-    float3 specularLight = _PSRgbdToLinear(EnvironmentMapSpecularTexture.Sample(LinearClampSampler, _PSCartesianToPolar(reflection))).rgb;
+    float lod = perceptualRoughness * EnvironmentTextureMipCount;
+    float3 specularLight = _PSRgbdToLinear(EnvironmentMapSpecularTexture.SampleLevel(LinearClampSampler, _PSCartesianToPolar(reflection), lod)).rgb;
 	specularLight.rgb = _PSSrgbToLinear(specularLight.rgb);
 	return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
-float3 _PSGetIBLDiffuse(float3 diffuseColor, float3 n)
+float3 _PSGetIBLDiffuse(float3 n)
 {
-    float3 diffuseLight = EnvironmentMapDiffuseTexture.Sample(LinearClampSampler, n).rgb; // irradiance (washed out)
-	return diffuseLight * diffuseColor;
+    return EnvironmentMapDiffuseTexture.Sample(LinearClampSampler, n).rgb; // irradiance (washed out)
+}
+
+float3 _PSGetIBLDiffuseIrradiance(float3 n)
+{
+    float4 n4 = float4(n, 1.0);
+
+    float3 irradiance;
+    irradiance.r = dot(n4, mul(ShRed, n4));
+    irradiance.g = dot(n4, mul(ShGreen, n4));
+    irradiance.b = dot(n4, mul(ShBlue, n4));
+
+    return max(irradiance, 0.0);
 }
 
 PIXEL_OUTPUT PSImage(uniform bool ClampTexCoords, in VERTEX_OUTPUT In)
@@ -1000,8 +1019,7 @@ PIXEL_OUTPUT PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace)
             litColor = (float3) 0;
         }
 
-        litColor += _PSGetIBLDiffuse(diffuseColor, n);
-        // Ambient light modifier:
+        litColor += diffuseColor * _PSGetIBLDiffuseIrradiance(n);
         litColor *= Overcast.y;
         
         // Occlusion doesn't apply to lights, so do it in advance

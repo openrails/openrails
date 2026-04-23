@@ -138,6 +138,10 @@ namespace Orts.Viewer3D
         readonly EffectParameter numLights;
         readonly EffectParameter lightsTexture;
 
+        readonly EffectParameter shRed;
+        readonly EffectParameter shGreen;
+        readonly EffectParameter shBlue;
+
         Vector3 _eyeVector;
         Vector3 _sunDirection;
         bool _imageTextureIsNight;
@@ -295,7 +299,7 @@ namespace Orts.Viewer3D
 
         public Texture2D EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
 
-        public TextureCube EnvironmentMapDiffuseTexture { set { environmentMapDiffuseTexture.SetValue(value); } }
+        public TextureCube EnvironmentMapDiffuseTexture { set { environmentMapDiffuseTexture?.SetValue(value); } }
 
         public Texture2D BrdfLutTexture { set { brdfLutTexture.SetValue(value); } }
 
@@ -320,6 +324,12 @@ namespace Orts.Viewer3D
         public float NumLights { set { numLights.SetValue(value); } }
 
         public Texture2D LightsTexture { set { lightsTexture.SetValue(value); } }
+
+        public Matrix ShRed { set { shRed.SetValue(value); } }
+
+        public Matrix ShGreen { set { shGreen.SetValue(value); } }
+
+        public Matrix ShBlue { set { shBlue.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
@@ -378,6 +388,9 @@ namespace Orts.Viewer3D
             brdfLutTexture = Parameters["BrdfLutTexture"];
             numLights = Parameters["NumLights"];
             lightsTexture = Parameters["LightsTexture"];
+            shRed = Parameters["ShRed"];
+            shGreen = Parameters["ShGreen"];
+            shBlue = Parameters["ShBlue"];
         }
     }
 
