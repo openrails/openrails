@@ -2366,6 +2366,8 @@ namespace Orts.Viewer3D
                             new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 1)), vertexCount, BufferUsage.None)
                             { Name = "TEXCOORD_1_DUMMY" });
 
+                        options |= SceneryMaterialOptions.PbrHasTexCoord1; // So that the correct shader technique gets selected.
+
                         vertexBufferBindings = new[] { colorBufferBinding, tangentBufferBinding, teexcoord1BufferBinding };
 
                     }
