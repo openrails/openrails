@@ -2136,9 +2136,7 @@ namespace Orts.Viewer3D
         {
             var filePath = FilePath;
             // commented lines allow reading the animation block from an additional file in an Openrails subfolder
-//           string dir = Path.GetDirectoryName(filePath);
-//            string file = Path.GetFileName(filePath);
-//            string orFilePath = dir + @"\openrails\" + file;
+//            string orFilePath = ORFileHelper.GetORTSFilePath(filePath);
             var sFile = new ShapeFile(filePath, Viewer.Settings.SuppressShapeWarnings);
 //            if (file.ToLower().Contains("turntable") && File.Exists(orFilePath))
 //            {

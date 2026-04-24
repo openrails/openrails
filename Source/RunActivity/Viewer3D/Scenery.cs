@@ -347,9 +347,8 @@ namespace Orts.Viewer3D
             var WFile = new Orts.Formats.Msts.WorldFile(WorldFilePath);
 
             // check for existence of world file in OpenRails subfolder
-
-            ORTSWorldFilePath = Path.GetFullPath(viewer.Simulator.RoutePath + @"\World\OpenRails\" + WFileName).ToLowerInvariant();
-            if (File.Exists(ORTSWorldFilePath))
+            ORTSWFilePath = Orts.Common.ORFileHelper.GetORTSFilePath(WFilePath);
+            if (File.Exists(ORTSWFilePath))
             {
                 // We have an OR-specific addition to world file
                 WFile.InsertORSpecificData(ORTSWorldFilePath, null);

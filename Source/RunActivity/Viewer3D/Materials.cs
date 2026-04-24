@@ -315,21 +315,26 @@ namespace Orts.Viewer3D
             PopupWindowShader = new PopupWindowShader(viewer, viewer.RenderProcess.GraphicsDevice);
             PrecipitationShader = new PrecipitationShader(viewer.RenderProcess.GraphicsDevice);
             SceneryShader = new SceneryShader(viewer.RenderProcess.GraphicsDevice);
-            var microtexPath = viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace";
-            if (File.Exists(microtexPath))
+            var microtexPath = viewer.Simulator.RoutePath + @"\TERRTEX\microtex";
+            try
             {
-                try
+                if (File.Exists(microtexPath + ".dds"))
                 {
-                    SceneryShader.OverlayTexture = Orts.Formats.Msts.AceFile.Texture2DFromFile(viewer.GraphicsDevice, microtexPath);
+                    DDSLib.DDSFromFile(microtexPath + ".dds", viewer.GraphicsDevice, true, out Texture2D microtex);
+                    SceneryShader.OverlayTexture = microtex;
                 }
-                catch (InvalidDataException error)
+                else if (File.Exists(microtexPath + ".ace"))
                 {
-                    Trace.TraceWarning("Skipped texture with error: {1} in {0}", microtexPath, error.Message);
+                    SceneryShader.OverlayTexture = Formats.Msts.AceFile.Texture2DFromFile(viewer.GraphicsDevice, microtexPath + ".ace");
                 }
-                catch (Exception error)
-                {
-                    Trace.WriteLine(new FileLoadException(microtexPath, error));
-                }
+            }
+            catch (InvalidDataException error)
+            {
+                Trace.TraceWarning("Skipped texture with error: {1} in {0}", microtexPath, error.Message);
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(new FileLoadException(microtexPath, error));
             }
             ShadowMapShader = new ShadowMapShader(viewer.RenderProcess.GraphicsDevice);
             SkyShader = new SkyShader(viewer.RenderProcess.GraphicsDevice);

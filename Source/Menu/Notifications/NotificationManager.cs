@@ -1,4 +1,4 @@
-// COPYRIGHT 2009 - 2024 by the Open Rails project.
+﻿// COPYRIGHT 2009 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -130,6 +130,9 @@ namespace Menu.Notifications
             {
                 AppendToLog(ex.ToString());
                 Error = ex;
+                // Show that 1 notification is available - the Retry On Error message
+                NewPages.Count = 1;
+                NewPages.Viewed = 0;
             }
         }
 
@@ -137,12 +140,17 @@ namespace Menu.Notifications
         {
             string notificationsSerial;
 
+            NewPages.Count = 0;
+            NewPages.Viewed = 0;
+
             // To support testing of a new remote notifications.json file before it is published,
             // GetNotifications() tests first for a local file notifications_trial.json
             // and uses that if present, else it uses the remote file.
             var filename = @"notifications_trial.json";
             if (File.Exists(filename))
             {
+                NewPages.LastViewDate = ""; // So we can see all the notifications in the trial
+
                 // Input from local file into a string
                 notificationsSerial = File.ReadAllText(filename);
                 
@@ -151,16 +159,15 @@ namespace Menu.Notifications
             }
             else
             {
+                NewPages.LastViewDate = Settings.LastViewNotificationDate;
+
                 // Input from remote file into a string
                 notificationsSerial = GetRemoteJson();
             }
 
             var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto, SerializationBinder = new NotificationSerializationBinder() };
             var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, jsonSettings);
-
-            NewPages.Count = 0;
-            NewPages.Viewed = 0;
-            NewPages.LastViewDate = Settings.LastViewNotificationDate;
+            
             if (NewPages.LastViewDate == "") NewPages.LastViewDate = "2024-01-01"; // Date of this code - i.e. before Notifications went public
 
             return jsonInput;
@@ -198,7 +205,7 @@ namespace Menu.Notifications
                 if (AreNotificationChecksMet(n))
                 {
                     if (n.Date == "none") 
-                        n.Date = " none"; // UpdateChannel = "none" found; push this to end of the list
+                        n.Date = " none"; // UpdateChannel = "none" found; push this to end of the list by prefixing a space
                     else
                     {
                         if (String.Compare(NewPages.LastViewDate, n.Date) == -1) NewPages.Count++;
@@ -400,6 +407,10 @@ namespace Menu.Notifications
             {
                 Page.NDetailList.Add(new NUpdateControl(Page, item.Label, item.Indent, update.Value, MainForm));
             }
+            else if (item is Refresh refresh)
+            {
+                Page.NDetailList.Add(new NRefreshControl(Page, item.Label, item.Indent, refresh.Value, MainForm));
+            }
             else if (item is Heading heading)
             {
                 Page.NDetailList.Add(new NHeadingControl(Panel, item.Label, heading.Color));
@@ -581,7 +592,7 @@ namespace Menu.Notifications
         OverrideParameterList GetOverrideParameters()
         {
             // To support testing of a new remote notifications.json file before it is published,
-            // GetNotifications tests first for a local file notifications_override_values.json
+            // GetNotifications tests first for a local file notifications_trial_parameters.json
             // and uses that if present to override the current program values, else it extracts these from the program.
 
             var filename = @"notifications_trial_parameters.json";

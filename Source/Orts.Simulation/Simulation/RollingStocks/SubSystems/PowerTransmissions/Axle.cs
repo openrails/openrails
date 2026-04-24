@@ -1114,7 +1114,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         WheelFlangeAngleRad = stf.ReadFloatBlock(STFReader.UNITS.Angle, null);
                         break;
                     case "numberwheelsetaxles":
-                        NumWheelsetAxles = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
+                        NumWheelsetAxles = stf.ReadIntBlock(null);
                         break;
                     case "ortsinertia":
                         InertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.RotationalInertia, null);
