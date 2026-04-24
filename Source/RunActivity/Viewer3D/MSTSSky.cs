@@ -673,6 +673,16 @@ namespace Orts.Viewer3D
         static Vector3 startColor = new Vector3(0.647f, 0.651f, 0.655f); // Original daytime fog color - must be preserved!
         static Vector3 finishColor = new Vector3(0.05f, 0.05f, 0.05f); //Darkest nighttime fog color
 
+        public override void Mark()
+        {
+            Viewer.TextureManager.Mark(MSTSDayTexture);
+            Viewer.TextureManager.Mark(MSTSSkyStarTexture);
+            Viewer.TextureManager.Mark(MSTSSkyMoonTexture);
+            Viewer.TextureManager.Mark(MSTSSkyMoonMask);
+            Viewer.TextureManager.Mark(MSTSSkyCloudTexture[0]);
+            base.Mark();
+        }
+
         /// <summary>
         /// This function darkens the fog color as night begins to fall
         /// as well as with increasing overcast.
