@@ -272,10 +272,6 @@ namespace Orts.Simulation.RollingStocks
                 DieselEngines[0].Initialize();
             }
 
-            EnginesRPM = new float[DieselEngines.Count];
-            EnginesPower = new float[DieselEngines.Count];
-            EnginesTorque = new float[DieselEngines.Count];
-
             // Check initialization of power values for diesel engines
             for (int i = 0; i < DieselEngines.Count; i++)
             {
@@ -471,6 +467,10 @@ namespace Orts.Simulation.RollingStocks
             {
                 GearBoxController = new MSTSNotchController(DieselEngines[0].GearBox.NumOfGears + 1);
             }
+
+            EnginesRPM = new float[DieselEngines.Count];
+            EnginesPower = new float[DieselEngines.Count];
+            EnginesTorque = new float[DieselEngines.Count];
 
             base.Initialize();
 
