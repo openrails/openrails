@@ -92,7 +92,7 @@ namespace Orts.Viewer3D
         /// If needs active management or can be left to OpenAL to deal with sound properties
         /// </summary>
         public bool NeedsFrequentUpdate;
-        public bool TrackSound = false;
+        public bool IsTrackSound = false;
 
         public abstract void Dispose();
     }
@@ -103,8 +103,8 @@ namespace Orts.Viewer3D
         private int _curTType = -1;
         private SoundSource _activeInSource;
         private SoundSource _activeOutSource;
-        private List<SoundSource> _inSources;
-        private List<SoundSource> _outSources;
+        public List<SoundSource> InSources { get; private set; } = new List<SoundSource>();
+        public List<SoundSource> OutSources { get; private set; } = new List<SoundSource>();
 
         // data to evaluate if ttype selection is needed or not
         private float nextDist = -1; // initial distance to sound region forward
@@ -118,11 +118,9 @@ namespace Orts.Viewer3D
 
         public TrackSoundSource(MSTSWagon car, Viewer viewer)
         {
-            TrackSound = true;
+            IsTrackSound = true;
             Car = car;
             Viewer = viewer;
-            _inSources = new List<SoundSource>();
-            _outSources = new List<SoundSource>();
 
             foreach (Orts.Formats.Msts.TrackTypesFile.TrackType ttdf in viewer.TrackTypes)
             {
@@ -150,12 +148,9 @@ namespace Orts.Viewer3D
                 return;
             }
             if (isInside)
-            {
-                _inSources.Add(new SoundSource(Viewer, Car, fullPath));
-                _inSources.Last().IsInternalTrackSound = true;
-            }
+                InSources.Add(new SoundSource(Viewer, Car, fullPath, true));
             else
-                _outSources.Add(new SoundSource(Viewer, Car, fullPath));
+                OutSources.Add(new SoundSource(Viewer, Car, fullPath, true));
         }
 
         public override void Uninitialize()
@@ -169,11 +164,11 @@ namespace Orts.Viewer3D
 
         public override void InitInitials()
         {
-            if (_inSources != null && _inSources.Count > 0)
-                _activeInSource = _inSources[0];
+            if (InSources != null && InSources.Count > 0)
+                _activeInSource = InSources[0];
 
-            if (_outSources != null && _outSources.Count > 0)
-                _activeOutSource = _outSources[0];
+            if (OutSources != null && OutSources.Count > 0)
+                _activeOutSource = OutSources[0];
 
             _curTType = 0;
             _prevTType = 0;
@@ -304,8 +299,8 @@ namespace Orts.Viewer3D
                     {
                         _activeInSource.Uninitialize();
                         //_activeInSource.Car = null;
-                        if (0 <= _curTType && _curTType < _inSources.Count)
-                            _activeInSource = _inSources[_curTType];
+                        if (0 <= _curTType && _curTType < InSources.Count)
+                            _activeInSource = InSources[_curTType];
                         else
                             Trace.TraceWarning("Could not change inside sound region to {0}", _curTType);
                         //_activeInSource.Car = Car;
@@ -315,8 +310,8 @@ namespace Orts.Viewer3D
                     {
                         _activeOutSource.Uninitialize();
                         //_activeOutSource.Car = null;
-                        if (0 <= _curTType && _curTType < _outSources.Count)
-                            _activeOutSource = _outSources[_curTType];
+                        if (0 <= _curTType && _curTType < OutSources.Count)
+                            _activeOutSource = OutSources[_curTType];
                         else
                             Trace.TraceWarning("Could not change outside sound region to {0}", _curTType);
                         //_activeOutSource.Car = Car;
@@ -353,17 +348,17 @@ namespace Orts.Viewer3D
                 // Play base (default, ie TType=1 SMS file) sound continuously
                 if (_activeInSource != null)
                 {
-                    _activeInSource = _inSources[0];
+                    _activeInSource = InSources[0];
                     retval &= _activeInSource.Update();
                     NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
-                    _activeInSource = _inSources[_curTType];
+                    _activeInSource = InSources[_curTType];
                 }
                 if (_activeOutSource != null)
                 {
-                    _activeOutSource = _outSources[0];
+                    _activeOutSource = OutSources[0];
                     retval &= _activeOutSource.Update();
                     NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
-                    _activeOutSource = _outSources[_curTType];
+                    _activeOutSource = OutSources[_curTType];
                 }
 
                 if (_curTType != 0) // if base sound is not being played, then play additional relevant track region sound
@@ -403,17 +398,17 @@ namespace Orts.Viewer3D
 
         public override void Dispose()
         {
-            if (_inSources != null)
+            if (InSources != null)
             {
-                foreach (SoundSource s in _inSources)
+                foreach (SoundSource s in InSources)
                     s.Dispose();
-                _inSources.Clear();
+                InSources.Clear();
             }
-            if (_outSources != null)
+            if (OutSources != null)
             {
-                foreach (SoundSource s in _outSources)
+                foreach (SoundSource s in OutSources)
                     s.Dispose();
-                _outSources.Clear();
+                OutSources.Clear();
             }
             Car = null;
         }
@@ -482,8 +477,8 @@ namespace Orts.Viewer3D
                     {
                         _activeInSource.Uninitialize();
                         //_activeInSource.Car = null;
-                        if (0 <= _curTType && _curTType < _inSources.Count)
-                            _activeInSource = _inSources[_curTType];
+                        if (0 <= _curTType && _curTType < InSources.Count)
+                            _activeInSource = InSources[_curTType];
                         else
                             Trace.TraceWarning("Could not change inside sound region to {0}", _curTType);
                         //_activeInSource.Car = Car;
@@ -493,8 +488,8 @@ namespace Orts.Viewer3D
                     {
                         _activeOutSource.Uninitialize();
                         //_activeOutSource.Car = null;
-                        if (0 <= _curTType && _curTType < _outSources.Count)
-                            _activeOutSource = _outSources[_curTType];
+                        if (0 <= _curTType && _curTType < OutSources.Count)
+                            _activeOutSource = OutSources[_curTType];
                         else
                             Trace.TraceWarning("Could not change outside sound region to {0}", _curTType);
                         //_activeOutSource.Car = Car;
@@ -565,9 +560,11 @@ namespace Orts.Viewer3D
         /// <param name="viewer"></param>
         /// <param name="car"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer viewer, MSTSWagon car, string smsFilePath)
+        /// <param name="isTrack"></param>
+        public SoundSource(Viewer viewer, MSTSWagon car, string smsFilePath, bool isTrack = false)
         {
             Car = car;
+            IsTrackSound = isTrack;
             Initialize(viewer, car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
         }
 
@@ -693,7 +690,6 @@ namespace Orts.Viewer3D
         private Orts.Formats.Msts.Deactivation DeactivationConditions;
         public bool IsEnvSound;
         public bool IsExternal = true;
-        public bool IsInternalTrackSound = false;
         public bool Ignore3D;
         /// <summary>
         /// MSTS treats Stereo() tagged mono wav files specially. This is a flag
@@ -1508,14 +1504,14 @@ namespace Orts.Viewer3D
                     else volume *= wag.ExternalSoundPassThruPercent * 0.01f + (1 - wag.ExternalSoundPassThruPercent * 0.01f) * soundHeardInternallyCorrection;
                 }
 
-                if (SoundSource.IsInternalTrackSound)
+                if (SoundSource.IsTrackSound && !SoundSource.IsExternal)
                 {
                     if (wag?.TrackSoundPassThruPercent != -1)
                         volume *= wag.TrackSoundPassThruPercent * 0.01f + (1 - wag.TrackSoundPassThruPercent * 0.01f) * soundHeardInternallyCorrection;
                 }
             }
 
-            if (SoundSource.IsInternalTrackSound && SoundSource.Viewer.Camera.Style != Camera.Styles.External)
+            if (SoundSource.IsTrackSound && !SoundSource.IsExternal && SoundSource.Viewer.Camera.Style != Camera.Styles.External)
             {
                 if (((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar)?.TrackSoundPassThruPercent != -1)
                     volume *= ((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar).TrackSoundPassThruPercent * 0.01f;
@@ -1680,6 +1676,7 @@ namespace Orts.Viewer3D
             if (ALSoundSource != null)
             {
                 ALSoundSource.HardDeactivate();
+                ALSoundSource.ForceResetQueue();
             }
             Sweep();
         }
@@ -1690,6 +1687,7 @@ namespace Orts.Viewer3D
             {
                 ALSoundSource.HardDeactivate();
                 ALSoundSource.Dispose();
+                ALSoundSource.ForceResetQueue();
                 ALSoundSource = null;
             }
             Sweep();
@@ -1700,10 +1698,21 @@ namespace Orts.Viewer3D
         /// </summary>
         private void Sweep()
         {
-            foreach (var trigger in Triggers)
-                if (trigger.SoundCommand is ORTSSoundPlayCommand)
-                    foreach (var name in (trigger.SoundCommand as ORTSSoundPlayCommand).Files)
-                        SoundItem.Sweep(name, SoundSource.IsExternal, IsReleasedWithJump);
+            string[] pathArray = {SoundSource.SMSFolder ?? "",
+                                     Program.Simulator.RoutePath + @"\SOUND",
+                                     Program.Simulator.BasePath + @"\SOUND"};
+
+            foreach (ORTSTrigger trigger in Triggers)
+            {
+                if (trigger.SoundCommand is ORTSSoundPlayCommand soundPlayCommand)
+                {
+                    foreach (string name in soundPlayCommand.Files)
+                    {
+                        string fullPath = ORTSPaths.GetFileFromFolders(pathArray, name);
+                        SoundItem.Sweep(fullPath, SoundSource.IsExternal, IsReleasedWithJump);
+                    }
+                }
+            }
         }
 
     } // class ORTSStream
