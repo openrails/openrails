@@ -294,14 +294,12 @@ namespace Orts.Viewer3D
         public readonly CabShader CabShader;
 
         public static Texture2D MissingTexture;
-        public static TextureCube BlackCubeTexture;
         public static Texture2D DefaultSnowTexture;
         public static Texture2D DefaultDMSnowTexture;
         public static Texture2D WhiteTexture;
         public static Texture2D BlackTexture;
 
         static Texture2D EnvironmentMapSpecularDay;
-        static TextureCube EnvironmentMapDiffuseDay;
         static Texture2D BrdfLutTexture;
 
         static readonly Vector3[] ShDay = new[]
@@ -319,27 +317,20 @@ namespace Orts.Viewer3D
 
         static readonly Vector3[] ShNight = new[]
         {
-            new Vector3(0.080f, 0.110f, 0.180f), 
-            new Vector3(0.015f, 0.025f, 0.045f), // L1,-1
+            new Vector3(0.080f, 0.110f, 0.180f),    // L0,0
+            new Vector3(0.015f, 0.025f, 0.045f),    // L1,-1
             new Vector3(-0.020f, -0.030f, -0.060f), // L1,0
-            new Vector3(0.010f, 0.015f, 0.025f), // L1,1
+            new Vector3(0.010f, 0.015f, 0.025f),    // L1,1
             new Vector3(-0.002f, -0.003f, -0.005f), // L2,-2
             new Vector3(-0.005f, -0.007f, -0.012f), // L2,-1
             new Vector3(0.004f, 0.006f, 0.010f),    // L2,0
             new Vector3(0.002f, 0.003f, 0.005f),    // L2,1
             new Vector3(0.005f, 0.007f, 0.012f)     // L2,2
         };
-        Matrix ShRed, ShGreen, ShBlue;
 
-        static readonly Dictionary<string, CubeMapFace> EnvironmentMapFaces = new Dictionary<string, CubeMapFace>
-        {
-            ["px"] = CubeMapFace.PositiveX,
-            ["nx"] = CubeMapFace.NegativeX,
-            ["py"] = CubeMapFace.PositiveY,
-            ["ny"] = CubeMapFace.NegativeY,
-            ["pz"] = CubeMapFace.PositiveZ,
-            ["nz"] = CubeMapFace.NegativeZ
-        };
+        readonly Vector3[] ShActual = new Vector3[9];
+
+        Matrix ShRed, ShGreen, ShBlue;
 
         [CallOnThread("Render")]
         public SharedMaterialManager(Viewer viewer)
@@ -380,9 +371,6 @@ namespace Orts.Viewer3D
             CabShader = new CabShader(viewer.RenderProcess.GraphicsDevice, Vector4.One, Vector4.One, Vector3.One, Vector3.One);
 
             MissingTexture = SharedTextureManager.GetInternalMissingTexture(viewer.RenderProcess.GraphicsDevice);
-            BlackCubeTexture = new TextureCube(Viewer.GraphicsDevice, 2, false, SurfaceFormat.Color);
-            for (var i = 0; i < 6; i++)
-                    BlackCubeTexture.SetData((CubeMapFace)i, Enumerable.Repeat(Color.Black, 2 * 2).ToArray());
 
             // Managing default snow textures
             var defaultSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultSnow.ace";
@@ -592,16 +580,7 @@ namespace Orts.Viewer3D
 
             SceneryShader.SetLightVector_ZFar(sunDirection, Viewer.Settings.ViewingDistance);
 
-            var sunWeight = MathHelper.Clamp((sunDirection.Y + 0.15f) / 0.3f, 0, 1);
-
-            var currentSH = new Vector3[9];
-
-            for (int i = 0; i < ShDay.Length; i++)
-                currentSH[i] = Vector3.Lerp(ShNight[i], ShDay[i], sunWeight);
-
-            SceneryShader.ShRed = ShRed = getSHMatrix(currentSH, 0);
-            SceneryShader.ShGreen = ShGreen = getSHMatrix(currentSH, 1);
-            SceneryShader.ShBlue = ShBlue = getSHMatrix(currentSH, 2);
+            SetFrameSphericalHarmonics();
 
             if (EnvironmentMapSpecularDay == null)
             {
@@ -610,20 +589,6 @@ namespace Orts.Viewer3D
                 // RGBD is an encoding where a divider [0..1] is stored in the alpha channel to reconstruct the High Dynamic Range of the RGB colors.
                 // A HDR to TGA-RGBD converter is available here: https://seenax.com/portfolio/cpp.php , this can be further converted to PNG by e.g. GIMP.
                 EnvironmentMapSpecularDay = Texture2D.FromStream(Viewer.GraphicsDevice, File.OpenRead(Path.Combine(Viewer.Game.ContentPath, "EnvMapDay/specular-RGBD.png")));
-
-                // Possible TODO: replace the diffuse map with spherical harmonics coefficients (9x float3), as defined in EXT_lights_image_based.
-                // See shader implementation e.g. here: https://github.com/CesiumGS/cesium/pull/7172
-                EnvironmentMapDiffuseDay = new TextureCube(Viewer.GraphicsDevice, 128, false, SurfaceFormat.ColorSRgb);
-                foreach (var face in EnvironmentMapFaces.Keys)
-                {
-                    using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/diffuse_{face}_0.jpg")))
-                    using (var tex = Texture2D.FromStream(Viewer.GraphicsDevice, stream))
-                    {
-                        var data = new Color[tex.Width * tex.Height];
-                        tex.GetData(data);
-                        EnvironmentMapDiffuseDay.SetData(EnvironmentMapFaces[face], data);
-                    }
-                }
             }
             if (BrdfLutTexture == null)
             {
@@ -638,12 +603,10 @@ namespace Orts.Viewer3D
             if (sunDirection.Y > -0.05)
             {
                 SceneryShader.EnvironmentMapSpecularTexture = EnvironmentMapSpecularDay;
-                SceneryShader.EnvironmentMapDiffuseTexture = EnvironmentMapDiffuseDay;
             }
             else
             {
                 SceneryShader.EnvironmentMapSpecularTexture = BlackTexture;
-                SceneryShader.EnvironmentMapDiffuseTexture = BlackCubeTexture;
             }
 
             SceneryShader.Fog = FogColor;
@@ -662,6 +625,16 @@ namespace Orts.Viewer3D
                 ParticleEmitterShader.SetFog(Viewer.World.MSTSSky.mstsskyfogDistance, ref SharedMaterialManager.FogColor);
                 SceneryShader.SetViewerPos(Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation), Viewer.World.MSTSSky.mstsskyfogDistance);
             }
+        }
+
+        public void SetSphericalHarmonics(Vector3[] shDay, Vector3[] shNight = null, float nightDay = 1)
+        {
+            for (int i = 0; i < ShActual.Length; i++)
+                ShActual[i] = Vector3.Lerp(shNight?.ElementAtOrDefault(i) ?? Vector3.Zero, shDay?.ElementAtOrDefault(i) ?? Vector3.Zero, nightDay);
+
+            ShRed = getSHMatrix(ShActual, 0);
+            ShGreen = getSHMatrix(ShActual, 1);
+            ShBlue = getSHMatrix(ShActual, 2);
 
             // Spherical harmonics calculation for IBL diffuse ambient lighting.
             Matrix getSHMatrix(Vector3[] harmonics, int channel)
@@ -674,6 +647,16 @@ namespace Orts.Viewer3D
                      c(3), c(1), c(2), c(0)
                 );
             }
+
+            SceneryShader.ShRed = ShRed;
+            SceneryShader.ShGreen = ShGreen;
+            SceneryShader.ShBlue = ShBlue;
+        }
+
+        public void SetFrameSphericalHarmonics()
+        {
+            var sunWeight = MathHelper.Clamp((sunDirection.Y + 0.15f) / 0.3f, 0, 1);
+            SetSphericalHarmonics(ShDay, ShNight, sunWeight);
         }
     }
 
@@ -1280,6 +1263,7 @@ namespace Orts.Viewer3D
         int SpecularTextureIndex = -1;
         int SpecularColorTextureIndex = -1;
 
+        Vector3[] SphericalHarmonics;
 
         protected readonly SamplerState SamplerStateMetallicRoughness;
         protected readonly SamplerState SamplerStateNormal;
@@ -1356,6 +1340,36 @@ namespace Orts.Viewer3D
                 msftOrmInfo = ext?.OcclusionRoughnessMetallicTexture;
                 msftRmoInfo = ext?.RoughnessMetallicOcclusionTexture;
                 msftNormalInfo = ext?.NormalTexture;
+            }
+
+            var iblLightIndex = -1;
+            if (material.Extras?.TryGetValue("OPENRAILS_material_image_based_light", out extension) ?? false && extension is int)
+            {
+                iblLightIndex = Convert.ToInt32(extension);
+            }
+            else if ((gltfFile.Scenes.ElementAtOrDefault(gltfFile.Scene ?? 0)?.Extensions?.TryGetValue("EXT_lights_image_based", out extension) ?? false) && extension is EXT_lights_image_based lightImageBased)
+            {
+                iblLightIndex = lightImageBased.Light;
+            }
+
+            if (iblLightIndex >= 0)
+            {
+                if ((gltfFile.ExtensionsUsed?.Contains("EXT_lights_image_based") & GltfFile.Extensions?.TryGetValue("EXT_lights_image_based", out extension) ?? false) && extension is EXT_lights_image_based lightsImageBased)
+                {
+                    var lights = lightsImageBased.Lights;
+                    var light = lights.ElementAtOrDefault(iblLightIndex);
+
+                    if (light?.IrradianceCoefficients != null)
+                    {
+                        SphericalHarmonics = SphericalHarmonics ?? new Vector3[9];
+                        var intensity = light.Intensity;
+                        for (var i = 0; i < SphericalHarmonics.Length; i++)
+                        {
+                            var c = light.IrradianceCoefficients.ElementAtOrDefault(i);
+                            SphericalHarmonics[i] = Vector3.Multiply(new Vector3(c?.ElementAtOrDefault(0) ?? 0, c?.ElementAtOrDefault(1) ?? 0, c?.ElementAtOrDefault(2) ?? 0), intensity);
+                        }
+                    }
+                }
             }
 
             if (material.Extras?.TryGetValue("OPENRAILS_material_day_night_switch", out extension) ?? false && extension is bool)
@@ -1554,7 +1568,7 @@ namespace Orts.Viewer3D
 
             shader.CurrentTechnique = Technique;
 
-            var emissiveOn = EmissiveFactor.LengthSquared() > 0 && !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground();
+            var lightsOn = EmissiveFactor.LengthSquared() > 0 && !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground();
 
             shader.ImageTexture = Texture;
             shader.NormalTexture = NormalTexture;
@@ -1564,7 +1578,7 @@ namespace Orts.Viewer3D
 
             shader.BaseColorFactor = BaseColorFactor;
             shader.EmissiveIorFactor = new Vector4(
-                emissiveOn ? EmissiveFactor : Vector3.Zero,
+                lightsOn ? EmissiveFactor : Vector3.Zero,
                 float.IsPositiveInfinity(Ior) ? 1 : Ior < 1 ? 0 : (float)Math.Pow((Ior - 1) / (Ior + 1), 2));
             shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, NormalScale);
             shader.HasNormals = HasNormals;
@@ -1590,6 +1604,9 @@ namespace Orts.Viewer3D
             shader.TextureCoordinates3 = TexCoords3;
 
             shader.LightingDiffuse = LightingDiffuse;
+
+            if (lightsOn && SphericalHarmonics != null)
+                Viewer.MaterialManager.SetSphericalHarmonics(SphericalHarmonics);
 
             var transparentPass = previousMaterial != null;
 
@@ -1735,6 +1752,9 @@ namespace Orts.Viewer3D
         {
             base.ResetState(graphicsDevice);
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+
+            if (SphericalHarmonics != null)
+                Viewer.MaterialManager.SetFrameSphericalHarmonics();
         }
     }
 
