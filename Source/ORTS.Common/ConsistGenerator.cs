@@ -91,6 +91,7 @@ namespace ORTS.Common
             { "glTF-Sample-Assets-Embedded", "glTF-Embedded"},
             { "glTF-Sample-Assets-Draco", "glTF-Draco"},
             { "glTF-Sample-Assets-Quantized", "glTF-Quantized"},
+            { "glTF-Sample-Assets-IBL", "glTF-IBL"},
         };
 
         static string GltfExtension(string keyword) => keyword.EndsWith("-Binary") ? ".glb" : ".gltf";
