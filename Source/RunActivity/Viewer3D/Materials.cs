@@ -1564,7 +1564,7 @@ namespace Orts.Viewer3D
 
             shader.CurrentTechnique = Technique;
 
-            var lightsOn = EmissiveFactor.LengthSquared() > 0 && !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground();
+            var lightsOn = !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground();
 
             shader.ImageTexture = Texture;
             shader.NormalTexture = NormalTexture;
@@ -1574,7 +1574,7 @@ namespace Orts.Viewer3D
 
             shader.BaseColorFactor = BaseColorFactor;
             shader.EmissiveIorFactor = new Vector4(
-                lightsOn ? EmissiveFactor : Vector3.Zero,
+                lightsOn && EmissiveFactor.LengthSquared() > 0 ? EmissiveFactor : Vector3.Zero,
                 float.IsPositiveInfinity(Ior) ? 1 : Ior < 1 ? 0 : (float)Math.Pow((Ior - 1) / (Ior + 1), 2));
             shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, NormalScale);
             shader.HasNormals = HasNormals;
