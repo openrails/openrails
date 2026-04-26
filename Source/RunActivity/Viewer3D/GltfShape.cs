@@ -231,6 +231,20 @@ namespace Orts.Viewer3D
                         }
                     }
 
+                    object extension = null;
+                    if (gltfFile.ExtensionsUsed?.Contains("EXT_lights_image_based") & gltfFile.Extensions?.TryGetValue("EXT_lights_image_based", out extension) ?? false)
+                    {
+                        var iblLights = Newtonsoft.Json.JsonConvert.DeserializeObject<EXT_lights_image_based>(extension.ToString(), PopulateDefaults);
+                        gltfFile.Extensions["EXT_lights_image_based"] = iblLights;
+
+                        var scene = gltfFile.Scenes.ElementAtOrDefault(gltfFile.Scene ?? 0);
+                        if (scene?.Extensions?.TryGetValue("EXT_lights_image_based", out extension) ?? false)
+                        {
+                            var lightRef = Newtonsoft.Json.JsonConvert.DeserializeObject<EXT_lights_image_based>(extension.ToString(), PopulateDefaults);
+                            scene.Extensions["EXT_lights_image_based"] = lightRef;
+                        }
+                    }
+
                     // An attempt to load MS Flight Simulator gltf-s. They use a strange non-standard optimization, not yet deciphered fully here
                     if (gltfFile.Asset?.Extensions?.ContainsKey("ASOBO_asset_optimized") ?? false)
                         shape.MsfsFlavoured = true;
@@ -242,7 +256,6 @@ namespace Orts.Viewer3D
                         if (rootNodeNumber != null)
                         {
                             var rootNode = gltfFile.Nodes[(int)rootNodeNumber];
-                            object extension = null;
                             if (gltfFile.ExtensionsUsed?.Contains("MSFT_lod") & rootNode.Extensions?.TryGetValue("MSFT_lod", out extension) ?? false)
                             {
                                 var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_lod>(extension.ToString(), PopulateDefaults);
@@ -1886,5 +1899,31 @@ namespace Orts.Viewer3D
     {
         public int[] Variants { get; set; }
         public int? Material { get; set; }
+    }
+
+    public class EXT_lights_image_based
+    {
+        public EXT_lights_image_based_light[] Lights { get; set; }
+        public int Light { get; set; }
+    }
+
+    public class EXT_lights_image_based_light
+    {
+        public string Name { get; set; }
+        [DefaultValue(new[] { 0f, 0f, 0f, 1f })]
+        public float[] Rotation { get; set; }
+        [DefaultValue(1)]
+        public float Intensity { get; set; }
+
+        /// <summary>
+        /// Spherical harmonics, Vector3[9]
+        /// </summary>
+        public float[][] IrradianceCoefficients { get; set; }
+
+        /// <summary>
+        /// 6 cube faces for each mip, but here will only the [0][0] be used, referencing to a single dds image containing all faces and all mips.
+        /// </summary>
+        public int[][] SpecularImages { get; set; }
+        public float SpecularImageSize { get; set; }
     }
 }

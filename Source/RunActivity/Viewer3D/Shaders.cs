@@ -133,7 +133,6 @@ namespace Orts.Viewer3D
         readonly EffectParameter morphWeights;
         // Per-frame PBR uniforms:
         readonly EffectParameter environmentMapSpecularTexture;
-        readonly EffectParameter environmentMapDiffuseTexture;
         readonly EffectParameter brdfLutTexture;
         readonly EffectParameter numLights;
         readonly EffectParameter lightsTexture;
@@ -299,8 +298,6 @@ namespace Orts.Viewer3D
 
         public Texture2D EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
 
-        public TextureCube EnvironmentMapDiffuseTexture { set { environmentMapDiffuseTexture?.SetValue(value); } }
-
         public Texture2D BrdfLutTexture { set { brdfLutTexture.SetValue(value); } }
 
         public Vector4 TextureCoordinates1 { set { textureCoordinates1.SetValue(value); } }
@@ -384,7 +381,6 @@ namespace Orts.Viewer3D
             morphConfig = Parameters["MorphConfig"];
             morphWeights = Parameters["MorphWeights"];
             environmentMapSpecularTexture = Parameters["EnvironmentMapSpecularTexture"];
-            environmentMapDiffuseTexture = Parameters["EnvironmentMapDiffuseTexture"];
             brdfLutTexture = Parameters["BrdfLutTexture"];
             numLights = Parameters["NumLights"];
             lightsTexture = Parameters["LightsTexture"];
