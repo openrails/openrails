@@ -56,33 +56,57 @@ namespace Orts.Viewer3D.Debugging
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.groupBoxCache = new System.Windows.Forms.GroupBox();
             this.groupBoxSelectedSound = new System.Windows.Forms.GroupBox();
-            this.sound3D = new System.Windows.Forms.CheckBox();
-            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.smsVolume = new System.Windows.Forms.TextBox();
-            this.distance = new System.Windows.Forms.TextBox();
-            this.variable3 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.variable2 = new System.Windows.Forms.TextBox();
-            this.variable1 = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.speed = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.textBox4 = new System.Windows.Forms.TextBox();
-            this.alSources = new System.Windows.Forms.TextBox();
-            this.label8 = new System.Windows.Forms.Label();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.speedLabel = new System.Windows.Forms.Label();
+            this.speed = new System.Windows.Forms.TextBox();
+            this.wheelRPMLabel = new System.Windows.Forms.Label();
+            this.wheelRPM = new System.Windows.Forms.TextBox();
+            this.tractiveEffortLabel = new System.Windows.Forms.Label();
+            this.tractiveEffort = new System.Windows.Forms.TextBox();
+            this.tractivePowerLabel = new System.Windows.Forms.Label();
+            this.tractivePower = new System.Windows.Forms.TextBox();
+            this.variable1Label = new System.Windows.Forms.Label();
+            this.variable1 = new System.Windows.Forms.TextBox();
+            this.variable2Label = new System.Windows.Forms.Label();
+            this.variable2 = new System.Windows.Forms.TextBox();
+            this.variable2BoosterLabel = new System.Windows.Forms.Label();
+            this.variable2Booster = new System.Windows.Forms.TextBox();
+            this.variable3Label = new System.Windows.Forms.Label();
+            this.variable3 = new System.Windows.Forms.TextBox();
+            this.engineRPMLabel = new System.Windows.Forms.Label();
+            this.engineRPM = new System.Windows.Forms.TextBox();
+            this.enginePowerLabel = new System.Windows.Forms.Label();
+            this.enginePower = new System.Windows.Forms.TextBox();
+            this.engineTorqueLabel = new System.Windows.Forms.Label();
+            this.engineTorque = new System.Windows.Forms.TextBox();
+            this.backPressureLabel = new System.Windows.Forms.Label();
+            this.backPressure = new System.Windows.Forms.TextBox();
+            this.brakeCylLabel = new System.Windows.Forms.Label();
+            this.brakeCyl = new System.Windows.Forms.TextBox();
+            this.curveForceLabel = new System.Windows.Forms.Label();
+            this.curveForce = new System.Windows.Forms.TextBox();
+            this.angleOfAttackLabel = new System.Windows.Forms.Label();
+            this.angleOfAttack = new System.Windows.Forms.TextBox();
+            this.carFrictionLabel = new System.Windows.Forms.Label();
+            this.carFriction = new System.Windows.Forms.TextBox();
+            this.carTunnelDistanceLabel = new System.Windows.Forms.Label();
+            this.carTunnelDistance = new System.Windows.Forms.TextBox();
+            this.distanceLabel = new System.Windows.Forms.Label();
+            this.distance = new System.Windows.Forms.TextBox();
+            this.distanceSquaredLabel = new System.Windows.Forms.Label();
+            this.distanceSquared = new System.Windows.Forms.TextBox();
+            this.smsVolumeLabel = new System.Windows.Forms.Label();
+            this.smsVolume = new System.Windows.Forms.TextBox();
+            this.smsFrequencyLabel = new System.Windows.Forms.Label();
+            this.smsFrequency = new System.Windows.Forms.TextBox();
+            this.sound3D = new System.Windows.Forms.CheckBox();
+            this.concreteSleepers = new System.Windows.Forms.CheckBox();
+            this.carInTunnel = new System.Windows.Forms.CheckBox();
+            this.waveLabel = new System.Windows.Forms.Label();
             this.waves = new System.Windows.Forms.TextBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
+            this.alSourcesLabel = new System.Windows.Forms.Label();
+            this.alSources = new System.Windows.Forms.TextBox();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -146,7 +170,7 @@ namespace Orts.Viewer3D.Debugging
             this.groupBoxActiveSounds.Size = new System.Drawing.Size(282, 513);
             this.groupBoxActiveSounds.TabIndex = 5;
             this.groupBoxActiveSounds.TabStop = false;
-            this.groupBoxActiveSounds.Text = "Active sounds";
+            this.groupBoxActiveSounds.Text = "Active Sound Sources";
             // 
             // groupBoxInactiveSounds
             // 
@@ -157,13 +181,13 @@ namespace Orts.Viewer3D.Debugging
             this.groupBoxInactiveSounds.Size = new System.Drawing.Size(282, 283);
             this.groupBoxInactiveSounds.TabIndex = 4;
             this.groupBoxInactiveSounds.TabStop = false;
-            this.groupBoxInactiveSounds.Text = "Inactive sounds";
+            this.groupBoxInactiveSounds.Text = "Inactive Sound Sources";
             // 
             // splitContainer2
             // 
             this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.splitContainer2.IsSplitterFixed = true;
+            this.splitContainer2.IsSplitterFixed = false;
             this.splitContainer2.Location = new System.Drawing.Point(0, 0);
             this.splitContainer2.Name = "splitContainer2";
             // 
@@ -176,8 +200,8 @@ namespace Orts.Viewer3D.Debugging
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.splitContainer1);
-            this.splitContainer2.Size = new System.Drawing.Size(434, 812);
-            this.splitContainer2.SplitterDistance = 142;
+            this.splitContainer2.Size = new System.Drawing.Size(612, 812);
+            this.splitContainer2.SplitterDistance = 320;
             this.splitContainer2.TabIndex = 6;
             // 
             // groupBoxCache
@@ -186,56 +210,127 @@ namespace Orts.Viewer3D.Debugging
             this.groupBoxCache.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBoxCache.Location = new System.Drawing.Point(3, 196);
             this.groupBoxCache.Name = "groupBoxCache";
-            this.groupBoxCache.Size = new System.Drawing.Size(136, 173);
+            this.groupBoxCache.Size = new System.Drawing.Size(176, 73);
             this.groupBoxCache.TabIndex = 8;
             this.groupBoxCache.TabStop = false;
-            this.groupBoxCache.Text = "Sound cache";
+            this.groupBoxCache.Text = "Sound Cache";
             // 
             // groupBoxSelectedSound
             // 
+            this.groupBoxSelectedSound.Controls.Add(this.concreteSleepers);
+            this.groupBoxSelectedSound.Controls.Add(this.carInTunnel);
             this.groupBoxSelectedSound.Controls.Add(this.sound3D);
             this.groupBoxSelectedSound.Controls.Add(this.tableLayoutPanel2);
             this.groupBoxSelectedSound.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBoxSelectedSound.Location = new System.Drawing.Point(3, 3);
             this.groupBoxSelectedSound.Name = "groupBoxSelectedSound";
-            this.groupBoxSelectedSound.Size = new System.Drawing.Size(136, 193);
+            this.groupBoxSelectedSound.Size = new System.Drawing.Size(310, 618);
             this.groupBoxSelectedSound.TabIndex = 0;
             this.groupBoxSelectedSound.TabStop = false;
-            this.groupBoxSelectedSound.Text = "Selected sound";
+            this.groupBoxSelectedSound.Text = "Selected Sound Source Variables";
             // 
             // sound3D
             // 
             this.sound3D.AutoSize = true;
             this.sound3D.Dock = System.Windows.Forms.DockStyle.Top;
             this.sound3D.Enabled = false;
-            this.sound3D.Location = new System.Drawing.Point(3, 167);
+            this.sound3D.Location = new System.Drawing.Point(3, 442);
             this.sound3D.Name = "sound3D";
             this.sound3D.Padding = new System.Windows.Forms.Padding(3);
             this.sound3D.Size = new System.Drawing.Size(130, 23);
             this.sound3D.TabIndex = 0;
             this.sound3D.Text = "3D";
             // 
+            // concreteSleepers
+            // 
+            this.concreteSleepers.AutoSize = true;
+            this.concreteSleepers.Dock = System.Windows.Forms.DockStyle.Top;
+            this.concreteSleepers.Enabled = false;
+            this.concreteSleepers.Location = new System.Drawing.Point(3, 467);
+            this.concreteSleepers.Name = "concreteSleepers";
+            this.concreteSleepers.Padding = new System.Windows.Forms.Padding(3);
+            this.concreteSleepers.Size = new System.Drawing.Size(130, 23);
+            this.concreteSleepers.TabIndex = 0;
+            this.concreteSleepers.Text = "Concrete Sleepers";
+            // 
+            // carInTunnel
+            // 
+            this.carInTunnel.AutoSize = true;
+            this.carInTunnel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.carInTunnel.Enabled = false;
+            this.carInTunnel.Location = new System.Drawing.Point(3, 492);
+            this.carInTunnel.Name = "carInTunnel";
+            this.carInTunnel.Padding = new System.Windows.Forms.Padding(3);
+            this.carInTunnel.Size = new System.Drawing.Size(130, 23);
+            this.carInTunnel.TabIndex = 0;
+            this.carInTunnel.Text = "Car In Tunnel";
+            // 
             // tableLayoutPanel2
             // 
             this.tableLayoutPanel2.ColumnCount = 2;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Controls.Add(this.smsVolume, 1, 5);
-            this.tableLayoutPanel2.Controls.Add(this.distance, 0, 4);
-            this.tableLayoutPanel2.Controls.Add(this.variable3, 1, 3);
-            this.tableLayoutPanel2.Controls.Add(this.label1, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.variable2, 1, 2);
-            this.tableLayoutPanel2.Controls.Add(this.variable1, 1, 1);
-            this.tableLayoutPanel2.Controls.Add(this.label3, 0, 2);
+            this.tableLayoutPanel2.Controls.Add(this.speedLabel, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.speed, 1, 0);
-            this.tableLayoutPanel2.Controls.Add(this.label4, 0, 3);
-            this.tableLayoutPanel2.Controls.Add(this.label2, 0, 1);
-            this.tableLayoutPanel2.Controls.Add(this.label5, 0, 4);
-            this.tableLayoutPanel2.Controls.Add(this.label6, 0, 5);
+            this.tableLayoutPanel2.Controls.Add(this.wheelRPMLabel, 0, 1);
+            this.tableLayoutPanel2.Controls.Add(this.wheelRPM, 1, 1);
+            this.tableLayoutPanel2.Controls.Add(this.tractiveEffortLabel, 0, 2);
+            this.tableLayoutPanel2.Controls.Add(this.tractiveEffort, 1, 2);
+            this.tableLayoutPanel2.Controls.Add(this.tractivePowerLabel, 0, 3);
+            this.tableLayoutPanel2.Controls.Add(this.tractivePower, 1, 3);
+            this.tableLayoutPanel2.Controls.Add(this.variable1Label, 0, 4);
+            this.tableLayoutPanel2.Controls.Add(this.variable1, 1, 4);
+            this.tableLayoutPanel2.Controls.Add(this.variable2Label, 0, 5);
+            this.tableLayoutPanel2.Controls.Add(this.variable2, 1, 5);
+            this.tableLayoutPanel2.Controls.Add(this.variable2BoosterLabel, 0, 6);
+            this.tableLayoutPanel2.Controls.Add(this.variable2Booster, 1, 6);
+            this.tableLayoutPanel2.Controls.Add(this.variable3Label, 0, 7);
+            this.tableLayoutPanel2.Controls.Add(this.variable3, 1, 7);
+            this.tableLayoutPanel2.Controls.Add(this.engineRPMLabel, 0, 8);
+            this.tableLayoutPanel2.Controls.Add(this.engineRPM, 1, 8);
+            this.tableLayoutPanel2.Controls.Add(this.enginePowerLabel, 0, 9);
+            this.tableLayoutPanel2.Controls.Add(this.enginePower, 1, 9);
+            this.tableLayoutPanel2.Controls.Add(this.engineTorqueLabel, 0, 10);
+            this.tableLayoutPanel2.Controls.Add(this.engineTorque, 1, 10);
+            this.tableLayoutPanel2.Controls.Add(this.backPressureLabel, 0, 11);
+            this.tableLayoutPanel2.Controls.Add(this.backPressure, 1, 11);
+            this.tableLayoutPanel2.Controls.Add(this.brakeCylLabel, 0, 12);
+            this.tableLayoutPanel2.Controls.Add(this.brakeCyl, 1, 12);
+            this.tableLayoutPanel2.Controls.Add(this.curveForceLabel, 0, 13);
+            this.tableLayoutPanel2.Controls.Add(this.curveForce, 1, 13);
+            this.tableLayoutPanel2.Controls.Add(this.angleOfAttackLabel, 0, 14);
+            this.tableLayoutPanel2.Controls.Add(this.angleOfAttack, 1, 14);
+            this.tableLayoutPanel2.Controls.Add(this.carFrictionLabel, 0, 15);
+            this.tableLayoutPanel2.Controls.Add(this.carFriction, 1, 15);
+            this.tableLayoutPanel2.Controls.Add(this.carTunnelDistanceLabel, 0, 16);
+            this.tableLayoutPanel2.Controls.Add(this.carTunnelDistance, 1, 16);
+            this.tableLayoutPanel2.Controls.Add(this.distanceLabel, 0, 17);
+            this.tableLayoutPanel2.Controls.Add(this.distance, 1, 17);
+            this.tableLayoutPanel2.Controls.Add(this.distanceSquaredLabel, 0, 18);
+            this.tableLayoutPanel2.Controls.Add(this.distanceSquared, 1, 18);
+            this.tableLayoutPanel2.Controls.Add(this.smsVolumeLabel, 0, 19);
+            this.tableLayoutPanel2.Controls.Add(this.smsVolume, 1, 19);
+            this.tableLayoutPanel2.Controls.Add(this.smsFrequencyLabel, 0, 20);
+            this.tableLayoutPanel2.Controls.Add(this.smsFrequency, 1, 20);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Top;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 16);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 6;
+            this.tableLayoutPanel2.RowCount = 21;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
@@ -243,217 +338,436 @@ namespace Orts.Viewer3D.Debugging
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(130, 151);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(190, 526);
             this.tableLayoutPanel2.TabIndex = 8;
             // 
-            // smsVolume
+            // speedLabel
             // 
-            this.smsVolume.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.smsVolume.Location = new System.Drawing.Point(73, 128);
-            this.smsVolume.Name = "smsVolume";
-            this.smsVolume.ReadOnly = true;
-            this.smsVolume.Size = new System.Drawing.Size(54, 20);
-            this.smsVolume.TabIndex = 5;
-            // 
-            // distance
-            // 
-            this.distance.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.distance.Location = new System.Drawing.Point(73, 103);
-            this.distance.Name = "distance";
-            this.distance.ReadOnly = true;
-            this.distance.Size = new System.Drawing.Size(54, 20);
-            this.distance.TabIndex = 4;
-            // 
-            // variable3
-            // 
-            this.variable3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.variable3.Location = new System.Drawing.Point(73, 78);
-            this.variable3.Name = "variable3";
-            this.variable3.ReadOnly = true;
-            this.variable3.Size = new System.Drawing.Size(54, 20);
-            this.variable3.TabIndex = 3;
-            // 
-            // label1
-            // 
-            this.label1.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 6);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(38, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Speed";
-            // 
-            // variable2
-            // 
-            this.variable2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.variable2.Location = new System.Drawing.Point(73, 53);
-            this.variable2.Name = "variable2";
-            this.variable2.ReadOnly = true;
-            this.variable2.Size = new System.Drawing.Size(54, 20);
-            this.variable2.TabIndex = 2;
-            // 
-            // variable1
-            // 
-            this.variable1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.variable1.Location = new System.Drawing.Point(73, 28);
-            this.variable1.Name = "variable1";
-            this.variable1.ReadOnly = true;
-            this.variable1.Size = new System.Drawing.Size(54, 20);
-            this.variable1.TabIndex = 1;
-            // 
-            // label3
-            // 
-            this.label3.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 56);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(54, 13);
-            this.label3.TabIndex = 3;
-            this.label3.Text = "Variable 2";
+            this.speedLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.speedLabel.AutoSize = true;
+            this.speedLabel.Location = new System.Drawing.Point(3, 31);
+            this.speedLabel.Name = "speedLabel";
+            this.speedLabel.Size = new System.Drawing.Size(130, 13);
+            this.speedLabel.TabIndex = 0;
+            this.speedLabel.Text = "Speed (m/s)";
             // 
             // speed
             // 
             this.speed.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.speed.Location = new System.Drawing.Point(73, 3);
+            this.speed.Location = new System.Drawing.Point(73, 28);
             this.speed.Name = "speed";
             this.speed.ReadOnly = true;
             this.speed.Size = new System.Drawing.Size(54, 20);
             this.speed.TabIndex = 0;
             // 
-            // label4
+            // wheelRPMLabel
             // 
-            this.label4.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 81);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(54, 13);
-            this.label4.TabIndex = 4;
-            this.label4.Text = "Variable 3";
+            this.wheelRPMLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.wheelRPMLabel.AutoSize = true;
+            this.wheelRPMLabel.Location = new System.Drawing.Point(3, 56);
+            this.wheelRPMLabel.Name = "wheelRPMLabel";
+            this.wheelRPMLabel.Size = new System.Drawing.Size(130, 13);
+            this.wheelRPMLabel.TabIndex = 1;
+            this.wheelRPMLabel.Text = "Wheel RPM";
             // 
-            // label2
+            // wheelRPM
             // 
-            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 31);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(54, 13);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Variable 1";
+            this.wheelRPM.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wheelRPM.Location = new System.Drawing.Point(73, 53);
+            this.wheelRPM.Name = "wheelRPM";
+            this.wheelRPM.ReadOnly = true;
+            this.wheelRPM.Size = new System.Drawing.Size(54, 20);
+            this.wheelRPM.TabIndex = 1;
             // 
-            // label5
+            // tractiveEffortLabel
             // 
-            this.label5.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 106);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(49, 13);
-            this.label5.TabIndex = 4;
-            this.label5.Text = "Distance";
+            this.tractiveEffortLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.tractiveEffortLabel.AutoSize = true;
+            this.tractiveEffortLabel.Location = new System.Drawing.Point(3, 81);
+            this.tractiveEffortLabel.Name = "tractiveEffortLabel";
+            this.tractiveEffortLabel.Size = new System.Drawing.Size(130, 13);
+            this.tractiveEffortLabel.TabIndex = 2;
+            this.tractiveEffortLabel.Text = "Tractive Effort (kN)";
             // 
-            // label6
+            // tractiveEffort
             // 
-            this.label6.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(3, 131);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(42, 13);
-            this.label6.TabIndex = 4;
-            this.label6.Text = "Volume";
+            this.tractiveEffort.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tractiveEffort.Location = new System.Drawing.Point(73, 78);
+            this.tractiveEffort.Name = "tractiveEffort";
+            this.tractiveEffort.ReadOnly = true;
+            this.tractiveEffort.Size = new System.Drawing.Size(54, 20);
+            this.tractiveEffort.TabIndex = 2;
+            // 
+            // tractivePowerLabel
+            // 
+            this.tractivePowerLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.tractivePowerLabel.AutoSize = true;
+            this.tractivePowerLabel.Location = new System.Drawing.Point(3, 106);
+            this.tractivePowerLabel.Name = "tractivePowerLabel";
+            this.tractivePowerLabel.Size = new System.Drawing.Size(130, 13);
+            this.tractivePowerLabel.TabIndex = 3;
+            this.tractivePowerLabel.Text = "Tractive Power (kW)";
+            // 
+            // tractivePower
+            // 
+            this.tractivePower.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tractivePower.Location = new System.Drawing.Point(73, 103);
+            this.tractivePower.Name = "tractivePower";
+            this.tractivePower.ReadOnly = true;
+            this.tractivePower.Size = new System.Drawing.Size(54, 20);
+            this.tractivePower.TabIndex = 3;
+            // 
+            // variable1Label
+            // 
+            this.variable1Label.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.variable1Label.AutoSize = true;
+            this.variable1Label.Location = new System.Drawing.Point(3, 131);
+            this.variable1Label.Name = "variable1Label";
+            this.variable1Label.Size = new System.Drawing.Size(130, 13);
+            this.variable1Label.TabIndex = 4;
+            this.variable1Label.Text = "Variable 1";
+            // 
+            // variable1
+            // 
+            this.variable1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.variable1.Location = new System.Drawing.Point(73, 128);
+            this.variable1.Name = "variable1";
+            this.variable1.ReadOnly = true;
+            this.variable1.Size = new System.Drawing.Size(54, 20);
+            this.variable1.TabIndex = 4;
+            // 
+            // variable2Label
+            // 
+            this.variable2Label.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.variable2Label.AutoSize = true;
+            this.variable2Label.Location = new System.Drawing.Point(3, 156);
+            this.variable2Label.Name = "variable2Label";
+            this.variable2Label.Size = new System.Drawing.Size(130, 13);
+            this.variable2Label.TabIndex = 5;
+            this.variable2Label.Text = "Variable 2";
+            // 
+            // variable2
+            // 
+            this.variable2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.variable2.Location = new System.Drawing.Point(73, 153);
+            this.variable2.Name = "variable2";
+            this.variable2.ReadOnly = true;
+            this.variable2.Size = new System.Drawing.Size(54, 20);
+            this.variable2.TabIndex = 5;
+            // 
+            // variable2BoosterLabel
+            // 
+            this.variable2BoosterLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.variable2BoosterLabel.AutoSize = true;
+            this.variable2BoosterLabel.Location = new System.Drawing.Point(3, 181);
+            this.variable2BoosterLabel.Name = "variable2BoosterLabel";
+            this.variable2BoosterLabel.Size = new System.Drawing.Size(130, 13);
+            this.variable2BoosterLabel.TabIndex = 6;
+            this.variable2BoosterLabel.Text = "Booster Variable 2";
+            // 
+            // variable2Booster
+            // 
+            this.variable2Booster.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.variable2Booster.Location = new System.Drawing.Point(73, 178);
+            this.variable2Booster.Name = "variable2Booster";
+            this.variable2Booster.ReadOnly = true;
+            this.variable2Booster.Size = new System.Drawing.Size(54, 20);
+            this.variable2Booster.TabIndex = 6;
+            // 
+            // variable3Label
+            // 
+            this.variable3Label.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.variable3Label.AutoSize = true;
+            this.variable3Label.Location = new System.Drawing.Point(3, 206);
+            this.variable3Label.Name = "variable3Label";
+            this.variable3Label.Size = new System.Drawing.Size(130, 13);
+            this.variable3Label.TabIndex = 7;
+            this.variable3Label.Text = "Variable 3";
+            // 
+            // variable3
+            // 
+            this.variable3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.variable3.Location = new System.Drawing.Point(73, 203);
+            this.variable3.Name = "variable3";
+            this.variable3.ReadOnly = true;
+            this.variable3.Size = new System.Drawing.Size(54, 20);
+            this.variable3.TabIndex = 7;
+            // 
+            // engineRPMLabel
+            // 
+            this.engineRPMLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.engineRPMLabel.AutoSize = true;
+            this.engineRPMLabel.Location = new System.Drawing.Point(3, 231);
+            this.engineRPMLabel.Name = "engineRPMLabel";
+            this.engineRPMLabel.Size = new System.Drawing.Size(130, 13);
+            this.engineRPMLabel.TabIndex = 8;
+            this.engineRPMLabel.Text = "Engine RPM";
+            // 
+            // engineRPM
+            // 
+            this.engineRPM.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.engineRPM.Location = new System.Drawing.Point(73, 228);
+            this.engineRPM.Name = "engineRPM";
+            this.engineRPM.ReadOnly = true;
+            this.engineRPM.Size = new System.Drawing.Size(54, 20);
+            this.engineRPM.TabIndex = 8;
+            // 
+            // enginePowerLabel
+            // 
+            this.enginePowerLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.enginePowerLabel.AutoSize = true;
+            this.enginePowerLabel.Location = new System.Drawing.Point(3, 256);
+            this.enginePowerLabel.Name = "enginePowerLabel";
+            this.enginePowerLabel.Size = new System.Drawing.Size(130, 13);
+            this.enginePowerLabel.TabIndex = 9;
+            this.enginePowerLabel.Text = "Engine Power (kW)";
+            // 
+            // enginePower
+            // 
+            this.enginePower.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.enginePower.Location = new System.Drawing.Point(73, 253);
+            this.enginePower.Name = "enginePower";
+            this.enginePower.ReadOnly = true;
+            this.enginePower.Size = new System.Drawing.Size(54, 20);
+            this.enginePower.TabIndex = 9;
+            // 
+            // engineTorqueLabel
+            // 
+            this.engineTorqueLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.engineTorqueLabel.AutoSize = true;
+            this.engineTorqueLabel.Location = new System.Drawing.Point(3, 281);
+            this.engineTorqueLabel.Name = "engineTorqueLabel";
+            this.engineTorqueLabel.Size = new System.Drawing.Size(130, 13);
+            this.engineTorqueLabel.TabIndex = 10;
+            this.engineTorqueLabel.Text = "Engine Torque (N-m)";
+            // 
+            // engineTorque
+            // 
+            this.engineTorque.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.engineTorque.Location = new System.Drawing.Point(73, 278);
+            this.engineTorque.Name = "engineTorque";
+            this.engineTorque.ReadOnly = true;
+            this.engineTorque.Size = new System.Drawing.Size(54, 20);
+            this.engineTorque.TabIndex = 10;
+            // 
+            // backPressureLabel
+            // 
+            this.backPressureLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.backPressureLabel.AutoSize = true;
+            this.backPressureLabel.Location = new System.Drawing.Point(3, 306);
+            this.backPressureLabel.Name = "backPressureLabel";
+            this.backPressureLabel.Size = new System.Drawing.Size(130, 13);
+            this.backPressureLabel.TabIndex = 11;
+            this.backPressureLabel.Text = "Back Pressure (psi)";
+            // 
+            // backPressure
+            // 
+            this.backPressure.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.backPressure.Location = new System.Drawing.Point(73, 303);
+            this.backPressure.Name = "backPressure";
+            this.backPressure.ReadOnly = true;
+            this.backPressure.Size = new System.Drawing.Size(54, 20);
+            this.backPressure.TabIndex = 11;
+            // 
+            // brakeCylLabel
+            // 
+            this.brakeCylLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.brakeCylLabel.AutoSize = true;
+            this.brakeCylLabel.Location = new System.Drawing.Point(3, 331);
+            this.brakeCylLabel.Name = "brakeCylLabel";
+            this.brakeCylLabel.Size = new System.Drawing.Size(130, 13);
+            this.brakeCylLabel.TabIndex = 12;
+            this.brakeCylLabel.Text = "Brake Cylinder (psi)";
+            // 
+            // brakeCyl
+            // 
+            this.brakeCyl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.brakeCyl.Location = new System.Drawing.Point(73, 328);
+            this.brakeCyl.Name = "brakeCyl";
+            this.brakeCyl.ReadOnly = true;
+            this.brakeCyl.Size = new System.Drawing.Size(54, 20);
+            this.brakeCyl.TabIndex = 12;
+            // 
+            // curveForceLabel
+            // 
+            this.curveForceLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.curveForceLabel.AutoSize = true;
+            this.curveForceLabel.Location = new System.Drawing.Point(3, 356);
+            this.curveForceLabel.Name = "curveForceLabel";
+            this.curveForceLabel.Size = new System.Drawing.Size(130, 13);
+            this.curveForceLabel.TabIndex = 13;
+            this.curveForceLabel.Text = "Curve Force (N)";
+            // 
+            // curveForce
+            // 
+            this.curveForce.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.curveForce.Location = new System.Drawing.Point(73, 353);
+            this.curveForce.Name = "curveForce";
+            this.curveForce.ReadOnly = true;
+            this.curveForce.Size = new System.Drawing.Size(54, 20);
+            this.curveForce.TabIndex = 13;
+            // 
+            // angleOfAttackLabel
+            // 
+            this.angleOfAttackLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.angleOfAttackLabel.AutoSize = true;
+            this.angleOfAttackLabel.Location = new System.Drawing.Point(3, 381);
+            this.angleOfAttackLabel.Name = "angleOfAttackLabel";
+            this.angleOfAttackLabel.Size = new System.Drawing.Size(130, 13);
+            this.angleOfAttackLabel.TabIndex = 14;
+            this.angleOfAttackLabel.Text = "Angle of Attack (mRad)";
+            // 
+            // angleOfAttack
+            // 
+            this.angleOfAttack.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.angleOfAttack.Location = new System.Drawing.Point(73, 378);
+            this.angleOfAttack.Name = "angleOfAttack";
+            this.angleOfAttack.ReadOnly = true;
+            this.angleOfAttack.Size = new System.Drawing.Size(54, 20);
+            this.angleOfAttack.TabIndex = 14;
+            // 
+            // carFrictionLabel
+            // 
+            this.carFrictionLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.carFrictionLabel.AutoSize = true;
+            this.carFrictionLabel.Location = new System.Drawing.Point(3, 406);
+            this.carFrictionLabel.Name = "carFrictionLabel";
+            this.carFrictionLabel.Size = new System.Drawing.Size(130, 13);
+            this.carFrictionLabel.TabIndex = 15;
+            this.carFrictionLabel.Text = "Car Friction Coefficient";
+            // 
+            // carFriction
+            // 
+            this.carFriction.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.carFriction.Location = new System.Drawing.Point(73, 403);
+            this.carFriction.Name = "carFriction";
+            this.carFriction.ReadOnly = true;
+            this.carFriction.Size = new System.Drawing.Size(54, 20);
+            this.carFriction.TabIndex = 15;
+            // 
+            // carTunnelDistanceLabel
+            // 
+            this.carTunnelDistanceLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.carTunnelDistanceLabel.AutoSize = true;
+            this.carTunnelDistanceLabel.Location = new System.Drawing.Point(3, 431);
+            this.carTunnelDistanceLabel.Name = "carTunnelDistanceLabel";
+            this.carTunnelDistanceLabel.Size = new System.Drawing.Size(130, 13);
+            this.carTunnelDistanceLabel.TabIndex = 16;
+            this.carTunnelDistanceLabel.Text = "Car Tunnel Distance (m)";
+            // 
+            // carTunnelDistance
+            // 
+            this.carTunnelDistance.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.carTunnelDistance.Location = new System.Drawing.Point(73, 428);
+            this.carTunnelDistance.Name = "carTunnelDistance";
+            this.carTunnelDistance.ReadOnly = true;
+            this.carTunnelDistance.Size = new System.Drawing.Size(54, 20);
+            this.carTunnelDistance.TabIndex = 16;
+            // 
+            // distanceLabel
+            // 
+            this.distanceLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.distanceLabel.AutoSize = true;
+            this.distanceLabel.Location = new System.Drawing.Point(3, 456);
+            this.distanceLabel.Name = "distanceLabel";
+            this.distanceLabel.Size = new System.Drawing.Size(130, 13);
+            this.distanceLabel.TabIndex = 17;
+            this.distanceLabel.Text = "Distance (m)";
+            // 
+            // distance
+            // 
+            this.distance.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.distance.Location = new System.Drawing.Point(73, 453);
+            this.distance.Name = "distance";
+            this.distance.ReadOnly = true;
+            this.distance.Size = new System.Drawing.Size(54, 20);
+            this.distance.TabIndex = 17;
+            // 
+            // distanceSquaredLabel
+            // 
+            this.distanceSquaredLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.distanceSquaredLabel.AutoSize = true;
+            this.distanceSquaredLabel.Location = new System.Drawing.Point(3, 481);
+            this.distanceSquaredLabel.Name = "carDistanceTrackLabel";
+            this.distanceSquaredLabel.Size = new System.Drawing.Size(130, 13);
+            this.distanceSquaredLabel.TabIndex = 18;
+            this.distanceSquaredLabel.Text = "Distance Squared (m²)";
+            // 
+            // distanceSquared
+            // 
+            this.distanceSquared.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.distanceSquared.Location = new System.Drawing.Point(73, 478);
+            this.distanceSquared.Name = "distanceSquared";
+            this.distanceSquared.ReadOnly = true;
+            this.distanceSquared.Size = new System.Drawing.Size(54, 20);
+            this.distanceSquared.TabIndex = 18;
+            // 
+            // smsVolumeLabel
+            // 
+            this.smsVolumeLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.smsVolumeLabel.AutoSize = true;
+            this.smsVolumeLabel.Location = new System.Drawing.Point(3, 506);
+            this.smsVolumeLabel.Name = "smsVolumeLabel";
+            this.smsVolumeLabel.Size = new System.Drawing.Size(130, 13);
+            this.smsVolumeLabel.TabIndex = 19;
+            this.smsVolumeLabel.Text = "Volume";
+            // 
+            // smsVolume
+            // 
+            this.smsVolume.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.smsVolume.Location = new System.Drawing.Point(73, 503);
+            this.smsVolume.Name = "smsVolume";
+            this.smsVolume.ReadOnly = true;
+            this.smsVolume.Size = new System.Drawing.Size(54, 20);
+            this.smsVolume.TabIndex = 19;
+            // 
+            // smsFrequencyLabel
+            // 
+            this.smsFrequencyLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.smsFrequencyLabel.AutoSize = true;
+            this.smsFrequencyLabel.Location = new System.Drawing.Point(3, 531);
+            this.smsFrequencyLabel.Name = "smsFrequencyLabel";
+            this.smsFrequencyLabel.Size = new System.Drawing.Size(130, 13);
+            this.smsFrequencyLabel.TabIndex = 20;
+            this.smsFrequencyLabel.Text = "Frequency (Hz)";
+            // 
+            // smsFrequency
+            // 
+            this.smsFrequency.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.smsFrequency.Location = new System.Drawing.Point(73, 528);
+            this.smsFrequency.Name = "smsFrequency";
+            this.smsFrequency.ReadOnly = true;
+            this.smsFrequency.Size = new System.Drawing.Size(54, 20);
+            this.smsFrequency.TabIndex = 20;
             // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 2;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.textBox1, 1, 5);
-            this.tableLayoutPanel1.Controls.Add(this.textBox2, 0, 4);
-            this.tableLayoutPanel1.Controls.Add(this.textBox3, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.label7, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.textBox4, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.alSources, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.label8, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.waveLabel, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.waves, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label9, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.label10, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.label11, 0, 4);
-            this.tableLayoutPanel1.Controls.Add(this.label12, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.alSourcesLabel, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.alSources, 1, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 16);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 6;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(130, 151);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(170, 51);
             this.tableLayoutPanel1.TabIndex = 10;
             // 
-            // textBox1
+            // waveLabel
             // 
-            this.textBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox1.Location = new System.Drawing.Point(73, 128);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(54, 20);
-            this.textBox1.TabIndex = 5;
-            // 
-            // textBox2
-            // 
-            this.textBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox2.Location = new System.Drawing.Point(73, 103);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.ReadOnly = true;
-            this.textBox2.Size = new System.Drawing.Size(54, 20);
-            this.textBox2.TabIndex = 4;
-            // 
-            // textBox3
-            // 
-            this.textBox3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox3.Location = new System.Drawing.Point(73, 78);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.ReadOnly = true;
-            this.textBox3.Size = new System.Drawing.Size(54, 20);
-            this.textBox3.TabIndex = 3;
-            // 
-            // label7
-            // 
-            this.label7.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(3, 6);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(61, 13);
-            this.label7.TabIndex = 1;
-            this.label7.Text = "WavCache";
-            // 
-            // textBox4
-            // 
-            this.textBox4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox4.Location = new System.Drawing.Point(73, 53);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.ReadOnly = true;
-            this.textBox4.Size = new System.Drawing.Size(54, 20);
-            this.textBox4.TabIndex = 2;
-            // 
-            // alSources
-            // 
-            this.alSources.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.alSources.Location = new System.Drawing.Point(73, 28);
-            this.alSources.Name = "alSources";
-            this.alSources.ReadOnly = true;
-            this.alSources.Size = new System.Drawing.Size(54, 20);
-            this.alSources.TabIndex = 1;
-            // 
-            // label8
-            // 
-            this.label8.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(3, 56);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(0, 13);
-            this.label8.TabIndex = 3;
+            this.waveLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.waveLabel.AutoSize = true;
+            this.waveLabel.Location = new System.Drawing.Point(3, 6);
+            this.waveLabel.Name = "waveLabel";
+            this.waveLabel.Size = new System.Drawing.Size(61, 13);
+            this.waveLabel.TabIndex = 1;
+            this.waveLabel.Text = "Cached Wave Files";
             // 
             // waves
             // 
@@ -464,48 +778,30 @@ namespace Orts.Viewer3D.Debugging
             this.waves.Size = new System.Drawing.Size(54, 20);
             this.waves.TabIndex = 0;
             // 
-            // label9
+            // alSourcesLabel
             // 
-            this.label9.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(3, 81);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(0, 13);
-            this.label9.TabIndex = 4;
+            this.alSourcesLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.alSourcesLabel.AutoSize = true;
+            this.alSourcesLabel.Location = new System.Drawing.Point(3, 31);
+            this.alSourcesLabel.Name = "alSourcesLabel";
+            this.alSourcesLabel.Size = new System.Drawing.Size(0, 13);
+            this.alSourcesLabel.TabIndex = 3;
+            this.alSourcesLabel.Text = "AL Sound Sources";
             // 
-            // label10
+            // alSources
             // 
-            this.label10.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(3, 31);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(62, 13);
-            this.label10.TabIndex = 2;
-            this.label10.Text = "AL Sources";
-            // 
-            // label11
-            // 
-            this.label11.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(3, 106);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(0, 13);
-            this.label11.TabIndex = 4;
-            // 
-            // label12
-            // 
-            this.label12.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(3, 131);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(0, 13);
-            this.label12.TabIndex = 4;
+            this.alSources.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.alSources.Location = new System.Drawing.Point(73, 28);
+            this.alSources.Name = "alSources";
+            this.alSources.ReadOnly = true;
+            this.alSources.Size = new System.Drawing.Size(54, 20);
+            this.alSources.TabIndex = 1;
             // 
             // SoundDebugForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(434, 812);
+            this.ClientSize = new System.Drawing.Size(500, 700);
             this.Controls.Add(this.splitContainer2);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SoundDebugForm";
@@ -541,32 +837,56 @@ namespace Orts.Viewer3D.Debugging
         private System.Windows.Forms.GroupBox groupBoxActiveSounds;
         private System.Windows.Forms.GroupBox groupBoxInactiveSounds;
         private System.Windows.Forms.GroupBox groupBoxCache;
-        private System.Windows.Forms.CheckBox sound3D;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
-        private System.Windows.Forms.TextBox smsVolume;
-        private System.Windows.Forms.TextBox distance;
-        private System.Windows.Forms.TextBox variable3;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox variable2;
-        private System.Windows.Forms.TextBox variable1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox speed;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.TextBox textBox4;
-        private System.Windows.Forms.TextBox alSources;
-        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.Label speedLabel;
+        private System.Windows.Forms.TextBox speed;
+        private System.Windows.Forms.Label wheelRPMLabel;
+        private System.Windows.Forms.TextBox wheelRPM;
+        private System.Windows.Forms.Label tractiveEffortLabel;
+        private System.Windows.Forms.TextBox tractiveEffort;
+        private System.Windows.Forms.Label tractivePowerLabel;
+        private System.Windows.Forms.TextBox tractivePower;
+        private System.Windows.Forms.Label variable1Label;
+        private System.Windows.Forms.TextBox variable1;
+        private System.Windows.Forms.Label variable2Label;
+        private System.Windows.Forms.TextBox variable2;
+        private System.Windows.Forms.Label variable2BoosterLabel;
+        private System.Windows.Forms.TextBox variable2Booster;
+        private System.Windows.Forms.Label variable3Label;
+        private System.Windows.Forms.TextBox variable3;
+        private System.Windows.Forms.Label engineRPMLabel;
+        private System.Windows.Forms.TextBox engineRPM;
+        private System.Windows.Forms.Label enginePowerLabel;
+        private System.Windows.Forms.TextBox enginePower;
+        private System.Windows.Forms.Label engineTorqueLabel;
+        private System.Windows.Forms.TextBox engineTorque;
+        private System.Windows.Forms.Label backPressureLabel;
+        private System.Windows.Forms.TextBox backPressure;
+        private System.Windows.Forms.Label brakeCylLabel;
+        private System.Windows.Forms.TextBox brakeCyl;
+        private System.Windows.Forms.Label curveForceLabel;
+        private System.Windows.Forms.TextBox curveForce;
+        private System.Windows.Forms.Label angleOfAttackLabel;
+        private System.Windows.Forms.TextBox angleOfAttack;
+        private System.Windows.Forms.Label carFrictionLabel;
+        private System.Windows.Forms.TextBox carFriction;
+        private System.Windows.Forms.Label carTunnelDistanceLabel;
+        private System.Windows.Forms.TextBox carTunnelDistance;
+        private System.Windows.Forms.Label distanceLabel;
+        private System.Windows.Forms.TextBox distance;
+        private System.Windows.Forms.Label distanceSquaredLabel;
+        private System.Windows.Forms.TextBox distanceSquared;
+        private System.Windows.Forms.Label smsVolumeLabel;
+        private System.Windows.Forms.TextBox smsVolume;
+        private System.Windows.Forms.Label smsFrequencyLabel;
+        private System.Windows.Forms.TextBox smsFrequency;
+        private System.Windows.Forms.CheckBox sound3D;
+        private System.Windows.Forms.CheckBox concreteSleepers;
+        private System.Windows.Forms.CheckBox carInTunnel;
+        private System.Windows.Forms.Label waveLabel;
         private System.Windows.Forms.TextBox waves;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label alSourcesLabel;
+        private System.Windows.Forms.TextBox alSources;
     }
 }

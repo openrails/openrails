@@ -1550,6 +1550,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 SteamEngines[0].Initialize();
             }
 
+            Variable1 = new float[SteamEngines.Count];
+
             if (MSTSNumCylinders < 0 && ZeroError(MSTSNumCylinders, SteamEngines[0].NumberCylinders, "NumCylinders"))
                 MSTSNumCylinders = 0;
             if (ZeroError(MSTSCylinderDiameterM, SteamEngines[0].CylindersDiameterM, "MSTSCylinderDiameter"))
@@ -4185,36 +4187,28 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             float SmokeColorUnits = (RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS + BlowerBurnEffect + (SmokeColorDamper * SmokeColorFireMass)) / PreviousTotalSteamUsageLBpS - 0.2f;
             SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp(SmokeColorUnits, 0.25f, 1));
 
-            float[] variable = new float[5];
-
             for (int i = 0; i < SteamEngines.Count; i++)
             {
                 // Variable is proportional to angular speed, value of 10 means 1 rotation/second.
-                variable[i] = ThrottlePercent == 0 ? 0 : Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
+                Variable1[i] = ThrottlePercent == 0 ? 0 : Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
 
                 // overwrite Booster variable if in Idle or Run mode - gears not engaged
                 if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
                     if (!SteamBoosterAirOpen || BoosterAirisLow) // Booster is off
                     {
-                        variable[i] = 0;
+                        Variable1[i] = 0;
                     }
                     else if ((SteamBoosterRunMode && !BoosterGearsEngaged) || SteamBoosterIdleMode) // Run mode - gears not engaged, and Idle mode                        
                     {
-                        variable[i] = pS.FrompM(BoosterEngineSpeedRpM) * 5;
+                        Variable1[i] = pS.FrompM(BoosterEngineSpeedRpM) * 5;
                     }
                     else if (SteamBoosterRunMode && BoosterGearsEngaged) // Run mode - gears engaged, runs in similar fashion to main engine.
                     {
-                        variable[i] = variable[i];
+                        Variable1[i] = Variable1[i];
                     }
                 }
             }
-
-            // Set variables for each engine
-            Variable1 = variable[0];
-            Variable1_2 = variable[1];
-            Variable1_3 = variable[2];
-            Variable1_4 = variable[3];
 
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
 
@@ -4238,7 +4232,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             const int fullLoop = 10 * rotations;
             int numPulses = MSTSNumCylinders * 2 * rotations;
 
-            var dPulseTracker = Variable1 / fullLoop * numPulses * elapsedClockSeconds;
+            var dPulseTracker = Variable1[0] / fullLoop * numPulses * elapsedClockSeconds;
             PulseTracker += dPulseTracker;
 
             if (PulseTracker > (float)NextPulse - dPulseTracker / 2)

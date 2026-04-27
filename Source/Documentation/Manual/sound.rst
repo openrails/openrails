@@ -469,7 +469,7 @@ The following control parameters can be used in the relevant track region SMS fi
 
 ``AngleofAttackControlled`` - Varies as the Angle of Attack of a car on a curve varies, in Milliradian (mRad).
 
-``CarFrictionControlled`` - Varies as friction of car changes, typically between 0 and 1.
+``CarFrictionControlled`` - Varies as the adhesion of trailing wagons change, typically between 0.1 and 0.5.
 
 ``WheelRPMControlled`` - Varies as RPM of wheel changes, in RPM.
 
@@ -498,7 +498,7 @@ over a Cross over, and can be varied in accordance with the number of axles defi
 
 ``CarCameraDistance_inc_past``, ``CarCameraDistance_dec_past`` - Distance that the car is from the camera, in metres.
 
-Note: If rolling stock already has track sounds set up in tyhe wagon SMS file, then these will be played at the same time as the route based sounds. For best sound outcomes, 
+Note: If rolling stock already has track sounds set up in the wagon SMS file, then these will be played at the same time as the route based sounds. For best sound outcomes, 
 the number of axles for each wagon should be correctly set in the WAG file.
 
 
@@ -517,11 +517,11 @@ There are a number of triggers as follows:
 
 - pressure in the brake cylinder (psi)	
 
-- centrifugal force due to traversing a curve (N)	
+- resistance force due to traversing a curve (N)	
 
 - 3 variables in range 0 - 1:
 
-  - Variable1 reflects the throttle. For steam locomotives it is possible to have multiple steam engines, thus this variable can be applied
+  - Variable1 reflects the throttle. For steam locomotives in ORTS it is possible to have multiple steam engines, thus this variable can be applied
    to each engine, by using a sound trigger of the form ``Variable1_x_inc_past`` or ``Variable1_x_dec_past``, where x = steam engine number.
 
   - Variable2 reflects the engine's RPM (diesel) or Tractive Force (electric) or cylinder pressure (steam). Where a Booster Engine is fitted, 
@@ -550,6 +550,29 @@ New variables introduced by OR:
   which makes the sound speed dependent too, and ``CurveForceControlled``. 
   Of course ``CurveForce_Inc_Past``, and ``CurveForce_Dec_Past`` are also 
   available for activating and deactivating the sound.
+- Tractive effort (kN) and tractive power (kW):
+  - For curves, ``TractiveEffortControlled``, and for triggers, ``TractiveEffort_Inc_Past`` and ``TractiveEffort_Dec_Past``, can be used
+    to make sounds tractive effort dependant, with the tractive effort values measured in *kilonewtons*. The tractive effort value used by
+    the sound system can be positive or negative, negative values indicate force opposite the direction of travel (either dynamic braking,
+    or using the throttle in the wrong direction).
+  - Similarly, ``TractivePowerControlled`` can be used on curves and ``TractivePower_Inc_Past`` or ``TractivePower_Dec_Past`` on triggers
+    to vary sounds with the power, measured in *kilowatts*, applied to the rails. Like for tractive effort, a negative value indicates
+    dynamic braking or traction against the motion of the train.
+- Diesel engine rotation speed (RPM), diesel engine power (kW), and diesel engine torque (Nm):
+  - Curve control ``EngineXRPMControlled`` and variable triggers ``EngineXRPM_Inc_Past`` and ``EngineXRPM_Dec_Past`` can control sounds based
+    on engine RPM (note: unlike Variable2, EngineRPM values are NOT scaled to a range of 0-1, the values used must correspond to the actual
+    RPM values of the engine) where X is the diesel engine number, allowing for sounds to respond to individual engines on locomotives with
+    multiple diesel engines. On locomotives with only one engine, the X value can be removed (eg: ``EngineRPMControlled``) and the RPM value
+    of the #1 engine will be used by default.
+  - Curve control ``EngineXPowerControlled`` and variable triggers ``EngineXPower_Inc_Past`` and ``EngineXPower_Dec_Past`` similarly control sounds
+    depending on the actual instantaneous power output of the engine, measured in *kilowatts*. This allows for more dynamic engine sounds than
+    using RPM alone, as real engines sound very different when unloaded (generating low power) and loaded (generating high power). As with engine
+    RPM, X must be replaced with the diesel engine number, but X can be removed if there is only one diesel engine.
+  - Curve control ``EngineXTorqueControlled`` and variable triggers ``EngineXTorque_Inc_Past`` and ``EngineXTorque_Dec_Past`` likewise control sounds
+    using the instantaneous torque output of the engine in *newton meters*. Like for engine power, this is another option to create sounds that vary
+    with engine load. As with engine RPM and power, the value X is optionally included to specify which diesel engine to measure the torque of.
+  - See the :ref:`sound debug window <driving-sound-debug>` to determine typical RPM, power, and torque values used by the sound system
+    for each engine in real time.
 
 Sound Loop Management
 ---------------------
