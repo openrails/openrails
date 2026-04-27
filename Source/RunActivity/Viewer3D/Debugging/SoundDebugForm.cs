@@ -36,7 +36,7 @@ namespace Orts.Viewer3D.Debugging
         private double lastUpdateTime = 0;
         private int UpdateCounter = -1;
 
-        private SoundSource selectedSoundSource;
+        private SoundSource SelectedSoundSource;
 
         public SoundDebugForm(Viewer viewer)
         {
@@ -113,7 +113,7 @@ namespace Orts.Viewer3D.Debugging
                         // Lag reduction: Only update 1/20th of the sound sources each update,
                         // except on the first update, and except for the selected sound source
                         sourceIndex++;
-                        if (UpdateCounter > -1 && (sourceIndex + UpdateCounter) % 20 != 0 && source != selectedSoundSource)
+                        if (UpdateCounter > -1 && (sourceIndex + UpdateCounter) % 20 != 0 && source != SelectedSoundSource)
                             continue;
 
                         TreeNode node, subNode;
@@ -265,49 +265,59 @@ namespace Orts.Viewer3D.Debugging
 
             if (selectedNode?.Tag is SoundSource)
             {
-                selectedSoundSource = (SoundSource)selectedNode.Tag;
-                selectedCar = selectedSoundSource.Car;
+                SelectedSoundSource = (SoundSource)selectedNode.Tag;
+                selectedCar = SelectedSoundSource.Car;
             }
             else if (selectedNode?.Tag is MSTSWagon car)
             {
-                selectedSoundSource = null;
+                SelectedSoundSource = null;
                 selectedCar = car;
             }
             else if (selectedNode?.Tag is SoundStream stream)
             {
-                selectedSoundSource = stream.SoundSource;
-                selectedCar = selectedSoundSource.Car;
+                selectedStream = stream;
+                SelectedSoundSource = selectedStream.SoundSource;
+                selectedCar = SelectedSoundSource.Car;
             }
             else
             {
-                selectedSoundSource = null;
+                SelectedSoundSource = null;
             }
 
-            if (selectedSoundSource != null)
+
+            if (selectedStream != null && selectedStream.ALSoundSource.SoundSourceID != -1)
             {
-                int soundSourceID = -1;
-                int i = -1;
-                if (selectedSoundSource.SoundStreams.Count > 0)
-                    while (++i < selectedSoundSource.SoundStreams.Count)
-                    {
-                        soundSourceID = selectedSoundSource.SoundStreams[i].ALSoundSource.SoundSourceID;
-                        if (soundSourceID != -1)
-                            break;
-                    }
+                //Stream distance:
+                float[] pos = new float[3];
+                OpenAL.alGetSource3f(selectedStream.ALSoundSource.SoundSourceID, OpenAL.AL_POSITION, out pos[0], out pos[1], out pos[2]);
+                float[] lpos = new float[3];
+                OpenAL.alGetListener3f(OpenAL.AL_POSITION, out lpos[0], out lpos[1], out lpos[2]);
+                for (var j = 0; j < 3; j++)
+                    pos[j] -= lpos[j];
 
-                if (selectedSoundSource.WorldLocation != WorldLocation.None && selectedSoundSource.SoundStreams.Count > 0)
+                float squareDistance = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
+
+                distance.Text = Math.Sqrt(squareDistance).ToString("0.0");
+                distanceSquared.Text = squareDistance.ToString("0");
+
+                OpenAL.alGetSourcei(selectedStream.ALSoundSource.SoundSourceID, OpenAL.AL_SOURCE_RELATIVE, out int relative);
+                sound3D.Checked = relative == OpenAL.AL_FALSE;
+
+                OpenAL.alGetSourcef(selectedStream.ALSoundSource.SoundSourceID, OpenAL.AL_GAIN, out float gain);
+                smsVolume.Text = gain.ToString("0.000");
+
+                OpenAL.alGetSourcef(selectedStream.ALSoundSource.SoundSourceID, OpenAL.AL_PITCH, out float freq);
+                smsFrequency.Text = (freq * selectedStream.ALSoundSource.SampleRate).ToString("0");
+            }
+            else // No stream selected, fall back to distance relative to the sound source
+            {
+                smsVolume.Text = "-";
+                smsFrequency.Text = "-";
+                sound3D.Checked = false;
+
+                if (SelectedSoundSource != null && SelectedSoundSource.WorldLocation != WorldLocation.None)
                 {
-                    //Source distance:
-                    //distance.Text = Math.Sqrt(selectedSoundSource.DistanceSquared).ToString("F1");
-
-                    //Stream distance:
-                    float[] pos = new float[3];
-                    OpenAL.alGetSource3f(soundSourceID, OpenAL.AL_POSITION, out pos[0], out pos[1], out pos[2]);
-                    float[] lpos = new float[3];
-                    OpenAL.alGetListener3f(OpenAL.AL_POSITION, out lpos[0], out lpos[1], out lpos[2]);
-                    for (var j = 0; j < 3; j++)
-                        pos[j] -= lpos[j];
-                    double squareDistance = pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2];
+                    float squareDistance = SelectedSoundSource.DistanceSquared;
 
                     distance.Text = Math.Sqrt(squareDistance).ToString("0.0");
                     distanceSquared.Text = squareDistance.ToString("0");
@@ -317,21 +327,8 @@ namespace Orts.Viewer3D.Debugging
                     distance.Text = "-";
                     distanceSquared.Text = "-";
                 }
-
-                OpenAL.alGetSourcei(soundSourceID, OpenAL.AL_SOURCE_RELATIVE, out int relative);
-                sound3D.Checked = relative == OpenAL.AL_FALSE;
-
-                OpenAL.alGetSourcef(soundSourceID, OpenAL.AL_GAIN, out float gain);
-                smsVolume.Text = gain.ToString("0.#%");
             }
-            else
-            {
-                distance.Text = "-";
-                distanceSquared.Text = "-";
-                smsVolume.Text = "-";
 
-                sound3D.Checked = false;
-            }
             if (selectedCar != null)
             {
                 speed.Text = Math.Abs(selectedCar.SpeedMpS).ToString("0.0");
@@ -365,7 +362,7 @@ namespace Orts.Viewer3D.Debugging
                     variable1Text = variable1Text + ", " + Variable1[v1].ToString("0.000");
                 variable1.Text = variable1Text;
                 variable2.Text = Variable2.ToString("0.000");
-                variable2Booster.Text = Variable2.ToString("0.000");
+                variable2Booster.Text = Variable2Booster.ToString("0.000");
                 variable3.Text = Variable3.ToString("0.000");
 
                 string engineRPMText = selectedCar.EnginesRPM[0].ToString("0.0");
@@ -418,7 +415,6 @@ namespace Orts.Viewer3D.Debugging
                 curveForce.Text = "-";
                 angleOfAttack.Text = "-";
 
-                distanceSquared.Text = "-";
                 carTunnelDistance.Text = "-";
 
                 concreteSleepers.Checked = false;
