@@ -2537,15 +2537,69 @@ By pressing ``<Alt+S>`` this window opens:
     :align: center
     :scale: 80%
 
-It shows in the upper part the list of all active .sms files (track sound apart);
-by expanding 
-the detail of a specific .sms file, the list of all sound streams is 
-displayed, as well as their state. On the left the value of the analog 
-sound variables is displayed for the selected .sms file. The volume refers 
-to the first stream of the selected sound file.
+This window is a tool to help content creators debug, fine-tune, and
+optimize sound sets. It is not required for normal operations and
+has a noticable performance impact, so it should not be used outside
+of testing sound.
 
-Active and inactive sounds toggle passing from internal to external views 
-and vice-versa.
+On the right, the list of all sound sources is shown. The upper list
+shows all the active sound sources, that is, sound sources currently playing
+sound. The lower list then shows all the inactive sources, which are not
+playing any sound right now, but may become active later. A source will
+automatically transfer between these lists as it activates or deactivates.
+
+These sources can either come from scenery in the world or from a train car.
+World sounds are denoted by saying "World", the tile coordinates the sound
+is located in, and the name of the SMS file used to control the sounds.
+Train car sounds are denoted with "Car", the car ID, and the ENG/WAG file
+of the car.
+
+Each entry in the list can be expanded to reveal more specifics about the
+sounds. Expanding a train car sound entry will list the sound sources
+associated with that car, noted as "[EX]" for exterior sounds or "[IN]" for
+interior sounds, followed by "[TRK]" for track sounds or "[CAR]" for train
+car sounds, followed by the SMS file name for the sound source.
+
+Further expanding any sound source (whether world sound, track sound, or car
+sound) will reveal the list of sound streams. Each stream entry shows the
+internal sound ID (or -1 if no sound is playing), the name of the wave file
+the stream is playing, the number of cue points in the wave file, and the play
+mode of the sound stream (such as looped or one shot). The entry for the sound
+source will show the number of streams playing and the total number of streams
+in a format such as "(3@9)" (for example, this means 3 out of 9 sound streams
+are active).
+
+If a sound source is selected, the values on the left of the window will be
+populated with the data used by the SMS file to control volume curves and frequency
+curves. The majority of these values are only relevant for train car and track
+sounds, many are for locomotives only, and some are only useful for specific types
+of locomotives (back pressure is only for steam locomotives, for example). The
+units of each value are set to the same units used in SMS files, so no conversions
+are needed when using these values to tune SMS settings.
+
+Additionally, if an active sound stream is selected, the "Volume" and "Frequency (Hz)"
+values will be activated to show the volume and frequency applied to the sound
+after accounting for all volume/frequency curves in the SMS file. This can be
+used to verify that the SMS curves are producing the expected values.
+
+Some sound variables can have multiple inputs (for example, if a locomotive has multiple
+diesel engines then the sound system can use any one of the engines' RPM),
+in which case all the values will be shown in order separated by commas. This
+might mean the text shown goes out of bounds, in which case the divider between
+the "Selected Sound Source Variables" box and the "Active Sound Sources" box can
+be clicked and dragged to give more or less room for each box.
+
+Below the list of sound variables are counters for the total number of sounds.
+"Cached Wave Files" displays the number of unique wave files loaded in memory.
+The first time a wave file is played, it is loaded in RAM, and it remains
+loaded until no sound streams are using it. Efficient sound sets should minimize
+this number to save memory by re-using the same wave file wherever possible
+and adding SMS conditions to disable sound streams when no sound is needed.
+Below this is the number of "AL Sound Sources", that is, the number of sounds
+being played by the audio engine. There is a limit of 1024 simultaneous sounds,
+so efficient sound sets must stay well below this limit to prevent sounds from
+being skipped. Setting proper conditions in SMS files to disable unneeded/inaudible
+streams is again the best approach to avoid problems here.
 
 .. _driving-logfile:
 

@@ -98,6 +98,8 @@ namespace Orts.Viewer3D.Debugging
             this.distanceSquared = new System.Windows.Forms.TextBox();
             this.smsVolumeLabel = new System.Windows.Forms.Label();
             this.smsVolume = new System.Windows.Forms.TextBox();
+            this.smsFrequencyLabel = new System.Windows.Forms.Label();
+            this.smsFrequency = new System.Windows.Forms.TextBox();
             this.sound3D = new System.Windows.Forms.CheckBox();
             this.concreteSleepers = new System.Windows.Forms.CheckBox();
             this.carInTunnel = new System.Windows.Forms.CheckBox();
@@ -222,7 +224,7 @@ namespace Orts.Viewer3D.Debugging
             this.groupBoxSelectedSound.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBoxSelectedSound.Location = new System.Drawing.Point(3, 3);
             this.groupBoxSelectedSound.Name = "groupBoxSelectedSound";
-            this.groupBoxSelectedSound.Size = new System.Drawing.Size(310, 593);
+            this.groupBoxSelectedSound.Size = new System.Drawing.Size(310, 618);
             this.groupBoxSelectedSound.TabIndex = 0;
             this.groupBoxSelectedSound.TabStop = false;
             this.groupBoxSelectedSound.Text = "Selected Sound Source Variables";
@@ -308,10 +310,13 @@ namespace Orts.Viewer3D.Debugging
             this.tableLayoutPanel2.Controls.Add(this.distanceSquared, 1, 18);
             this.tableLayoutPanel2.Controls.Add(this.smsVolumeLabel, 0, 19);
             this.tableLayoutPanel2.Controls.Add(this.smsVolume, 1, 19);
+            this.tableLayoutPanel2.Controls.Add(this.smsFrequencyLabel, 0, 20);
+            this.tableLayoutPanel2.Controls.Add(this.smsFrequency, 1, 20);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Top;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 16);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 20;
+            this.tableLayoutPanel2.RowCount = 21;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
@@ -333,7 +338,7 @@ namespace Orts.Viewer3D.Debugging
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(190, 501);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(190, 526);
             this.tableLayoutPanel2.TabIndex = 8;
             // 
             // speedLabel
@@ -716,6 +721,25 @@ namespace Orts.Viewer3D.Debugging
             this.smsVolume.Size = new System.Drawing.Size(54, 20);
             this.smsVolume.TabIndex = 19;
             // 
+            // smsFrequencyLabel
+            // 
+            this.smsFrequencyLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.smsFrequencyLabel.AutoSize = true;
+            this.smsFrequencyLabel.Location = new System.Drawing.Point(3, 531);
+            this.smsFrequencyLabel.Name = "smsFrequencyLabel";
+            this.smsFrequencyLabel.Size = new System.Drawing.Size(130, 13);
+            this.smsFrequencyLabel.TabIndex = 20;
+            this.smsFrequencyLabel.Text = "Frequency (Hz)";
+            // 
+            // smsFrequency
+            // 
+            this.smsFrequency.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.smsFrequency.Location = new System.Drawing.Point(73, 528);
+            this.smsFrequency.Name = "smsFrequency";
+            this.smsFrequency.ReadOnly = true;
+            this.smsFrequency.Size = new System.Drawing.Size(54, 20);
+            this.smsFrequency.TabIndex = 20;
+            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 2;
@@ -855,6 +879,8 @@ namespace Orts.Viewer3D.Debugging
         private System.Windows.Forms.TextBox distanceSquared;
         private System.Windows.Forms.Label smsVolumeLabel;
         private System.Windows.Forms.TextBox smsVolume;
+        private System.Windows.Forms.Label smsFrequencyLabel;
+        private System.Windows.Forms.TextBox smsFrequency;
         private System.Windows.Forms.CheckBox sound3D;
         private System.Windows.Forms.CheckBox concreteSleepers;
         private System.Windows.Forms.CheckBox carInTunnel;
