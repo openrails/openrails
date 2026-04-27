@@ -2323,16 +2323,10 @@ public string GetCurveDirection()
         public virtual string GetStatus() { return null; }
         public virtual string GetDebugStatus()
         {
-            string locomotivetypetext = "";
-            if (EngineType == EngineTypes.Control)
-            {
-                locomotivetypetext = "Unpowered Control Trailer Car";
-            }
-
             var loco = this as MSTSDieselLocomotive;
             if (loco != null && loco.DieselEngines.HasGearBox && loco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
-                return String.Format("{0}\t{1}\t{2}\t{3}\t{4:F0}%\t{5} - {6:F0} rpm\t\t{7}\t{8}\t{9}\t",
+                return String.Format("{0}\t{1}\t{2}\t{3}\t{4:F0}%\t{5} - {6:F0} rpm\t\t{7}\t{8}\t",
                 CarID,
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
                 Flipped ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
@@ -2342,13 +2336,12 @@ public string GetCurveDirection()
                 loco.DieselEngines[0].GearBox.HuDShaftRPM,
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
                 FormatStrings.FormatPower(loco.LocomotiveAxles.DrivePowerW, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(loco.LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
-                Simulator.Catalog.GetString(locomotivetypetext)
+                String.Format("{0}{1}", FormatStrings.FormatForce(loco.LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : "")
                 );
             }
             else
             {
-                return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t{8}\t",
+                return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t",
                 CarID,
                 Flipped ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
@@ -2357,8 +2350,7 @@ public string GetCurveDirection()
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
                 FormatStrings.FormatPower((this as MSTSWagon).LocomotiveAxles.DrivePowerW, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce((this as MSTSWagon).LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
-                Simulator.Catalog.GetString(locomotivetypetext)
+                String.Format("{0}{1}", FormatStrings.FormatForce((this as MSTSWagon).LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : "")
                 );
             }
         }

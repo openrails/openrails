@@ -149,7 +149,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
                 Script.Confirm = Locomotive.Simulator.Confirmer.Confirm;
                 Script.Message = Locomotive.Simulator.Confirmer.Message;
-                Script.SignalEvent = Locomotive.SignalEvent;
+                Script.SignalEvent = (evt) =>
+                {
+                    Locomotive.SignalEvent(evt);
+                    if (Locomotive.Train?.LeadLocomotive is MSTSControlTrailerCar control && control.ControlActiveLocomotive == Locomotive)
+                    {
+                        control.SignalEvent(evt);
+                    }
+                };
                 Script.SignalEventToTrain = (evt) =>
                 {
                     if (Locomotive.Train != null)
