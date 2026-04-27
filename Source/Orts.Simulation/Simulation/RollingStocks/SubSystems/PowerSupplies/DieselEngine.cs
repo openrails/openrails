@@ -159,9 +159,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Initialize()
         {
+            Initialize(false);
+        }
+
+        public void Initialize(bool reinitialize)
+        {
             foreach (DieselEngine de in DEList)
             {
-                de.Initialize();
+                de.Initialize(reinitialize);
             }
         }
 
@@ -999,7 +1004,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Initialize()
         {
-            if (!Simulator.Settings.NoDieselEngineStart)
+            Initialize(false);
+        }
+
+        public void Initialize(bool reinitialize)
+        {
+            if (reinitialize && ThrottleRPMTab != null)
+            {
+                RealRPM = ThrottleRPMTab[Locomotive.ThrottlePercent];
+                State = DieselEngineState.Running;
+            }    
+            else if (!Simulator.Settings.NoDieselEngineStart)
             {
                 RealRPM = IdleRPM;
                 State = DieselEngineState.Running;
@@ -1418,13 +1433,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (State == DieselEngineState.Starting)
             {
-                if ((RealRPM > (0.9f * StartingRPM)) && (RealRPM < StartingRPM))
+                if ((RealRPM > (0.9f * StartingRPM)) && (RealRPM <= StartingRPM))
                 {
                     DemandedRPM = 1.1f * StartingConfirmationRPM;
                     ExhaustColor = ExhaustTransientColor;
                     ExhaustParticles = (MaxExhaust - InitialExhaust) / (0.5f * StartingRPM - StartingRPM) * (RealRPM - 0.5f * StartingRPM) + InitialExhaust;
                 }
-                if ((RealRPM > StartingConfirmationRPM))// && (RealRPM < 0.9f * IdleRPM))
+                if (RealRPM >= StartingConfirmationRPM)// && (RealRPM < 0.9f * IdleRPM))
                     State = DieselEngineState.Running;
             }
 

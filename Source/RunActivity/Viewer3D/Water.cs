@@ -20,6 +20,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -150,6 +151,26 @@ namespace Orts.Viewer3D
             vertexBuffer.SetData(vertexData.ToArray());
         }
 
+        /// <summary>
+        /// Determines if the materials associated with this water primitive are stale
+        /// </summary>
+        /// <returns>bool indicating if any data used by this water primitive is stale</returns>
+        public bool GetStale()
+        {
+            bool found = false;
+
+            foreach (Material waterMaterial in WaterLayers.Select(kvp => kvp.Value))
+            {
+                if (waterMaterial.StaleData)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            return found;
+        }
+
         [CallOnThread("Loader")]
         internal static void Mark()
         {
@@ -212,6 +233,21 @@ namespace Orts.Viewer3D
         public override bool GetBlending()
         {
             return true;
+        }
+
+        /// <summary>
+        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this material changed from fresh to stale</returns>
+        public override bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                StaleData = WaterTexture.Tag is TextureTag tag && tag.StaleData;
+                return StaleData;
+            }
+            else
+                return false;
         }
 
         public override void Mark()
