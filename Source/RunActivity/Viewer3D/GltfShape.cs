@@ -40,7 +40,6 @@ namespace Orts.Viewer3D
         public static readonly List<string> ExtensionsSupported = new List<string>
         {
             "KHR_animation_pointer",
-            "KHR_lights_punctual",
             "KHR_materials_unlit",
             "KHR_materials_clearcoat",
             "KHR_materials_emissive_strength",
@@ -48,6 +47,8 @@ namespace Orts.Viewer3D
             "KHR_materials_specular",
             "KHR_materials_variants",
             "KHR_node_visibility",
+            "KHR_lights_punctual",
+            "EXT_lights_image_based",
             "MSFT_lod",
             "MSFT_texture_dds",
             "MSFT_packing_normalRoughnessMetallic",
@@ -61,7 +62,7 @@ namespace Orts.Viewer3D
         internal Quaternion[] Rotations;
         internal Vector3[] Translations;
         internal float[][] Weights;
-        internal bool[] NodeVisibility;
+        internal int[] NodeVisibility;
 
         // Need these at load time to connect the pointers
         internal readonly Dictionary<int, PbrMaterial> Materials = new Dictionary<int, PbrMaterial>();
@@ -142,9 +143,11 @@ namespace Orts.Viewer3D
                 var hi = shapePrimitive.Joints[j];
                 while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
                 {
-                    if (!NodeVisibility[hi])
+                    if (NodeVisibility[hi] == 0 || NodeVisibility[hi] == 2 && Viewer.MaterialManager.sunDirection.Y > 0)
+                    {
                         bone = new Matrix();
-
+                        break;
+                    }
                     Matrix.Multiply(ref bone, ref animatedMatrices[hi], out bone);
                     hi = shapePrimitive.Hierarchy[hi];
                 }
@@ -315,7 +318,7 @@ namespace Orts.Viewer3D
             internal List<string> MatrixNames;
             internal Vector4[] BoundingBoxNodes;
             internal List<GltfAnimation> GltfAnimations;
-            internal bool[] NodeVisibility;
+            internal int[] NodeVisibility; // 0: invisible, 1: visible, 2: day-night switching
 
             internal readonly KHR_materials_variants_name[] MaterialVariants;
 
@@ -752,8 +755,13 @@ namespace Orts.Viewer3D
                 MatrixNames.AddRange(names.Select(n => n.Item1));
                 NodeVisibility = (gltfFile.ExtensionsUsed?.Contains("KHR_node_visibility") ?? false)
                     ? gltfFile.Nodes.Select(n => (n.Extensions?.TryGetValue("KHR_node_visibility", out extension) ?? false) &&
-                        Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_node_Visibility>(extension.ToString(), PopulateDefaults).Visible is bool v ? v : true).ToArray()
-                    : Enumerable.Repeat(true, gltfFile.Nodes.Length).ToArray();
+                        Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_node_Visibility>(extension.ToString(), PopulateDefaults).Visible is bool v ? (v ? 1 :0) : 1).ToArray()
+                    : Enumerable.Repeat(1, gltfFile.Nodes.Length).ToArray();
+                for (var i = 0; i < gltfFile.Nodes.Length; i++)
+                {
+                    if (NodeVisibility[i] != 0 && (gltfFile.Nodes[i].Extras?.TryGetValue("OPENRAILS_node_day_night_switch", out extension) ?? false) && extension is bool s && s)
+                        NodeVisibility[i] = 2;
+                }
             }
 
             internal void ConnectPointers()
