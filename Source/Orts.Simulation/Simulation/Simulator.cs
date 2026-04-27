@@ -647,6 +647,7 @@ namespace Orts.Simulation
             BailOffCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             QuickReleaseCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BrakeOverchargeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BrakeNeutralModeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             RetainersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BrakeHoseConnectCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleWaterScoopCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
