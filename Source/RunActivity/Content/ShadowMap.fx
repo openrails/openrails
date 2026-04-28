@@ -23,27 +23,34 @@
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-float4x4 WorldViewProjection;  // model -> world -> view -> projection
-float3   SideVector;
-float    ImageBlurStep;  // = 1 / shadow map texture width and height
-texture  ImageTexture;
-
-sampler ImageSampler = sampler_state
+cbuffer PerFrame
 {
-	Texture = (ImageTexture);
-	MagFilter = Linear;
-	MinFilter = Anisotropic;
-	MipFilter = Linear;
-	MaxAnisotropy = 16;
+    float4x4 View; // world -> view
+    float4x4 Projection; // view -> projection
+    float3 SideVector;
 };
 
-sampler ShadowMapSampler = sampler_state
+cbuffer PerObject
 {
-	Texture = (ImageTexture);
-	MagFilter = Linear;
-	MinFilter = Linear;
-	MipFilter = Point;
+    float4x4 World; // model -> world [max number of bones]
+    float4 MorphConfig[2]; // 0.x: POS, 0.y: NORM, 0.z: TANG, 0.w: TEX0, 1.x: TEX1, 1.y: COL0, 1.z: targets count, 1.w: attributes count
+    float4 MorphWeights[2];
+    float ImageBlurStep; // = 1 / shadow map texture width and height
+    bool HasSkin;
 };
+
+int    ShadowMapIndex;
+
+Texture2D ImageTexture;
+SamplerState ImageSampler;
+
+Texture2DArray ShadowMapArray;
+SamplerState ShadowMapSampler;
+
+Texture2D BonesTexture;
+
+static const float4x4 Identity = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+
 
 ////////////////////    V E R T E X   I N P U T S    ///////////////////////////
 
@@ -66,6 +73,43 @@ struct VERTEX_INPUT_BLUR
 {
 	float4 Position : POSITION;
 	float2 TexCoord : TEXCOORD0;
+};
+
+struct VERTEX_INPUT_NORMALMAP
+{
+	float4 Position    : POSITION;
+	float2 TexCoord    : TEXCOORD0;
+	float3 Normal      : NORMAL;
+	float4 Tangent     : TANGENT;
+	float2 TexCoordsPbr: TEXCOORD1;
+	float4 Color       : COLOR0;
+	float4x4 Instance  : TEXCOORD2;
+};
+
+struct VERTEX_INPUT_SKINNED
+{
+	float4 Position    : POSITION;
+	float2 TexCoord    : TEXCOORD0;
+	float3 Normal      : NORMAL;
+	float4 Tangent     : TANGENT;
+	float2 TexCoordsPbr: TEXCOORD1;
+    min16uint4 Joints  : BLENDINDICES0;
+	float4 Weights     : BLENDWEIGHT0;
+	float4 Color       : COLOR0;
+	float4x4 Instance  : TEXCOORD2;
+};
+
+struct VERTEX_INPUT_MORPHED
+{
+    float4 Position    : POSITION;
+    float2 TexCoords   : TEXCOORD0;
+    float3 Normal      : NORMAL;
+    float4 Tangent     : TANGENT;
+    float2 TexCoordsPbr: TEXCOORD1;
+    min16uint4  Joints : BLENDINDICES0;
+    float4 Weights     : BLENDWEIGHT0;
+    float4 Color       : COLOR0;
+    float4 MorphTargets[8] : POSITION1;
 };
 
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
@@ -95,7 +139,7 @@ VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 		In.Normal = mul(In.Normal, (float3x3)transpose(In.Instance));
 	}
 
-	Out.Position = mul(In.Position, WorldViewProjection);
+    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.TexCoord_Depth.xy = In.TexCoord;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
@@ -116,7 +160,7 @@ VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT_FOREST In)
 	In.Position = float4(newPosition, 1);
 
 	// Project vertex with fixed w=1 and normal=eye.
-	Out.Position = mul(In.Position, WorldViewProjection);
+    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.TexCoord_Depth.xy = In.TexCoord;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
@@ -129,7 +173,7 @@ VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT_BLUR In)
 	
 	float2 offsetTexCoord = In.TexCoord + float2(0.5, 0.5);
 
-	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Position = mul(In.Position, Identity);
 	Out.SampleCentre = offsetTexCoord * ImageBlurStep;
 	Out.Sample_01 = (offsetTexCoord - float2(1.5, 0)) * ImageBlurStep;
 	Out.Sample_23 = (offsetTexCoord + float2(1.5, 0)) * ImageBlurStep;
@@ -143,7 +187,7 @@ VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT_BLUR In)
 	
 	float2 offsetTexCoord = In.TexCoord + float2(0.5, 0.5);
 
-	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Position = mul(In.Position, Identity);
 	Out.SampleCentre = offsetTexCoord * ImageBlurStep;
 	Out.Sample_01 = (offsetTexCoord - float2(0, 1.5)) * ImageBlurStep;
 	Out.Sample_23 = (offsetTexCoord + float2(0, 1.5)) * ImageBlurStep;
@@ -151,11 +195,97 @@ VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT_BLUR In)
 	return Out;
 }
 
+VERTEX_OUTPUT VSShadowMapNormalMap(in VERTEX_INPUT_NORMALMAP In)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+
+	if (determinant(In.Instance) != 0) {
+		In.Position = mul(In.Position, transpose(In.Instance));
+	}
+
+    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
+	Out.TexCoord_Depth.xy = In.TexCoord;
+	Out.TexCoord_Depth.z = Out.Position.z;
+
+	return Out;
+}
+
+float4x4 _VSBoneMatrix(min16uint index)
+{
+    float4 row1 = BonesTexture.Load(int3(0, index, 0));
+    float4 row2 = BonesTexture.Load(int3(1, index, 0));
+    float4 row3 = BonesTexture.Load(int3(2, index, 0));
+    float4 row4 = BonesTexture.Load(int3(3, index, 0));
+
+    return float4x4(row1, row2, row3, row4);
+}
+
+float4x4 _VSSkinTransform(in min16uint4 Joints, in float4 Weights)
+{
+    float4x4 skinTransform = 0;
+
+    skinTransform += _VSBoneMatrix(Joints.x) * (float) Weights.x;
+    skinTransform += _VSBoneMatrix(Joints.y) * (float) Weights.y;
+    skinTransform += _VSBoneMatrix(Joints.z) * (float) Weights.z;
+    skinTransform += _VSBoneMatrix(Joints.w) * (float) Weights.w;
+
+    return skinTransform;
+}
+
+VERTEX_OUTPUT VSShadowMapSkinned(in VERTEX_INPUT_SKINNED In)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+
+	if (determinant(In.Instance) != 0) {
+		In.Position = mul(In.Position, transpose(In.Instance));
+	}
+
+    float4x4 skinTransform = _VSSkinTransform(In.Joints, In.Weights);
+
+	In.Position = mul(In.Position, skinTransform);
+
+    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
+	Out.TexCoord_Depth.xy = In.TexCoord;
+	Out.TexCoord_Depth.z = Out.Position.z;
+
+	return Out;
+}
+
+VERTEX_OUTPUT VSShadowMapMorphed(in VERTEX_INPUT_MORPHED In)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+
+    float4x4 skinTransform = HasSkin ? _VSSkinTransform(In.Joints, In.Weights) : Identity;
+
+    Out.Position = In.Position;
+    Out.TexCoord_Depth.xy = In.TexCoords;
+    
+    int attrCount = MorphConfig[1].w;
+
+    [unroll(8)]
+    for (int i = 0; i < MorphConfig[1].z; i++)
+    {
+        float weight = MorphWeights[i / 4][i % 4];
+        int offset = attrCount * i;
+
+        if (MorphConfig[0].x != -1)
+            Out.Position.xyz += In.MorphTargets[offset + MorphConfig[0].x].xyz * weight;
+        if (MorphConfig[0].w != -1)
+            Out.TexCoord_Depth.xy += In.MorphTargets[offset + MorphConfig[0].w].xy * weight;
+    }
+
+    Out.Position = mul(Out.Position, skinTransform);
+    Out.Position = mul(mul(mul(Out.Position, World), View), Projection);
+	Out.TexCoord_Depth.z = Out.Position.z;
+
+	return Out;
+}
+
 ////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
-float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR0
+float4 PSShadowMap(in VERTEX_OUTPUT In) : SV_Target
 {
-	float alpha = tex2D(ImageSampler, In.TexCoord_Depth.xy).a;
+	float alpha = ImageTexture.Sample(ImageSampler, In.TexCoord_Depth.xy).a;
 	
 	if(alpha < 0.25)
 		discard;
@@ -163,16 +293,20 @@ float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR0
 	return float4(In.TexCoord_Depth.z, In.TexCoord_Depth.z * In.TexCoord_Depth.z, 0, 0);
 }
 
-float4 PSShadowMapBlocker() : COLOR0
+float4 PSShadowMapBlocker() : SV_Target
 {
 	return 0;
 }
 
-float4 PSShadowMapBlur(in VERTEX_OUTPUT_BLUR In) : COLOR0
+float4 PSShadowMapBlur(in VERTEX_OUTPUT_BLUR In) : SV_Target
 {
-	float2 centreTap =	tex2D(ShadowMapSampler, In.SampleCentre).rg	* 0.4430448;
-	float2 tap01 =		tex2D(ShadowMapSampler, In.Sample_01).rg * 0.2784776;
-	float2 tap23 =		tex2D(ShadowMapSampler, In.Sample_23).rg * 0.2784776;
+    float3 uv_idx_c = float3(In.SampleCentre, ShadowMapIndex);
+    float3 uv_idx_0 = float3(In.Sample_01, ShadowMapIndex);
+    float3 uv_idx_2 = float3(In.Sample_23, ShadowMapIndex);
+
+    float2 centreTap = ShadowMapArray.Sample(ShadowMapSampler, uv_idx_c).rg * 0.4430448;
+    float2 tap01 = ShadowMapArray.Sample(ShadowMapSampler, uv_idx_0).rg * 0.2784776;
+    float2 tap23 = ShadowMapArray.Sample(ShadowMapSampler, uv_idx_2).rg * 0.2784776;
 		
 	return float4(tap01 + centreTap + tap23, 0, 0);
 }
@@ -181,32 +315,53 @@ float4 PSShadowMapBlur(in VERTEX_OUTPUT_BLUR In) : COLOR0
 
 technique ShadowMap {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSShadowMap();
-		PixelShader = compile ps_4_0_level_9_1 PSShadowMap();
+		VertexShader = compile vs_4_0 VSShadowMap();
+		PixelShader = compile ps_4_0 PSShadowMap();
+	}
+}
+
+technique ShadowMapNormalMap {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0 VSShadowMapNormalMap();
+		PixelShader = compile ps_4_0 PSShadowMap();
+	}
+}
+
+technique ShadowMapSkinned {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0 VSShadowMapSkinned();
+		PixelShader = compile ps_4_0 PSShadowMap();
+	}
+}
+
+technique ShadowMapMorphed {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0 VSShadowMapMorphed();
+		PixelShader = compile ps_4_0 PSShadowMap();
 	}
 }
 
 technique ShadowMapForest {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSShadowMapForest();
-		PixelShader = compile ps_4_0_level_9_1 PSShadowMap();
+		VertexShader = compile vs_4_0 VSShadowMapForest();
+		PixelShader = compile ps_4_0 PSShadowMap();
 	}
 }
 
 technique ShadowMapBlocker {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSShadowMap();
-		PixelShader = compile ps_4_0_level_9_1 PSShadowMapBlocker();
+		VertexShader = compile vs_4_0 VSShadowMap();
+		PixelShader = compile ps_4_0 PSShadowMapBlocker();
 	}
 }
 
 technique ShadowMapBlur {
 	pass Blur_X {
-		VertexShader = compile vs_4_0_level_9_1 VSShadowMapHorzBlur();
-		PixelShader = compile ps_4_0_level_9_1 PSShadowMapBlur();
+		VertexShader = compile vs_4_0 VSShadowMapHorzBlur();
+		PixelShader = compile ps_4_0 PSShadowMapBlur();
 	}
 	pass Blur_Y {
-		VertexShader = compile vs_4_0_level_9_1 VSShadowMapVertBlur();
-		PixelShader = compile ps_4_0_level_9_1 PSShadowMapBlur();
+		VertexShader = compile vs_4_0 VSShadowMapVertBlur();
+		PixelShader = compile ps_4_0 PSShadowMapBlur();
 	}
 }

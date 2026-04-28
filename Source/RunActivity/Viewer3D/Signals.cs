@@ -698,31 +698,42 @@ namespace Orts.Viewer3D
     {
         readonly SceneryShader SceneryShader;
         readonly Texture2D Texture;
+        readonly EffectTechnique Technique;
 
         public SignalLightMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
             SceneryShader = Viewer.MaterialManager.SceneryShader;
             Texture = Viewer.TextureManager.Get(textureName, true);
+            Technique = SceneryShader.Techniques["SignalLight"];
+
+            SetSortingEffectId(Technique);
+            SetSortingTextureId(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            SceneryShader.CurrentTechnique = Viewer.MaterialManager.SceneryShader.Techniques["SignalLight"];
+            SceneryShader.CurrentTechnique = Technique;
             SceneryShader.ImageTexture = Texture;
+            SceneryShader.HasNormals = true;
+            SceneryShader.HasTangents = false;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearClamp;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            foreach (var pass in SceneryShader.CurrentTechnique.Passes)
+            var passes = SceneryShader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
                     SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                    pass.Apply();
+                    SceneryShader.SetMatrix(item.XNAMatrix);
+                    passes[i].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
@@ -744,6 +755,7 @@ namespace Orts.Viewer3D
     {
         readonly SceneryShader SceneryShader;
         readonly Texture2D Texture;
+        readonly EffectTechnique Technique;
 
         float NightEffect;
 
@@ -752,14 +764,22 @@ namespace Orts.Viewer3D
         {
             SceneryShader = Viewer.MaterialManager.SceneryShader;
             Texture = SharedTextureManager.LoadInternal(Viewer.GraphicsDevice, Path.Combine(Viewer.ContentPath, "SignalLightGlow.png"));
+            Technique = SceneryShader.Techniques["SignalLightGlow"];
+
+            SetSortingEffectId(Technique);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            SceneryShader.CurrentTechnique = Viewer.MaterialManager.SceneryShader.Techniques["SignalLightGlow"];
+            SceneryShader.CurrentTechnique = Technique;
             SceneryShader.ImageTexture = Texture;
+            SceneryShader.HasNormals = true;
+            SceneryShader.HasTangents = false;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearClamp;
 
             // The following constants define the beginning and the end conditions of
             // the day-night transition. Values refer to the Y postion of LightVector.
@@ -772,15 +792,16 @@ namespace Orts.Viewer3D
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            foreach (var pass in SceneryShader.CurrentTechnique.Passes)
+            var passes = SceneryShader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
                     var slp = item.RenderPrimitive as SignalLightPrimitive;
                     SceneryShader.ZBias = MathHelper.Lerp(slp.GlowIntensityDay, slp.GlowIntensityNight, NightEffect);
                     SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                    pass.Apply();
+                    SceneryShader.SetMatrix(item.XNAMatrix);
+                    passes[i].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }

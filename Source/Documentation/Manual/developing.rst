@@ -76,6 +76,10 @@ The parameters used in content files have been mentioned throughout this manual 
 +------------------------------+-----------------------------+
 | sound management             |        sms                  |
 +------------------------------+-----------------------------+
+| world tile                   |        w                    |
++------------------------------+-----------------------------+
+| 3D shape                     |        s, gltf, glb         |
++------------------------------+-----------------------------+
 | train timetable              |        timetable-or         |
 +------------------------------+-----------------------------+
 
@@ -89,6 +93,175 @@ Testing and Debugging Tools
 
 As listed :ref:`here <driving-analysis>`, a rich and powerful set of analysis 
 tools eases the testing and debugging of content under development.
+
+3D shape files
+==============
+
+Additionally to the S file format used in MSTS, Openrails is able to read the
+glTF format shape files. However there are some conceptual differences between
+the two formats that the content developers need to be aware of when creating
+such files. One of the important scpecification constraints must be noted, 
++Z is the forward direction in glTF models, as opposed to .s, where the
+forward was -Z.
+
+Textures
+--------
+
+The texture format can be png, jpg or dds. The 
+`MSFT_texture_dds <https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/MSFT_texture_dds/README.md>`_
+extension must be used for referencing a dds texture, it is not just a 
+drop-in file replacement as for the .s files. For final game content try to 
+avoid using png and jpg formats at least for the base, emissive and specular 
+textures, because as sRGB types they can only be loaded in two passes, 
+because the dotnet built-in loader is unable to declare sRGB surface format 
+at load time, and the whole pixel data must be copied a second time. 
+Png and jpg formats also lack the ability to store mipmaps.
+
+The base, emissive and specular color textures rgb channels are in sRGB color 
+space. The alpha channels and any other textures are in linear space.
+
+Instead of the night texture set, the authors can use an emissive texture 
+for night illumination, they will bloom, glow. The emissive texture display 
+can be made to switch on-off automatically at day-night change if specified 
+in the material:
+
+.. code-block:: json
+
+  "extras": { "OPENRAILS_material_day_night_switch": true },
+
+(This setting also affects the IBL lights assigned to a material, see below.)
+
+The max value of the emissive strength is 1.0 by the standard, but sometimes 
+a bigger glow is needed for being distinctively visible at daytime. 
+(LED panels, etc...) There is the 
+`KHR_materials_emissive_strength <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_emissive_strength/README.md>`_.
+extension available for achieving any strength.
+
+.. code-block:: json
+
+  "extensions": { "KHR_materials_emissive_strength": { "emissiveStrength": 5.0 },
+
+Seasonal textures (like “Snow”) are managed via the 
+`KHR_materials_variants <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_variants/README.md>`_
+extension. A primitive can have multiple materials, each mapped to one or 
+more “variants”. The appropriate variant (e.g. “Snow”) will be activated 
+at load time.
+
+Animations
+----------
+
+The animation driving array is in seconds, unlike in s, where that was the 
+frame number. The author may create any number of frames, even with unequal 
+time intervals between them, this will not be counted by the program. Rather 
+it will precisely interpolate to a required time moment to get the pose, 
+even if then is no assigned frame there. So e.g. for a 8-notched throttle 
+controller one can skip all the intermediate frames and define only the 
+first (at 0 second) and last one (at 8 seconds), it will still work. 
+Looped animations can have any time length, they will still be considered one
+loop regardless.
+
+Two types of animation are supported by Openrails. Predefined animations are 
+designated with the “animations” “name” attributes. The parent-child relations 
+of the defined animations or the nodes they target are irrelevant in gltf. 
+A node will not be animated just because it is a child of another animated node. 
+Instead an animation can have multiple target nodes via its multiple “channels”.
+
+The other supported animation type is the node-animation. Such “nodes” are to 
+be marked with the syntax:
+
+.. code-block:: json
+
+  "extras": { "OPENRAILS_animation_name": "WHEELS1" },
+
+This will mark the location for Openrails where to engage its built-in
+animation logic when needed. The traditional naming pattern applies here, and
+a node should not be both part of a predefined animation and also marked for
+node-animation.
+(Note, the nodes “name” attributes are not used for anything, unlike in s.)
+
+Level-Of-Detail
+---------------
+
+LOD-s can be defined either as internals via the 
+`MSFT_lod <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/MSFT_lod/README.md>`_
+extension, or externals by creating multiple gltf files and adding the 
+suffixes of pattern <name>_LOD01.gltf, <name>_LOD02.gltf, etc… The _LOD00
+suffix for LOD 0 is optional. The author may still define the displaying 
+criteria in the root node of the LOD 0, as described in the extension, 
+using a line like:
+
+.. code-block:: json
+
+  "extras": { "MSFT_screencoverage": [ 0.2, 0.05, 0.001 ] },
+
+In the prior case, for internal LOD-s, the author needs to define the root 
+nodes of the various LOD-s in the root node of the LOD 0. E.g. if node 
+0 is the root of LOD 0, then to declare node 1 for LOD 1 and node 2 for LOD 2
+as their root nodes, looks like this:
+
+.. code-block:: json
+
+  "extensions": { "MSFT_lod": { "ids": [ 1, 2 ] } },
+
+(Note for all extensions, the usual extension usage criteria applies, specifically 
+the important one is the requirement to register the extension used into 
+the "extensionsUsed" array of the gltf.)
+
+Lights
+------
+
+Active light sources can be attached to a gltf file as in the 
+`KHR_lights_punctual <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md>`_
+extension. Or even a light-only gltf can be created and used in a W file:
+
+.. code-block:: json
+
+  {
+  "asset": { "version": "2.0" },
+  "extensionsUsed": [ "KHR_lights_punctual" ],
+  "scenes": [ { "nodes": [0] } ],
+  "nodes": [ { "translation": [0, 5, 0], "rotation": [-0.7071, 0, 0, 0.7071], "extensions": { "KHR_lights_punctual": { "light": 0 } } } ],
+  "extensions": { "KHR_lights_punctual": { "lights": [ { "type": "spot", "range": 500.0, "color": [1.0, 0.9, 0.8], "intensity": 50.0, "spot": { "outerConeAngle": 1.5 } } ] } }
+  }
+
+These lights are bound to a node, and the nodes can also be set to follow the 
+day-night cycle. By applying the following extra, the whole node will become
+invisible during daytime, including the attached light, mesh and all further
+subnodes:
+
+.. code-block:: json
+
+  "extras": { "OPENRAILS_node_day_night_switch": true },
+
+It is possible to inject own image based lighting (IBL) to an object via the
+`EXT_lights_image_based <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_lights_image_based/README.md>`_
+extension. Although it allows only to define a model-wide IBL, Openrails 
+allows to limit its effect to a single material instead (requires the IBL 
+not to be assigned to the whole "scene"):
+
+.. code-block:: json
+
+  "extras": { "OPENRAILS_material_image_based_light": 0 },
+
+It is useful to use an own IBL for interiors and cabs, because the bilt-in 
+night IBL is optimized for outside night illumination, and it may be too 
+dark for the inside. A diffuse IBL definition using spherical harmonics
+looks like below. AI-s can help in generating such coefficients.
+
+.. code-block:: json
+
+  "extensions": {
+    "EXT_lights_image_based": {
+      "lights": [
+        { "intensity": 1.0, "irradianceCoefficients": [
+          [1.250, 1.050, 0.750], [0.000, 0.000, 0.000], [-0.450, -0.380, -0.250],
+          [0.000, 0.000, 0.000], [0.030, 0.025, 0.015], [0.015, 0.012, 0.008],
+          [0.060, 0.050, 0.030], [0.015, 0.012, 0.008], [0.030, 0.025, 0.015] ]
+        }
+      ]
+    }
+  },
+
 
 Open Rails Best Practices
 =========================

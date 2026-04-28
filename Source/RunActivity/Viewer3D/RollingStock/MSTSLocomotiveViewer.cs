@@ -3373,7 +3373,7 @@ namespace Orts.Viewer3D.RollingStock
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
         MSTSLocomotiveViewer LocoViewer;
         private SpriteBatchMaterial _Sprite2DCabView;
-        public bool[] MatrixVisible;
+        public Dictionary<int, bool> MatrixVisibleTargetNode;
         public ThreeDimentionCabViewer(Viewer viewer, MSTSLocomotive car, MSTSLocomotiveViewer locoViewer)
             : base(viewer, car)
         {
@@ -3396,11 +3396,12 @@ namespace Orts.Viewer3D.RollingStock
             OnDemandAnimateParts = new Dictionary<(CabViewControlType, int), AnimatedPart>();
 
             // Find the animated parts
-            if (TrainCarShape != null && TrainCarShape.SharedShape.Animations != null)
+            if (TrainCarShape?.SharedShape?.HasAnimations() ?? false)
             {
-                MatrixVisible = new bool[TrainCarShape.SharedShape.MatrixNames.Count + 1];
-                for (int i = 0; i < MatrixVisible.Length; i++)
-                    MatrixVisible[i] = true;
+                MatrixVisibleTargetNode = new Dictionary<int, bool>();
+                for (int i = 0; i < TrainCarShape.SharedShape.MatrixNames.Count; i++)
+                    MatrixVisibleTargetNode.Add(TrainCarShape.SharedShape.GetAnimationTargetNode(i), true);
+                
                 string matrixName = ""; string typeName = ""; AnimatedPartMultiState tmpPart = null;
                 for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
                 {
@@ -3458,8 +3459,7 @@ namespace Orts.Viewer3D.RollingStock
                             break;
                     }
 
-                    // This is the case for .s files, for glTF-s it will not be true
-                    var targetNode = iMatrix;
+                    var targetNode = TrainCarShape.SharedShape.GetAnimationTargetNode(iMatrix);
 
                     if (style != null && style is CabViewDigitalRenderer)//digits?
                     {
@@ -3628,7 +3628,7 @@ namespace Orts.Viewer3D.RollingStock
                     }
 
                     foreach (var matrixIndex in p.Value.MatrixIndexes)
-                        MatrixVisible[matrixIndex] = doShow;
+                        MatrixVisibleTargetNode[LocoViewer.TrainCarShape.SharedShape.GetAnimationTargetNode(matrixIndex)] = doShow;
 
                     p.Value.Update(LocoViewer, elapsedTime); //for all other instruments with animations
                 }
@@ -3714,7 +3714,7 @@ namespace Orts.Viewer3D.RollingStock
             }*/ //removed with 3D digits
 
             if (TrainCarShape != null)
-                TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisible);
+                TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisibleTargetNode);
         }
 
         internal void PrepareFrameForWindow(int windowIndex, AnimatedPartMultiState anim, ElapsedTime elapsedTime)

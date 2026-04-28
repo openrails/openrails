@@ -407,44 +407,48 @@ namespace Orts.Viewer3D
     public class ForestMaterial : Material
     {
         readonly Texture2D TreeTexture;
-        IEnumerator<EffectPass> ShaderPasses;
+        readonly EffectTechnique Technique;
 
         [CallOnThread("Loader")]
         public ForestMaterial(Viewer viewer, string treeTexture)
             : base(viewer, treeTexture)
         {
             TreeTexture = Viewer.TextureManager.Get(treeTexture, true);
+
+            Technique = Viewer.MaterialManager.SceneryShader.Techniques["Forest"];
+
+            SetSortingEffectId(Technique);
+            SetSortingTextureId(treeTexture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques["Forest"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques["Forest"].Passes.GetEnumerator();
+            shader.CurrentTechnique = Technique;
             shader.ImageTexture = TreeTexture;
             shader.ReferenceAlpha = 200;
+            shader.SetVegetationMaterial(1);
+            shader.HasNormals = true;
+            shader.HasTangents = true;
 
             // Enable alpha blending for everything: this allows distance scenery to appear smoothly.
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearClamp;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-
-            shader.SetViewMatrix(ref XNAViewMatrix);
-            ShaderPasses.Reset();
-            while (ShaderPasses.MoveNext())
+            var passes = shader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.SetMatrix(item.XNAMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
-                    ShaderPasses.Current.Apply();
-
-                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
-                    graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
-
+                    passes[i].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }

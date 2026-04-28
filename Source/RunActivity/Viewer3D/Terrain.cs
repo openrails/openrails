@@ -497,10 +497,18 @@ namespace Orts.Viewer3D
 
     public class TerrainMaterial : Material
     {
+        EffectTechnique Technique;
         readonly Texture2D PatchTexture;
         readonly Texture2D PatchTextureOverlay;
         readonly float OverlayScale;
-        IEnumerator<EffectPass> ShaderPasses;
+        static readonly SamplerState OverlaySamplerState = new SamplerState
+        {
+            AddressU = TextureAddressMode.Wrap,
+            AddressV = TextureAddressMode.Wrap,
+            Filter = TextureFilter.Linear,
+            MipMapLevelOfDetailBias = 0
+        };
+
 
         public TerrainMaterial(Viewer viewer, string terrainTexture, Texture2D defaultTexture)
             : base(viewer, terrainTexture)
@@ -509,37 +517,43 @@ namespace Orts.Viewer3D
             PatchTexture = Viewer.TextureManager.Get(textures[0], defaultTexture);
             PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
             var converted = textures.Length > 2 && float.TryParse(textures[2], out OverlayScale);
-            OverlayScale = OverlayScale != 0 && converted ?  OverlayScale : 32; 
+            OverlayScale = OverlayScale != 0 && converted ?  OverlayScale : 32;
+            Technique = Viewer.MaterialManager.SceneryShader.Techniques["Terrain"];
 
+            SetSortingEffectId(Technique);
+            SetSortingBlendStateId(BlendState.NonPremultiplied);
+            SetSortingRasterizerStateId(RasterizerState.CullCounterClockwise);
+            SetSortingTextureId(textures[0]);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            var level9_3 = Viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3);
-            shader.CurrentTechnique = shader.Techniques[level9_3 ? "TerrainLevel9_3" : "TerrainLevel9_1"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques[level9_3 ? "TerrainLevel9_3" : "TerrainLevel9_1"].Passes.GetEnumerator();
+            shader.CurrentTechnique = Technique;
             shader.ImageTexture = PatchTexture;
             shader.OverlayTexture = PatchTextureOverlay;
             shader.OverlayScale = OverlayScale;
+            shader.HasNormals = true;
+            shader.HasTangents = false;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearWrap;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Overlay] = OverlaySamplerState;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-
-            ShaderPasses.Reset();
-            while (ShaderPasses.MoveNext())
+            var passes = shader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.SetMatrix(item.XNAMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
-                    ShaderPasses.Current.Apply();
-                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
-                    graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
+                    passes[i].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
@@ -577,6 +591,9 @@ namespace Orts.Viewer3D
         public TerrainSharedDistantMountain(Viewer viewer, string terrainTexture)
             : base(viewer, terrainTexture, Helpers.IsSnow(viewer.Simulator) ? SharedMaterialManager.DefaultDMSnowTexture : SharedMaterialManager.MissingTexture)
         {
+            SetSortingBlendStateId(BlendState.Opaque);
+            SetSortingRasterizerStateId(RasterizerState.CullNone);
+            SetSortingTextureId(terrainTexture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

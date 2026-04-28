@@ -74,7 +74,8 @@ namespace Orts.Viewer3D
             {
                 try
                 {
-                    Shapes.Add(path, new SharedShape(Viewer, path));
+                    var extension = Path.GetExtension(path.Split('\0')[0]).ToLower();
+                    Shapes.Add(path, extension == ".gltf" || extension == ".glb" ? new GltfShape(Viewer, path) : new SharedShape(Viewer, path));
                 }
                 catch (Exception error)
                 {
@@ -234,6 +235,8 @@ namespace Orts.Viewer3D
                 matrix *= SharedShape.Matrices[hi];
                 hi = shapePrimitive.Hierarchy[hi];
             }
+            if (shapes.FirstOrDefault()?.SharedShape is GltfShape)
+                matrix *= GltfShape.PlusZToForward;
 
             var matricies = new Matrix[shapes.Count];
             for (var i = 0; i < shapes.Count; i++)
@@ -314,7 +317,7 @@ namespace Orts.Viewer3D
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
-        public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
+        public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Dictionary<int, bool> matrixVisible = null)
         {
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
         }
@@ -324,6 +327,23 @@ namespace Orts.Viewer3D
         /// </summary>
         public void AnimateMatrix(int iMatrix, float key)
         {
+            if (SharedShape is GltfShape gltfShape)
+            {
+                if (!gltfShape.HasAnimation(iMatrix))
+                {
+                    if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
+                        Trace.TraceInformation("No animation number {1} in shape {0}", SharedShape.FilePath, iMatrix);
+                    SeenShapeAnimationError[SharedShape.FilePath] = true;
+                }
+                else
+                {
+                    // iMatrix is the number of the animation, not the number of the node,
+                    // key is the time, not the number of the frame.
+                    gltfShape.Animate(iMatrix, key, XNAMatrices);
+                }
+                return;
+            }
+
             // Animate the given matrix.
             AnimateOneMatrix(iMatrix, key);
 
@@ -921,7 +941,6 @@ namespace Orts.Viewer3D
         readonly HazardObj HazardObj;
         readonly Hazzard Hazzard;
 
-        readonly int AnimationFrames;
         float Moved = 0f;
         float AnimationKey;
         float DelayHazAnimation;
@@ -939,7 +958,6 @@ namespace Orts.Viewer3D
         {
             HazardObj = hObj;
             Hazzard = h;
-            AnimationFrames = SharedShape.Animations[0].FrameCount;
         }
 
         public override void Unload()
@@ -1770,14 +1788,21 @@ namespace Orts.Viewer3D
         protected internal VertexBuffer VertexBuffer;
         protected internal IndexBuffer IndexBuffer;
         protected internal int PrimitiveCount;
+        protected internal int PrimitiveOffset;
+        protected internal PrimitiveType PrimitiveType;
 
-        readonly VertexBufferBinding[] VertexBufferBindings;
+        protected internal readonly VertexBufferBinding[] VertexBufferBindings;
 
-        public ShapePrimitive()
-        {
-        }
+        public ShapePrimitive() { }
+        
+        public ShapePrimitive(VertexBufferBinding[] vertexBufferBindings) => VertexBufferBindings = vertexBufferBindings;
 
         public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IndexBuffer indexBuffer, int primitiveCount, int[] hierarchy, int hierarchyIndex)
+            : this(material, vertexBufferSet, new VertexBufferBinding[0], indexBuffer, primitiveCount, hierarchy, hierarchyIndex)
+        { }
+
+        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, VertexBufferBinding[] vertexBufferBindings, IndexBuffer indexBuffer, int primitiveCount, int[] hierarchy, int hierarchyIndex)
+            : this(vertexBufferBindings.Prepend(new VertexBufferBinding(vertexBufferSet.Buffer)).Append(new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice))).ToArray())
         {
             Material = material;
             VertexBuffer = vertexBufferSet.Buffer;
@@ -1785,12 +1810,15 @@ namespace Orts.Viewer3D
             PrimitiveCount = primitiveCount;
             Hierarchy = hierarchy;
             HierarchyIndex = hierarchyIndex;
-
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice)) };
+            PrimitiveType = PrimitiveType.TriangleList;
         }
 
         public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IList<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
-            : this(material, vertexBufferSet, null, indexData.Count / 3, hierarchy, hierarchyIndex)
+            : this(material, vertexBufferSet, new VertexBufferBinding[0], indexData, graphicsDevice, hierarchy, hierarchyIndex)
+        { }
+
+        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, VertexBufferBinding[] vertexBufferBindings, IList<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
+            : this(material, vertexBufferSet, vertexBufferBindings, null, indexData.Count / 3, hierarchy, hierarchyIndex)
         {
             IndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
             IndexBuffer.SetData(indexData.ToArray());
@@ -1802,8 +1830,15 @@ namespace Orts.Viewer3D
             {
                 // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
                 graphicsDevice.SetVertexBuffers(VertexBufferBindings);
-                graphicsDevice.Indices = IndexBuffer;
-                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, primitiveCount: PrimitiveCount);
+                if (IndexBuffer != null)
+                {
+                    graphicsDevice.Indices = IndexBuffer;
+                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: 0, startIndex: PrimitiveOffset, primitiveCount: PrimitiveCount);
+                }
+                else
+                {
+                    graphicsDevice.DrawPrimitives(PrimitiveType, 0, PrimitiveCount);
+                }
             }
         }
 
@@ -1815,13 +1850,13 @@ namespace Orts.Viewer3D
         [CallOnThread("Loader")]
         public virtual void Mark()
         {
-            Material.Mark();
+            Material?.Mark();
         }
 
         public void Dispose()
         {
-            VertexBuffer.Dispose();
-            IndexBuffer.Dispose();
+            VertexBuffer?.Dispose();
+            IndexBuffer?.Dispose();
             PrimitiveCount = 0;
         }
     }
@@ -1880,10 +1915,10 @@ namespace Orts.Viewer3D
         public int SubObjectIndex { get; protected set; }
 
         protected VertexBuffer VertexBuffer;
-        protected VertexDeclaration VertexDeclaration;
         protected int VertexBufferStride;
         protected IndexBuffer IndexBuffer;
         protected int PrimitiveCount;
+        protected internal int PrimitiveOffset;
 
         protected VertexBuffer InstanceBuffer;
         protected VertexDeclaration InstanceDeclaration;
@@ -1899,23 +1934,41 @@ namespace Orts.Viewer3D
             HierarchyIndex = shapePrimitive.HierarchyIndex;
             SubObjectIndex = subObjectIndex;
             VertexBuffer = shapePrimitive.VertexBuffer;
-            VertexDeclaration = shapePrimitive.VertexBuffer.VertexDeclaration;
             IndexBuffer = shapePrimitive.IndexBuffer;
             PrimitiveCount = shapePrimitive.PrimitiveCount;
+            PrimitiveOffset = shapePrimitive.PrimitiveOffset;
 
             InstanceDeclaration = new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements);
             InstanceBuffer = new VertexBuffer(graphicsDevice, InstanceDeclaration, positions.Length, BufferUsage.WriteOnly);
             InstanceBuffer.SetData(positions);
             InstanceCount = positions.Length;
 
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(InstanceBuffer, 0, 1) };
+            var instanceBufferBinding = new VertexBufferBinding(InstanceBuffer, 0, 1);
+
+            if (VertexBuffer != null)
+            {
+                VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), instanceBufferBinding };
+            }
+            else
+            {
+                VertexBufferBindings = shapePrimitive.VertexBufferBindings.ToArray();
+                var dummyInstanceBuffer = RenderPrimitive.GetDummyVertexBuffer(graphicsDevice);
+                var position = -1;
+                for (var i = 0; i < VertexBufferBindings.Length; i++)
+                    if (VertexBufferBindings[i].VertexBuffer == dummyInstanceBuffer)
+                        position = i;
+                if (position == -1)
+                    VertexBufferBindings.Append(instanceBufferBinding);
+                else
+                    VertexBufferBindings[position] = instanceBufferBinding;
+            }
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.Indices = IndexBuffer;
             graphicsDevice.SetVertexBuffers(VertexBufferBindings);
-            graphicsDevice.DrawInstancedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, PrimitiveCount, InstanceCount);
+            graphicsDevice.DrawInstancedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: PrimitiveOffset, PrimitiveCount, InstanceCount);
         }
     }
 
@@ -1982,7 +2035,7 @@ namespace Orts.Viewer3D
         public readonly Dictionary<int, Matrix> StoredResultMatrixes = new Dictionary<int, Matrix>();
 
 
-        readonly Viewer Viewer;
+        readonly protected Viewer Viewer;
         public readonly string FilePath;
         public readonly string ReferencePath;
 
@@ -2018,7 +2071,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Only one copy of the model is loaded regardless of how many copies are placed in the scene.
         /// </summary>
-        void LoadContent()
+        protected virtual void LoadContent()
         {
             var filePath = FilePath;
             // commented lines allow reading the animation block from an additional file in an Openrails subfolder
@@ -2102,6 +2155,8 @@ namespace Orts.Viewer3D
         {
             public DistanceLevel[] DistanceLevels;
 
+            public LodControl() { }
+
             public LodControl(lod_control MSTSlod_control, Helpers.TextureFlags textureFlags, ShapeFile sFile, SharedShape sharedShape)
             {
 #if DEBUG_SHAPE_HIERARCHY
@@ -2136,6 +2191,8 @@ namespace Orts.Viewer3D
             public float ViewingDistance;
             public float ViewSphereRadius;
             public SubObject[] SubObjects;
+
+            public DistanceLevel() { }
 
             public DistanceLevel(distance_level MSTSdistance_level, Helpers.TextureFlags textureFlags, ShapeFile sFile, SharedShape sharedShape)
             {
@@ -2211,6 +2268,8 @@ namespace Orts.Viewer3D
 
             public ShapePrimitive[] ShapePrimitives;
 
+            public SubObject() { }
+
 #if DEBUG_SHAPE_HIERARCHY
             public SubObject(sub_object sub_object, ref int totalPrimitiveIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, int subObjectIndex, SFile sFile, SharedShape sharedShape)
 #else
@@ -2222,6 +2281,7 @@ namespace Orts.Viewer3D
                 debugShapeHierarchy.AppendFormat("      Sub object {0}:\n", subObjectIndex);
 #endif
                 var vertexBufferSet = new VertexBufferSet(sub_object, sFile, sharedShape.Viewer.GraphicsDevice);
+                VertexBufferBinding[] vertexBufferBindings = new VertexBufferBinding[0];
 #if DEBUG_SHAPE_NORMALS
                 var debugNormalsMaterial = sharedShape.Viewer.MaterialManager.Load("DebugNormals");
 #endif
@@ -2285,6 +2345,30 @@ namespace Orts.Viewer3D
 
                     if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
                         options |= VertexLightModeMap[12 + vertexState.LightMatIdx];
+                    else if (vertexState.LightMatIdx >= 0 && sFile.shape.light_materials.ElementAtOrDefault(vertexState.LightMatIdx) is light_material lightMaterial
+                        && sFile.shape.colors.ElementAtOrDefault(lightMaterial.DiffColIdx) is color color)
+                    {
+                        // Try to fit the non-textured, colored primitives into the PBR shader NormalMapColor shader pipeline
+                        var vertexCount = vertexBufferSet.Buffer.VertexCount;
+                        var vertexData = Enumerable.Repeat(new Color(color.R, color.G, color.B, color.A), vertexCount).ToArray();
+                        var colorBufferBinding = new VertexBufferBinding(new VertexBuffer(sharedShape.Viewer.GraphicsDevice,
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Color, 0)), vertexCount, BufferUsage.WriteOnly)
+                            { Name = "COLOR" });
+                        colorBufferBinding.VertexBuffer.SetData(vertexData);
+
+                        var tangentBufferBinding = new VertexBufferBinding(new VertexBuffer(sharedShape.Viewer.GraphicsDevice,
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Tangent, 0)), vertexCount, BufferUsage.WriteOnly)
+                            { Name = "TANGENT_DUMMY" });
+
+                        var teexcoord1BufferBinding = new VertexBufferBinding(new VertexBuffer(sharedShape.Viewer.GraphicsDevice,
+                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 1)), vertexCount, BufferUsage.None)
+                            { Name = "TEXCOORD_1_DUMMY" });
+
+                        options |= SceneryMaterialOptions.PbrHasTexCoord1; // So that the correct shader technique gets selected.
+
+                        vertexBufferBindings = new[] { colorBufferBinding, tangentBufferBinding, teexcoord1BufferBinding };
+
+                    }
                     else if (!ShapeWarnings.Contains("lighting_model:" + vertexState.LightMatIdx))
                     {
                         Trace.TraceInformation("Skipped unknown lighting model index {1} first seen in shape {0}", sharedShape.FilePath, vertexState.LightMatIdx);
@@ -2306,6 +2390,13 @@ namespace Orts.Viewer3D
                             material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias);
                         else
                             material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
+                    }
+                    else if (vertexBufferBindings.Length > 0)
+                    {
+                        material = sharedShape.Viewer.MaterialManager.Load("PBR",
+                            $"{sharedShape.FilePath}#0#{vertexState.LightMatIdx}",
+                            (int)options, 0, null, GltfShape.GltfSubObject.DefaultGltfFile);
+                        (material as PbrMaterial).LoadTextures();
                     }
                     else
                     {
@@ -2338,7 +2429,7 @@ namespace Orts.Viewer3D
                         foreach (var index in new[] { vertex_idx.a, vertex_idx.b, vertex_idx.c })
                             indexData.Add((ushort)index);
 
-                    ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
+                    ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, vertexBufferBindings, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
                     ShapePrimitives[primitiveIndex].SortIndex = ++totalPrimitiveIndex;
                     ++primitiveIndex;
 #if DEBUG_SHAPE_NORMALS
@@ -2425,6 +2516,7 @@ namespace Orts.Viewer3D
             public int DebugNormalsVertexCount;
             public const int DebugNormalsVertexPerVertex = 3 * 4;
 #endif
+            public VertexBufferSet() { }
 
             public VertexBufferSet(VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice)
             {
@@ -2529,12 +2621,12 @@ namespace Orts.Viewer3D
             PrepareFrame(frame, location, Matrices, null, flags);
         }
 
-        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags, bool[] matrixVisible = null)
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags, Dictionary<int, bool> matrixVisible = null)
         {
             PrepareFrame(frame, location, animatedXNAMatrices, null, flags, matrixVisible);
         }
 
-        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool[] subObjVisible, ShapeFlags flags, bool[] matrixVisible = null)
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool[] subObjVisible, ShapeFlags flags, Dictionary<int, bool> matrixVisible = null)
         {
             var lodBias = ((float)Viewer.Settings.LODBias / 100 + 1);
 
@@ -2555,7 +2647,7 @@ namespace Orts.Viewer3D
 
                 // If this LOD group is not in the FOV, skip the whole LOD group.
                 // TODO: This might imair some shadows.
-                if (!Viewer.Camera.InFov(mstsLocation, lodControl.DistanceLevels[displayDetailLevel].ViewSphereRadius))
+                if (!(lodControl.DistanceLevels.ElementAtOrDefault(displayDetailLevel) is DistanceLevel distanceLevel) || !Viewer.Camera.InFov(mstsLocation, distanceLevel.ViewSphereRadius))
                     continue;
 
                 // We choose the distance level (LOD) to display first:
@@ -2576,9 +2668,23 @@ namespace Orts.Viewer3D
                     // Maximum detail!
                     displayDetailLevel = 0;
                 else if (Viewer.Settings.LODBias > -100)
+                {
                     // Not minimum detail, so find the correct level (with scaling by LODBias)
-                    while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
-                        displayDetailLevel--;
+                    if (this is GltfShape gltfShape)
+                    {
+                        // glTF lod-ding is based on minimum screen coverage.
+                        // Checking from level 0 to less detailed
+                        while (displayDetailLevel > 0 && Viewer.Camera.BiggerThan(xnaDTileTranslation, gltfShape.BoundingBoxNodes, gltfShape.MinimumScreenCoverages[displayDetailLevel - 1]))
+                            displayDetailLevel--;
+                        gltfShape.SetLod(displayDetailLevel);
+                    }
+                    else
+                    {
+                        // .s lod-ding is based on distance levels
+                        while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
+                            displayDetailLevel--;
+                    }
+                }
 
                 var displayDetail = lodControl.DistanceLevels[displayDetailLevel];
                 var distanceDetail = Viewer.Settings.LODBias == 100
@@ -2603,15 +2709,10 @@ namespace Orts.Viewer3D
 
                     foreach (var shapePrimitive in subObject.ShapePrimitives)
                     {
-                        var xnaMatrix = Matrix.Identity;
                         var hi = shapePrimitive.HierarchyIndex;
-                        if (matrixVisible != null && !matrixVisible[hi]) continue;
-                        while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
-                        {
-                            Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
-                            hi = shapePrimitive.Hierarchy[hi];
-                        }
-                        Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+                        if (matrixVisible != null && matrixVisible.TryGetValue(hi, out var visible) && !visible) continue;
+
+                        var xnaMatrix = SetRenderMatrices(shapePrimitive, animatedXNAMatrices, ref xnaDTileTranslation);
 
                         if (StoredResultMatrixes.ContainsKey(shapePrimitive.HierarchyIndex))
                             StoredResultMatrixes[shapePrimitive.HierarchyIndex] = xnaMatrix;
@@ -2625,22 +2726,66 @@ namespace Orts.Viewer3D
             }
         }
 
-        public Matrix GetMatrixProduct(int iNode)
+        public virtual Matrix SetRenderMatrices(ShapePrimitive shapePrimitive, Matrix[] animatedXNAMatrices, ref Matrix xnaDTileTranslation)
         {
-            int[] h = LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
-            Matrix matrix = Matrix.Identity;
-            while (iNode != -1)
+            var xnaMatrix = Matrix.Identity;
+            var hi = shapePrimitive.HierarchyIndex;
+            while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
             {
-                matrix *= Matrices[iNode];
-                iNode = h[iNode];
+                Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
+                hi = shapePrimitive.Hierarchy[hi];
+            }
+            Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+            return xnaMatrix;
+        }
+
+        public virtual Matrix GetMatrixProduct(int iNode)
+        {
+            var h = GetModelHierarchy();
+            Matrix matrix = Matrix.Identity;
+            if (h != null && h.Length > iNode)
+            {
+                while (iNode != -1)
+                {
+                    matrix *= Matrices[iNode];
+                    iNode = h[iNode];
+                }
             }
             return matrix;
         }
 
-        public int GetParentMatrix(int iNode)
-        {
-            return LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[iNode];
-        }
+        public int[] GetModelHierarchy() => LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.FirstOrDefault()?.Hierarchy;
+
+        /// <summary>
+        /// This method is part of the animation handling. Gets the parent that will be animated, for finding a bogie for wheels.
+        /// </summary>
+        public int GetParentMatrix(int iNode) => GetModelHierarchy()?.ElementAtOrDefault(iNode) ?? -1;
+
+        /// <summary>
+        /// Searches for the parent animation.
+        /// </summary>
+        /// <param name="animationId">For stf files it is the node id, for gltf files it is the animation id.</param>
+        /// <returns>The parent animation id.</returns>
+        public virtual int GetAnimationParent(int animationId) => GetParentMatrix(animationId);
+
+        /// <summary>
+        /// Tells whether the animation is an internal sequence defined within the shape, or is just a tag that needs external animation.
+        /// </summary>
+        /// <param name="animationId">For stf files it is the node id, for gltf files it is the animation id.</param>
+        /// <returns>true if there is no internal seqence defined in the shape.</returns>
+        public virtual bool IsAnimationArticulation(int animationId) =>
+            !(Animations?.FirstOrDefault()?.anim_nodes is anim_nodes a && a.Count > animationId && a.ElementAtOrDefault(animationId)?.controllers is controllers c && c.Count > 0);
+
+        /// <summary>
+        /// Returns the parent animation id.
+        /// </summary>
+        /// <param name="animationId">For stf files it is the node id, for gltf files it is the animation id.</param>
+        /// <returns>Returns for stf files the node id itself, for gltf files the target node id of the animation.</returns>
+        public virtual int GetAnimationTargetNode(int animationId) => animationId;
+
+        public virtual int GetAnimationNamesCount() => LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault().ShapePrimitives?.FirstOrDefault()?.Hierarchy?.Length ?? 0;
+
+        public virtual bool HasAnimations() => Animations != null;
 
         [CallOnThread("Loader")]
         internal void Mark()

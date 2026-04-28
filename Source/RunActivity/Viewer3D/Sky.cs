@@ -384,11 +384,6 @@ namespace Orts.Viewer3D
             SkyShader.SetFog(Viewer.Simulator.Weather.VisibilityM, ref SharedMaterialManager.FogColor);
             SkyShader.CloudScalePosition = Viewer.World.WeatherControl.CloudScalePosition;
 
-            for (var i = 0; i < 5; i++)
-            {
-                graphicsDevice.SamplerStates[i] = SamplerState.LinearWrap;
-            }
-
             var xnaSkyView = XNAViewMatrix * Camera.XNASkyProjection;
             var xnaMoonMatrix = Matrix.CreateTranslation(Viewer.World.Sky.LunarDirection * SkyPrimitive.RadiusM);
             var xnaMoonView = xnaMoonMatrix * xnaSkyView;

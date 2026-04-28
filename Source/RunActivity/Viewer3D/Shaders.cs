@@ -20,11 +20,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
-using Orts.Viewer3D.Processes;
+using System.Linq;
 
 namespace Orts.Viewer3D
 {
@@ -81,16 +82,14 @@ namespace Orts.Viewer3D
         readonly EffectParameter world;
         readonly EffectParameter view;
         readonly EffectParameter projection;
-        readonly EffectParameter[] lightViewProjectionShadowProjection;
-        readonly EffectParameter[] shadowMapTextures;
+        readonly EffectParameter shadowMatrices;
+        readonly EffectParameter shadowMapArray;
         readonly EffectParameter shadowMapLimit;
-        readonly EffectParameter zBias_Lighting;
+        readonly EffectParameter zBias;
+        readonly EffectParameter lightingDiffuse;
+        readonly EffectParameter lightingSpecular;
         readonly EffectParameter fog;
-        readonly EffectParameter lightVector_ZFar;
-        readonly EffectParameter headlightPosition;
-        readonly EffectParameter headlightDirection;
-        readonly EffectParameter headlightRcpDistance;
-        readonly EffectParameter headlightColor;
+        readonly EffectParameter zFar;
         readonly EffectParameter overcast;
         readonly EffectParameter viewerPos;
         readonly EffectParameter imageTextureIsNight;
@@ -100,43 +99,98 @@ namespace Orts.Viewer3D
         readonly EffectParameter signalLightIntensity;
         readonly EffectParameter eyeVector;
         readonly EffectParameter sideVector;
+
         readonly EffectParameter imageTexture;
         readonly EffectParameter overlayTexture;
-        readonly EffectParameter referenceAlpha;
         readonly EffectParameter overlayScale;
 
+        // glTF-PBR:
+        readonly EffectParameter baseColorFactor;
+        readonly EffectParameter emissiveTexture;
+        readonly EffectParameter emissiveIorFactor;
+        readonly EffectParameter normalTexture;
+        readonly EffectParameter occlusionTexture;
+        readonly EffectParameter metallicRoughnessTexture;
+        readonly EffectParameter occlusionFactor;
+        readonly EffectParameter clearcoatTexture;
+        readonly EffectParameter clearcoatFactor;
+        readonly EffectParameter clearcoatRoughnessTexture;
+        readonly EffectParameter clearcoatRoughnessFactor;
+        readonly EffectParameter clearcoatNormalTexture;
+        readonly EffectParameter clearcoatNormalScale;
+        readonly EffectParameter specularTexture;
+        readonly EffectParameter specularFactor;
+        readonly EffectParameter specularColorTexture;
+        readonly EffectParameter referenceAlpha;
+        readonly EffectParameter textureCoordinates1;
+        readonly EffectParameter textureCoordinates2;
+        readonly EffectParameter textureCoordinates3;
+        readonly EffectParameter hasNormals;
+        readonly EffectParameter hasTangents;
+        readonly EffectParameter bonesTexture;
+        readonly EffectParameter hasSkin;
+        readonly EffectParameter morphConfig;
+        readonly EffectParameter morphWeights;
+        // Per-frame PBR uniforms:
+        readonly EffectParameter environmentMapSpecularTexture;
+        readonly EffectParameter brdfLutTexture;
+        readonly EffectParameter numLights;
+        readonly EffectParameter lightsTexture;
+
+        readonly EffectParameter shRed;
+        readonly EffectParameter shGreen;
+        readonly EffectParameter shBlue;
+
         Vector3 _eyeVector;
-        Vector4 _zBias_Lighting;
         Vector3 _sunDirection;
         bool _imageTextureIsNight;
 
-        public void SetViewMatrix(ref Matrix v)
+        /// <summary>
+        /// The position of the sampler states inside the hlsl shader:
+        /// baseColor, metallicRoughness, occlusion, normal, emissive
+        /// </summary>
+        public enum Samplers
         {
+            BaseColor = 0,
+            Overlay,
+            Normal,
+            Emissive,
+            Occlusion,
+            MetallicRoughness,
+            Clearcoat,
+            ClearcoatRoughness,
+            ClearcoatNormal,
+            Specular,
+            SpecularColor,
+        }
+
+        public void SetMatrix(Matrix w)
+        {
+            world.SetValue(w);
+        }
+
+        public void SetPerFrame(ref Matrix v, ref Matrix p)
+        {
+            view.SetValue(v);
+            projection.SetValue(p);
+
             _eyeVector = Vector3.Normalize(new Vector3(v.M13, v.M23, v.M33));
 
             eyeVector.SetValue(new Vector4(_eyeVector, Vector3.Dot(_eyeVector, _sunDirection) * 0.5f + 0.5f));
             sideVector.SetValue(Vector3.Normalize(Vector3.Cross(_eyeVector, Vector3.Down)));
-        }
-
-        public void SetMatrix(Matrix w, ref Matrix v, ref Matrix p)
-        {
-            world.SetValue(w);
-            view.SetValue(v);
-            projection.SetValue(p);
 
             int vIn = Program.Simulator.Settings.DayAmbientLight;
             
             float FullBrightness = (float)vIn / 20.0f ;
             //const float HalfShadowBrightness = 0.75;
             const float HalfNightBrightness = 0.6f;
-            const float ShadowBrightness = 0.5f;
+            //const float ShadowBrightness = 0.5f;
             const float NightBrightness = 0.2f;
 
             if (_imageTextureIsNight)
             {
                 nightColorModifier.SetValue(FullBrightness);
                 halfNightColorModifier.SetValue(FullBrightness);
-                vegetationAmbientModifier.SetValue(FullBrightness);
             }
             else
             {
@@ -149,17 +203,25 @@ namespace Orts.Viewer3D
 
                 nightColorModifier.SetValue(MathHelper.Lerp(NightBrightness, FullBrightness, nightEffect));
                 halfNightColorModifier.SetValue(MathHelper.Lerp(HalfNightBrightness, FullBrightness, nightEffect));
-                vegetationAmbientModifier.SetValue(MathHelper.Lerp(ShadowBrightness, FullBrightness, _zBias_Lighting.Y));
             }
         }
 
-        public void SetShadowMap(Matrix[] shadowProjections, Texture2D[] textures, float[] limits)
+        public void SetVegetationMaterial(float lightingDiffuse)
         {
-            for (var i = 0; i < RenderProcess.ShadowMapCount; i++)
-            {
-                lightViewProjectionShadowProjection[i].SetValue(shadowProjections[i]);
-                shadowMapTextures[i].SetValue(textures[i]);
-            }
+            int vIn = Program.Simulator.Settings.DayAmbientLight;
+
+            float FullBrightness = (float)vIn / 20.0f ;
+            const float ShadowBrightness = 0.5f;
+
+            vegetationAmbientModifier.SetValue(_imageTextureIsNight
+                ? FullBrightness
+                : MathHelper.Lerp(ShadowBrightness, FullBrightness, lightingDiffuse));
+        }
+
+        public void SetShadowMap(Matrix[] shadowProjections, Texture2D textures, float[] limits)
+        {
+            shadowMapArray.SetValue(textures);
+            shadowMatrices.SetValue(shadowProjections);
             shadowMapLimit.SetValue(new Vector4(limits[0], limits.Length > 1 ? limits[1] : 0, limits.Length > 2 ? limits[2] : 0, limits.Length > 3 ? limits[3] : 0));
         }
 
@@ -168,61 +230,103 @@ namespace Orts.Viewer3D
             shadowMapLimit.SetValue(Vector4.Zero);
         }
 
-        public float ZBias { get { return _zBias_Lighting.X; } set { _zBias_Lighting.X = value; zBias_Lighting.SetValue(_zBias_Lighting); } }
-        public float LightingDiffuse { get { return _zBias_Lighting.Y; } set { _zBias_Lighting.Y = value; zBias_Lighting.SetValue(_zBias_Lighting); } }
-        public float LightingSpecular
+        public float ZBias { set { zBias.SetValue(value); } }
+        public float LightingDiffuse { set { lightingDiffuse.SetValue(value); } }
+        public float LightingSpecular { set { lightingSpecular.SetValue(new Vector2(value >= 1 ? value : 1, value >= 1 ? 1 : 0)); } }
+        // Setting this exponent of HLSL pow() function to 0 in DX11 leads to undefined result ^^^^
+
+        public void SetViewerPos(Vector3 pos, float fogVisibilityM)
         {
-            get { return _zBias_Lighting.Z; }
-            set
-            {
-                // Setting this exponent of HLSL pow() function to 0 in DX11 leads to undefined result. (HLSL bug?)
-                _zBias_Lighting.Z = value >= 1 ? value : 1;
-                _zBias_Lighting.W = value >= 1 ? 1 : 0;
-                zBias_Lighting.SetValue(_zBias_Lighting);
-            }
+            viewerPos.SetValue(new Vector4(pos, 1f / fogVisibilityM));
         }
 
-        public void SetFog(float depth, ref Color color)
-        {
-            fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 1f / depth));
-        }
-
-        public void SetLightVector_ZFar(Vector3 sunDirection, int zFar)
+        public void SetLightVector_ZFar(Vector3 sunDirection, float zFarDistance)
         {
             _sunDirection = sunDirection;
-            lightVector_ZFar.SetValue(new Vector4(sunDirection.X, sunDirection.Y, sunDirection.Z, zFar));
-        }
-
-        public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float distance, float minDotProduct, float fadeTime, float fadeDuration, float clampValue, ref Vector4 color)
-        {
-            var lighting = fadeTime / fadeDuration * clampValue;
-            if (fadeDuration < 0) lighting = 1 + lighting;
-            headlightPosition.SetValue(new Vector4(position, MathHelper.Clamp(lighting, 0, clampValue)));
-            headlightDirection.SetValue(new Vector4(direction, 0.5f * (1 - minDotProduct))); // We want 50% brightness at the given dot product.
-            headlightRcpDistance.SetValue(1f / distance); // Needed to be separated (direction * distance) because no pre-shaders are supported in XNA 4
-            headlightColor.SetValue(color);
-        }
-
-        public void SetHeadlightOff()
-        {
-            headlightPosition.SetValue(Vector4.Zero);
+            zFar.SetValue(zFarDistance);
         }
 
         public float SignalLightIntensity { set { signalLightIntensity.SetValue(value); } }
 
-        public float Overcast { set { overcast.SetValue(new Vector2(value, value / 2)); } }
+        public Vector2 Overcast { set { overcast.SetValue(value); } }
 
-        public Vector3 ViewerPos { set { viewerPos.SetValue(value); } }
+        public Color Fog { set { fog.SetValue(value.ToVector3()); } }
 
-        public bool ImageTextureIsNight { set { _imageTextureIsNight = value; imageTextureIsNight.SetValue(value ? 1f : 0f); } }
+        public bool ImageTextureIsNight { set { _imageTextureIsNight = value; imageTextureIsNight.SetValue(value ? 1f : 0f); } get => _imageTextureIsNight; }
 
-        public Texture2D ImageTexture { set { imageTexture.SetValue(value); } }
+        Texture2D ImageTextureCache;
+        public Texture2D ImageTexture { set { if (ImageTextureCache != value) imageTexture.SetValue(ImageTextureCache = value); } }
 
         public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
+
+        public Texture2D EmissiveTexture { set { emissiveTexture.SetValue(value); } }
+
+        public Texture2D NormalTexture { set { normalTexture.SetValue(value); } }
+
+        public Texture2D MetallicRoughnessTexture { set { metallicRoughnessTexture.SetValue(value); } }
+
+        public Texture2D OcclusionTexture { set { occlusionTexture.SetValue(value); } }
+
+        public Texture2D ClearcoatTexture { set { clearcoatTexture.SetValue(value); } }
+
+        public Texture2D ClearcoatRoughnessTexture { set { clearcoatRoughnessTexture.SetValue(value); } }
+
+        public Texture2D ClearcoatNormalTexture { set { clearcoatNormalTexture.SetValue(value); } }
+
+        public Texture2D SpecularTexture { set { specularTexture.SetValue(value); } }
+
+        public Texture2D SpecularColorTexture { set { specularColorTexture.SetValue(value); } }
 
         public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
 
         public float OverlayScale { set { overlayScale.SetValue(value); } }
+
+        public Vector4 BaseColorFactor { set { baseColorFactor.SetValue(value); } }
+        
+        public Vector4 EmissiveIorFactor { set { emissiveIorFactor.SetValue(value); } }
+        
+        public Vector4 OcclusionFactor { set { occlusionFactor.SetValue(value); } }
+
+        public float ClearcoatFactor { set { clearcoatFactor.SetValue(value); } }
+
+        public float ClearcoatRoughnessFactor { set { clearcoatRoughnessFactor.SetValue(value); } }
+
+        public float ClearcoatNormalScale { set { clearcoatNormalScale.SetValue(value); } }
+
+        public Vector4 SpecularFactor { set { specularFactor.SetValue(value); } }
+
+
+        public Texture2D EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
+
+        public Texture2D BrdfLutTexture { set { brdfLutTexture.SetValue(value); } }
+
+        public Vector4 TextureCoordinates1 { set { textureCoordinates1.SetValue(value); } }
+        
+        public Vector4 TextureCoordinates2 { set { textureCoordinates2.SetValue(value); } }
+        
+        public Vector4 TextureCoordinates3 { set { textureCoordinates3.SetValue(value); } }
+        
+        public bool HasNormals { set { hasNormals.SetValue(value); } }
+
+        public bool HasTangents { set { hasTangents.SetValue(value); } }
+
+        public Texture2D BonesTexture { set { bonesTexture.SetValue(value); } }
+
+        public bool HasSkin { set { hasSkin.SetValue(value); } }
+
+        public Vector4[] MorphConfig { set { morphConfig.SetValue(value); } }
+
+        public Vector4[] MorphWeights { set { morphWeights.SetValue(value); } }
+
+        public float NumLights { set { numLights.SetValue(value); } }
+
+        public Texture2D LightsTexture { set { lightsTexture.SetValue(value); } }
+
+        public Matrix ShRed { set { shRed.SetValue(value); } }
+
+        public Matrix ShGreen { set { shGreen.SetValue(value); } }
+
+        public Matrix ShBlue { set { shBlue.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
@@ -230,21 +334,14 @@ namespace Orts.Viewer3D
             world = Parameters["World"];
             view = Parameters["View"];
             projection = Parameters["Projection"];
-            lightViewProjectionShadowProjection = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
-            shadowMapTextures = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
-            for (var i = 0; i < RenderProcess.ShadowMapCountMaximum; i++)
-            {
-                lightViewProjectionShadowProjection[i] = Parameters["LightViewProjectionShadowProjection" + i];
-                shadowMapTextures[i] = Parameters["ShadowMapTexture" + i];
-            }
+            shadowMatrices = Parameters["ShadowMatrices"];
+            shadowMapArray = Parameters["ShadowMapArray"];
             shadowMapLimit = Parameters["ShadowMapLimit"];
-            zBias_Lighting = Parameters["ZBias_Lighting"];
+            zBias = Parameters["ZBias"];
+            lightingDiffuse = Parameters["LightingDiffuse"];
+            lightingSpecular = Parameters["LightingSpecular"];
             fog = Parameters["Fog"];
-            lightVector_ZFar = Parameters["LightVector_ZFar"];
-            headlightPosition = Parameters["HeadlightPosition"];
-            headlightDirection = Parameters["HeadlightDirection"];
-            headlightRcpDistance = Parameters["HeadlightRcpDistance"];
-            headlightColor = Parameters["HeadlightColor"];
+            zFar = Parameters["ZFar"];
             overcast = Parameters["Overcast"];
             viewerPos = Parameters["ViewerPos"];
             imageTextureIsNight = Parameters["ImageTextureIsNight"];
@@ -256,49 +353,141 @@ namespace Orts.Viewer3D
             sideVector = Parameters["SideVector"];
             imageTexture = Parameters["ImageTexture"];
             overlayTexture = Parameters["OverlayTexture"];
+            emissiveTexture = Parameters["EmissiveTexture"];
+            normalTexture = Parameters["NormalTexture"];
+            metallicRoughnessTexture = Parameters["MetallicRoughnessTexture"];
+            occlusionTexture = Parameters["OcclusionTexture"];
+            clearcoatTexture = Parameters["ClearcoatTexture"];
+            clearcoatRoughnessTexture = Parameters["ClearcoatRoughnessTexture"];
+            clearcoatNormalTexture = Parameters["ClearcoatNormalTexture"];
             referenceAlpha = Parameters["ReferenceAlpha"];
             overlayScale = Parameters["OverlayScale"];
+            baseColorFactor = Parameters["BaseColorFactor"];
+            emissiveIorFactor = Parameters["EmissiveIorFactor"];
+            occlusionFactor = Parameters["OcclusionFactor"];
+            clearcoatFactor = Parameters["ClearcoatFactor"];
+            clearcoatRoughnessFactor = Parameters["ClearcoatRoughnessFactor"];
+            clearcoatNormalScale = Parameters["ClearcoatNormalScale"];
+            specularTexture = Parameters["SpecularTexture"];
+            specularFactor = Parameters["SpecularFactor"];
+            specularColorTexture = Parameters["SpecularColorTexture"];
+            textureCoordinates1 = Parameters["TextureCoordinates1"];
+            textureCoordinates2 = Parameters["TextureCoordinates2"];
+            textureCoordinates3 = Parameters["TextureCoordinates3"];
+            hasNormals = Parameters["HasNormals"];
+            hasTangents = Parameters["HasTangents"];
+            bonesTexture = Parameters["BonesTexture"];
+            hasSkin = Parameters["HasSkin"];
+            morphConfig = Parameters["MorphConfig"];
+            morphWeights = Parameters["MorphWeights"];
+            environmentMapSpecularTexture = Parameters["EnvironmentMapSpecularTexture"];
+            brdfLutTexture = Parameters["BrdfLutTexture"];
+            numLights = Parameters["NumLights"];
+            lightsTexture = Parameters["LightsTexture"];
+            shRed = Parameters["ShRed"];
+            shGreen = Parameters["ShGreen"];
+            shBlue = Parameters["ShBlue"];
+        }
+    }
+
+    [CallOnThread("Render")]
+    public class BloomShader : Shader
+    {
+        readonly EffectParameter bloomTexture;
+        readonly EffectParameter screenTexture;
+        readonly EffectParameter inverseResolution;
+        readonly EffectParameter threshold;
+        readonly EffectParameter radius;
+        readonly EffectParameter strength;
+        readonly EffectParameter streakLength;
+        readonly EffectParameter exposure;
+
+        public BloomShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "Bloom")
+        {
+            bloomTexture = Parameters["BloomTexture"];
+            screenTexture = Parameters["ScreenTexture"];
+            inverseResolution = Parameters["InverseResolution"];
+            threshold = Parameters["Threshold"];
+            radius = Parameters["Radius"];
+            strength = Parameters["Strength"];
+            streakLength = Parameters["StreakLength"];
+            exposure = Parameters["Exposure"];
+        }
+
+        public Texture2D BloomTexture { set => bloomTexture.SetValue(value); }
+        public Texture2D ScreenTexture { set => screenTexture.SetValue(value); }
+        Vector2 InverseResolutionField;
+        public Vector2 InverseResolution { get => InverseResolutionField; set => inverseResolution.SetValue(InverseResolutionField = value); }
+        public float Radius { set => radius.SetValue(value); }
+        public float Strength { set => strength.SetValue(value); }
+        public float StreakLength { set => streakLength.SetValue(value); }
+        public float Exposure { set => exposure.SetValue(value); }
+
+        public void SetPerFrame(float exposure)
+        {
+            Exposure = exposure;
         }
     }
 
     [CallOnThread("Render")]
     public class ShadowMapShader : Shader
     {
-        readonly EffectParameter worldViewProjection;
+        readonly EffectParameter world;
+        readonly EffectParameter view;
+        readonly EffectParameter projection;
         readonly EffectParameter sideVector;
         readonly EffectParameter imageBlurStep;
         readonly EffectParameter imageTexture;
+        readonly EffectParameter shadowMapArray;
+        readonly EffectParameter bonesTexture;
+        readonly EffectParameter hasSkin;
+        readonly EffectParameter morphConfig;
+        readonly EffectParameter morphWeights;
+        readonly EffectParameter shadowMapIndex;
 
-        public void SetData(ref Matrix v)
+        public void SetPerShadowMap(ref Matrix v, ref Matrix p)
         {
             var eyeVector = Vector3.Normalize(new Vector3(v.M13, v.M23, v.M33));
             sideVector.SetValue(Vector3.Normalize(Vector3.Cross(eyeVector, Vector3.Down)));
-        }
 
-        public void SetData(ref Matrix wvp, Texture2D texture)
+            view.SetValue(v);
+            projection.SetValue(p);
+        }
+        
+        public void SetData(Matrix w, Texture2D texture)
         {
-            worldViewProjection.SetValue(wvp);
+            world.SetValue(w);
             imageTexture.SetValue(texture);
         }
 
-        public void SetBlurData(ref Matrix wvp)
+        public void SetBlurData(Texture2D texture, int index)
         {
-            worldViewProjection.SetValue(wvp);
-        }
-
-        public void SetBlurData(Texture2D texture)
-        {
-            imageTexture.SetValue(texture);
+            shadowMapIndex.SetValue(index);
+            shadowMapArray.SetValue(texture);
             imageBlurStep.SetValue(texture != null ? 1f / texture.Width : 0);
         }
+
+        public Texture2D BonesTexture { set { bonesTexture.SetValue(value); } }
+        public bool HasSkin { set { hasSkin.SetValue(value); } }
+        public Vector4[] MorphConfig { set { morphConfig.SetValue(value); } }
+        public Vector4[] MorphWeights { set { morphWeights.SetValue(value); } }
 
         public ShadowMapShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "ShadowMap")
         {
-            worldViewProjection = Parameters["WorldViewProjection"];
+            world = Parameters["World"];
+            view = Parameters["View"];
+            projection = Parameters["Projection"];
             sideVector = Parameters["SideVector"];
             imageBlurStep = Parameters["ImageBlurStep"];
             imageTexture = Parameters["ImageTexture"];
+            shadowMapArray = Parameters["ShadowMapArray"];
+            bonesTexture = Parameters["BonesTexture"];
+            hasSkin = Parameters["HasSkin"];
+            morphConfig = Parameters["MorphConfig"];
+            morphWeights = Parameters["MorphWeights"];
+            shadowMapIndex = Parameters["ShadowMapIndex"];
         }
     }
 

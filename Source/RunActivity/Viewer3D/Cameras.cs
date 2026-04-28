@@ -65,6 +65,8 @@ namespace Orts.Viewer3D
         Vector3 frustumLeft;
         Vector3 frustumRight;
 
+        public float Exposure { get; protected set; } = 1.0f;
+
         // This sucks. It's really not camera-related at all.
         public static Matrix XNASkyProjection;
 
@@ -203,6 +205,30 @@ namespace Orts.Viewer3D
             frustumRight.Y = xnaView.M21 * frustumRightProjected.X + xnaView.M23 * frustumRightProjected.Z;
             frustumRight.Z = xnaView.M31 * frustumRightProjected.X + xnaView.M33 * frustumRightProjected.Z;
             frustumRight.Normalize();
+
+            UpdateExposure(frame.SolarDirection, elapsedTime);
+        }
+
+        public void UpdateExposure(Vector3 solarDirection, ElapsedTime elapsedTime)
+        {
+            const float maxDayExposure = 0.8f;
+            const float nightExposure = 2.5f;
+            const float overcastMultiplier = 0.7f;
+            const float adaptationSpeed = 2.0f;
+
+            // By Sun height
+            float sunHeight = MathHelper.Clamp(solarDirection.Y, -1f, 1f);
+            float dayNightLerp = MathHelper.Clamp((-sunHeight + 1f) / 2f, 0f, 1f);
+            float baseExposure = MathHelper.Lerp(maxDayExposure, nightExposure, dayNightLerp);
+
+            // By weather
+            float weatherMultiplier = MathHelper.Lerp(1.0f, overcastMultiplier, Viewer.Simulator.Weather.OverallDimmingFactor);
+            weatherMultiplier = Math.Max(weatherMultiplier, 0.5f);
+
+            float targetExposure = baseExposure / weatherMultiplier;
+
+            float dt = elapsedTime.RealSeconds;
+            Exposure = MathHelper.Lerp(Exposure, targetExposure, dt * adaptationSpeed);
         }
 
         // Cull for fov
@@ -233,6 +259,30 @@ namespace Orts.Viewer3D
             var distanceSquared = mstsObjectCenter.X * mstsObjectCenter.X + mstsObjectCenter.Z * mstsObjectCenter.Z;
 
             return distanceSquared < (objectRadius + objectViewingDistance) * (objectRadius + objectViewingDistance);
+        }
+
+        // Cull for screen coverage
+        public bool BiggerThan(Matrix worldTileTranslation, Vector4[] boundingBoxNodes, float objectMinimumScreenCoverage)
+        {
+            // Following the Unity standard we check only the object's heigth as the culling prerequisite.
+            // The screen projection gives the height in the -1..1 range, so we compare that with the double of the 0..1 screen coverage.
+            objectMinimumScreenCoverage *= 2;
+            
+            var wvp = worldTileTranslation * XnaView * XnaProjection;
+
+            var minY = float.MaxValue;
+            var maxY = float.MinValue;
+            for (var i = 0; i < boundingBoxNodes.Length; i++)
+            {
+                var screenPosition = Vector4.Transform(boundingBoxNodes[i], wvp);
+                // Coordinates need to be divided by w at perspective projections:
+                var y = screenPosition.Y / screenPosition.W;
+                minY = Math.Min(minY, y);
+                maxY = Math.Max(maxY, y);
+                if (maxY - minY > objectMinimumScreenCoverage)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>

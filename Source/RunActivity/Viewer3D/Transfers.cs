@@ -1,4 +1,4 @@
-// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -146,8 +146,8 @@ namespace Orts.Viewer3D
 
     public class TransferMaterial : Material
     {
+        readonly EffectTechnique Technique;
         readonly Texture2D Texture;
-        IEnumerator<EffectPass> ShaderPasses;
         readonly SamplerState TransferSamplerState;
 
         public TransferMaterial(Viewer viewer, string textureName)
@@ -160,36 +160,38 @@ namespace Orts.Viewer3D
                 Filter = TextureFilter.Anisotropic,
                 MaxAnisotropy = 16,
             };
+            Technique = Viewer.MaterialManager.SceneryShader.Techniques["Transfer"];
+
+            SetSortingEffectId(Technique);
+            SetSortingTextureId(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            var level9_3 = Viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3);
-            shader.CurrentTechnique = shader.Techniques[level9_3 ? "TransferLevel9_3" : "TransferLevel9_1"];
-            if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
+            shader.CurrentTechnique = Technique;
             shader.ImageTexture = Texture;
             shader.ReferenceAlpha = 10;
+            shader.HasNormals = false;
+            shader.HasTangents = false;
 
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = TransferSamplerState;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-
-            shader.SetViewMatrix(ref XNAViewMatrix);
-            ShaderPasses.Reset();
-            while (ShaderPasses.MoveNext())
+            var passes = shader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.SetMatrix(item.XNAMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
-                    ShaderPasses.Current.Apply();
-                    // SamplerStates can only be set after the ShaderPasses.Current.Apply().
-                    graphicsDevice.SamplerStates[0] = TransferSamplerState;
+                    passes[i].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }

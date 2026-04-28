@@ -1526,6 +1526,7 @@ namespace Orts.Viewer3D.Popups
             }
             TableSetCells(table, 3, Viewer.RenderProcess.PrimitivePerFrame.Select(p => p.ToString("F0")).ToArray());
             TableAddLabelValue(table, Viewer.Catalog.GetString("Render primitives"), Viewer.Catalog.GetStringFmt("{0:F0}", Viewer.RenderProcess.PrimitivePerFrame.Sum()));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Light sources"), Viewer.Catalog.GetStringFmt("{0:F0}", Viewer.RenderProcess.LightSourcesCount));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Render process"), Viewer.Catalog.GetStringFmt("{0:F0}% ({1:F0}% {2})", Viewer.RenderProcess.Profiler.Wall.SmoothedValue, Viewer.RenderProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait")));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Updater process"), Viewer.Catalog.GetStringFmt("{0:F0}% ({1:F0}% {2})", Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue, Viewer.UpdaterProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait")));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Loader process"), Viewer.Catalog.GetStringFmt("{0:F0}% ({1:F0}% {2})", Viewer.LoaderProcess.Profiler.Wall.SmoothedValue, Viewer.LoaderProcess.Profiler.Wait.SmoothedValue, Viewer.Catalog.GetString("wait")));
@@ -1718,18 +1719,19 @@ namespace Orts.Viewer3D.Popups
 
     public class HUDGraphMaterial : Material
     {
-        IEnumerator<EffectPass> ShaderPassesGraph;
+        EffectTechnique Technique;
 
         public HUDGraphMaterial(Viewer viewer)
             : base(viewer, null)
         {
+            Technique = Viewer.MaterialManager.DebugShader.Techniques["Graph"];
+            SetSortingEffectId(Technique);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.DebugShader;
-            shader.CurrentTechnique = shader.Techniques["Graph"];
-            if (ShaderPassesGraph == null) ShaderPassesGraph = shader.Techniques["Graph"].Passes.GetEnumerator();
+            shader.CurrentTechnique = Technique;
             shader.ScreenSize = new Vector2(Viewer.DisplaySize.X, Viewer.DisplaySize.Y);
 
             graphicsDevice.RasterizerState = RasterizerState.CullNone;
@@ -1740,8 +1742,8 @@ namespace Orts.Viewer3D.Popups
         {
             var shader = Viewer.MaterialManager.DebugShader;
 
-            ShaderPassesGraph.Reset();
-            while (ShaderPassesGraph.MoveNext())
+            var passes = shader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
@@ -1750,7 +1752,7 @@ namespace Orts.Viewer3D.Popups
                     {
                         shader.GraphPos = graphMesh.GraphPos;
                         shader.GraphSample = graphMesh.Sample;
-                        ShaderPassesGraph.Current.Apply();
+                        passes[i].Apply();
                     }
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
