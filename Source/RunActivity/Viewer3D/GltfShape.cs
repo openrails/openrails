@@ -1036,7 +1036,8 @@ namespace Orts.Viewer3D
             public static readonly glTFLoader.Schema.Gltf DefaultGltfFile = new glTFLoader.Schema.Gltf
             {
                 Materials = new[] { DefaultGltfMaterial },
-                Samplers = new[] { DefaultGltfSampler }
+                Samplers = new[] { DefaultGltfSampler },
+                Scenes = new[] { new glTFLoader.Schema.Scene { Nodes = new[] { 0 } } },
             };
 
             static readonly List<string> MorphTargetAttributes = new List<string>() { "POSITION", "NORMAL", "TANGENT", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0" };
