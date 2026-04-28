@@ -2503,7 +2503,6 @@ namespace Orts.Simulation.Timetables
             /// <returns> StopInfo structure</returns>
             public StopInfo ProcessStopInfo(string stationInfo, StationInfo stationDetails)
             {
-                string[] arr_dep = new string[2] { String.Empty, String.Empty };
                 string fullCommandString = String.Empty;
 
                 if (stationInfo.Contains('$'))
@@ -2513,20 +2512,7 @@ namespace Orts.Simulation.Timetables
                     stationInfo = stationInfo.Substring(0, commandseparator).Trim();
                 }
 
-                if (!String.IsNullOrEmpty(stationInfo))
-                {
-                    if (stationInfo.Contains('-'))
-                    {
-                        arr_dep = stationInfo.Split(new char[1] { '-' }, 2);
-                    }
-                    else
-                    {
-                        arr_dep[0] = stationInfo;
-                        arr_dep[1] = stationInfo;
-                    }
-                }
-
-                StopInfo newStop = new StopInfo(stationDetails.StationName, arr_dep[0], arr_dep[1], parentInfo)
+                StopInfo newStop = new StopInfo(stationDetails.StationName, stationInfo, parentInfo)
                 {
                     holdState = stationDetails.HoldState == StationInfo.HoldInfo.Hold ? StopInfo.SignalHoldType.Normal : StopInfo.SignalHoldType.None,
                     noWaitSignal = stationDetails.NoWaitSignal
@@ -3237,7 +3223,7 @@ namespace Orts.Simulation.Timetables
             /// <param name="name"></param>
             /// <param name="arrTime"></param>
             /// <param name="depTime"></param>
-            public StopInfo(string name, string arrTime, string depTime, TimetableInfo ttinfo)
+            public StopInfo(string name, string stationInfo, TimetableInfo ttinfo)
             {
                 refTTInfo = ttinfo;
                 arrivalTime = -1;
@@ -3247,11 +3233,34 @@ namespace Orts.Simulation.Timetables
                 allowDepartEarly = false;
                 reqStop = false;
                 reqStopDetails = null;
+                string[] arr_dep = new string[2] { String.Empty, String.Empty };
+                string arrTime = String.Empty;
+                string depTime = String.Empty;
+                bool arrSet = false;
+                bool depSet = false;
 
                 TimeSpan atime;
                 bool validArrTime = false;
                 bool validDepTime = false;
                 bool validPassTime = false;
+
+                if (!String.IsNullOrEmpty(stationInfo))
+                {
+                    if (stationInfo.Contains('-'))
+                    {
+                        arr_dep = stationInfo.Split(new char[1] { '-' }, 2);
+                        arrTime = arr_dep[0];
+                        depTime = arr_dep[1];
+                        arrSet = true;
+                        depSet = true;
+                    }
+                    else
+                    {
+                        arrTime = stationInfo;
+                        arrSet = arrTime.Length > 0;
+                    }
+                }
+
 
                 if (arrTime.Length == 1)
                 {
@@ -3314,7 +3323,7 @@ namespace Orts.Simulation.Timetables
                         departureDT = arrivalDT = new DateTime(atime.Ticks);
                     }
                 }
-                else
+                else if (arrSet)
                 {
 
                     validArrTime = TimeSpan.TryParse(arrTime, out atime);
@@ -3324,11 +3333,25 @@ namespace Orts.Simulation.Timetables
                         arrivalDT = new DateTime(atime.Ticks);
                     }
 
-                    validDepTime = TimeSpan.TryParse(depTime, out atime);
-                    if (validDepTime)
+                    if (depSet)
                     {
-                        departureTime = Convert.ToInt32(atime.TotalSeconds);
-                        departureDT = new DateTime(atime.Ticks);
+                        validDepTime = TimeSpan.TryParse(depTime, out atime);
+                        if (validDepTime)
+                        {
+                            departureTime = Convert.ToInt32(atime.TotalSeconds);
+                            departureDT = new DateTime(atime.Ticks);
+                        }
+                    }
+
+                    if (validArrTime && !validDepTime)
+                    {
+                        departureTime = arrivalTime;
+                        departureDT = arrivalDT;
+                    }
+                    else if (!validArrTime && validDepTime)
+                    {
+                        arrivalTime = departureTime;
+                        arrivalDT = departureDT;
                     }
                 }
 
