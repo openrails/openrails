@@ -3249,14 +3249,14 @@ namespace Orts.Simulation.Timetables
                     if (stationInfo.Contains('-'))
                     {
                         arr_dep = stationInfo.Split(new char[1] { '-' }, 2);
-                        arrTime = arr_dep[0];
-                        depTime = arr_dep[1];
+                        arrTime = arr_dep[0].Trim();
+                        depTime = arr_dep[1].Trim();
                         arrSet = true;
                         depSet = true;
                     }
                     else
                     {
-                        arrTime = stationInfo;
+                        arrTime = stationInfo.Trim();
                         arrSet = arrTime.Length > 0;
                     }
                 }
@@ -3332,6 +3332,10 @@ namespace Orts.Simulation.Timetables
                         arrivalTime = Convert.ToInt32(atime.TotalSeconds);
                         arrivalDT = new DateTime(atime.Ticks);
                     }
+                    else
+                    {
+                        Trace.TraceInformation("Invalid arrival time {0} at station {1}", arrTime, name);
+                    }
 
                     if (depSet)
                     {
@@ -3340,6 +3344,10 @@ namespace Orts.Simulation.Timetables
                         {
                             departureTime = Convert.ToInt32(atime.TotalSeconds);
                             departureDT = new DateTime(atime.Ticks);
+                        }
+                        else
+                        {
+                            Trace.TraceInformation("Invalid departure time {0} at station {1}", depTime, name);
                         }
                     }
 
