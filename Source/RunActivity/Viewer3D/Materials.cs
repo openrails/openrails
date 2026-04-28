@@ -1347,7 +1347,7 @@ namespace Orts.Viewer3D
             {
                 iblLightIndex = Convert.ToInt32(extension);
             }
-            else if ((gltfFile.Scenes.ElementAtOrDefault(gltfFile.Scene ?? 0)?.Extensions?.TryGetValue("EXT_lights_image_based", out extension) ?? false) && extension is EXT_lights_image_based lightImageBased)
+            else if ((gltfFile.Scenes?.ElementAtOrDefault(gltfFile.Scene ?? 0)?.Extensions?.TryGetValue("EXT_lights_image_based", out extension) ?? false) && extension is EXT_lights_image_based lightImageBased)
             {
                 iblLightIndex = lightImageBased.Light;
             }
