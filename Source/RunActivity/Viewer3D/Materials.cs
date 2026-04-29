@@ -107,8 +107,15 @@ namespace Orts.Viewer3D
                             {
                                 return Textures[textureKey] = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, ace);
                             }
-                            // When a texture is not found, and it is in a selector directory (e.g. "Snow"), we
-                            // go up a level and try again. This repeats a fixed number of times, or until we run
+                            if (defaultTexture != SharedMaterialManager.MissingTexture)
+                            {
+                                // This texture has been set to use a non-standard default texture,
+                                // use this default texture instead of searching other folders
+                                return defaultTexture;
+                            }
+                            // When a texture is not found, there is no special missing texture defined,
+                            // and it is in a selector directory (e.g. "Snow"), we go up a level and
+                            // try again. This repeats a fixed number of times, or until we run
                             // out of known selector directories.
                             var directory = Path.GetDirectoryName(depthPath);
                             if (string.IsNullOrEmpty(directory) || !SelectorDirectoryNames.Contains(Path.GetFileName(directory))) break;
