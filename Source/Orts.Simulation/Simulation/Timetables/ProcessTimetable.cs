@@ -3289,6 +3289,10 @@ namespace Orts.Simulation.Timetables
                         passTime = Convert.ToInt32(atime.TotalSeconds);
                         passDT = new DateTime(atime.Ticks);
                     }
+                    else
+                    {
+                        Trace.TraceInformation("Invalid passing time {0} at station {1}", arrTime, name);
+                    }
                 }
                 else if (arrTime.Contains("P"))
                 {
@@ -3299,6 +3303,10 @@ namespace Orts.Simulation.Timetables
                     {
                         passTime = Convert.ToInt32(atime.TotalSeconds);
                         passDT = new DateTime(atime.Ticks);
+                    }
+                    else
+                    {
+                        Trace.TraceInformation("Invalid passing time {0} at station {1}", arrTime, name);
                     }
                 }
                 else if (arrTime.Contains("*"))
@@ -3311,6 +3319,10 @@ namespace Orts.Simulation.Timetables
                         departureTime = arrivalTime = Convert.ToInt32(atime.TotalSeconds);
                         departureDT = arrivalDT = new DateTime(atime.Ticks);
                     }
+                    else
+                    {
+                        Trace.TraceInformation("Invalid arrival time {0} at station {1}", arrTime, name);
+                    }
                 }
                 else if (arrTime.Contains("x"))
                 {
@@ -3321,6 +3333,10 @@ namespace Orts.Simulation.Timetables
                     {
                         departureTime = arrivalTime = Convert.ToInt32(atime.TotalSeconds);
                         departureDT = arrivalDT = new DateTime(atime.Ticks);
+                    }
+                    else
+                    {
+                        Trace.TraceInformation("Invalid arrival time {0} at station {1}", arrTime, name);
                     }
                 }
                 else if (arrSet)
