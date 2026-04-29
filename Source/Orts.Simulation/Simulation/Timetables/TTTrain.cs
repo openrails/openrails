@@ -1476,9 +1476,6 @@ namespace Orts.Simulation.Timetables
                     if (arrivalDT.HasValue)
                     {
                         thisStation.arrivalDT = arrivalDT.Value;
-                    }
-                    if (departureDT.HasValue)
-                    {
                         thisStation.departureDT = departureDT.Value;
                     }
                 }
