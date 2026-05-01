@@ -651,7 +651,7 @@ namespace Orts.Simulation.RollingStocks
         int jointTrigger;
         float jointTriggerDelayedS = 0.1f; // Set delay to 0.1 seconds
         float jointSpeedMpS;
-        public float SoundAxleCount;
+        public int SoundAxleCount;
         public float CarTrackControlledDistanceM = 0;
         public float CarTunnelDistanceM;
 
@@ -929,10 +929,22 @@ namespace Orts.Simulation.RollingStocks
             realTimeTrackJointDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM; // Initialise track joint distance
             SoundAxleCount = (LocoNumDrvAxles + WagonNumAxles);
 
-            // make sure that axle count does not exceed maximum possible trigger
-            if (SoundAxleCount > 8)
+            // make sure that sound axle count does not align with or exceed maximum possible sound triggers
+            if (SoundAxleCount < 2)
             {
-                SoundAxleCount = 8f;
+                SoundAxleCount = 2;
+            }
+            else if (SoundAxleCount == 5) // No trigger for 5 axles, so increase to 6
+            {
+                SoundAxleCount = 6;
+            }
+            else if (SoundAxleCount == 7) // No trigger for 7 axles, so increase to 8
+            {
+                SoundAxleCount = 8;
+            }
+            else if (SoundAxleCount > 8)
+            {
+                SoundAxleCount = 8;
             }
 
         }
