@@ -30,6 +30,7 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
+using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
@@ -41,6 +42,7 @@ using SharpDX.Direct3D9;
 using SharpDX.DXGI;
 using SharpDX.X3DAudio;
 using static Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine;
+using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
 using static Orts.Simulation.RollingStocks.TrainCar;
 
 namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
@@ -1124,10 +1126,24 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public void Update(float elapsedClockSeconds)
         {
 
-            CalculateSteamEvents();
+            
             if (Locomotive.SteamEngineType != SteamEngineTypes.Compound)
             {
-                CalculateSingleExpansionCylinderSteamIndicatorDiagram();
+                if (Locomotive.throttle > 0.001)
+                {
+
+                    CalculateSteamValveGearDynamics();
+
+                    float TargetFraction = 0.5f; // Target fraction of steam cylinder for iterative solver
+
+                    CalculateSteamCylinderEvents(DriveWheelRevRpS * 60, TargetFraction);
+
+                    CalculateSteamCylinderSteamIndicatorDiagramInformation();
+
+            //        UpdateSteamEngineTractiveForce(float elapsedClockSeconds, float locomotivethrottle, int numberofengine)
+
+                }
+                
             }
         }
 
@@ -1358,29 +1374,30 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
 
-        private void CalculateSteamEvents()
+
+        /// <summary>
+        /// Calculate valve events based upon cutoff value - this is used to determine the timing of the opening and closing of the valves,
+        /// which in turn impacts the pressure and volume in the cylinder at different points in the cycle, and thus the mean effective
+        /// pressure and power output of the cylinder.
+
+        /// Valve events calculated using Zeuner Diagram
+        /// References - Valve-gears, Analysis by the Zeuner diagram : Spangler, H. W. -  https://archive.org/details/valvegearsanalys00spanrich
+        /// Zeuner Diagram by Charles Dockstader used as a reference source 
+        /// (Note - the release value seems to be incorrect ) - http://www.billp.org/Dockstader/ValveGear.html
+        ///
+        /// Inputs required for Walschaert valve gear.
+        /// Cylinder stroke (S)
+        /// Connecting Rod Length (L)
+        /// Exhaust Lap (e) (Usually 0 or very small value)
+        /// Lead (l)
+        ///
+        /// Additional Inputs required for Stephenson valve gear
+        /// Distance between eccentric rod pins (w)
+        /// Expansion Rod Link (ER)
+        /// </summary>
+        private void CalculateSteamValveGearDynamics()
         {
-
-            // Calculate valve events based upon cutoff value - this is used to determine the timing of the opening and closing of the valves,
-            // which in turn impacts the pressure and volume in the cylinder at different points in the cycle, and thus the mean effective
-            // pressure and power output of the cylinder.
-
-            // Valve events calculated using Zeuner Diagram
-            // References - Valve-gears, Analysis by the Zeuner diagram : Spangler, H. W. -  https://archive.org/details/valvegearsanalys00spanrich
-            // Zeuner Diagram by Charles Dockstader used as a reference source (Note - the release value seems to be incorrect ) - http://www.billp.org/Dockstader/ValveGear.html
-
-
-            // Inputs required for Walschaert valve gear.
-            // Cylinder stroke (S)
-            // Connecting Rod Length (L)
-            // Exhaust Lap (e) (Usually 0 or very small value)
-            // Lead (l)
-
-            // Additional Inputs required for Stephenson valve gear
-            // Distance between eccentric rod pins (w)
-            // Expansion Rod Link (ER)
-
-            //  double ValveLeadM = 0;
+            
             double MaxCutoffCrankAngleRad = 0;
             double MaxCutoffAngleofAdvanceRad = 0;
             double HalfTravelCutoffM = 0;
@@ -1625,14 +1642,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             float SteamConsumptionCondensationIncreaseFactor = 1 + NewCylinderCondensationFactor; // This factor is used to increase steam consumption and decrease MEP to allow for cylinder condensation
 
-            if (Locomotive.throttle > 0.001)
-            {
-
-                float TargetFraction = 0.5f; // Target fraction of boiler pressure for iterative solver
-
-                Run(DriveWheelRevRpS * 60, TargetFraction);
-            }
-
         }
 
 
@@ -1696,6 +1705,11 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         double massOutCycle;
 
         double massInForward, massInReturn, massOutForward, massOutReturn;
+
+        // Debug
+        double dV_sum;
+        double work_forward;
+        double work_reverse;
 
         // =========================
         // Steam Chest Model Inputs
@@ -1933,17 +1947,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         // CYLINDER GEOMETRY
         // ============================================================
 
-        double StrokeFraction(double theta)
-        {
-            double r = CylindersStrokeM / 2.0;
-            double L = SEConnectRodLengthM;
-
-            double term = Math.Max(L * L - r * r * Math.Pow(Math.Sin(theta), 2), 1e-12);
-
-            double x = r * (1 - Math.Cos(theta)) + (L - Math.Sqrt(term));
-            return Math.Max(0, Math.Min(1, x / CylindersStrokeM));
-        }
-
         /// <summary>
         /// Calculates the exact stroke fraction accounting for rod length (tiling effect)
         /// </summary>
@@ -1977,7 +1980,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         /// <param name="theta">Crank angle in radians.</param>
         /// <returns>The rate of change of cylinder volume with respect to theta.</returns>
-        double dVdTheta(double theta)
+        double dVdThetaChange(double theta)
         {
             double r = CylindersStrokeM / 2.0;
             double L = SEConnectRodLengthM;
@@ -2222,7 +2225,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
     double Ai,
     double Ao,
     double V,
-    double dVdTheta,
+    double dVdtheta,
     double omega,
     double pChest,
     out double dphi,
@@ -2264,14 +2267,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     R_JpkgK
                 );
 
-                // =========================
-                // SPEED-BASED WIRE DRAWING - Check impact on pressures, etc
-                // =========================
-        //        double dVdt = dVdTheta * omega;
-        //        double rho_chest = pChest / (R_JpkgK * Tchest);
-         //       double mIn_max = rho_chest * Math.Max(dVdt, 0.0);
-
-          //      mIn_local = Math.Min(mIn_local, mIn_max);
             }
 
             // ============================================================
@@ -2339,7 +2334,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 (compressibility / (pChest * V * omega)) *
                 (mIn_local - mOut_local - dmFilm_dt);
 
-            double expansionTerm = -(gamma_eff *phi / V) * dVdTheta;
+            double expansionTerm = -(gamma_eff *phi / V) * dVdtheta;
 
    //    Console.WriteLine($"mIn {mIn:F3} kg : mOut {mOut:F3} kg : mCondensed {mCondensed:F4} kg : phi {phi:F3} : V {V:F6} m3 : dVdTheta {dVdTheta:F2} m3/rad : omega {omega:F2} rad/s Ai {Ai:F4} m2 : Ao {Ao:F4} m2 :  pCylinder {pCylinder * PA_TO_PSI:F2} psi : Tcyl {Tcyl:F2} K : dCond {dCond:F6} : dEvap {dEvap:F6} : dmFilm_dt {dmFilm_dt:F4} mFilm {mFilm:F4} kg : Awall {Me2.ToIn2((float)A_wall):F2} in2 : Gamma_Eff {gamma_eff:F3}");
 
@@ -2352,7 +2347,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         // MAIN SOLVER (HALL)
         // ============================================================
 
-        public void Run(double rpm, double targetFrac)
+        public void CalculateSteamCylinderEvents(double rpm, double targetFrac)
         {
             // =========================
             // Initialise
@@ -2391,7 +2386,10 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             double work = 0;
             double prevP = BoilerP;
-           
+            dV_sum = 0;
+            work_forward = 0;
+            work_reverse = 0;
+
             lastYi = 0;
             lastYo = 0;
             massInCycle = 0.0;
@@ -2412,9 +2410,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 double CurrentCrankAngleRad = i * dTheta; // crank angle now 0 -> 360 degrees (2 * PI radians) over the course of the loop
                 
                 // Geometry
-                frac = StrokeFraction(theta);
-                double CylinderVolumeM3 = CylinderVolume(frac);
-                double dV = dVdTheta(theta);
+                frac = StrokeFracForward(theta);
+                double CylinderVolumeM3 = CylinderVolume(frac);  // Volume at current crank angle
+                double dVdtheta = dVdThetaChange(theta); // Volume change with respect to crank angle (for expansion term)
 
                 // Valve gear
                 double yi, yo;
@@ -2439,27 +2437,27 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 // RK4 integration of phi
 
                 double k1_phi, k1_mf;
-                ComputeDerivatives(phi, mCondensed, Aadm, Aexh, CylinderVolumeM3, dV, omega, pChest, out k1_phi, out k1_mf);
+                ComputeDerivatives(phi, mCondensed, Aadm, Aexh, CylinderVolumeM3, dVdtheta, omega, pChest, out k1_phi, out k1_mf);
 
                 double k2_phi, k2_mf;
                 ComputeDerivatives(
                     phi + 0.5 * dTheta * k1_phi,
                     mCondensed + 0.5 * dTheta * k1_mf,
-                    Aadm, Aexh, CylinderVolumeM3, dV, omega, pChest,
+                    Aadm, Aexh, CylinderVolumeM3, dVdtheta, omega, pChest,
                     out k2_phi, out k2_mf);
 
                 double k3_phi, k3_mf;
                 ComputeDerivatives(
                     phi + 0.5 * dTheta * k2_phi,
                     mCondensed + 0.5 * dTheta * k2_mf,
-                    Aadm, Aexh, CylinderVolumeM3, dV, omega, pChest,
+                    Aadm, Aexh, CylinderVolumeM3, dVdtheta, omega, pChest,
                     out k3_phi, out k3_mf);
 
                 double k4_phi, k4_mf;
                 ComputeDerivatives(
                     phi + dTheta * k3_phi,
                     mCondensed + dTheta * k3_mf,
-                    Aadm, Aexh, CylinderVolumeM3, dV, omega, pChest,
+                    Aadm, Aexh, CylinderVolumeM3, dVdtheta, omega, pChest,
                     out k4_phi, out k4_mf);
 
                 // Update BOTH states
@@ -2590,11 +2588,27 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 // =========================
                 // WORK
                 // =========================
-                double dVdt = dV * omega;
-                work += pCylinder * dVdt * (dTheta / omega);
+                //      double dVdt = dV * omega;
+                //     work += pCylinder * dVdt * (dTheta / omega);
 
-                // Debug
-                //       Console.WriteLine($"? {theta * 180 / Math.PI:F1} deg | phi {phi:F3} | pC {pCylinder * PA_TO_PSI:F1} psi | pCh {pChest * PA_TO_PSI:F1} psi");
+                double dVdTheta_val = dVdThetaChange(theta);
+                double dV = dVdTheta_val * dTheta;   // ???????????????
+                
+                if (dV < 0)
+                { 
+                    dV_sum -= dV;
+                    work_reverse += pCylinder * dV;
+                }
+                else
+                {
+                    dV_sum += dV;
+                    work_forward += pCylinder * dV;
+
+                }
+
+                work += 0.5 * (prevP + pCylinder) * dV;  // Trapezoidal integration for better accuracy
+
+        //        Console.WriteLine($"Work Increment: {pCylinder * dV:F2} J : dV {dV:F5} m3 : Total Work {work:F2} J : Pressure {pCylinder * PA_TO_PSI:F2} psi : Volume {CylinderVolumeM3:F3} m3 : CrankAngle {MathHelper.ToDegrees((float)theta):F2} deg : dTheta {dTheta:F3} rad : dvdtheta {dVdTheta_val:F5} m3/rad");
 
                 // =========================
                 // EVENT DETECTION (UNCHANGED)
@@ -2613,7 +2627,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     admissionStartFrac = StrokeFracForward(theta);
                     cutoffDetected = false; // reset cutoff detection for next cycle
                     AdmissionValveOpen = true;
-            //        Console.WriteLine($"Admission Port Open - Admission begins");
+                  //  Console.WriteLine($"Admission Port Open - Admission begins");
                 }
 
                 if (lastYi > 0 && yi <= 0 && !cutoffDetected)
@@ -2622,7 +2636,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     cutoffFrac = StrokeFracForward(theta);
                     admissionDetected = false; 
                     AdmissionValveOpen = false;
-              //      Console.WriteLine($"Admission Port Closes - Cutoff - Expansion Starts");
+                 //   Console.WriteLine($"Admission Port Closes - Cutoff - Expansion Starts");
                 }
 
                 if (lastYo <= 0 && yo > 0 && !releaseDetected)
@@ -2640,7 +2654,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     compressionFrac = StrokeFracForward(theta);
                     releaseDetected = false; // reset release detection for next cycle
                     ExhaustValveOpen = false;
-             //       Console.WriteLine($"Exhaust Port Closes - Compression Start");
+                  //  Console.WriteLine($"Exhaust Port Closes - Compression Start");
                 }
 
                 if (lastTheta > (1.9 * Math.PI) && CurrentCrankAngleRad < (0.1 * Math.PI))
@@ -2659,7 +2673,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 }
 
-          //    Console.WriteLine($"yi {Me.ToIn((float)yi):F4} in : yo {Me.ToIn((float)yo):F4} : BoilerP {BoilerP * PA_TO_PSI:F2} psi : Pchest {pChest * PA_TO_PSI:F2} psi : mChest {mChest:F3} kg : mIn {mIn:F3} kg : pCyl {pCylinder * PA_TO_PSI:F2} psi : phi {phi} : lastyi {Me.ToIn((float)lastYi):F4} lastyo {Me.ToIn((float)lastYo):F4} : CrankAngle {MathHelper.ToDegrees((float)CurrentCrankAngleRad):F2} deg : PortWidth {Me.ToIn((float)SEValvePortWidthM):F2} in : AdPortOpening {Me.ToIn((float)AdPortOpenM):F2} in : ExPortOpening {Me.ToIn((float)ExPortOpenM):F2} in : Areg {Me2.ToIn2((float)Areg):F2} in2 : mOut {mOut:F3} kg : mCondensed {mCondensed:F4} kg : mBoiler {mBoiler:F3} kg : work {work:F2}");
+     //         Console.WriteLine($"yi {Me.ToIn((float)yi):F4} in : yo {Me.ToIn((float)yo):F4} : BoilerP {BoilerP * PA_TO_PSI:F2} psi : Pchest {pChest * PA_TO_PSI:F2} psi : mChest {mChest:F3} kg : mIn {mIn:F3} kg : pCyl {pCylinder * PA_TO_PSI:F2} psi : phi {phi:F3} : lastyi {Me.ToIn((float)lastYi):F4} lastyo {Me.ToIn((float)lastYo):F4} : CrankAngle {MathHelper.ToDegrees((float)CurrentCrankAngleRad):F2} deg : PortWidth {Me.ToIn((float)SEValvePortWidthM):F2} in : AdPortOpening {Me.ToIn((float)AdPortOpenM):F2} in : ExPortOpening {Me.ToIn((float)ExPortOpenM):F2} in : Areg {Me2.ToIn2((float)Areg):F2} in2 : mOut {mOut:F3} kg : mCondensed {mCondensed:F4} kg : mBoiler {mBoiler:F3} kg : work {work:F2}");
 
                 prevP = pCylinder;
                 lastYi = yi;
@@ -2674,10 +2688,10 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             SteamPerRevKg = massInCycle;   // kg per revolution (per cylinder!)
 
-            double revPerSec = rpm / 60.0;
+            double SecPerRev = 1 / (rpm / 60.0);
 
             // Total engine steam rate
-            double totalFlow = SteamPerRevKg * revPerSec * NumberCylinders;
+            double totalFlow = SteamPerRevKg * SecPerRev * NumberCylinders;
 
             // Convert to lb/hr
             SteamRate_lbhr = totalFlow * 2.20462 * 3600.0;
@@ -2685,7 +2699,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             double pistonArea = Math.PI * Math.Pow(CylindersDiameterM / 2, 2);
             double sweptVolume = pistonArea * CylindersStrokeM;
 
-            IHP_W = work * (rpm / 60.0) * NumberCylinders * 2;
+            IHP_W = work * DriveWheelRevRpS * NumberCylinders * 2;
             MEP_Pa = work / sweptVolume;
 
             ChestPressure_PSI = pChest * PA_TO_PSI;
@@ -2693,7 +2707,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             HallIHP = W.ToHp((float)IHP_W);
             HallMEP = (float)MEP_Pa * (float)PA_TO_PSI;
 
-            /*            
+/*                        
                         Console.WriteLine($"Speed: {Locomotive.AbsSpeedMpS} mph : Cutoff {Locomotive.cutoff * 100} %");
                         Console.WriteLine($"Boiler; {Locomotive.BoilerPressurePSI} psi, Steam Chest (Sum): {ChestPressure_PSI} psi : Pchest {pChest * PA_TO_PSI:F2} psi");
                         Console.WriteLine($"Admission Pressure: {admissionStartFrac * 100} %, {pAdmission_Pa * PA_TO_PSI:F2} psi");
@@ -2729,9 +2743,13 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                         Console.WriteLine($"Admission Imbalance: {imbalance * 100:F2} %");
 
-                        Console.WriteLine();
+            Console.WriteLine($"dV Sum: {dV_sum:F2} m3");
+            Console.WriteLine($"Work Forward: {work_forward:F2} J");
+            Console.WriteLine($"Work Reverse: {work_reverse:F2} J");
 
-            */
+            Console.WriteLine();
+
+        */    
 
             AdmissionCylinderFraction = admissionStartFrac;
             ActualCutoffCylinderFraction = cutoffFrac;
@@ -2768,14 +2786,13 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         }
 
-
-
-
-
-        private void CalculateSingleExpansionCylinderSteamIndicatorDiagram()
+        /// <summary>
+        /// Calculates the steam indicator diagram information for the steam cylinder.
+        /// Principle source of reference for this section is - "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson  - pg 128
+        /// https://archive.org/details/locomotiveoperat00hend/page/128/mode/2up
+        /// </summary>
+        private void CalculateSteamCylinderSteamIndicatorDiagramInformation()
         {
-            // Principle source of reference for this section is - "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson  - pg 128
-            // https://archive.org/details/locomotiveoperat00hend/page/128/mode/2up
 
             // Calculate apparent volumes at various points in cylinder
             float CylinderVolumePoint_e = (float)CompressionCylinderFraction + SECylinderClearancePC;
@@ -2924,6 +2941,10 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             // Calculate total work in cylinder
             float TotalWorkInLbs = CylinderWork_ab_InLbs + CylinderWork_bc_InLbs + CylinderWork_cd_InLbs - CylinderWork_de_InLbs - CylinderWork_ef_InLbs - CylinderWork_fa_InLbs;
 
+//            Console.WriteLine($"Work Forward - Mine: {(CylinderWork_ab_InLbs + CylinderWork_bc_InLbs + CylinderWork_cd_InLbs)* 0.112984825 :F2} J");
+//            Console.WriteLine($"Work Reverse - Mine: {(CylinderWork_ef_InLbs + CylinderWork_de_InLbs + CylinderWork_fa_InLbs) * 0.112984825:F2} J"); 
+//            Console.WriteLine();
+
             SEMeanEffectivePressurePSI = TotalWorkInLbs / Me.ToIn(CylindersStrokeM); // MEP doesn't need to be converted from Atm to gauge pressure as it is a differential pressure.
             SEMeanEffectivePressurePSI = MathHelper.Clamp(SEMeanEffectivePressurePSI, 0, Locomotive.MaxBoilerPressurePSI); // Make sure that Cylinder pressure does not go negative
 
@@ -2967,6 +2988,540 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         }
 
+
+/*
+
+        /// <summary>
+        /// Calculate the tractive forces for each steam engine
+        /// </summary>
+        private void UpdateSteamEngineTractiveForce(float elapsedClockSeconds, float locomotivethrottle, int numberofengine)
+        {
+
+            #region - Steam Adhesion Model Input for Steam Locomotives
+
+            // Caculate the current piston speed - purely for display purposes at the moment 
+            // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
+            SteamEngines[numberofengine].PistonSpeedFtpMin = Me.ToFt(pS.TopM(SteamEngines[numberofengine].CylindersStrokeM * 2.0f * SteamEngines[numberofengine].DriveWheelRevRpS)) * SteamGearRatio;
+
+            // Based upon information presented on pg 276 of "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson -
+            // https://archive.org/details/locomotiveoperat00hend/page/276/mode/2up
+            // At its simplest slip occurs when the wheel tangential force exceeds the static frictional force
+            // Static frictional force = weight on the locomotive driving wheels * frictional co-efficient
+            // Tangential force = Effective force (Interia + Piston force) * Tangential factor (sin (crank angle) + (crank radius / connecting rod length) * sin (crank angle) * cos (crank angle))
+            // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
+            // By default this model uses information based upon a "NYC 4-4-2 locomotive", for smaller locomotives this data is changed in the OR initialisation phase.
+
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Rack)
+            // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is in the the player train, AI locomotive will not work to this model. 
+            // Don't use slip model when train is in auto pilot
+            {
+                float absEngineWheelSpeedMpS = Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS);
+
+                if ((SteamEngineType == SteamEngineTypes.Compound || SteamEngineType == SteamEngineTypes.Simple) && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                {
+                    float slipCutoffPressureAtmPSI;
+                    float slipCylinderReleasePressureAtmPSI;
+                    float slipInitialPressureAtmPSI;
+                    float slipBackPressureAtmPSI;
+                    float slipCompressionPressureAtmPSI;
+                    float slipAdmissionPressureAtmPSI;
+                    float forwardCylinderPosition;
+                    float backwardCylinderPosition;
+                    float forwardCylinderPressure;
+                    float backwardCylinderPressure;
+                    float LPslipInitialPressureAtmPSI;
+                    float LPslipCutoffPressureAtmPSI;
+                    float LPslipCylinderReleasePressureAtmPSI;
+                    float LPslipBackPressureAtmPSI;
+                    float LPslipCompressionPressureAtmPSI;
+                    float LPslipAdmissionPressureAtmPSI;
+
+
+                    // Starting tangential force - at starting piston force is based upon cutoff pressure  & interia = 0
+                    if (SteamEngineType == SteamEngineTypes.Compound)
+                    {
+                        if (!CylinderCompoundOn) // Bypass Valve closed - in Compound Mode
+                        {
+                            slipInitialPressureAtmPSI = Math.Max(SteamEngines[numberofengine].HPCompPressure_a_AtmPSI, 0);
+                            slipCutoffPressureAtmPSI = Math.Max(SteamEngines[numberofengine].HPCompPressure_b_AtmPSI, 0);
+                            slipCylinderReleasePressureAtmPSI = Math.Max(SteamEngines[numberofengine].HPCompPressure_f_AtmPSI, 0);
+                            slipBackPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_d_AtmPSI, 0);
+                            slipCompressionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_e_AtmPSI, 0);
+                            slipAdmissionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_f_AtmPSI, 0);
+
+                            // LP Cylinder
+                            LPslipInitialPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPCompPressure_g_AtmPSI, 0);
+                            LPslipCutoffPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPCompPressure_h_AtmPSI, 0);
+                            LPslipCylinderReleasePressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPCompPressure_l_AtmPSI, 0);
+                            LPslipBackPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPCompPressure_m_AtmPSI, 0);
+                            LPslipCompressionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPCompPressure_n_AtmPSI, 0);
+                            LPslipAdmissionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPCompPressure_q_AtmPSI, 0);
+                        }
+                        else  // Simple mode
+                        {
+                            // HP Cylinder
+                            slipInitialPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_a_AtmPSI, 0);
+                            slipCutoffPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_b_AtmPSI, 0);
+                            slipCylinderReleasePressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_c_AtmPSI, 0);
+                            slipBackPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_d_AtmPSI, 0);
+                            slipCompressionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_e_AtmPSI, 0);
+                            slipAdmissionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_f_AtmPSI, 0);
+
+                            // LP Cylinder
+                            LPslipInitialPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPPressure_a_AtmPSI, 0);
+                            LPslipCutoffPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPPressure_b_AtmPSI, 0);
+                            LPslipCylinderReleasePressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPPressure_c_AtmPSI, 0);
+                            LPslipBackPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPPressure_d_AtmPSI, 0);
+                            LPslipCompressionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPPressure_e_AtmPSI, 0);
+                            LPslipAdmissionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPPressure_f_AtmPSI, 0);
+                        }
+                    }
+                    else // simple locomotive
+                    {
+                        slipInitialPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_a_AtmPSI, 0);
+                        slipCutoffPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_b_AtmPSI, 0);
+                        slipCylinderReleasePressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_c_AtmPSI, 0);
+                        slipBackPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_d_AtmPSI, 0);
+                        slipCompressionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_e_AtmPSI, 0);
+                        slipAdmissionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_f_AtmPSI, 0);
+                    }
+
+                    TractiveForceN = 0;
+
+                    float slipcutoff = 0;
+                    slipcutoff = cutoff;
+
+
+                    float totalDrvWeightN = 0;
+
+                    for (int i = 0; i < SteamEngines[numberofengine].NumberCylinders; i++)
+                    {
+
+                        // This feature uses some different reference angles as follows:
+                        // AxlePositionRad - comes from the axle module and is -180 - 0 - 180
+                        // Crank Angle - converts the above range to 0 - 180 - 0 - this is the principle reference used so that it lines up with reference
+                        // tables used to buold this function
+                        // Normalised Crank Angle - converts the above to a 0 - 360 range, this is used for triggering special steam effects, etc.
+                        float LocalAxlePostionRad = (float)LocomotiveAxles[0].AxlePositionRad;
+                        float crankAngleRad = (float)(LocalAxlePostionRad + WheelCrankAngleDiffRad[i]);
+
+                        crankAngleRad = (float)(MathHelper.WrapAngle(crankAngleRad)); // Ensures that crank angle is in the range 0 - 180 - 0
+
+                        float crankCylinderPressure = (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate); // fallback default value
+
+                        // Calculate cylinder position in relation to crank (and hence wheel) position.
+                        // For each full wheel revolution, the cylinder will do two strokes (forward and backwards).
+                        // Each stroke in turn will have a forward component with a corresponding pressure producing a "+ve" force and reverse component producing a "-ve" force.
+                        // So each stroke will have a x  and 1-x cylinder position.
+                        // In effect it will increase from 0% (0 deg) to 100% (180 deg), then it will decrease from 100% to 0% (360 deg) 
+                        float crankCylinderPosition = (float)(crankAngleRad / Math.PI);
+
+                        if (crankCylinderPosition < 0)
+                        {
+                            crankCylinderPosition *= -1;
+                        }
+
+                        // work out whether angle is on forward or return stroke
+
+                        if (crankAngleRad > 0 && crankAngleRad < Math.PI)
+                        {
+                            forwardCylinderPosition = crankCylinderPosition;
+                            backwardCylinderPosition = 1 - crankCylinderPosition;
+                        }
+                        else
+                        {
+                            crankAngleRad *= -1; // angle must be maintained in a +ve range, ie 0 - 180 - 0
+                            forwardCylinderPosition = 1 - crankCylinderPosition;
+                            backwardCylinderPosition = crankCylinderPosition;
+                        }
+
+                        var crankAngleDiffRad = WheelCrankAngleDiffRad[i];
+                        float normalisedCrankAngleRad = NormalisedCrankAngle(numberofengine, i, crankAngleDiffRad);
+
+                        // Crank angles
+                        float sin = (float)Math.Sin(crankAngleRad);
+                        float cos = (float)Math.Cos(crankAngleRad);
+
+                        // Calculate cylinder pressure based upon where the cylinder stroke is at.
+                        // Pressures are taken from the cylinder indication diagram above, and extrapolated depending upon the position of the cylinder.
+
+                        // forward stroke
+                        if (slipcutoff > forwardCylinderPosition) // pressure will be in cutoff section of cylinder
+                        {
+                            // In cutoff section of cylinder pressure follows a straight line representation between initial pressure and cutoff pressure
+                            float pressureGradient = (slipCutoffPressureAtmPSI - slipInitialPressureAtmPSI) / (slipcutoff + CylinderClearancePC - CylinderClearancePC);
+                            forwardCylinderPressure = slipInitialPressureAtmPSI + pressureGradient * (forwardCylinderPosition - CylinderClearancePC);
+                        }
+                        else if (CylinderExhaustOpenFactor > forwardCylinderPosition) // pressure will be in expansion section of cylinder
+                        {
+                            // In section of cylinder between cutoff and release, pressure follows a PV variation.
+                            forwardCylinderPressure = (slipCutoffPressureAtmPSI) * (slipcutoff + CylinderClearancePC) / (forwardCylinderPosition + CylinderClearancePC);
+                            // Check factor to calculate volume of cylinder for new volume at exhaust
+                        }
+                        else // Pressure will be in the exhaust section of the cylinder
+                        {
+                            // In exhaust section of cylinder pressure follows a PV variation.
+                            // Crank pressure = Cutoff Pressure x Cylinder Volume (at cutoff point) / cylinder volume (at release)
+
+                            forwardCylinderPressure = slipCylinderReleasePressureAtmPSI * (CylinderExhaustOpenFactor + CylinderClearancePC) / (forwardCylinderPosition + CylinderClearancePC);
+                        }
+
+                        // backward stroke
+
+                        if (backwardCylinderPosition < CylinderAdmissionOpenFactor) // early part of cycle
+                        {
+                            backwardCylinderPressure = slipBackPressureAtmPSI * (CylinderClearancePC) / (CylinderCompressionCloseFactor + CylinderClearancePC);  // Check factor to calculate volume of
+                        }
+                        else if (backwardCylinderPosition < CylinderAdmissionOpenFactor && backwardCylinderPosition > CylinderCompressionCloseFactor)
+                        {
+                            backwardCylinderPressure = slipBackPressureAtmPSI * (CylinderCompressionCloseFactor + CylinderClearancePC) / (CylinderAdmissionOpenFactor + CylinderClearancePC);  // Check factor to calculate volume of 
+                        }
+                        else // Pressure will be in the compression part of cylinder stroke
+                        {
+                            backwardCylinderPressure = slipBackPressureAtmPSI;
+                        }
+
+                        // Combined cylinder pressure
+                        crankCylinderPressure = forwardCylinderPressure - backwardCylinderPressure;
+
+                        if (locomotivethrottle < 0.01)
+                        {
+                            crankCylinderPressure = 0;
+                        }
+
+                        float slipCylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * SteamEngines[numberofengine].CylindersDiameterM * SteamEngines[numberofengine].CylindersDiameterM / 4.0f);
+
+                        // Calculate wheel tangential forces = Force applied to wheels
+
+                        float pistonForceLbf = Me2.ToIn2(Me2.FromFt2(slipCylinderPistonAreaFt2)) * crankCylinderPressure;
+
+                        float tangentialCrankForceFactor = Math.Abs(sin + (Me.ToFt(CrankRadiusM) / Me.ToFt(ConnectRodLengthM)) * sin * cos);
+
+                        float tangentialForcelbf = tangentialCrankForceFactor * pistonForceLbf;
+
+                        float reciprocatingInertiaAngleFactor = 0;
+                        float connectRodInertiaAngleFactor = 0;
+
+                        // Calculate the "angle variation factors" for the Inertia
+                        reciprocatingInertiaAngleFactor = (cos + ((Me.ToFt(CrankRadiusM) / Me.ToFt(ConnectRodLengthM)) * (float)Math.Cos(2 * crankAngleRad)));
+                        connectRodInertiaAngleFactor = (cos + ((Me.ToFt(CrankRadiusM) * Me.ToFt(RodCoGM)) / (Me.ToFt(ConnectRodLengthM) * Me.ToFt(ConnectRodLengthM))) * (float)Math.Cos(2 * crankAngleRad));
+
+                        // Calculate the speed factor to allow for variation in speed
+                        // Adjust the above factor to allow for the speed of rotation on the parts - based upon Eq 8 (pg 21)
+                        float inertiaSpeedCorrectionFactor = 0.00034f * Me.ToFt(CrankRadiusM) * (float)Math.Pow(pS.TopM(SteamEngines[numberofengine].DriveWheelRevRpS), 2);
+
+
+
+                        // Calculate the inertia force of the reciprocating weights
+                        float reciprocatingInertiaForcelbf = inertiaSpeedCorrectionFactor * reciprocatingInertiaAngleFactor * ReciprocatingWeightLb;
+
+                        // Calculate the inertia force of the connecting rod
+                        float connectRodInertiaForcelbf = inertiaSpeedCorrectionFactor * connectRodInertiaAngleFactor * ConnectingRodWeightLb;
+
+                        // Account for the position of the crosshead position. In other words it depends upon whether the Rods and Reciporating gear is above or below the axle.
+                        // The crosshead will be -ve for normalised angles between 0 - 180, and +ve for normalised angles between 180 - 360
+                        if (normalisedCrankAngleRad > 0 && normalisedCrankAngleRad < Math.PI)
+                        {
+                            reciprocatingInertiaForcelbf *= -1;
+                            connectRodInertiaForcelbf *= -1;
+                        }
+
+                        // For more then two cylinder engines reciprocating inertia is not required as it only applies to the gearing on each side and not the number of cylinders.
+                        // Hence "zero" it out, however reciprocating rods will still apply
+                        if ((SteamEngines[numberofengine].NumberCylinders == 3 && i > 1) || (SteamEngines[numberofengine].NumberCylinders == 4 && (i == 1 || i == 3)))
+                        {
+                            reciprocatingInertiaForcelbf = 0;
+                        }
+
+                        // Total inertia force
+                        float totalInertiaForcelbf = reciprocatingInertiaForcelbf + connectRodInertiaForcelbf;
+
+                        float totalTangentialInertiaForcelbf = totalInertiaForcelbf * tangentialCrankForceFactor;
+
+                        // At high speed with the throttle closed the average reciprocating forces should approach zero, however if OR is not sampling enough points then it
+                        // is possible that the force will be disproportionate. So the following code forces a reduction in the reciprocating forces if the throttle is closed
+                        // - to be investigated further later.
+
+                        if (throttle < 0.01)
+                        {
+                            totalTangentialInertiaForcelbf = totalTangentialInertiaForcelbf * 0.2f; // Reduce to 20%
+                        }
+
+                        // Calculate the force at the crank exerted on the drive wheel
+                        float tangentialCrankWheelForceLbf = tangentialForcelbf + totalTangentialInertiaForcelbf;
+
+                        // To convert the force at the crank to the force at wheel tread = Crank Force * Cylinder Stroke / Diameter of Drive Wheel (inches) - internal friction
+                        // should be deducted from this as well.
+                        float DrvWheelDiaM = SteamEngines[numberofengine].AttachedAxle.WheelRadiusM * 2.0f;
+                        float tangentialWheelTreadForceLbf = tangentialCrankWheelForceLbf * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / Me.ToIn(DrvWheelDiaM);
+
+                        SteamEngines[numberofengine].RealTractiveForceN += N.FromLbf(tangentialWheelTreadForceLbf);
+
+#if DEBUG_STEAM_SLIP
+                    if (SpeedMpS > 17.88 && SpeedMpS < 18.5 || SpeedMpS > 34.0 && throttle == 0)
+                                        {
+                                            Trace.TraceInformation("Adhesion Debug - Cyl {0} Time {1} Speed {2} WheelRpM {3} CrankAngle {4} TotalTangForce {5} TangForce {6} TotalInertiaForce {7} TotalTangInertiaForce {8} RecipForce {9} RecipANgleFactor {10}  RecipWeight {11} SpeedFactor {12}  RodForce {13} RodAngleFactor {14} ForwardCyLPos {15} BackCylPos {16}  CrankCylPos {17} NormCrankAngle {18} AxlePosnRad {19}", i + 1, DebugTimerS, MpS.ToMpH(SpeedMpS), DrvWheelRevRpS * 60.0f, MathHelper.ToDegrees(crankAngleRad), tangentialWheelTreadForceLbf, tangentialForcelbf, totalInertiaForcelbf, totalTangentialInertiaForcelbf, reciprocatingInertiaForcelbf, reciprocatingInertiaAngleFactor, ReciprocatingWeightLb, inertiaSpeedCorrectionFactor, connectRodInertiaForcelbf, connectRodInertiaAngleFactor, forwardCylinderPosition, backwardCylinderPosition, crankCylinderPosition, normalisedCrankAngleRad, axlePostionRad);
+
+                                            DebugTimerS += elapsedClockSeconds;
+                                        }
+
+                    if (SpeedMpS > 18.5 && SpeedMpS < 19)
+                    {
+                        DebugTimerS = 0;
+                    }
+
+#endif
+
+                        // ++++ Adhesive Force Calculation ++++++
+                        // Calculation of components for use in wheel adhesive force calculation
+                        // Wheel Adhesive Force = 
+                        // Vertical thrust of the connecting rod will reduce or increase the effect of the adhesive weight of the locomotive
+                        // Vert Thrust = Piston Force * 3/4 * r/l * sin(crank angle)
+                        float verticalThrustFactor = 3.0f / 4.0f * (CrankRadiusM / ConnectRodLengthM) * sin;
+
+                        float effectiveRotationalForcelbf = totalInertiaForcelbf + pistonForceLbf;
+
+                        float verticalThrustForcelbf = effectiveRotationalForcelbf * verticalThrustFactor;
+
+                        // Calculate Excess Balance
+                        float excessBalanceForcelbf = inertiaSpeedCorrectionFactor * SteamEngines[numberofengine].ExcessRodBalanceLbs * sin;
+
+                        // Hammer (dynamic) force due to the rotation of the wheels is calculated  
+                        // From The Steam Locomotive by Ralph Johnson (pg 276 ) - 
+                        // Hammer force = 1.6047 x stroke (ins) x excessbalancemass (lbf)  x speed^2 (mph) / ( Dia of drive wheel^2 (ins))  - This is per wheel
+                        // The excess balance weight is on one side of the locomotive, is spread evenly over the number of wheels (this is not always the
+                        // case for prototypical locomotives)
+
+                        if (SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                        {
+                            // calculate the balance force per wheel
+                            var excessBalanceForceWheelLbs = SteamEngines[numberofengine].ExcessRodBalanceLbs / SteamEngines[numberofengine].AttachedAxle.NumWheelsetAxles;
+
+                            // weight on each individual wheel, rather then each axle
+                            var wheelWeight = SteamEngines[numberofengine].AttachedAxle.WheelWeightKg / (SteamEngines[numberofengine].AttachedAxle.NumWheelsetAxles * 2f);
+
+                            SteamEngines[numberofengine].HammerForceLbs = (1.6047f * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) * excessBalanceForceWheelLbs * (float)Math.Pow(MpS.ToMpH(absEngineWheelSpeedMpS), 2)) / ((float)Math.Pow(Me.ToIn(2.0f * SteamEngines[numberofengine].AttachedAxle.WheelRadiusM), 2) * SteamEngines[numberofengine].AttachedAxle.NumWheelsetAxles);
+
+                            if (SteamEngines[numberofengine].HammerForceLbs > wheelWeight)
+                            {
+                                SteamEngines[numberofengine].IsWheelHammerForce = true;
+                            }
+                            else
+                            {
+                                SteamEngines[numberofengine].IsWheelHammerForce = false;
+                            }
+
+                            if (SteamEngines[numberofengine].HammerForceLbs > 0.9 * wheelWeight)
+                            {
+                                SteamEngines[numberofengine].IsWheelHammerForceWarning = true;
+                            }
+                            else
+                            {
+                                SteamEngines[numberofengine].IsWheelHammerForceWarning = false;
+                            }
+                        }
+
+                        // Account for the position of the crosshead position. In other words it depends upon whether the ExcessBalance is above or below the axle.
+                        // The crosshead will be -ve for normalised angles between 0 - 180, and +ve for normalised angles between 180 - 360
+                        if (normalisedCrankAngleRad > 0 && normalisedCrankAngleRad < Math.PI)
+                        {
+                            excessBalanceForcelbf *= -1;
+                        }
+
+                        // For more then two cylinder eingines inertia is not required as it only applies to the gearing on each side and not the number of cylinders
+                        if ((SteamEngines[numberofengine].NumberCylinders == 3 && i > 1) || (SteamEngines[numberofengine].NumberCylinders == 4 && (i == 1 || i == 3)))
+                        {
+                            excessBalanceForcelbf = 0;
+                        }
+
+                        // Consideration of excess balance and vertical thrust
+                        // When running ahead, the vertical thrust should be added to the normal adhesive weight, but when running backwards, it should be
+                        // subtracted, as the effect is to reduce the weight on drivers in back motion.
+
+                        if (Direction == Direction.Forward)
+                        {
+                            totalDrvWeightN += N.FromLbf(excessBalanceForcelbf + verticalThrustForcelbf);
+                        }
+                        else
+                        {
+                            totalDrvWeightN += N.FromLbf(excessBalanceForcelbf - verticalThrustForcelbf);
+                        }
+                    }
+
+                    SteamEngines[numberofengine].AttachedAxle.AxleWeightN = totalDrvWeightN + 9.81f * SteamEngines[numberofengine].AttachedAxle.WheelWeightKg;
+                    SteamEngines[numberofengine].SteamStaticWheelForce = N.ToLbf(9.81f * SteamEngines[numberofengine].AttachedAxle.WheelWeightKg) * LocomotiveCoefficientFrictionHUD;
+
+                    // Average tractive force is calculated for display purposes as tractive force varies dramatically as the wheel rotates, and this is difficult to follow on HuD
+                    SteamEngines[numberofengine].AverageTractiveForceN = AverageTractiveForce(elapsedClockSeconds, numberofengine, NumberofTractiveForceValues);
+
+                    SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].AverageTractiveForceN) * pS.TopH(Me.ToMi(absEngineWheelSpeedMpS))) / 375.0f;
+
+                }
+                else // typically this will be a booster, geared or rack engine
+                {
+                    // If the steam piston is exceeding the maximum design piston rate then decrease efficiency of mep
+                    if (SteamEngineType == SteamEngineTypes.Geared && SteamEngines[numberofengine].PistonSpeedFtpMin > MaxSteamGearPistonRateFtpM)
+                    {
+
+                        // use straight line curve to decay mep to zero by 2 x piston speed
+                        float pistonforcedecay = 1.0f - (1.0f / MaxSteamGearPistonRateFtpM) * (SteamEngines[numberofengine].PistonSpeedFtpMin - MaxSteamGearPistonRateFtpM);
+                        pistonforcedecay = MathHelper.Clamp(pistonforcedecay, 0.0f, 1.0f);  // Clamp decay within bounds
+
+                        SteamEngines[numberofengine].MeanEffectivePressurePSI *= pistonforcedecay; // Decrease mep once piston critical speed is exceeded
+                    }
+
+                    float GearRatioAdjusted = 0;
+
+                    if (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                    {
+                        GearRatioAdjusted = SteamEngines[numberofengine].BoosterGearRatio;
+                    }
+                    else
+                    {
+                        GearRatioAdjusted = MotiveForceGearRatio;
+                    }
+
+                    SteamEngines[numberofengine].RealTractiveForceN = N.FromLbf((SteamEngines[numberofengine].NumberCylinders / 2.0f) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * GearRatioAdjusted) * (Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[numberofengine].AttachedAxle.WheelRadiusM)));
+
+                    // Set rack axle TE to zero if not engaged with rack railway - this is to prevent unrealistic forces being generated if a rack
+                    // locomotive is driven on a non-rack railway, or if the rack railway is not properly aligned with the track.
+                    if (SteamEngines[numberofengine].AttachedAxle.AxleRailTractionType == AxleRailTractionTypes.Rack && !IsRackRailway)
+                    {
+                        SteamEngines[numberofengine].RealTractiveForceN = 0;
+                    }
+
+                    // Force tractive effort to zero if throttle is closed, or if a geared steam locomotive in neutral gear. MEP calculation is not allowing it to go to zero
+                    if (locomotivethrottle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
+                    {
+                        SteamEngines[numberofengine].RealTractiveForceN = 0;
+                    }
+                    SteamEngines[numberofengine].RealTractiveForceN = MathHelper.Clamp(SteamEngines[numberofengine].RealTractiveForceN, 0, SteamEngines[numberofengine].RealTractiveForceN);
+
+                    SteamEngines[numberofengine].AttachedAxle.AxleWeightN = 9.81f * SteamEngines[numberofengine].AttachedAxle.WheelWeightKg;
+                    SteamEngines[numberofengine].SteamStaticWheelForce = N.ToLbf(9.81f * SteamEngines[numberofengine].AttachedAxle.WheelWeightKg) * LocomotiveCoefficientFrictionHUD;
+
+                    // Average tractive force is calculated for display purposes as tractive force varies dramatically as the wheel rotates, and this is difficult to follow on HuD
+                    SteamEngines[numberofengine].AverageTractiveForceN = AverageTractiveForce(elapsedClockSeconds, numberofengine, NumberofTractiveForceValues);
+
+                    SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].RealTractiveForceN) * pS.TopH(Me.ToMi(absEngineWheelSpeedMpS))) / 375.0f;
+                }
+            }
+            else // Adjust tractive force if  "simple" adhesion is used
+            {
+                // This section updates the force calculations and maintains them at the current values.
+
+                if (SteamEngineType == SteamEngineTypes.Compound)
+                {
+                    // Calculate tractive effort if set for compounding - tractive effort in each cylinder will need to be calculated
+
+                    // HP Cylinder
+
+                    float HPTractiveEffortLbsF = (SteamEngines[numberofengine].NumberCylinders / 2.0f) * MotiveForceGearRatio * ((SteamEngines[numberofengine].HPCylinderMEPPSI * CylinderEfficiencyRate) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[numberofengine].AttachedAxle.WheelRadiusM)));
+
+                    // LP Cylinder
+
+                    float LPTractiveEffortLbsF = (MSTSLPNumCylinders / 2.0f) * MotiveForceGearRatio * ((SteamEngines[numberofengine].LPCylinderMEPPSI * CylinderEfficiencyRate) * Me.ToIn(SteamEngines[numberofengine].LPCylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].LPCylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].LPCylindersStrokeM)) / (2.0f * Me.ToIn(SteamEngines[numberofengine].AttachedAxle.WheelRadiusM));
+
+                    TractiveEffortLbsF = (HPTractiveEffortLbsF + LPTractiveEffortLbsF);
+                    TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0.0f, MaxTractiveEffortLbf); // Ensure tractive effort never exceeds starting TE
+
+                    // Calculate IHP
+                    // IHP = (MEP x Speed (mph)) / 375.0) - this is per cylinder
+
+                    SteamEngines[numberofengine].HPIndicatedHorsePowerHP = (HPTractiveEffortLbsF * pS.TopH(Me.ToMi(Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS)))) / 375.0f;
+                    SteamEngines[numberofengine].LPIndicatedHorsePowerHP = (LPTractiveEffortLbsF * pS.TopH(Me.ToMi(Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS)))) / 375.0f;
+
+                    // Average tractive force is calculated for display purposes as tractive force varies dramatically as the wheel rotates, and this is difficult to follow on HuD
+                    SteamEngines[numberofengine].AverageTractiveForceN = AverageTractiveForce(elapsedClockSeconds, numberofengine, NumberofTractiveForceValues);
+
+                    SteamEngines[numberofengine].IndicatedHorsePowerHP = SteamEngines[numberofengine].HPIndicatedHorsePowerHP + SteamEngines[numberofengine].LPIndicatedHorsePowerHP;
+
+                    float WheelRevs = pS.TopM(SteamEngines[numberofengine].DriveWheelRevRpS);
+
+                }
+                else // if simple or geared locomotive calculate tractive force
+                {
+
+                    // If the steam piston is exceeding the maximum design piston rate then decrease efficiency of mep
+                    if (SteamEngineType == SteamEngineTypes.Geared && SteamEngines[numberofengine].PistonSpeedFtpMin > MaxSteamGearPistonRateFtpM)
+                    {
+                        // use straight line curve to decay mep to zero by 2 x piston speed
+                        float pistonforcedecay = 1.0f - (1.0f / MaxSteamGearPistonRateFtpM) * (SteamEngines[numberofengine].PistonSpeedFtpMin - MaxSteamGearPistonRateFtpM);
+                        pistonforcedecay = MathHelper.Clamp(pistonforcedecay, 0.0f, 1.0f);  // Clamp decay within bounds
+
+                        SteamEngines[numberofengine].MeanEffectivePressurePSI *= pistonforcedecay; // Decrease mep once piston critical speed is exceeded
+                    }
+
+                    SteamEngines[numberofengine].RealTractiveForceN = N.FromLbf((SteamEngines[numberofengine].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[numberofengine].AttachedAxle.WheelRadiusM))) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * MotiveForceGearRatio);
+
+                    if (IsRackRailway && SteamEngines[numberofengine].AttachedAxle.AxleRailTractionType == Axle.AxleRailTractionTypes.Rack_Adhesion)
+                    {
+                        // In case of rack railway cog wheel drive, adjust tractive force by the cog wheel gearing factor
+                        SteamEngines[numberofengine].RealTractiveForceN *= CogWheelGearingFactor;
+                    }
+
+                    // Force tractive effort to zero if throttle is closed, or if a geared steam locomotive in neutral gear. MEP calculation is not allowing it to go to zero
+                    if (locomotivethrottle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
+                    {
+                        SteamEngines[numberofengine].RealTractiveForceN = 0.0f;
+                    }
+                    SteamEngines[numberofengine].RealTractiveForceN = MathHelper.Clamp(SteamEngines[numberofengine].RealTractiveForceN, 0, SteamEngines[numberofengine].RealTractiveForceN);
+
+                    // Average tractive force is calculated for display purposes as tractive force varies dramatically as the wheel rotates, and this is difficult to follow on HuD
+                    SteamEngines[numberofengine].AverageTractiveForceN = AverageTractiveForce(elapsedClockSeconds, numberofengine, NumberofTractiveForceValues);
+
+                    SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].RealTractiveForceN) * pS.TopH(Me.ToMi(Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS)))) / 375.0f;
+                }
+
+                // Calculate the elapse time for the steam performance monitoring
+                if (Simulator.Settings.DataLogExclusiveSteamPerformance)
+                {
+                    if (SpeedMpS > 0.05)
+                    {
+                        SteamPerformanceTimeS += elapsedClockSeconds;
+                    }
+                    else if (SpeedMpS < 0.04)
+                    {
+                        SteamPerformanceTimeS = 0.0f;   // set time to zero if loco stops
+                    }
+                }
+
+                // On starting allow maximum motive force to be used, unless gear is in neutral (normally only geared locomotive will be zero). Decrease force if steam pressure is not at maximum
+                if (Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS) < 1.0f && cutoff > 0.70f && locomotivethrottle > 0.98f && MotiveForceGearRatio != 0)
+                {
+                    SteamEngines[numberofengine].RealTractiveForceN = MaxForceN * (BoilerPressurePSI / MaxBoilerPressurePSI);
+                }
+
+                if (Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS) == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
+                    SteamEngines[numberofengine].RealTractiveForceN = 0;
+            }
+
+            #endregion
+
+            // Derate when priming is occurring.
+            if (BoilerIsPriming)
+                SteamEngines[numberofengine].RealTractiveForceN *= BoilerPrimingDeratingFactor;
+
+            if (FusiblePlugIsBlown) // If fusible plug blows, then reduce motive force
+            {
+                SteamEngines[numberofengine].RealTractiveForceN = 0.5f;
+            }
+
+            // Based upon max IHP, limit motive force.
+
+            if (SteamEngines[numberofengine].IndicatedHorsePowerHP >= SteamEngines[numberofengine].MaxIndicatedHorsePowerHP)
+            {
+                SteamEngines[numberofengine].RealTractiveForceN = N.FromLbf((SteamEngines[numberofengine].MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS))));
+                SteamEngines[numberofengine].IndicatedHorsePowerHP = SteamEngines[numberofengine].MaxIndicatedHorsePowerHP; // Set IHP to maximum value
+                IsCritTELimit = true; // Flag if limiting TE
+            }
+            else
+            {
+                IsCritTELimit = false; // Reset flag if limiting TE
+            }
+        }
+
+*/
 
         /// <summary>
         /// Find Crank Angle @ a certain cutoff point. 
