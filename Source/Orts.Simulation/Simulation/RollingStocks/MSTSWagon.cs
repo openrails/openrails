@@ -1058,8 +1058,16 @@ namespace Orts.Simulation.RollingStocks
 
                     if (this is MSTSLocomotive locomotive)
                     {
-                        if (TrainBrakeControllers.TryGetValue(mode, out locomotive.TrainBrakeController))
+                        if (TrainBrakeControllers.TryGetValue(mode, out var trainBrakeController))
+                        {
+                            locomotive.TrainBrakeController = trainBrakeController;
                             locomotive.TrainBrakeController.Initialize();
+                        }
+                        if (locomotive.TrainBrakeController == null && TrainBrakeControllers.TryGetValue(BrakeModes.Undefined, out trainBrakeController))
+                        {
+                            locomotive.TrainBrakeController = trainBrakeController;
+                            locomotive.TrainBrakeController.Initialize();
+                        }
                     }
                 }
 
