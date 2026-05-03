@@ -1042,7 +1042,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if (State == DieselEngineState.Running)
             {
                 float abstempTractiveForce = Locomotive.TractionForceN;
-                float relativePower = CurrentDieselOutputPowerW / Locomotive.DieselEngines.MaxOutputPowerW;
+                float relativePower;
+
+                if (Locomotive.DieselEngines.MaxOutputPowerW > 0)
+                    relativePower = CurrentDieselOutputPowerW / Locomotive.DieselEngines.MaxOutputPowerW;
+                else
+                    relativePower = 0;
+
                 OutputPowerW = ((abstempTractiveForce > 0 ? abstempTractiveForce * Locomotive.AbsWheelSpeedMpS : 0) + Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW) * relativePower;
             }
             else
