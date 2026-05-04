@@ -306,7 +306,8 @@ namespace Orts.Viewer3D
         public static Texture2D WhiteTexture;
         public static Texture2D BlackTexture;
 
-        static Texture2D EnvironmentMapSpecularDay;
+        static TextureCube EnvironmentMapSpecularDay;
+        static TextureCube EnvironmentMapSpecularNight;
         static Texture2D BrdfLutTexture;
 
         static readonly Vector3[] ShDay = new[]
@@ -591,15 +592,15 @@ namespace Orts.Viewer3D
 
             if (EnvironmentMapSpecularDay == null)
             {
-                // TODO: split the equirectangular specular panorama image to a cube map for saving the pixel shader instructions of converting the
-                // cartesian cooridinates to polar for sampling. Couldn't find a converter though that also supports RGBD color encoding.
-                // RGBD is an encoding where a divider [0..1] is stored in the alpha channel to reconstruct the High Dynamic Range of the RGB colors.
-                // A HDR to TGA-RGBD converter is available here: https://seenax.com/portfolio/cpp.php , this can be further converted to PNG by e.g. GIMP.
-                EnvironmentMapSpecularDay = Texture2D.FromStream(Viewer.GraphicsDevice, File.OpenRead(Path.Combine(Viewer.Game.ContentPath, "EnvMapDay/specular-RGBD.png")));
+                DDSLib.DDSFromFile(Path.Combine(Viewer.Game.ContentPath, "EnvMap/specular-day.dds"), Viewer.GraphicsDevice, true, out EnvironmentMapSpecularDay, false);
+            }
+            if (EnvironmentMapSpecularNight == null)
+            {
+                DDSLib.DDSFromFile(Path.Combine(Viewer.Game.ContentPath, "EnvMap/specular-night.dds"), Viewer.GraphicsDevice, true, out EnvironmentMapSpecularNight, false);
             }
             if (BrdfLutTexture == null)
             {
-                using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMapDay/brdfLUT.png")))
+                using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMap/brdfLUT.png")))
                 {
                     BrdfLutTexture = Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream);
                 }
@@ -613,7 +614,7 @@ namespace Orts.Viewer3D
             }
             else
             {
-                SceneryShader.EnvironmentMapSpecularTexture = BlackTexture;
+                SceneryShader.EnvironmentMapSpecularTexture = EnvironmentMapSpecularNight;
             }
 
             SceneryShader.Fog = FogColor;

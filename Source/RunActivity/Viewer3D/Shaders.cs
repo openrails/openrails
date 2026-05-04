@@ -296,7 +296,7 @@ namespace Orts.Viewer3D
         public Vector4 SpecularFactor { set { specularFactor.SetValue(value); } }
 
 
-        public Texture2D EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
+        public TextureCube EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
 
         public Texture2D BrdfLutTexture { set { brdfLutTexture.SetValue(value); } }
 

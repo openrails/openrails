@@ -809,7 +809,7 @@ namespace Orts.Viewer3D
                                 case "/rotation": channel.Path = AnimationChannelTarget.PathEnum.rotation; break;
                                 case "/scale": channel.Path = AnimationChannelTarget.PathEnum.scale; break;
                                 case "/weights": channel.Path = AnimationChannelTarget.PathEnum.weights; break;
-                                case "/extensions/KHR_node_visibility/visible": channel.SetTargetFloat = (f) => NodeVisibility?.SetValue(f > 0, (int)channel.TargetNode); break;
+                                case "/extensions/KHR_node_visibility/visible": channel.SetTargetFloat = (f) => NodeVisibility?.SetValue(f > 0 ? 1 : 0, (int)channel.TargetNode); break;
                                 default: if (isMatch2(property, "/weights/".AsSpan(), out var index2)) channel.SetTargetFloat = (f) => Shape.Weights[(int)channel.TargetNode][index2] = f; break;
                             }
                         }

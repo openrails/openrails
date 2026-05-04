@@ -140,9 +140,9 @@ SamplerState LinearClampSampler
     AddressW = Clamp;
 };
 
-const float EnvironmentTextureMipCount = 0;
+const float EnvironmentTextureMipCount = 6;
 
-Texture2D EnvironmentMapSpecularTexture;
+TextureCube EnvironmentMapSpecularTexture;
 TextureCube EnvironmentMapDiffuseTexture;
 Texture2D BrdfLutTexture;
 Texture2D BonesTexture; // 4 channels of 32 bit float, containing the 4x4 matrix palette for skinned models
@@ -801,8 +801,7 @@ float3 _PSGetIBLSpecular(float3 specularColor, float NdotV, float perceptualRoug
     float3 brdf = BrdfLutTexture.Sample(LinearClampSampler, val).rgb;
 
     float lod = perceptualRoughness * EnvironmentTextureMipCount;
-    float3 specularLight = _PSRgbdToLinear(EnvironmentMapSpecularTexture.SampleLevel(LinearClampSampler, _PSCartesianToPolar(reflection), lod)).rgb;
-	specularLight.rgb = _PSSrgbToLinear(specularLight.rgb);
+    float3 specularLight = EnvironmentMapSpecularTexture.SampleLevel(LinearClampSampler, reflection, lod).rgb;
 	return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
