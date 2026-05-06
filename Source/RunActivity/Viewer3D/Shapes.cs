@@ -235,8 +235,7 @@ namespace Orts.Viewer3D
                 matrix *= SharedShape.Matrices[hi];
                 hi = shapePrimitive.Hierarchy[hi];
             }
-            if (shapes.FirstOrDefault()?.SharedShape is GltfShape)
-                matrix *= GltfShape.PlusZToForward;
+            matrix *= shapes.FirstOrDefault()?.SharedShape.ForwardZDirection ?? Matrix.Identity;
 
             var matricies = new Matrix[shapes.Count];
             for (var i = 0; i < shapes.Count; i++)
@@ -1785,7 +1784,6 @@ namespace Orts.Viewer3D
         public int[] Hierarchy { get; protected set; } // the hierarchy from the sub_object
         public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
 
-        protected internal VertexBuffer VertexBuffer;
         protected internal IndexBuffer IndexBuffer;
         protected internal int PrimitiveCount;
         protected internal int PrimitiveOffset;
@@ -1805,7 +1803,6 @@ namespace Orts.Viewer3D
             : this(vertexBufferBindings.Prepend(new VertexBufferBinding(vertexBufferSet.Buffer)).Append(new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice))).ToArray())
         {
             Material = material;
-            VertexBuffer = vertexBufferSet.Buffer;
             IndexBuffer = indexBuffer;
             PrimitiveCount = primitiveCount;
             Hierarchy = hierarchy;
@@ -1855,7 +1852,10 @@ namespace Orts.Viewer3D
 
         public void Dispose()
         {
-            VertexBuffer?.Dispose();
+            var dummyInstanceBuffer = RenderPrimitive.GetDummyVertexBuffer(null);
+            for (var i = 0; i < VertexBufferBindings.Length; i++)
+                if (VertexBufferBindings[i].VertexBuffer != dummyInstanceBuffer)
+                    VertexBufferBindings[i].VertexBuffer?.Dispose();
             IndexBuffer?.Dispose();
             PrimitiveCount = 0;
         }
@@ -1881,7 +1881,7 @@ namespace Orts.Viewer3D
 
         public void SetVertexData(VertexPositionNormalTexture[] data, int minVertexIndex, int numVertices, int primitiveCount)
         {
-            VertexBuffer.SetData(data);
+            VertexBufferBindings.FirstOrDefault().VertexBuffer?.SetData(data);
             PrimitiveCount = primitiveCount;
         }
 
@@ -1914,11 +1914,11 @@ namespace Orts.Viewer3D
         public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
         public int SubObjectIndex { get; protected set; }
 
-        protected VertexBuffer VertexBuffer;
         protected int VertexBufferStride;
         protected IndexBuffer IndexBuffer;
         protected int PrimitiveCount;
         protected internal int PrimitiveOffset;
+        protected PrimitiveType PrimitiveType;
 
         protected VertexBuffer InstanceBuffer;
         protected VertexDeclaration InstanceDeclaration;
@@ -1933,10 +1933,10 @@ namespace Orts.Viewer3D
             Hierarchy = shapePrimitive.Hierarchy;
             HierarchyIndex = shapePrimitive.HierarchyIndex;
             SubObjectIndex = subObjectIndex;
-            VertexBuffer = shapePrimitive.VertexBuffer;
             IndexBuffer = shapePrimitive.IndexBuffer;
             PrimitiveCount = shapePrimitive.PrimitiveCount;
             PrimitiveOffset = shapePrimitive.PrimitiveOffset;
+            PrimitiveType = shapePrimitive.PrimitiveType;
 
             InstanceDeclaration = new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements);
             InstanceBuffer = new VertexBuffer(graphicsDevice, InstanceDeclaration, positions.Length, BufferUsage.WriteOnly);
@@ -1945,30 +1945,23 @@ namespace Orts.Viewer3D
 
             var instanceBufferBinding = new VertexBufferBinding(InstanceBuffer, 0, 1);
 
-            if (VertexBuffer != null)
-            {
-                VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), instanceBufferBinding };
-            }
+            VertexBufferBindings = shapePrimitive.VertexBufferBindings.ToArray();
+            var dummyInstanceBuffer = RenderPrimitive.GetDummyVertexBuffer(graphicsDevice);
+            var position = -1;
+            for (var i = 0; i < VertexBufferBindings.Length; i++)
+                if (VertexBufferBindings[i].VertexBuffer == dummyInstanceBuffer)
+                    position = i;
+            if (position == -1)
+                VertexBufferBindings.Append(instanceBufferBinding);
             else
-            {
-                VertexBufferBindings = shapePrimitive.VertexBufferBindings.ToArray();
-                var dummyInstanceBuffer = RenderPrimitive.GetDummyVertexBuffer(graphicsDevice);
-                var position = -1;
-                for (var i = 0; i < VertexBufferBindings.Length; i++)
-                    if (VertexBufferBindings[i].VertexBuffer == dummyInstanceBuffer)
-                        position = i;
-                if (position == -1)
-                    VertexBufferBindings.Append(instanceBufferBinding);
-                else
-                    VertexBufferBindings[position] = instanceBufferBinding;
-            }
+                VertexBufferBindings[position] = instanceBufferBinding;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.Indices = IndexBuffer;
             graphicsDevice.SetVertexBuffers(VertexBufferBindings);
-            graphicsDevice.DrawInstancedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: PrimitiveOffset, PrimitiveCount, InstanceCount);
+            graphicsDevice.DrawInstancedPrimitives(PrimitiveType, baseVertex: 0, startIndex: PrimitiveOffset, PrimitiveCount, InstanceCount);
         }
     }
 
@@ -2034,6 +2027,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public readonly Dictionary<int, Matrix> StoredResultMatrixes = new Dictionary<int, Matrix>();
 
+        public virtual Matrix ForwardZDirection => Matrix.Identity;
 
         readonly protected Viewer Viewer;
         public readonly string FilePath;
@@ -2281,7 +2275,6 @@ namespace Orts.Viewer3D
                 debugShapeHierarchy.AppendFormat("      Sub object {0}:\n", subObjectIndex);
 #endif
                 var vertexBufferSet = new VertexBufferSet(sub_object, sFile, sharedShape.Viewer.GraphicsDevice);
-                VertexBufferBinding[] vertexBufferBindings = new VertexBufferBinding[0];
 #if DEBUG_SHAPE_NORMALS
                 var debugNormalsMaterial = sharedShape.Viewer.MaterialManager.Load("DebugNormals");
 #endif
@@ -2343,31 +2336,15 @@ namespace Orts.Viewer3D
                         ShapeWarnings.Add("shader_name:" + sFile.shape.shader_names[primitiveState.ishader]);
                     }
 
+                    color diffuseColor = new color { R = 1, G = 1, B = 1, A = 1 };
+
                     if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
                         options |= VertexLightModeMap[12 + vertexState.LightMatIdx];
                     else if (vertexState.LightMatIdx >= 0 && sFile.shape.light_materials.ElementAtOrDefault(vertexState.LightMatIdx) is light_material lightMaterial
                         && sFile.shape.colors.ElementAtOrDefault(lightMaterial.DiffColIdx) is color color)
                     {
-                        // Try to fit the non-textured, colored primitives into the PBR shader NormalMapColor shader pipeline
-                        var vertexCount = vertexBufferSet.Buffer.VertexCount;
-                        var vertexData = Enumerable.Repeat(new Color(color.R, color.G, color.B, color.A), vertexCount).ToArray();
-                        var colorBufferBinding = new VertexBufferBinding(new VertexBuffer(sharedShape.Viewer.GraphicsDevice,
-                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Color, 0)), vertexCount, BufferUsage.WriteOnly)
-                            { Name = "COLOR" });
-                        colorBufferBinding.VertexBuffer.SetData(vertexData);
-
-                        var tangentBufferBinding = new VertexBufferBinding(new VertexBuffer(sharedShape.Viewer.GraphicsDevice,
-                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Tangent, 0)), vertexCount, BufferUsage.WriteOnly)
-                            { Name = "TANGENT_DUMMY" });
-
-                        var teexcoord1BufferBinding = new VertexBufferBinding(new VertexBuffer(sharedShape.Viewer.GraphicsDevice,
-                            new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 1)), vertexCount, BufferUsage.None)
-                            { Name = "TEXCOORD_1_DUMMY" });
-
-                        options |= SceneryMaterialOptions.PbrHasTexCoord1; // So that the correct shader technique gets selected.
-
-                        vertexBufferBindings = new[] { colorBufferBinding, tangentBufferBinding, teexcoord1BufferBinding };
-
+                        diffuseColor = color;
+                        options |= SceneryMaterialOptions.PbrHasIndices;
                     }
                     else if (!ShapeWarnings.Contains("lighting_model:" + vertexState.LightMatIdx))
                     {
@@ -2391,11 +2368,31 @@ namespace Orts.Viewer3D
                         else
                             material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
                     }
-                    else if (vertexBufferBindings.Length > 0)
+                    else if ((options & SceneryMaterialOptions.PbrHasIndices) > 0)
                     {
+                        var gltf = new glTFLoader.Schema.Gltf
+                        {
+                            Materials = new[]
+                            {
+                                new glTFLoader.Schema.Material
+                                {
+                                    AlphaMode = glTFLoader.Schema.Material.AlphaModeEnum.OPAQUE,
+                                    EmissiveFactor = new[] { 0f, 0f, 0f },
+                                    PbrMetallicRoughness = new glTFLoader.Schema.MaterialPbrMetallicRoughness
+                                    {
+                                        BaseColorFactor = new[] { diffuseColor.R, diffuseColor.G, diffuseColor.B, diffuseColor.A },
+                                        MetallicFactor = 0,
+                                        RoughnessFactor = 1f
+                                    }
+                                }
+                        },
+                            Samplers = new[] { GltfShape.GltfSubObject.DefaultGltfSampler },
+                            Scenes = new[] { new glTFLoader.Schema.Scene { Nodes = new[] { 0 } } },
+                        };
+
                         material = sharedShape.Viewer.MaterialManager.Load("PBR",
                             $"{sharedShape.FilePath}#0#{vertexState.LightMatIdx}",
-                            (int)options, 0, null, GltfShape.GltfSubObject.DefaultGltfFile);
+                            (int)options, 0, null, gltf);
                         (material as PbrMaterial).LoadTextures();
                     }
                     else
@@ -2429,7 +2426,7 @@ namespace Orts.Viewer3D
                         foreach (var index in new[] { vertex_idx.a, vertex_idx.b, vertex_idx.c })
                             indexData.Add((ushort)index);
 
-                    ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, vertexBufferBindings, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
+                    ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
                     ShapePrimitives[primitiveIndex].SortIndex = ++totalPrimitiveIndex;
                     ++primitiveIndex;
 #if DEBUG_SHAPE_NORMALS

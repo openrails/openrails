@@ -3464,7 +3464,7 @@ namespace Orts.Viewer3D.RollingStock
                     if (style != null && style is CabViewDigitalRenderer)//digits?
                     {
                         //DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
-                        DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key], Locomotive));
+                        DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, targetNode, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key], Locomotive));
                         if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
                             TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                     }
@@ -3474,7 +3474,7 @@ namespace Orts.Viewer3D.RollingStock
 
                         if (CVFR.GetGauge().ControlStyle != CABViewControlStyles.POINTER) //pointer will be animated, others will be drawn dynamicaly
                         {
-                            Gauges.Add(key, new ThreeDimCabGaugeNative(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                            Gauges.Add(key, new ThreeDimCabGaugeNative(viewer, targetNode, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                             if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
                                 TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                         }
@@ -3494,7 +3494,7 @@ namespace Orts.Viewer3D.RollingStock
                     }
                     else if (style != null && style is DistributedPowerInterfaceRenderer)
                     {
-                        DPIDisplays3D.Add(key, new ThreeDimCabDPI(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                        DPIDisplays3D.Add(key, new ThreeDimCabDPI(viewer, targetNode, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                         if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
                             TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                     }
