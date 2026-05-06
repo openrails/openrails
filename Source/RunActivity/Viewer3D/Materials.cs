@@ -611,11 +611,11 @@ namespace Orts.Viewer3D
             if (sunDirection.Y > -0.05)
             {
                 SceneryShader.EnvironmentMapSpecularTexture = EnvironmentMapSpecularDay;
-            }
-            else
-            {
+                    }
+                    else
+                    {
                 SceneryShader.EnvironmentMapSpecularTexture = EnvironmentMapSpecularNight;
-            }
+                    }
 
             SceneryShader.Fog = FogColor;
 
