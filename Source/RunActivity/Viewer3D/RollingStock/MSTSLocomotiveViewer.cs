@@ -3634,6 +3634,11 @@ namespace Orts.Viewer3D.RollingStock
                 }
             }
 
+            if (ExternalWipers != null) ExternalWipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
+
+            if (TrainCarShape != null)
+                TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisibleTargetNode);
+
             foreach (var p in DigitParts3D)
             {
                 var digital = p.Value.CVFR.Control;
@@ -3705,16 +3710,6 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 p.Value.PrepareFrame(frame, elapsedTime);
             }
-
-            if (ExternalWipers != null) ExternalWipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
-            /*
-            foreach (var p in DigitParts)
-            {
-                p.Value.PrepareFrame(frame, elapsedTime);
-            }*/ //removed with 3D digits
-
-            if (TrainCarShape != null)
-                TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisibleTargetNode);
         }
 
         internal void PrepareFrameForWindow(int windowIndex, AnimatedPartMultiState anim, ElapsedTime elapsedTime)
@@ -3752,7 +3747,7 @@ namespace Orts.Viewer3D.RollingStock
         int NumVertices;
         int NumIndices;
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
-        Matrix XNAMatrix;
+        int TargetNode;
         Viewer Viewer;
         MutableShapePrimitive shapePrimitive;
         public CabViewDigitalRenderer CVFR;
@@ -3760,7 +3755,7 @@ namespace Orts.Viewer3D.RollingStock
         Material AlertMaterial;
         float Size;
         string AceFile;
-        public ThreeDimCabDigit(Viewer viewer, int iMatrix, string size, string aceFile, PoseableShape trainCarShape, CabViewControlRenderer c, MSTSLocomotive locomotive)
+        public ThreeDimCabDigit(Viewer viewer, int targetNode, string size, string aceFile, PoseableShape trainCarShape, CabViewControlRenderer c, MSTSLocomotive locomotive)
         {
 
             Size = int.Parse(size) * 0.001f;//input size is in mm
@@ -3776,7 +3771,7 @@ namespace Orts.Viewer3D.RollingStock
             if (digital.ControlType.Type == CABViewControlTypes.CLOCK && digital.Accuracy > 0) MaxDigits = 8;
             Viewer = viewer;
             TrainCarShape = trainCarShape;
-            XNAMatrix = TrainCarShape.SharedShape.Matrices[iMatrix];
+            TargetNode = targetNode;
             var maxVertex = (MaxDigits + 2) * 4;// every face has max 8 digits, each has 2 triangles
             //Material = viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, texture), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
             Material = FindMaterial(false);//determine normal material
@@ -4011,10 +4006,12 @@ namespace Orts.Viewer3D.RollingStock
                 return;
 
             UpdateDigit();
-            Matrix mx = TrainCarShape.Location.XNAMatrix;
-            mx.M41 += (TrainCarShape.Location.TileX - Viewer.Camera.TileX) * 2048;
-            mx.M43 += (-TrainCarShape.Location.TileZ + Viewer.Camera.TileZ) * 2048;
-            Matrix m = XNAMatrix * mx;
+
+            var m = TrainCarShape.SharedShape.StoredResultMatrixes[TargetNode];
+            m.Decompose(out var scale, out var rotation, out var translation);
+            m = Matrix.CreateScale(scale) *
+                Matrix.CreateFromQuaternion(rotation) * TrainCarShape.SharedShape.ForwardZDirection *
+                Matrix.CreateTranslation(translation);
 
             // TODO: Make this use AddAutoPrimitive instead.
             frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
@@ -4033,7 +4030,7 @@ namespace Orts.Viewer3D.RollingStock
         int NumVertices;
         int NumIndices;
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
-        Matrix XNAMatrix;
+        int TargetNode;
         Viewer Viewer;
         MutableShapePrimitive shapePrimitive;
         public CabViewGaugeRenderer CVFR;
@@ -4041,7 +4038,7 @@ namespace Orts.Viewer3D.RollingStock
         Material NegativeMaterial;
         float width, maxLen; //width of the gauge, and the max length of the gauge
         int Direction, Orientation;
-        public ThreeDimCabGaugeNative(Viewer viewer, int iMatrix, string size, string len, PoseableShape trainCarShape, CabViewControlRenderer c)
+        public ThreeDimCabGaugeNative(Viewer viewer, int targetNode, string size, string len, PoseableShape trainCarShape, CabViewControlRenderer c)
         {
             if (size != string.Empty) width = float.Parse(size) / 1000f; //in mm
             if (len != string.Empty) maxLen = float.Parse(len) / 1000f; //in mm
@@ -4052,7 +4049,7 @@ namespace Orts.Viewer3D.RollingStock
 
             Viewer = viewer;
             TrainCarShape = trainCarShape;
-            XNAMatrix = TrainCarShape.SharedShape.Matrices[iMatrix];
+            TargetNode = targetNode;
             CVCGauge gauge = CVFR.GetGauge();
             var maxVertex = 4;// a rectangle
             //Material = viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, texture), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
@@ -4230,10 +4227,12 @@ namespace Orts.Viewer3D.RollingStock
                 return;
 
             UpdateDigit();
-            Matrix mx = TrainCarShape.Location.XNAMatrix;
-            mx.M41 += (TrainCarShape.Location.TileX - Viewer.Camera.TileX) * 2048;
-            mx.M43 += (-TrainCarShape.Location.TileZ + Viewer.Camera.TileZ) * 2048;
-            Matrix m = XNAMatrix * mx;
+
+            var m = TrainCarShape.SharedShape.StoredResultMatrixes[TargetNode];
+            m.Decompose(out var scale, out var rotation, out var translation);
+            m = Matrix.CreateScale(scale) *
+                Matrix.CreateFromQuaternion(rotation) * TrainCarShape.SharedShape.ForwardZDirection *
+                Matrix.CreateTranslation(translation);
 
             // TODO: Make this use AddAutoPrimitive instead.
             frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
