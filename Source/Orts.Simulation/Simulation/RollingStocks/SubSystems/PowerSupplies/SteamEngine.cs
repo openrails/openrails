@@ -2988,6 +2988,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             // Total engine steam rate
             double totalFlow = SteamPerRevKg * SecPerRev * NumberCylinders;
 
+
             // Convert to lb/hr
             SteamRate_lbhr = totalFlow * 2.20462 * 3600.0;
 
