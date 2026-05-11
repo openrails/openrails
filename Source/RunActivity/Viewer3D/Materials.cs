@@ -1602,11 +1602,9 @@ namespace Orts.Viewer3D
                 shader.ClearcoatNormalScale = ClearcoatNormalScale;
             }
             shader.SpecularFactor = new Vector4(SpecularColorFactor, SpecularFactor);
-            if (SpecularFactor > 0)
-            {
-                shader.SpecularTexture = SpecularTexture;
-                shader.SpecularColorTexture = SpecularColorTexture;
-            }
+            shader.SpecularTexture = SpecularTexture;
+            shader.SpecularColorTexture = SpecularColorTexture;
+
             shader.TextureCoordinates1 = TexCoords1;
             shader.TextureCoordinates2 = TexCoords2;
             shader.TextureCoordinates3 = TexCoords3;

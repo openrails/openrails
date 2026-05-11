@@ -911,6 +911,7 @@ PIXEL_OUTPUT PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace)
     else
     {
         // Diffuse material
+        litColor = (float3) 0;
 
         // Metallic-roughness
         float occlusion = 1;
@@ -975,13 +976,13 @@ PIXEL_OUTPUT PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace)
 
         float3 reflection = normalize(reflect(-v, n));
 
-        float3 f0;
-        float3 f90;
-        float3 specularEnvironmentR0;
-        float3 specularEnvironmentR90;
+        float3 f0 = (float3) 0;
+        float3 f90 = (float3) 1.0;
+        float3 specularEnvironmentR0 = (float3) 0;
+        float3 specularEnvironmentR90 = (float3) 1.0;
         
         [branch]
-        if (SpecularFactor.w > 0)
+        if (SpecularFactor.w > 0 || metallic > 0)
         {
 #ifdef IOR_SPECULAR
             float specularFactor = SpecularFactor.w;
@@ -991,14 +992,9 @@ PIXEL_OUTPUT PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace)
             specularColorFactor *= SpecularColorTexture.Sample(SpecularColorSampler, _PSUV(In.TexCoords, TextureCoordinates3.y)).rgb;
 
             f0 = min((float3) EmissiveIorFactor.w * specularColorFactor, (float3) 1.0) * specularFactor;
-            f90 = (float3) specularFactor;
 #else
-            float3 f0 = (float3) 0.04; // (float3)(pow((ior - 1) / (ior + 1), 2)) = (float3)0.04, if ior = 1.5
-            float3 f90 = (float3) 1.0;
+            f0 = (float3) 0.04; // (float3)(pow((ior - 1) / (ior + 1), 2)) = (float3)0.04, if ior = 1.5
 #endif
-
-            diffuseColor *= f90 - f0;
-
             float3 specularColor = lerp(f0, Color.rgb, metallic);
 
             float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
@@ -1008,15 +1004,8 @@ PIXEL_OUTPUT PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace)
  
             litColor = _PSGetIBLSpecular(specularColor, NdotV, perceptualRoughness, reflection);
         }
-        else
-        {
-            f0 = (float3) 0;
-            f90 = (float3) 0;
-            specularEnvironmentR0 = (float3) 0;
-            specularEnvironmentR90 = (float3) 0;
-            
-            litColor = (float3) 0;
-        }
+
+        diffuseColor *= f90 - f0;
 
         litColor += diffuseColor * _PSGetIBLDiffuseIrradiance(n);
         litColor *= Overcast.y;
@@ -1129,22 +1118,17 @@ PIXEL_OUTPUT PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace)
             float LdotH = clamp(dot(l, h), 0.0, 1.0);
             float VdotH = clamp(dot(v, h), 0.0, 1.0);
 
-            [branch]
-            if (SpecularFactor.w > 0)
-            {
-                fPow = pow5(clamp(1.0 - VdotH, 0.0, 1.0));
-                F = specularEnvironmentR0 + (specularEnvironmentR90 - specularEnvironmentR0) * fPow;
+            fPow = pow5(clamp(1.0 - VdotH, 0.0, 1.0));
+            F = specularEnvironmentR0 + (specularEnvironmentR90 - specularEnvironmentR0) * fPow;
 
-                float attenuationL = 2.0 * NdotL / (NdotL + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotL * NdotL)));
-                float attenuationV = 2.0 * NdotV / (NdotV + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotV * NdotV)));
-                float G = attenuationL * attenuationV;
+            float attenuationL = 2.0 * NdotL / (NdotL + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotL * NdotL)));
+            float attenuationV = 2.0 * NdotV / (NdotV + sqrt(roughnessSq + (1.0 - roughnessSq) * (NdotV * NdotV)));
+            float G = attenuationL * attenuationV;
 
-                float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
-                float D = roughnessSq / (M_PI * f * f);
+            float f = (NdotH * roughnessSq - NdotH) * NdotH + 1.0;
+            float D = roughnessSq / (M_PI * f * f);
 
-                specContrib += intensity * NdotL * F * G * D / (4.0 * NdotL * NdotV + 0.0001) * shadowFactor;
-            }
-            
+            specContrib += intensity * NdotL * F * G * D / (4.0 * NdotL * NdotV + 0.0001) * shadowFactor;
             diffuseContrib += intensity * NdotL * (1.0 - F) * diffuseColor / M_PI * diffuseShadowFactor;
 
 #ifdef CLEARCOAT
