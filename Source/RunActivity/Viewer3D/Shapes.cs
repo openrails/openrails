@@ -2241,23 +2241,29 @@ namespace Orts.Viewer3D
             };
 
             static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
+                { "Diffuse", SceneryMaterialOptions.Diffuse },
                 { "Tex", SceneryMaterialOptions.ShaderFullBright },
                 { "TexDiff", SceneryMaterialOptions.Diffuse },
                 { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.ShaderFullBright},
                 { "BlendATexDiff", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse },
                 { "AddATex", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright},
                 { "AddATexDiff", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.Diffuse },
+                { "GlossMap", SceneryMaterialOptions.Diffuse },
             };
 
             static readonly SceneryMaterialOptions[] VertexLightModeMap = new[] {
-                SceneryMaterialOptions.ShaderDarkShade,
-                SceneryMaterialOptions.ShaderHalfBright,
-                SceneryMaterialOptions.ShaderVegetation, // Not certain this is right.
-                SceneryMaterialOptions.ShaderVegetation,
-                SceneryMaterialOptions.ShaderFullBright,
-                SceneryMaterialOptions.None | SceneryMaterialOptions.Specular750,
-                SceneryMaterialOptions.None | SceneryMaterialOptions.Specular25,
-                SceneryMaterialOptions.None | SceneryMaterialOptions.None,
+                SceneryMaterialOptions.ShaderDarkShade, // -12
+                SceneryMaterialOptions.ShaderHalfBright, // -11
+                SceneryMaterialOptions.ShaderVegetation, // -10 only env. light, no direct light
+                SceneryMaterialOptions.ShaderVegetation, // -9 only env. light half bright, no direct light
+                SceneryMaterialOptions.ShaderFullBright, // -8 no direct light
+                SceneryMaterialOptions.Specular750, // -7 specular, no direct light
+                SceneryMaterialOptions.Specular25, // -6 specular half bright, no direct light
+                SceneryMaterialOptions.None, // -5
+                SceneryMaterialOptions.ShaderVegetation, // -4 only env. light, no direct light
+                SceneryMaterialOptions.Specular750, // -3 specular
+                SceneryMaterialOptions.Specular25, // -2 specular half bright
+                SceneryMaterialOptions.None // -1
             };
 
             public ShapePrimitive[] ShapePrimitives;
@@ -2296,6 +2302,10 @@ namespace Orts.Viewer3D
                     var lightModelConfiguration = sFile.shape.light_model_cfgs[vertexState.LightCfgIdx];
                     var options = SceneryMaterialOptions.None;
 
+                    color diffuseColor = new color { R = 1, G = 1, B = 1, A = 1 };
+                    float metallicFactor = 0;
+                    float roughnessFactor = 1;
+
                     // Validate hierarchy position.
                     var hierarchyIndex = vertexState.imatrix;
                     while (hierarchyIndex != -1)
@@ -2329,14 +2339,21 @@ namespace Orts.Viewer3D
                         options |= SceneryMaterialOptions.AlphaTest;
 
                     if (ShaderNames.ContainsKey(sFile.shape.shader_names[primitiveState.ishader]))
+                    {
                         options |= ShaderNames[sFile.shape.shader_names[primitiveState.ishader]];
+
+                        if (sFile.shape.shader_names[primitiveState.ishader] == "GlossMap")
+                        {
+                            metallicFactor = 1;
+                            roughnessFactor = 0;
+                            options |= SceneryMaterialOptions.PbrHasIndices | SceneryMaterialOptions.PbrHasNormals;
+                        }
+                    }
                     else if (!ShapeWarnings.Contains("shader_name:" + sFile.shape.shader_names[primitiveState.ishader]))
                     {
                         Trace.TraceInformation("Skipped unknown shader name {1} first seen in shape {0}", sharedShape.FilePath, sFile.shape.shader_names[primitiveState.ishader]);
                         ShapeWarnings.Add("shader_name:" + sFile.shape.shader_names[primitiveState.ishader]);
                     }
-
-                    color diffuseColor = new color { R = 1, G = 1, B = 1, A = 1 };
 
                     if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
                         options |= VertexLightModeMap[12 + vertexState.LightMatIdx];
@@ -2344,7 +2361,7 @@ namespace Orts.Viewer3D
                         && sFile.shape.colors.ElementAtOrDefault(lightMaterial.DiffColIdx) is color color)
                     {
                         diffuseColor = color;
-                        options |= SceneryMaterialOptions.PbrHasIndices;
+                        options |= SceneryMaterialOptions.PbrHasIndices | SceneryMaterialOptions.PbrHasNormals;
                     }
                     else if (!ShapeWarnings.Contains("lighting_model:" + vertexState.LightMatIdx))
                     {
@@ -2358,18 +2375,23 @@ namespace Orts.Viewer3D
                     if ((textureFlags & Helpers.TextureFlags.Underground) != 0)
                         options |= SceneryMaterialOptions.UndergroundTexture;
 
-                    Material material;
+                    texture texture = null;
+                    string texturePath = null;
+
                     if (primitiveState.tex_idxs.Length != 0)
                     {
-                        var texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
+                        texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
                         var imageName = sFile.shape.images[texture.iImage];
                         if (String.IsNullOrEmpty(sharedShape.ReferencePath))
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias);
+                            texturePath = Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName);
                         else
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
+                            texturePath = Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName);
                     }
-                    else if ((options & SceneryMaterialOptions.PbrHasIndices) > 0)
+
+                    Material material;
+                    if ((options & SceneryMaterialOptions.PbrHasIndices) > 0)
                     {
+                        // Special PBR rendering path for non-textured or glossy materials
                         var gltf = new glTFLoader.Schema.Gltf
                         {
                             Materials = new[]
@@ -2381,8 +2403,8 @@ namespace Orts.Viewer3D
                                     PbrMetallicRoughness = new glTFLoader.Schema.MaterialPbrMetallicRoughness
                                     {
                                         BaseColorFactor = new[] { diffuseColor.R, diffuseColor.G, diffuseColor.B, diffuseColor.A },
-                                        MetallicFactor = 0,
-                                        RoughnessFactor = 1f
+                                        MetallicFactor = metallicFactor,
+                                        RoughnessFactor = roughnessFactor
                                     }
                                 }
                         },
@@ -2393,11 +2415,13 @@ namespace Orts.Viewer3D
                         material = sharedShape.Viewer.MaterialManager.Load("PBR",
                             $"{sharedShape.FilePath}#0#{vertexState.LightMatIdx}",
                             (int)options, 0, null, gltf);
-                        (material as PbrMaterial).LoadTextures();
+                        var baseColorTexture = texturePath == null ? null : sharedShape.Viewer.TextureManager.Get(texturePath);
+                        (material as PbrMaterial).LoadTextures(baseColorTexture);
                     }
                     else
                     {
-                        material = sharedShape.Viewer.MaterialManager.Load("Scenery", null, (int)options);
+                        // Standard rendering path for traditional textured materials
+                        material = sharedShape.Viewer.MaterialManager.Load("Scenery", texturePath, (int)options, texture?.MipMapLODBias ?? 0);
                     }
 
 #if DEBUG_SHAPE_HIERARCHY

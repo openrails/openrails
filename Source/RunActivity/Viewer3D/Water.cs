@@ -183,7 +183,7 @@ namespace Orts.Viewer3D
             var shader = Viewer.MaterialManager.SceneryShader;
             shader.CurrentTechnique = Technique;
             shader.ImageTexture = WaterTexture;
-            shader.ReferenceAlpha = 10;
+            shader.ReferenceAlpha = 10f / 255f;
             shader.HasNormals = true;
             shader.HasTangents = false;
 

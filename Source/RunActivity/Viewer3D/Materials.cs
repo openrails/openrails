@@ -917,11 +917,11 @@ namespace Orts.Viewer3D
             DepthBufferFunction = CompareFunction.Less,
         };
         private static readonly Dictionary<TextureAddressMode, Dictionary<float, SamplerState>> SamplerStates = new Dictionary<TextureAddressMode, Dictionary<float, SamplerState>>();
-        protected int DefaultAlphaCutOff;
-        protected readonly int ReferenceAlphaTransparentPass = 10; // ie default lightcone's are 9 in full transparent areas
+        protected float DefaultAlphaCutOff;
+        protected readonly float ReferenceAlphaTransparentPass = 10f / 255f; // ie default lightcone's are 9 in full transparent areas
 
 
-        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias, int alphaCutOff)
+        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias, float alphaCutOff)
             : base(viewer, String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
         {
             Options = options;
@@ -933,7 +933,7 @@ namespace Orts.Viewer3D
         }
 
         public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
-            : this(viewer, texturePath, options, mipMapBias, 200)
+            : this(viewer, texturePath, options, mipMapBias, 200f / 255f)
         {
             // <CSComment> if "trainset" is in the path (true for night textures for 3DCabs) deferred load of night textures is disabled 
             if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && ((!viewer.IsDaytime && !viewer.IsNighttime)
@@ -1016,7 +1016,7 @@ namespace Orts.Viewer3D
             {
                 BlendState = BlendState.NonPremultiplied;
                 DepthStencilStateOpaquePass = DepthStencilStateTransparentPass = DepthStencilState.Default;
-                DefaultAlphaCutOff = 250;
+                DefaultAlphaCutOff = 250f / 255f;
 
                 if ((Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingBlend)
                     DepthStencilStateTransparentPass = DepthReadCompareLess;
@@ -1086,7 +1086,7 @@ namespace Orts.Viewer3D
 
             var transparentPass = previousMaterial != null;
 
-            shader.ReferenceAlpha = !transparentPass ? DefaultAlphaCutOff : ReferenceAlphaTransparentPass;
+            shader.ReferenceAlpha = transparentPass ? ReferenceAlphaTransparentPass : DefaultAlphaCutOff;
             graphicsDevice.DepthStencilState = !transparentPass ? DepthStencilStateOpaquePass : DepthStencilStateTransparentPass;
             graphicsDevice.RasterizerState = RasterizerState;
             graphicsDevice.BlendState = BlendState;
@@ -1284,7 +1284,7 @@ namespace Orts.Viewer3D
         readonly Vector4[] MorphWeights = new Vector4[2];
 
         // Animation actuators:
-        public void SetAlphaCutoff(float value) => DefaultAlphaCutOff = (int)(value * 255f);
+        public void SetAlphaCutoff(float value) => DefaultAlphaCutOff = value;
         public void SetBaseColorFactor(Vector4 value) => BaseColorFactor = value;
         public void SetMetallicFactor(float value) => MetallicFactor = value;
         public void SetRoughnessFactor(float value) => RoughnessFactor = value;
@@ -1327,7 +1327,7 @@ namespace Orts.Viewer3D
                     break;
                 case glTFLoader.Schema.Material.AlphaModeEnum.MASK:
                     options |= SceneryMaterialOptions.AlphaTest;
-                    DefaultAlphaCutOff = (int)(material.AlphaCutoff * 255f);
+                    DefaultAlphaCutOff = material.AlphaCutoff;
                     break;
                 case glTFLoader.Schema.Material.AlphaModeEnum.OPAQUE:
                 default: break;
@@ -1470,20 +1470,20 @@ namespace Orts.Viewer3D
 
         public override bool GetBlending() => (Options & SceneryMaterialOptions.AlphaBlendingBlend) != 0;
 
-        public void LoadTextures()
+        public void LoadTextures(Texture2D baseColor = null, Texture2D metallicRoughness = null, Texture2D normal = null, Texture2D occlusion = null, Texture2D emissive = null, Texture2D clearcoat = null, Texture2D clearcoatRoughness = null, Texture2D clearcoatNormal = null, Texture2D specular = null, Texture2D specularColor = null)
         {
             if (Texture == null || Texture == SharedMaterialManager.MissingTexture)
-                Texture = GetTexture(BaseColorTextureIndex, SharedMaterialManager.WhiteTexture, true);
+                Texture = baseColor ?? GetTexture(BaseColorTextureIndex, SharedMaterialManager.WhiteTexture, true);
 
-            MetallicRoughnessTexture = MetallicRoughnessTexture ?? GetTexture(MetallicRoughnessTextureIndex, SharedMaterialManager.WhiteTexture, false);
-            NormalTexture = NormalTexture ?? GetTexture(NormalTextureIndex, SharedMaterialManager.WhiteTexture, false);
-            OcclusionTexture = OcclusionTexture ?? GetTexture(OcclusionTextureIndex, SharedMaterialManager.WhiteTexture, false);
-            EmissiveTexture = EmissiveTexture ?? GetTexture(EmissiveTextureIndex, SharedMaterialManager.WhiteTexture, true);
-            ClearcoatTexture = ClearcoatTexture ?? GetTexture(ClearcoatTextureIndex, SharedMaterialManager.WhiteTexture, false);
-            ClearcoatRoughnessTexture = ClearcoatRoughnessTexture ?? GetTexture(ClearcoatRoughnessTextureIndex, SharedMaterialManager.WhiteTexture, false);
-            ClearcoatNormalTexture = ClearcoatNormalTexture ?? GetTexture(ClearcoatNormalTextureIndex, SharedMaterialManager.WhiteTexture, false);
-            SpecularTexture = SpecularTexture ?? GetTexture(SpecularTextureIndex, SharedMaterialManager.WhiteTexture, false);
-            SpecularColorTexture = SpecularColorTexture ?? GetTexture(SpecularColorTextureIndex, SharedMaterialManager.WhiteTexture, true);
+            MetallicRoughnessTexture = MetallicRoughnessTexture ?? metallicRoughness ?? GetTexture(MetallicRoughnessTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            NormalTexture = NormalTexture ?? normal ?? GetTexture(NormalTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            OcclusionTexture = OcclusionTexture ?? occlusion ?? GetTexture(OcclusionTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            EmissiveTexture = EmissiveTexture ?? emissive ?? GetTexture(EmissiveTextureIndex, SharedMaterialManager.WhiteTexture, true);
+            ClearcoatTexture = ClearcoatTexture ?? clearcoat ?? GetTexture(ClearcoatTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            ClearcoatRoughnessTexture = ClearcoatRoughnessTexture ?? clearcoatRoughness ?? GetTexture(ClearcoatRoughnessTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            ClearcoatNormalTexture = ClearcoatNormalTexture ?? clearcoatNormal ?? GetTexture(ClearcoatNormalTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            SpecularTexture = SpecularTexture ?? specular ?? GetTexture(SpecularTextureIndex, SharedMaterialManager.WhiteTexture, false);
+            SpecularColorTexture = SpecularColorTexture ?? specularColor ?? GetTexture(SpecularColorTextureIndex, SharedMaterialManager.WhiteTexture, true);
         }
 
         Texture2D GetTexture(int? textureIndex, Texture2D defaultTexture, bool srgbColors)

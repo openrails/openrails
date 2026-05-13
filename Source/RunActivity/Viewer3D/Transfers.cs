@@ -171,7 +171,7 @@ namespace Orts.Viewer3D
             var shader = Viewer.MaterialManager.SceneryShader;
             shader.CurrentTechnique = Technique;
             shader.ImageTexture = Texture;
-            shader.ReferenceAlpha = 10;
+            shader.ReferenceAlpha = 10f / 255f;
             shader.HasNormals = false;
             shader.HasTangents = false;
 

@@ -277,7 +277,7 @@ namespace Orts.Viewer3D
 
         public Texture2D SpecularColorTexture { set { specularColorTexture.SetValue(value); } }
 
-        public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
+        public float ReferenceAlpha { set { referenceAlpha.SetValue(value); } }
 
         public float OverlayScale { set { overlayScale.SetValue(value); } }
 
