@@ -532,20 +532,16 @@ namespace Orts.Viewer3D
         public void Mark()
         {
             MaterialMarks.Clear();
-            foreach (var path in Materials.Keys)
-                MaterialMarks.Add(path, false);
+            foreach (var kvp in Materials)
+            {
+                kvp.Value.MarkKey = kvp.Key;
+                MaterialMarks.Add(kvp.Key, false);
+            }
         }
 
         public void Mark(Material material)
         {
-            foreach (var key in Materials.Keys)
-            {
-                if (Materials[key] == material)
-                {
-                    MaterialMarks[key] = true;
-                    break;
-                }
-            }
+            MaterialMarks[material.MarkKey] = true;
         }
 
         public void Sweep()
@@ -672,6 +668,7 @@ namespace Orts.Viewer3D
     {
         public readonly Viewer Viewer;
         public readonly string Key;
+        internal (string, string, int, float, Effect) MarkKey;
 
 
         protected Material(Viewer viewer, string key)
