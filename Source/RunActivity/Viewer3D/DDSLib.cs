@@ -59,6 +59,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Orts.Viewer3D
 {
@@ -113,6 +114,8 @@ namespace Orts.Viewer3D
             DXGI_FORMAT_BC4_SNORM = 0x53344342,
             DXGI_FORMAT_BC5_UNORM = 0x32495441,
             DXGI_FORMAT_BC5_SNORM = 0x53354342,
+            DXGI_FORMAT_BC6H = 0x48364342,
+            DXGI_FORMAT_BC7 = 0x00374342,
 
             //DXGI_FORMAT_R8G8_B8G8_UNORM
             D3DFMT_R8G8_B8G8 = 0x47424752,
@@ -151,6 +154,23 @@ namespace Orts.Viewer3D
             //This is set only by the nvidia exporter, it is not set by the dx texture tool
             //,it is ignored by the dx texture tool but it returns the ability to be opened in photoshop so I decided to keep it.
             D3DFMT_Q8W8V8U8 = 63,
+        }
+
+        [Flags()]
+        public enum DXGI_FORMAT : uint
+        {
+            UNKNOWN = 0,
+            R32G32B32A32_FLOAT = 2,
+            R16G16B16A16_FLOAT = 10,
+            R16G16B16A16_UNORM = 11,
+            R32G32_FLOAT = 24,
+            R16G16_FLOAT = 34,
+            R32_FLOAT = 41,
+            R16_FLOAT = 54,
+            BC6H_UF16 = 95,
+            BC6H_SF16 = 96,
+            BC7_UNORM = 98,
+            BC7_UNORM_SRGB = 99
         }
 
         // Indicates whether this texture is cube map.
@@ -218,6 +238,10 @@ namespace Orts.Viewer3D
             G16R16,
             A2B10G10R10,
             A16B16G16R16,
+            BC6H_UF16,
+            BC6H_SF16,
+            BC7_UNORM,
+            BC7_UNORM_SRGB,
         }
 
         //Get pixel format from hader.
@@ -509,7 +533,7 @@ namespace Orts.Viewer3D
         //Get the byte data from a mip-map level.
         private static void GetMipMaps(int offsetInStream, int map, bool hasMipMaps, int width, int height, bool isCompressed, FourCC compressionFormat, int rgbBitCount, bool partOfCubeMap, BinaryReader reader, LoadSurfaceFormat loadSurfaceFormat, ref byte[] data, out int numBytes)
         {
-            int seek = 128 + offsetInStream;
+            int seek = offsetInStream;
 
             for (int i = 0; i < map; i++)
             {
@@ -1032,11 +1056,8 @@ namespace Orts.Viewer3D
             //mask for blue.
             uint bBitMask = reader.ReadUInt32();
 
-
             //mask for alpha.
             uint aBitMask = reader.ReadUInt32();
-
-            //reader.BaseStream.Position += 16;
 
             //texture + mip-map flags.
             int ddsCaps1 = reader.ReadInt32();
@@ -1058,12 +1079,80 @@ namespace Orts.Viewer3D
 
             FourCC compressionFormat = GetCompressionFormat(pixelFlags, pixelFourCC);
 
+            DXGI_FORMAT dxgiFormat = 0;
+            LoadSurfaceFormat loadSurfaceFormat = LoadSurfaceFormat.Unknown;
+
+            streamOffset += 128; // End of FourCC header, start of data or DX10 header
+
             if (compressionFormat == FourCC.DX10)
             {
-                throw new Exception("The Dxt 10 header reader is not implemented");
-            }
+                dxgiFormat = (DXGI_FORMAT)reader.ReadUInt32(); // dxgiFormat
+                uint resourceDimension = reader.ReadUInt32();  // 3 = Texture2D
+                uint miscFlag = reader.ReadUInt32();           // 0x4 = CubeMap
+                uint arraySize = reader.ReadUInt32();          // Texture count
+                uint miscFlags2 = reader.ReadUInt32();         // Alpha mode
 
-            LoadSurfaceFormat loadSurfaceFormat = GetLoadSurfaceFormat(pixelFlags, pixelFourCC, rgbBitCount, rBitMask, gBitMask, bBitMask, aBitMask, compressionFormat);
+                streamOffset += 20; // End of DX10 header, start of data
+
+                if (dxgiFormat == DXGI_FORMAT.BC6H_UF16)
+                {
+                    loadSurfaceFormat = LoadSurfaceFormat.BC6H_UF16;
+                    compressionFormat = FourCC.DXGI_FORMAT_BC6H;
+                }
+                else if (dxgiFormat == DXGI_FORMAT.BC6H_SF16)
+                {
+                    loadSurfaceFormat = LoadSurfaceFormat.BC6H_SF16;
+                    compressionFormat = FourCC.DXGI_FORMAT_BC6H;
+                }
+                // FIXME: There is some color channel shuffling going on in the uncompressed DXGI formats that we don't account for here, so some of these may be wrong.
+                else if (dxgiFormat == DXGI_FORMAT.R16G16B16A16_FLOAT)
+                {
+                    loadSurfaceFormat = LoadSurfaceFormat.A16B16G16R16F;
+                    compressionFormat = FourCC.D3DFMT_A16B16G16R16F;
+                }
+                else if (dxgiFormat == DXGI_FORMAT.R32G32B32A32_FLOAT)
+                {
+                    loadSurfaceFormat = LoadSurfaceFormat.A32B32G32R32F;
+                    compressionFormat = FourCC.D3DFMT_A32B32G32R32F;
+                }
+                else if (dxgiFormat == DXGI_FORMAT.R32G32_FLOAT)
+                {
+                    loadSurfaceFormat = LoadSurfaceFormat.G32R32F;
+                    compressionFormat = FourCC.D3DFMT_G32R32F;
+                }
+                else if (dxgiFormat == DXGI_FORMAT.R16G16_FLOAT)
+                {
+                    loadSurfaceFormat = LoadSurfaceFormat.G16R16F;
+                    compressionFormat = FourCC.D3DFMT_G16R16F;
+                }
+                else if (dxgiFormat == DXGI_FORMAT.R32_FLOAT)
+                {
+                    loadSurfaceFormat = LoadSurfaceFormat.R32F;
+                    compressionFormat = FourCC.D3DFMT_R32F;
+                }
+                else if (dxgiFormat == DXGI_FORMAT.R16_FLOAT)
+                {
+                    loadSurfaceFormat = LoadSurfaceFormat.R16F;
+                    compressionFormat = FourCC.D3DFMT_R16F;
+                }
+                else if (dxgiFormat == DXGI_FORMAT.R16G16B16A16_UNORM)
+                {
+                    loadSurfaceFormat = LoadSurfaceFormat.A16B16G16R16;
+                    compressionFormat = FourCC.D3DFMT_A16B16G16R16;
+                }
+                else
+                {
+                    throw new NotImplementedException($"Not implemented DXGI format: {dxgiFormat}");
+                }
+
+                // If cubemap then arraySize and miscFlag indicate
+                if ((miscFlag & 0x4) != 0)
+                    isCubeMap = true;
+            }
+            else
+            {
+                loadSurfaceFormat = GetLoadSurfaceFormat(pixelFlags, pixelFourCC, rgbBitCount, rBitMask, gBitMask, bBitMask, aBitMask, compressionFormat);
+            }
 
             bool isCompressed = IsCompressedTest(pixelFlags);
 
@@ -1075,21 +1164,29 @@ namespace Orts.Viewer3D
 
             if (isCubeMap)
             {
-                TextureCube tex = GenerateNewCubeTexture(loadSurfaceFormat, compressionFormat, device, width, hasMipMaps, pixelFlags, rgbBitCount, srgb);
-
-                int byteAcumulator = 0;
+                TextureCube tex = null;
+                byte[][][] cubeFaceData = new byte[6][][]; // Used for BC6H textures since we have to read all faces before we can create the texture.
 
                 if (numMips == 0)
                 {
                     numMips = 1;
                 }
 
-                if (!hasMipMaps)
+                if (compressionFormat != FourCC.DXGI_FORMAT_BC6H)
                 {
-                    for (int j = 0; j < numMips; j++)
-                    {
-                        byteAcumulator += MipMapSizeInBytes(j, width, height, isCompressed, compressionFormat, rgbBitCount);
-                    }
+                    tex = GenerateNewCubeTexture(loadSurfaceFormat, compressionFormat, device, width, hasMipMaps, pixelFlags, rgbBitCount, srgb);
+                }
+                else
+                {
+                    for (int i = 0; i < 6; i++)
+                        cubeFaceData[i] = new byte[numMips][];
+                }
+
+                int singleFaceSize = 0;
+
+                for (int j = 0; j < (hasMipMaps ? numMips : 1); j++)
+                {
+                    singleFaceSize += MipMapSizeInBytes(j, width, height, isCompressed, compressionFormat, rgbBitCount);
                 }
 
                 for (int j = 0; j < numMips; j++)
@@ -1097,17 +1194,18 @@ namespace Orts.Viewer3D
                     int numBytes = 0;
 
                     byte[] localMipData = mipData;
-                    GetMipMaps(streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
+                    GetMipMaps(singleFaceSize * 0 + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
                     mipData = localMipData;
-
-                    if (hasMipMaps)
-                    {
-                        byteAcumulator += numBytes;
-                    }
 
                     if (j == 0 || hasMipMaps)
                     {
-                        tex.SetData<byte>(CubeMapFace.PositiveX, j, null, localMipData, 0, numBytes);
+                        if (compressionFormat != FourCC.DXGI_FORMAT_BC6H)
+                            tex.SetData<byte>(CubeMapFace.PositiveX, j, null, localMipData, 0, numBytes);
+                        else
+                        {
+                            cubeFaceData[0][j] = new byte[numBytes];
+                            Buffer.BlockCopy(localMipData, 0, cubeFaceData[0][j], 0, numBytes);
+                        }
                     }
                     else
                     {
@@ -1120,12 +1218,18 @@ namespace Orts.Viewer3D
                     int numBytes = 0;
 
                     byte[] localMipData = mipData;
-                    GetMipMaps(byteAcumulator + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
+                    GetMipMaps(singleFaceSize * 1 + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
                     mipData = localMipData;
 
                     if (j == 0 || hasMipMaps)
                     {
-                        tex.SetData<byte>(CubeMapFace.NegativeX, j, null, localMipData, 0, numBytes);
+                        if (compressionFormat != FourCC.DXGI_FORMAT_BC6H)
+                            tex.SetData<byte>(CubeMapFace.NegativeX, j, null, localMipData, 0, numBytes);
+                        else
+                        {
+                            cubeFaceData[1][j] = new byte[numBytes];
+                            Buffer.BlockCopy(localMipData, 0, cubeFaceData[1][j], 0, numBytes);
+                        }
                     }
                     else
                     {
@@ -1138,12 +1242,18 @@ namespace Orts.Viewer3D
                     int numBytes = 0;
 
                     byte[] localMipData = mipData;
-                    GetMipMaps((byteAcumulator * 2) + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
+                    GetMipMaps((singleFaceSize * 2) + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
                     mipData = localMipData;
 
                     if (j == 0 || hasMipMaps)
                     {
-                        tex.SetData<byte>(CubeMapFace.PositiveY, j, null, localMipData, 0, numBytes);
+                        if (compressionFormat != FourCC.DXGI_FORMAT_BC6H)
+                            tex.SetData<byte>(CubeMapFace.PositiveY, j, null, localMipData, 0, numBytes);
+                        else
+                        {
+                            cubeFaceData[2][j] = new byte[numBytes];
+                            Buffer.BlockCopy(localMipData, 0, cubeFaceData[2][j], 0, numBytes);
+                        }
                     }
                     else
                     {
@@ -1156,12 +1266,18 @@ namespace Orts.Viewer3D
                     int numBytes = 0;
 
                     byte[] localMipData = mipData;
-                    GetMipMaps((byteAcumulator * 3) + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
+                    GetMipMaps((singleFaceSize * 3) + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
                     mipData = localMipData;
 
                     if (j == 0 || hasMipMaps)
                     {
-                        tex.SetData<byte>(CubeMapFace.NegativeY, j, null, localMipData, 0, numBytes);
+                        if (compressionFormat != FourCC.DXGI_FORMAT_BC6H)
+                            tex.SetData<byte>(CubeMapFace.NegativeY, j, null, localMipData, 0, numBytes);
+                        else
+                        {
+                            cubeFaceData[3][j] = new byte[numBytes];
+                            Buffer.BlockCopy(localMipData, 0, cubeFaceData[3][j], 0, numBytes);
+                        }
                     }
                     else
                     {
@@ -1174,12 +1290,18 @@ namespace Orts.Viewer3D
                     int numBytes = 0;
 
                     byte[] localMipData = mipData;
-                    GetMipMaps((byteAcumulator * 4) + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
+                    GetMipMaps((singleFaceSize * 4) + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
                     mipData = localMipData;
 
                     if (j == 0 || hasMipMaps)
                     {
-                        tex.SetData<byte>(CubeMapFace.PositiveZ, j, null, localMipData, 0, numBytes);
+                        if (compressionFormat != FourCC.DXGI_FORMAT_BC6H)
+                            tex.SetData<byte>(CubeMapFace.PositiveZ, j, null, localMipData, 0, numBytes);
+                        else
+                        {
+                            cubeFaceData[4][j] = new byte[numBytes];
+                            Buffer.BlockCopy(localMipData, 0, cubeFaceData[4][j], 0, numBytes);
+                        }
                     }
                     else
                     {
@@ -1192,18 +1314,28 @@ namespace Orts.Viewer3D
                     int numBytes = 0;
 
                     byte[] localMipData = mipData;
-                    GetMipMaps((byteAcumulator * 5) + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
+                    GetMipMaps((singleFaceSize * 5) + streamOffset, j, hasAnyMipmaps, width, height, isCompressed, compressionFormat, rgbBitCount, isCubeMap, reader, loadSurfaceFormat, ref localMipData, out numBytes);
                     mipData = localMipData;
 
                     if (j == 0 || hasMipMaps)
                     {
-                        tex.SetData<byte>(CubeMapFace.NegativeZ, j, null, localMipData, 0, numBytes);
+                        if (compressionFormat != FourCC.DXGI_FORMAT_BC6H)
+                            tex.SetData<byte>(CubeMapFace.NegativeZ, j, null, localMipData, 0, numBytes);
+                        else
+                        {
+                            cubeFaceData[5][j] = new byte[numBytes];
+                            Buffer.BlockCopy(localMipData, 0, cubeFaceData[5][j], 0, numBytes);
+                        }
                     }
                     else
                     {
                         break;
                     }
                 }
+
+                if (compressionFormat == FourCC.DXGI_FORMAT_BC6H)
+                    tex = GenerateNewCubeTextureBC6H(device, width, hasMipMaps, loadSurfaceFormat == LoadSurfaceFormat.BC6H_SF16, cubeFaceData);
+
 
                 texture = tex;
             }
@@ -2071,6 +2203,171 @@ namespace Orts.Viewer3D
                 return -1;
             }
             return MipMapSizeInBytes(mipMapLevel, texture.Size, texture.Size, IsXNATextureCompressed(texture), XNATextureFourCC(texture), XNATextureColorDepth(texture));
+        }
+
+        /// <summary>
+        /// Creates a native BC6H cube texture using SharpDX and injects it into a MonoGame TextureCube instance. MonoGame doesn't natively support BC6H, so this workaround is needed.
+        /// </summary>
+        /// <param name="mgDevice">MonoGame GraphicsDevice</param>
+        /// <param name="dxDevice">SharpDX.Direct3D11.Device (the native D3D11 device you use in WindowsDX/SharpDX)</param>
+        /// <param name="size">face size (e.g. 512)</param>
+        /// <param name="hasMipMaps">whether to allocate mip levels</param>
+        /// <param name="useSigned">true -> BC6H_SF16, false -> BC6H_UF16</param>
+        private static TextureCube GenerateNewCubeTextureBC6H(GraphicsDevice mgDevice, int size, bool hasMipMaps, bool useSigned, byte[][][] cubeFaceData)
+        {
+            if (cubeFaceData == null)
+                return new TextureCube(mgDevice, size, hasMipMaps, SurfaceFormat.Vector4);
+
+            var dxDevice = GetSharpDXDevice(mgDevice);
+            var dxContext = dxDevice.ImmediateContext;
+
+            int mipLevels = hasMipMaps ? (int)Math.Floor(Math.Log(size, 2)) + 1 : 1;
+            var format = useSigned ? SharpDX.DXGI.Format.BC6H_Sf16 : SharpDX.DXGI.Format.BC6H_Uf16;
+
+            // Describe DX native texture (arraySize = 6 for cube)
+            var desc = new SharpDX.Direct3D11.Texture2DDescription
+            {
+                Width = size,
+                Height = size,
+                MipLevels = mipLevels,
+                ArraySize = 6,
+                Format = format,
+                SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+                CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.TextureCube
+            };
+            var srvDesc = new SharpDX.Direct3D11.ShaderResourceViewDescription
+            {
+                Format = format,
+                Dimension = SharpDX.Direct3D.ShaderResourceViewDimension.TextureCube,
+                TextureCube = new SharpDX.Direct3D11.ShaderResourceViewDescription.TextureCubeResource
+                {
+                    MostDetailedMip = 0,
+                    MipLevels = mipLevels
+                }
+            };
+
+            int totalSubresources = 6 * mipLevels;
+            var dataBoxes = new SharpDX.DataBox[totalSubresources];
+            var handles = new GCHandle[totalSubresources];
+
+            try
+            {
+                for (int face = 0; face < 6; face++)
+                {
+                    for (int mip = 0; mip < mipLevels; mip++)
+                    {
+                        int mipSize = Math.Max(1, size >> mip);
+
+                        // BC6H: 4x4 blocks, 16 bytes per block
+                        int blocksWide = Math.Max(1, (mipSize + 3) / 4);
+                        int rowPitch = blocksWide * 16;
+                        int slicePitch = rowPitch * blocksWide;
+
+                        byte[] mipData = cubeFaceData[face][mip];
+
+                        int subresourceIndex = SharpDX.Direct3D11.Resource.CalculateSubResourceIndex(mip, face, mipLevels);
+
+                        handles[subresourceIndex] = GCHandle.Alloc(mipData, GCHandleType.Pinned);
+                        IntPtr pData = handles[subresourceIndex].AddrOfPinnedObject();
+                        dataBoxes[subresourceIndex] = new SharpDX.DataBox(pData, rowPitch, slicePitch);
+                    }
+                }
+                var dxTex = new SharpDX.Direct3D11.Texture2D(dxDevice, desc, dataBoxes);
+                var dxSrv = new SharpDX.Direct3D11.ShaderResourceView(dxDevice, dxTex, srvDesc);
+
+                var mgTex = (TextureCube)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(TextureCube));
+
+                var texBaseType = typeof(Texture);
+
+                texBaseType.GetField("GraphicsDevice", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                    .SetValue(mgTex, mgDevice);
+                texBaseType.GetField("_width", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                    .SetValue(mgTex, size);
+                texBaseType.GetField("_height", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                    .SetValue(mgTex, size);
+                typeof(TextureCube).GetField("_size", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                    .SetValue(mgTex, size);
+                texBaseType.GetField("_levelCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                    .SetValue(mgTex, mipLevels);
+                texBaseType.GetField("_format", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                    .SetValue(mgTex, SurfaceFormat.Vector4);
+                typeof(GraphicsResource).GetMethod("GetOrCreateResourceView", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
+                    .Invoke(mgTex, null);
+
+                foreach (var field in texBaseType.GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                {
+                    if (typeof(SharpDX.Direct3D11.Resource).IsAssignableFrom(field.FieldType))
+                        field?.SetValue(mgTex, dxTex);
+                    if (typeof(SharpDX.Direct3D11.ShaderResourceView).IsAssignableFrom(field.FieldType))
+                        field?.SetValue(mgTex, dxSrv);
+                }
+
+                return mgTex;
+            }
+            finally
+            {
+                for (int i = 0; i < handles.Length; i++)
+                {
+                    if (handles[i].IsAllocated)
+                        handles[i].Free();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Find SharpDX.Direct3D11.Device inside a MonoGame GraphicsDevice via reflection.
+        /// </summary>
+        private static SharpDX.Direct3D11.Device GetSharpDXDevice(GraphicsDevice mgDevice)
+        {
+            if (mgDevice == null) throw new ArgumentNullException(nameof(mgDevice));
+
+            var t = mgDevice.GetType();
+
+            // Search fields on the actual type
+            var fields = t.GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            foreach (var f in fields)
+            {
+                if (typeof(SharpDX.Direct3D11.Device).IsAssignableFrom(f.FieldType)
+                    && f.GetValue(mgDevice) is SharpDX.Direct3D11.Device val)
+                    return val;
+            }
+
+            // Search properties on the actual type
+            var props = t.GetProperties(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            foreach (var p in props)
+            {
+                if (p.GetIndexParameters().Length != 0) continue;
+                if (typeof(SharpDX.Direct3D11.Device).IsAssignableFrom(p.PropertyType)
+                    && p.GetValue(mgDevice, null) is SharpDX.Direct3D11.Device val)
+                    return val;
+            }
+
+            // Walk up base types (some MonoGame builds keep device on a base class)
+            var current = t.BaseType;
+            while (current != null)
+            {
+                foreach (var f in current.GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
+                {
+                    if (typeof(SharpDX.Direct3D11.Device).IsAssignableFrom(f.FieldType)
+                        && f.GetValue(mgDevice) is SharpDX.Direct3D11.Device val)
+                            return val;
+                }
+
+                foreach (var p in current.GetProperties(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
+                {
+                    if (p.GetIndexParameters().Length != 0) continue;
+                    if (typeof(SharpDX.Direct3D11.Device).IsAssignableFrom(p.PropertyType)
+                        && p.GetValue(mgDevice, null) is SharpDX.Direct3D11.Device val)
+                        return val;
+                }
+
+                current = current.BaseType;
+            }
+
+            throw new InvalidOperationException("Could not locate SharpDX.Direct3D11.Device on the provided MonoGame GraphicsDevice. Ensure you're running WindowsDX/SharpDX build of MonoGame.");
         }
     }
 }

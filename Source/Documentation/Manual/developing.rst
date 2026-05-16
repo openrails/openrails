@@ -101,14 +101,14 @@ Additionally to the S file format used in MSTS, Openrails is able to read the
 glTF format shape files. However there are some conceptual differences between
 the two formats that the content developers need to be aware of when creating
 such files. One of the important scpecification constraints must be noted, 
-+Z is the forward direction in glTF models, as opposed to .s, where the
-forward was -Z.
+:math:`+Z` is the forward direction in glTF models, as opposed to .s, where the
+forward was :math:`-Z`.
 
 Textures
 --------
 
-The texture format can be png, jpg or dds. The 
-`MSFT_texture_dds <https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/MSFT_texture_dds/README.md>`_
+The texture format can be png, jpg or dds. The `MSFT_texture_dds 
+<https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/MSFT_texture_dds/README.md>`_
 extension must be used for referencing a dds texture, it is not just a 
 drop-in file replacement as for the .s files. For final game content try to 
 avoid using png and jpg formats at least for the base, emissive and specular 
@@ -133,16 +133,16 @@ in the material:
 
 The max value of the emissive strength is 1.0 by the standard, but sometimes 
 a bigger glow is needed for being distinctively visible at daytime. 
-(LED panels, etc...) There is the 
-`KHR_materials_emissive_strength <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_emissive_strength/README.md>`_.
+(LED panels, etc...) There is the `KHR_materials_emissive_strength 
+<https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_emissive_strength/README.md>`_.
 extension available for achieving any strength.
 
 .. code-block:: json
 
   "extensions": { "KHR_materials_emissive_strength": { "emissiveStrength": 5.0 },
 
-Seasonal textures (like “Snow”) are managed via the 
-`KHR_materials_variants <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_variants/README.md>`_
+Seasonal textures (like “Snow”) are managed via the `KHR_materials_variants 
+<https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_variants/README.md>`_
 extension. A primitive can have multiple materials, each mapped to one or 
 more “variants”. The appropriate variant (e.g. “Snow”) will be activated 
 at load time.
@@ -182,8 +182,8 @@ node-animation.
 Level-Of-Detail
 ---------------
 
-LOD-s can be defined either as internals via the 
-`MSFT_lod <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/MSFT_lod/README.md>`_
+LOD-s can be defined either as internals via the `MSFT_lod 
+<https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/MSFT_lod/README.md>`_
 extension, or externals by creating multiple gltf files and adding the 
 suffixes of pattern <name>_LOD01.gltf, <name>_LOD02.gltf, etc… The _LOD00
 suffix for LOD 0 is optional. The author may still define the displaying 
@@ -210,8 +210,8 @@ the "extensionsUsed" array of the gltf.)
 Lights
 ------
 
-Active light sources can be attached to a gltf file as in the 
-`KHR_lights_punctual <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md>`_
+Active light sources can be attached to a gltf file as in the `KHR_lights_punctual 
+<https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md>`_
 extension. Or even a light-only gltf can be created and used in a W file:
 
 .. code-block:: json

@@ -40,7 +40,7 @@ cbuffer PerFramePS
     float4x4 ShadowMatrices[4]; // world -> light view -> light projection -> shadow map projection
     float4 ShadowMapLimit;
     float3 Fog; // linear color of fog
-    float2 Overcast; // lower saturation & brightness when overcast, x: overcast, y: ambient intensity
+    float3 Overcast; // lower saturation & brightness when overcast, x: overcast, y: ambient intensity, z: day-night blend factor
     float ZFar;
     float NumLights; // The number of the lights used
     float NightColorModifier;
@@ -140,10 +140,10 @@ SamplerState LinearClampSampler
     AddressW = Clamp;
 };
 
-const float EnvironmentTextureMipCount = 6;
+const float EnvironmentTextureMipCount = 8;
 
-TextureCube EnvironmentMapSpecularTexture;
-TextureCube EnvironmentMapDiffuseTexture;
+TextureCube<float4> EnvironmentMapDaySpecularTexture;
+TextureCube<float4> EnvironmentMapNightSpecularTexture;
 Texture2D BrdfLutTexture;
 Texture2D BonesTexture; // 4 channels of 32 bit float, containing the 4x4 matrix palette for skinned models
 Texture2D LightsTexture; // 4 channels of 32 bit float, 3 pixels in a row containing 1 light source, row 0 is always the sun/moon.
@@ -801,13 +801,24 @@ float3 _PSGetIBLSpecular(float3 specularColor, float NdotV, float perceptualRoug
     float3 brdf = BrdfLutTexture.Sample(LinearClampSampler, val).rgb;
 
     float lod = perceptualRoughness * EnvironmentTextureMipCount;
-    float3 specularLight = EnvironmentMapSpecularTexture.SampleLevel(LinearClampSampler, reflection, lod).rgb;
-	return specularLight * (specularColor * brdf.x + brdf.y);
-}
+    float3 specularLight;
 
-float3 _PSGetIBLDiffuse(float3 n)
-{
-    return EnvironmentMapDiffuseTexture.Sample(LinearClampSampler, n).rgb; // irradiance (washed out)
+    if (Overcast.z >= 0.999)
+    {
+        specularLight = EnvironmentMapDaySpecularTexture.SampleLevel(LinearClampSampler, reflection, lod).rgb;
+    }
+    else if (Overcast.z <= 0.001)
+    {
+        specularLight = EnvironmentMapNightSpecularTexture.SampleLevel(LinearClampSampler, reflection, lod).rgb;
+    }
+    else
+    {
+        float3 specularLightDay = EnvironmentMapDaySpecularTexture.SampleLevel(LinearClampSampler, reflection, lod).rgb;
+        float3 specularLightNight = EnvironmentMapNightSpecularTexture.SampleLevel(LinearClampSampler, reflection, lod).rgb;
+        specularLight = lerp(specularLightNight, specularLightDay, Overcast.z);
+    }
+
+	return specularLight * (specularColor * brdf.x + brdf.y);
 }
 
 float3 _PSGetIBLDiffuseIrradiance(float3 n)

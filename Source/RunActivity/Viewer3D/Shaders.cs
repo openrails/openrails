@@ -132,7 +132,8 @@ namespace Orts.Viewer3D
         readonly EffectParameter morphConfig;
         readonly EffectParameter morphWeights;
         // Per-frame PBR uniforms:
-        readonly EffectParameter environmentMapSpecularTexture;
+        readonly EffectParameter environmentMapDaySpecularTexture;
+        readonly EffectParameter environmentMapNightSpecularTexture;
         readonly EffectParameter brdfLutTexture;
         readonly EffectParameter numLights;
         readonly EffectParameter lightsTexture;
@@ -248,7 +249,7 @@ namespace Orts.Viewer3D
 
         public float SignalLightIntensity { set { signalLightIntensity.SetValue(value); } }
 
-        public Vector2 Overcast { set { overcast.SetValue(value); } }
+        public Vector3 Overcast { set { overcast.SetValue(value); } }
 
         public Color Fog { set { fog.SetValue(value.ToVector3()); } }
 
@@ -296,7 +297,9 @@ namespace Orts.Viewer3D
         public Vector4 SpecularFactor { set { specularFactor.SetValue(value); } }
 
 
-        public TextureCube EnvironmentMapSpecularTexture { set { environmentMapSpecularTexture.SetValue(value); } }
+        public TextureCube EnvironmentMapDaySpecularTexture { set { environmentMapDaySpecularTexture.SetValue(value); } }
+
+        public TextureCube EnvironmentMapNightSpecularTexture { set { environmentMapNightSpecularTexture.SetValue(value); } }
 
         public Texture2D BrdfLutTexture { set { brdfLutTexture.SetValue(value); } }
 
@@ -380,7 +383,8 @@ namespace Orts.Viewer3D
             hasSkin = Parameters["HasSkin"];
             morphConfig = Parameters["MorphConfig"];
             morphWeights = Parameters["MorphWeights"];
-            environmentMapSpecularTexture = Parameters["EnvironmentMapSpecularTexture"];
+            environmentMapDaySpecularTexture = Parameters["EnvironmentMapDaySpecularTexture"];
+            environmentMapNightSpecularTexture = Parameters["EnvironmentMapNightSpecularTexture"];
             brdfLutTexture = Parameters["BrdfLutTexture"];
             numLights = Parameters["NumLights"];
             lightsTexture = Parameters["LightsTexture"];

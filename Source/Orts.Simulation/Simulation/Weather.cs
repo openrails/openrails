@@ -114,7 +114,7 @@ namespace Orts.Simulation
             set => WindInstantaneousDirection = new Vector2((float)Math.Sin(value), -(float)Math.Cos(value));
         }
 
-        public void UpdateLightingFactors(Vector3 solarDirection)
+        public void UpdateLightingFactors(float dayNightFactor)
         {
             float maxVisibility = 2000f;
             float minVisibility = 50f;
@@ -123,9 +123,6 @@ namespace Orts.Simulation
             OverallDimmingFactor = Math.Max(CloudCoverFactor, fogFactor);
             DirectLightingIntensity = MathHelper.Lerp(1.0f, 0.01f, OverallDimmingFactor);
             DirectLightingPale = 1.0f - OverallDimmingFactor * 0.8f;
-
-            float sunHeight = MathHelper.Clamp(solarDirection.Y, -1f, 1f);
-            float dayNightFactor = MathHelper.Clamp((sunHeight + 0.2f) * 2.0f, 0.05f, 1.0f);
 
             // When weatherDimmingFactor is high (overcast/fog), push the ambient upward to compensate for the lost direct light.
             float weatherBoost = MathHelper.Lerp(1.0f, 1.5f, OverallDimmingFactor);

@@ -613,7 +613,7 @@ namespace Orts.Viewer3D
 
             SolarDirection = viewer.Settings.UseMSTSEnv ? viewer.World.MSTSSky.mstsskysolarDirection : viewer.World.Sky.SolarDirection;
 
-            viewer.Simulator.Weather.UpdateLightingFactors(SolarDirection);
+            viewer.Simulator.Weather.UpdateLightingFactors(viewer.MaterialManager.NightDayFactor);
 
             var lightColor = viewer.Simulator.Weather.DirectLightingPale;
             var lightIntensity = viewer.Simulator.Weather.DirectLightingIntensity;

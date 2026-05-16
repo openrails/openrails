@@ -340,6 +340,8 @@ namespace Orts.Viewer3D
 
         Matrix ShRed, ShGreen, ShBlue;
 
+        public float NightDayFactor { get; private set; }
+
         [CallOnThread("Render")]
         public SharedMaterialManager(Viewer viewer)
         {
@@ -587,12 +589,12 @@ namespace Orts.Viewer3D
             SetFrameSphericalHarmonics();
 
             if (EnvironmentMapSpecularDay == null)
-            {
-                DDSLib.DDSFromFile(Path.Combine(Viewer.Game.ContentPath, "EnvMap/specular-day.dds"), Viewer.GraphicsDevice, true, out EnvironmentMapSpecularDay, false);
-            }
+                    {
+                DDSLib.DDSFromFile(Path.Combine(Viewer.Game.ContentPath, "EnvMap/specular-day_bc6h.dds"), Viewer.GraphicsDevice, true, out EnvironmentMapSpecularDay, false);
+                    }
             if (EnvironmentMapSpecularNight == null)
             {
-                DDSLib.DDSFromFile(Path.Combine(Viewer.Game.ContentPath, "EnvMap/specular-night.dds"), Viewer.GraphicsDevice, true, out EnvironmentMapSpecularNight, false);
+                DDSLib.DDSFromFile(Path.Combine(Viewer.Game.ContentPath, "EnvMap/specular-night_bc6h.dds"), Viewer.GraphicsDevice, true, out EnvironmentMapSpecularNight, false);
             }
             if (BrdfLutTexture == null)
             {
@@ -602,30 +604,24 @@ namespace Orts.Viewer3D
                 }
             }
 
-            SceneryShader.BrdfLutTexture = BrdfLutTexture;
+            float sunHeight = MathHelper.Clamp(sunDirection.Y, -1f, 1f);
+            NightDayFactor = MathHelper.Clamp((sunHeight + 0.2f) * 2.0f, 0.05f, 1.0f);
 
-            if (sunDirection.Y > -0.05)
-            {
-                SceneryShader.EnvironmentMapSpecularTexture = EnvironmentMapSpecularDay;
-                    }
-                    else
-                    {
-                SceneryShader.EnvironmentMapSpecularTexture = EnvironmentMapSpecularNight;
-                    }
+            SceneryShader.BrdfLutTexture = BrdfLutTexture;
+            SceneryShader.EnvironmentMapDaySpecularTexture = EnvironmentMapSpecularDay;
+            SceneryShader.EnvironmentMapNightSpecularTexture = EnvironmentMapSpecularNight;
 
             SceneryShader.Fog = FogColor;
 
-            var ambientLightIntensity = Viewer.Simulator.Weather.AmbientLightingIntensity;
-
             if (Viewer.Settings.UseMSTSEnv == false)
             {
-                SceneryShader.Overcast = new Vector2(Viewer.Simulator.Weather.CloudCoverFactor, ambientLightIntensity);
+                SceneryShader.Overcast = new Vector3(Viewer.Simulator.Weather.CloudCoverFactor, Viewer.Simulator.Weather.AmbientLightingIntensity, NightDayFactor);
                 ParticleEmitterShader.SetFog(Viewer.Simulator.Weather.VisibilityM, ref SharedMaterialManager.FogColor);
                 SceneryShader.SetViewerPos(Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation), Viewer.Simulator.Weather.VisibilityM);
             }
             else
             {
-                SceneryShader.Overcast = new Vector2(Viewer.World.MSTSSky.mstsskyovercastFactor, ambientLightIntensity);
+                SceneryShader.Overcast = new Vector3(Viewer.World.MSTSSky.mstsskyovercastFactor, Viewer.Simulator.Weather.AmbientLightingIntensity, NightDayFactor);
                 ParticleEmitterShader.SetFog(Viewer.World.MSTSSky.mstsskyfogDistance, ref SharedMaterialManager.FogColor);
                 SceneryShader.SetViewerPos(Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation), Viewer.World.MSTSSky.mstsskyfogDistance);
             }
