@@ -1201,16 +1201,14 @@ namespace Orts.Viewer3D
         private static readonly Dictionary<BlendState, byte> BlendIds = new Dictionary<BlendState, byte>();
         private static readonly Dictionary<DepthStencilState, byte> DepthIds = new Dictionary<DepthStencilState, byte>();
         private static readonly Dictionary<SamplerState, byte> SamplerIds = new Dictionary<SamplerState, byte>();
-        private static readonly Dictionary<string, ushort> TextureIds = new Dictionary<string, ushort>();
-        private static readonly Dictionary<Material, ushort> MaterialIds = new Dictionary<Material, ushort>();
 
         public static byte GetEffectId(EffectTechnique effect) => GetOrCreate(EffectIds, effect);
         public static byte GetRasterizerId(RasterizerState state) => GetOrCreate(RasterIds, state);
         public static byte GetBlendId(BlendState state) => GetOrCreate(BlendIds, state);
         public static byte GetDepthStencilId(DepthStencilState state) => GetOrCreate(DepthIds, state);
         public static byte GetSamplerId(SamplerState state) => GetOrCreate(SamplerIds, state);
-        public static ushort GetTextureId(string tex) => GetOrCreate(TextureIds, tex);
-        public static ushort GetMaterialId(Material material) => GetOrCreate(MaterialIds, material);
+        public static ushort GetTextureId(Texture tex) => (ushort)(tex == null ? 0 : tex.GetHashCode() & 0xFFFF);
+        public static ushort GetMaterialId(Material material) => (ushort)(material == null ? 0 : material.GetHashCode() & 0xFFFF);
 
         private static TId GetOrCreate<TObj, TId>(Dictionary<TObj, TId> dict, TObj obj)
             where TObj : class
@@ -1222,11 +1220,6 @@ namespace Orts.Viewer3D
             TId newId = (TId)Convert.ChangeType(dict.Count, typeof(TId));
             dict[obj] = newId;
             return newId;
-        }
-
-        public static void ClearCache()
-        {
-            MaterialIds.Clear();
         }
     }
 }

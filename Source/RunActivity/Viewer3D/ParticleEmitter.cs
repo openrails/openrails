@@ -459,7 +459,7 @@ namespace Orts.Viewer3D
             Technique = Viewer.MaterialManager.ParticleEmitterShader.Techniques["ParticleEmitterTechnique"];
             
             SetSortingEffectId(Technique);
-            SetSortingTextureId(textureName);
+            SetSortingTextureId(Texture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

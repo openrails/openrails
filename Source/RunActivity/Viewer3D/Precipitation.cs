@@ -513,7 +513,7 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.PrecipitationShader;
-            shader.CurrentTechnique = shader.Techniques["Precipitation"];
+            shader.CurrentTechnique = Technique;
 
             shader.LightVector.SetValue(Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.SolarDirection);
             shader.ParticleSize.SetValue(1f);
@@ -523,18 +523,18 @@ namespace Orts.Viewer3D
                 texture = Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? SnowTexture :
                     Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Rain ? RainTexture :
                     Viewer.Simulator.Weather.PrecipitationLiquidity == 0 ? SnowTexture : RainTexture;
-                    SetSortingTextureId("RainTexture");
             }
             else
             {
                 var precipitation_TexIndex = (int)(Viewer.Simulator.Weather.PrecipitationLiquidity * 11);
                 texture = DynamicPrecipitationTexture[precipitation_TexIndex];
-                SetSortingTextureId($"Raindrop{precipitation_TexIndex}");
             }
             if (shader.PrecipitationTextureCache != texture) shader.PrecipitationTex.SetValue(shader.PrecipitationTextureCache = texture);
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+
+            SetSortingTextureId(texture);
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)

@@ -1052,7 +1052,7 @@ namespace Orts.Viewer3D
             Technique = Viewer.MaterialManager.LightGlowShader.Techniques["LightGlow"];
 
             SetSortingEffectId(Technique);
-            SetSortingTextureId(textureName);
+            SetSortingTextureId(LightGlowTexture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

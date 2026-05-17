@@ -106,13 +106,13 @@ namespace Orts.Viewer3D
                             if (File.Exists(dds))
                             {
                                 DDSLib.DDSFromFile(dds, GraphicsDevice, true, out Texture2D texture, srgb);
-                                texture.Name = path;
+                                if (Debugger.IsAttached) texture.Name = path;
                                 return Textures[textureKey] = texture;
                             }
                             if (File.Exists(ace))
                             {
                                 var texture = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, ace);
-                                texture.Name = path;
+                                if (Debugger.IsAttached) texture.Name = path;
                                 return Textures[textureKey] = texture;
                             }
                             if (defaultTexture != SharedMaterialManager.MissingTexture)
@@ -144,7 +144,7 @@ namespace Orts.Viewer3D
                         var texture = srgb
                             ? GetSrgbTexture(GraphicsDevice, stream)
                             : Texture2D.FromStream(GraphicsDevice, stream);
-                        texture.Name = path;
+                        if (Debugger.IsAttached) texture.Name = path;
                         //return Textures[textureKey] = texture; // FIXME: loads a wrong texture for some glTF files.
                         return texture;
                     }
@@ -747,7 +747,7 @@ namespace Orts.Viewer3D
             SortingKey |= ((ulong)(id & 0xFF) << 32);
         }
 
-        protected void SetSortingTextureId(string texture)
+        protected void SetSortingTextureId(Microsoft.Xna.Framework.Graphics.Texture texture)
         {
             var id = RenderSortHelper.GetTextureId(texture);
             SortingKey &= ~(0xFFFFUL << 16);
@@ -775,7 +775,7 @@ namespace Orts.Viewer3D
         public BasicMaterial(Viewer viewer, string key)
             : base(viewer, key)
         {
-            SetSortingTextureId("Basic");
+            SetSortingMaterialId(this);
             SetSortingBlendStateId(BlendState.Opaque);
         }
 
@@ -791,7 +791,7 @@ namespace Orts.Viewer3D
         public BasicBlendedMaterial(Viewer viewer, string key)
             : base(viewer, key)
         {
-            SetSortingTextureId("BasicBlended");
+            SetSortingMaterialId(this);
             SetSortingBlendStateId(BlendState.NonPremultiplied);
         }
 
@@ -1033,7 +1033,7 @@ namespace Orts.Viewer3D
             SetSortingDepthStencilStateId(DepthStencilStateOpaquePass);
             SetSortingRasterizerStateId(RasterizerState);
             SetSortingSamplerStateId(SamplerStateBaseColor);
-            SetSortingTextureId(Texture.Name);
+            SetSortingTextureId(Texture);
         }
 
         public bool LoadNightTexture()
@@ -1528,7 +1528,7 @@ namespace Orts.Viewer3D
                                     var texture2D = srgbColors
                                         ? Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream)
                                         : Texture2D.FromStream(Viewer.GraphicsDevice, stream);
-                                    texture2D.Name = imagePath;
+                                    if (Debugger.IsAttached) texture2D.Name = imagePath;
                                     return texture2D;
                                 }
                             }
@@ -1548,7 +1548,7 @@ namespace Orts.Viewer3D
                                 var texture2D = srgbColors
                                     ? Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream)
                                     : Texture2D.FromStream(Viewer.GraphicsDevice, stream);
-                                texture2D.Name = $"{ShapeFilePath}:{image.BufferView}";
+                                if (Debugger.IsAttached) texture2D.Name = $"{ShapeFilePath}:{image.BufferView}";
                                 return texture2D;
                             }
                         }
@@ -2099,7 +2099,6 @@ namespace Orts.Viewer3D
             : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0)
         {
             HierarchyIndex = hierarchyIndex;
-            SetSortingTextureId("Screen");
         }
 
         public void Set2DRenderer(RollingStock.CabViewControlRenderer cabViewControlRenderer)
@@ -2107,6 +2106,7 @@ namespace Orts.Viewer3D
             ScreenRenderer = cabViewControlRenderer;
             Texture = new RenderTarget2D(Viewer.GraphicsDevice,
                 (int)ScreenRenderer.Control.Width, (int)ScreenRenderer.Control.Height, false, SurfaceFormat.Color, DepthFormat.None, 8, RenderTargetUsage.DiscardContents);
+            SetSortingTextureId(Texture);
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -2251,7 +2251,7 @@ namespace Orts.Viewer3D
             Font = Viewer.WindowManager.TextManager.GetScaled("Arial", 12, System.Drawing.FontStyle.Bold, 1);
             BigFont = Viewer.WindowManager.TextManager.GetScaled("Arial", 24, System.Drawing.FontStyle.Bold, 2);
             
-            SetSortingTextureId("White");
+            SetSortingTextureId(Texture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

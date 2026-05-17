@@ -175,7 +175,7 @@ namespace Orts.Viewer3D
             SetSortingDepthStencilStateId(DepthStencilState.Default);
             SetSortingRasterizerStateId(RasterizerState.CullCounterClockwise);
             SetSortingSamplerStateId(SamplerState.LinearWrap);
-            SetSortingTextureId(waterTexturePath);
+            SetSortingTextureId(WaterTexture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

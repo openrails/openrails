@@ -418,7 +418,7 @@ namespace Orts.Viewer3D
             Technique = Viewer.MaterialManager.SceneryShader.Techniques["Forest"];
 
             SetSortingEffectId(Technique);
-            SetSortingTextureId(treeTexture);
+            SetSortingTextureId(TreeTexture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

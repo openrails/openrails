@@ -526,7 +526,7 @@ namespace Orts.Viewer3D
             SetSortingEffectId(Technique);
             SetSortingBlendStateId(BlendState.NonPremultiplied);
             SetSortingRasterizerStateId(RasterizerState.CullCounterClockwise);
-            SetSortingTextureId(textures[0]);
+            SetSortingTextureId(PatchTexture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -596,7 +596,6 @@ namespace Orts.Viewer3D
         {
             SetSortingBlendStateId(BlendState.Opaque);
             SetSortingRasterizerStateId(RasterizerState.CullNone);
-            SetSortingTextureId(terrainTexture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

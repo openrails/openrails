@@ -708,7 +708,7 @@ namespace Orts.Viewer3D
             Technique = SceneryShader.Techniques["SignalLight"];
 
             SetSortingEffectId(Technique);
-            SetSortingTextureId(textureName);
+            SetSortingTextureId(Texture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
