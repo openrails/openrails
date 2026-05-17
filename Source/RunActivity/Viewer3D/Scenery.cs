@@ -565,7 +565,9 @@ namespace Orts.Viewer3D
                     if (shape.GetType() != typeof(StaticShape) && shape.GetType() != typeof(StaticTrackShape))
                         continue;
 
-                    if (shape.SharedShape is GltfShape gltfShape && gltfShape.HasLights())
+                    if (shape.SharedShape is GltfShape gltfShape
+                        && (gltfShape.HasLights() ||
+                            gltfShape.LodControls.Any(lod => lod.DistanceLevels.Any(dl => dl.SubObjects.Any(so => so.ShapePrimitives.Any(sp => sp.Material is PbrMaterial mat && mat.HasNormalTexture))))))
                         continue;
 
                     // Must have a file path so we can collapse instances on something.

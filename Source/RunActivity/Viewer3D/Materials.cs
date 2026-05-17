@@ -1482,6 +1482,8 @@ namespace Orts.Viewer3D
             SpecularColorTexture = SpecularColorTexture ?? specularColor ?? GetTexture(SpecularColorTextureIndex, SharedMaterialManager.WhiteTexture, true);
         }
 
+        public bool HasNormalTexture => NormalTextureIndex != -1;
+
         Texture2D GetTexture(int? textureIndex, Texture2D defaultTexture, bool srgbColors)
         {
             if (textureIndex != null && textureIndex >= 0)
