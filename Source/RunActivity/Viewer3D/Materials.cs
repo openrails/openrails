@@ -1238,6 +1238,9 @@ namespace Orts.Viewer3D
         protected float SpecularFactor;
         protected Vector3 SpecularColorFactor;
         protected float Ior;
+        protected Vector2[] UvScale = Enumerable.Repeat(Vector2.One, 2).ToArray();
+        protected Vector2[] UvOffset = new Vector2[2];
+        protected float[] UvRotation = new float[2];
 
         bool EmissiveFollowsDayNightCycle = false;
         readonly Gltf GltfFile;
@@ -1293,6 +1296,12 @@ namespace Orts.Viewer3D
         public void SetSpecularFactor(float value) => SpecularFactor = value;
         public void SetSpecularColorFactor(Vector3 value) => SpecularColorFactor = value;
         public void SetIor(float value) => Ior = value;
+        public void SetUv0Scale(Vector2 value) => UvScale[0] = value;
+        public void SetUv1Scale(Vector2 value) => UvScale[1] = value;
+        public void SetUv0Offset(Vector2 value) => UvOffset[0] = value;
+        public void SetUv1Offset(Vector2 value) => UvOffset[1] = value;
+        public void SetUv0Rotation(float value) => UvRotation[0] = value;
+        public void SetUv1Rotation(float value) => UvRotation[1] = value;
 
         static readonly Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState> GltfSamplerStates = new Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState>()
         {
@@ -1401,14 +1410,45 @@ namespace Orts.Viewer3D
             (TexCoords1.Y, MetallicRoughnessTextureIndex, SamplerStateMetallicRoughness) = GetTextureInfo(gltfFile, msftRmoInfo ?? msftOrmInfo ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture);
             (TexCoords1.Z, NormalTextureIndex, SamplerStateNormal) = GetTextureInfo(gltfFile, msftNormalInfo ?? material.NormalTexture);
             (TexCoords1.W, EmissiveTextureIndex, SamplerStateEmissive) = GetTextureInfo(gltfFile, material.EmissiveTexture);
-            (TexCoords2.W, OcclusionTextureIndex, SamplerStateOcclusion) = msftOrmInfo != null
-                ? GetTextureInfo(gltfFile, msftOrmInfo)
-                : GetTextureInfo(gltfFile, material.OcclusionTexture);
             (TexCoords2.X, ClearcoatTextureIndex, SamplerStateClearcoat) = GetTextureInfo(gltfFile, clearcoat?.ClearcoatTexture);
             (TexCoords2.Y, ClearcoatRoughnessTextureIndex, SamplerStateClearcoatRoughness) = GetTextureInfo(gltfFile, clearcoat?.ClearcoatRoughnessTexture);
             (TexCoords2.Z, ClearcoatNormalTextureIndex, SamplerStateClearcoatNormal) = GetTextureInfo(gltfFile, clearcoat?.ClearcoatNormalTexture);
+            (TexCoords2.W, OcclusionTextureIndex, SamplerStateOcclusion) = msftOrmInfo != null
+                ? GetTextureInfo(gltfFile, msftOrmInfo)
+                : GetTextureInfo(gltfFile, material.OcclusionTexture);
             (TexCoords3.X, SpecularTextureIndex, SamplerStateSpecular) = GetTextureInfo(gltfFile, specular?.SpecularTexture);
             (TexCoords3.Y, SpecularColorTextureIndex, SamplerStateSpecularColor) = GetTextureInfo(gltfFile, specular?.SpecularColorTexture);
+
+            if (gltfFile.ExtensionsUsed?.Contains("KHR_texture_transform") ?? false)
+            {
+                KHR_texture_transform textureTransform = null;
+
+                // A limitation with this approach is that only the texcoords_0 and texcoords_1 can be transformed individually, not every texture.
+                // Also a transform will affect all textures using the same texcoord set. But the alternative would be to transfer the below values for all textures
+                // to the shader via uniforms, which would be more costly and complex, especially considering that many textures may not even use transforms.
+                void setTextureTransform(ref float texCoords, Dictionary<string, object> extensions)
+                {
+                    if (extensions?.TryGetValue("KHR_texture_transform", out extension) ?? false)
+                    {
+                        textureTransform = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_texture_transform>(extension.ToString(), GltfShape.PopulateDefaults);
+                        if (textureTransform.TexCoord is int texCoord) texCoords = texCoord;
+                        UvScale[(int)texCoords] = new Vector2(textureTransform.Scale[0], textureTransform.Scale[1]);
+                        UvOffset[(int)texCoords] = new Vector2(textureTransform.Offset[0], textureTransform.Offset[1]);
+                        UvRotation[(int)texCoords] = textureTransform.Rotation;
+                    }
+                }
+
+                setTextureTransform(ref TexCoords1.X, material.PbrMetallicRoughness?.BaseColorTexture?.Extensions);
+                setTextureTransform(ref TexCoords1.Y, (msftRmoInfo ?? msftOrmInfo ?? material.PbrMetallicRoughness?.MetallicRoughnessTexture)?.Extensions);
+                setTextureTransform(ref TexCoords1.Z, material.NormalTexture?.Extensions);
+                setTextureTransform(ref TexCoords1.W, material.EmissiveTexture?.Extensions);
+                setTextureTransform(ref TexCoords2.X, clearcoat?.ClearcoatTexture?.Extensions);
+                setTextureTransform(ref TexCoords2.Y, clearcoat?.ClearcoatRoughnessTexture?.Extensions);
+                setTextureTransform(ref TexCoords2.Z, clearcoat?.ClearcoatNormalTexture?.Extensions);
+                setTextureTransform(ref TexCoords2.W, msftOrmInfo != null ? msftOrmInfo?.Extensions : material.OcclusionTexture?.Extensions);
+                setTextureTransform(ref TexCoords3.X, specular?.SpecularTexture?.Extensions);
+                setTextureTransform(ref TexCoords3.Y, specular?.SpecularColorTexture?.Extensions);
+            }
 
             if (NormalTextureIndex == -1)
                 TexCoords1.Z = -1;
@@ -1608,6 +1648,10 @@ namespace Orts.Viewer3D
 
             if (lightsOn && SphericalHarmonics != null)
                 Viewer.MaterialManager.SetSphericalHarmonics(SphericalHarmonics);
+
+            shader.TextureScale = new Vector4(UvScale[0], UvScale[1].X, UvScale[1].Y);
+            shader.TextureOffset = new Vector4(UvOffset[0], UvOffset[1].X, UvOffset[1].Y);
+            shader.TextureRotation = new Vector2(-UvRotation[0], -UvRotation[1]);
 
             var transparentPass = previousMaterial != null;
 
