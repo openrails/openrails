@@ -142,6 +142,10 @@ namespace Orts.Viewer3D
         readonly EffectParameter shGreen;
         readonly EffectParameter shBlue;
 
+        readonly EffectParameter textureScale;
+        readonly EffectParameter textureOffset;
+        readonly EffectParameter textureRotation;
+
         Vector3 _eyeVector;
         Vector3 _sunDirection;
         bool _imageTextureIsNight;
@@ -331,6 +335,12 @@ namespace Orts.Viewer3D
 
         public Matrix ShBlue { set { shBlue.SetValue(value); } }
 
+        public Vector4 TextureScale { set { textureScale.SetValue(value); } }
+
+        public Vector4 TextureOffset { set { textureOffset.SetValue(value); } }
+
+        public Vector2 TextureRotation { set { textureRotation.SetValue(value); } }
+
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
         {
@@ -391,6 +401,9 @@ namespace Orts.Viewer3D
             shRed = Parameters["ShRed"];
             shGreen = Parameters["ShGreen"];
             shBlue = Parameters["ShBlue"];
+            textureScale = Parameters["TextureScale"];
+            textureOffset = Parameters["TextureOffset"];
+            textureRotation = Parameters["TextureRotation"];
         }
     }
 

@@ -82,6 +82,9 @@ cbuffer PerMaterial
     float4x4 World; // model -> world [max number of bones]
     float4 MorphConfig[2]; // 0.x: POS, 0.y: NORM, 0.z: TANG, 0.w: TEX0, 1.x: TEX1, 1.y: COL0, 1.z: targets count, 1.w: attributes count
     float4 MorphWeights[2];
+    float4 TextureScale; // xy: texCoords_0, zw: texCoords_1
+    float4 TextureOffset; // xy: texCoords_0, zw: texCoords_1
+    float2 TextureRotation; // x: texCoords_0, y: texCoords_1
     bool HasSkin;
     float ZBias; // to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1
     
@@ -305,6 +308,28 @@ void _VSLightsAndShadows(in float4 InPosition, in float4x4 WorldTransform, in fl
 	shadow = mul(InPosition, WorldTransform);
 }
 
+void _VSRotateUV(inout float2 uv, float rotation)
+{
+    if (rotation == 0.0)
+        return;
+    
+    float2 c = uv;
+    float a = sin(rotation);
+    float b = cos(rotation);
+
+    uv = float2(c.x * b - c.y * a, c.x * a + c.y * b);
+}
+
+void _VSTransformUV(inout float4 texCoords)
+{
+    texCoords *= TextureScale;
+
+    _VSRotateUV(texCoords.xy, TextureRotation.x);
+    _VSRotateUV(texCoords.zw, TextureRotation.y);
+
+    texCoords += TextureOffset;
+}
+
 float4x4 _VSBoneMatrix(min16uint index)
 {
     float4 row1 = BonesTexture.Load(int3(0, index, 0));
@@ -355,7 +380,6 @@ VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
 	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
 	Out.TexCoords.xy = In.TexCoords;
 
-
 	return Out;
 }
 
@@ -371,6 +395,8 @@ VERTEX_OUTPUT_PBR VSPbrBaseColorMap(in VERTEX_INPUT In)
 
 	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
 	Out.TexCoords.xy = In.TexCoords;
+    Out.TexCoords.zw = (float2) 0;
+    _VSTransformUV(Out.TexCoords);
 
 	Out.Color = float4(1, 1, 1, 1);
 	Out.Tangent.xyz = float3(-2, 0, 0);
@@ -395,6 +421,7 @@ VERTEX_OUTPUT_PBR VSNormalMap(in VERTEX_INPUT_NORMALMAP In)
 	Out.Color = In.Color;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.TexCoords.zw = In.TexCoordsPbr;
+    _VSTransformUV(Out.TexCoords);
 
 	return Out;
 }
@@ -416,6 +443,7 @@ VERTEX_OUTPUT_PBR VSSkinned(in VERTEX_INPUT_SKINNED In)
 	Out.Color = In.Color;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.TexCoords.zw = In.TexCoordsPbr;
+    _VSTransformUV(Out.TexCoords);
 
 	return Out;
 }
@@ -432,6 +460,7 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
     Out.Color = In.Color;
     Out.TexCoords.xy = In.TexCoords;
     Out.TexCoords.zw = In.TexCoordsPbr;
+    _VSTransformUV(Out.TexCoords);
 
     int attrCount = MorphConfig[1].w;
 

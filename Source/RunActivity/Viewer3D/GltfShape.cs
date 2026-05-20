@@ -47,6 +47,7 @@ namespace Orts.Viewer3D
             "KHR_materials_specular",
             "KHR_materials_variants",
             "KHR_node_visibility",
+            "KHR_texture_transform",
             "KHR_lights_punctual",
             "EXT_lights_image_based",
             "MSFT_lod",
@@ -1914,6 +1915,16 @@ namespace Orts.Viewer3D
     {
         public EXT_lights_image_based_light[] Lights { get; set; }
         public int Light { get; set; }
+    }
+
+    public class KHR_texture_transform
+    {
+        [DefaultValue(new[] { 1f, 1f })]
+        public float[] Scale { get; set; }
+        [DefaultValue(new[] { 0f, 0f })]
+        public float[] Offset { get; set; }
+        public float Rotation { get; set; }
+        public int? TexCoord { get; set; }
     }
 
     public class EXT_lights_image_based_light
