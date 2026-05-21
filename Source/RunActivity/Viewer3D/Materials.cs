@@ -1296,12 +1296,36 @@ namespace Orts.Viewer3D
         public void SetSpecularFactor(float value) => SpecularFactor = value;
         public void SetSpecularColorFactor(Vector3 value) => SpecularColorFactor = value;
         public void SetIor(float value) => Ior = value;
-        public void SetUv0Scale(Vector2 value) => UvScale[0] = value;
-        public void SetUv1Scale(Vector2 value) => UvScale[1] = value;
-        public void SetUv0Offset(Vector2 value) => UvOffset[0] = value;
-        public void SetUv1Offset(Vector2 value) => UvOffset[1] = value;
-        public void SetUv0Rotation(float value) => UvRotation[0] = value;
-        public void SetUv1Rotation(float value) => UvRotation[1] = value;
+        public void SetBaseColorTextureRotation(float value) => UvRotation[(int)TexCoords1.X] = value;
+        public void SetBaseColorTextureScale(Vector2 value) => UvScale[(int)TexCoords1.X] = value;
+        public void SetBaseColorTextureOffset(Vector2 value) => UvOffset[(int)TexCoords1.X] = value;
+        public void SetMetallicRoughnessTextureRotation(float value) => UvRotation[(int)TexCoords1.Y] = value;
+        public void SetMetallicRoughnessTextureScale(Vector2 value) => UvScale[(int)TexCoords1.Y] = value;
+        public void SetMetallicRoughnessTextureOffset(Vector2 value) => UvOffset[(int)TexCoords1.Y] = value;
+        public void SetNormalTextureRotation(float value) => UvRotation[(int)TexCoords1.Z] = value;
+        public void SetNormalTextureScale(Vector2 value) => UvScale[(int)TexCoords1.Z] = value;
+        public void SetNormalTextureOffset(Vector2 value) => UvOffset[(int)TexCoords1.Z] = value;
+        public void SetEmissiveTextureRotation(float value) => UvRotation[(int)TexCoords1.W] = value;
+        public void SetEmissiveTextureScale(Vector2 value) => UvScale[(int)TexCoords1.W] = value;
+        public void SetEmissiveTextureOffset(Vector2 value) => UvOffset[(int)TexCoords1.W] = value;
+        public void SetClearcoatTextureRotation(float value) => UvRotation[(int)TexCoords2.X] = value;
+        public void SetClearcoatTextureScale(Vector2 value) => UvScale[(int)TexCoords2.X] = value;
+        public void SetClearcoatTextureOffset(Vector2 value) => UvOffset[(int)TexCoords2.X] = value;
+        public void SetClearcoatRoughnessTextureRotation(float value) => UvRotation[(int)TexCoords2.Y] = value;
+        public void SetClearcoatRoughnessTextureScale(Vector2 value) => UvScale[(int)TexCoords2.Y] = value;
+        public void SetClearcoatRoughnessTextureOffset(Vector2 value) => UvOffset[(int)TexCoords2.Y] = value;
+        public void SetClearcoatNormalTextureRotation(float value) => UvRotation[(int)TexCoords2.Z] = value;
+        public void SetClearcoatNormalTextureScale(Vector2 value) => UvScale[(int)TexCoords2.Z] = value;
+        public void SetClearcoatNormalTextureOffset(Vector2 value) => UvOffset[(int)TexCoords2.Z] = value;
+        public void SetOcclusionTextureRotation(float value) => UvRotation[(int)TexCoords2.W] = value;
+        public void SetOcclusionTextureScale(Vector2 value) => UvScale[(int)TexCoords2.W] = value;
+        public void SetOcclusionTextureOffset(Vector2 value) => UvOffset[(int)TexCoords2.W] = value;
+        public void SetSpecularTextureRotation(float value) => UvRotation[(int)TexCoords3.X] = value;
+        public void SetSpecularTextureScale(Vector2 value) => UvScale[(int)TexCoords3.X] = value;
+        public void SetSpecularTextureOffset(Vector2 value) => UvOffset[(int)TexCoords3.X] = value;
+        public void SetSpecularColorTextureRotation(float value) => UvRotation[(int)TexCoords3.Y] = value;
+        public void SetSpecularColorTextureScale(Vector2 value) => UvScale[(int)TexCoords3.Y] = value;
+        public void SetSpecularColorTextureOffset(Vector2 value) => UvOffset[(int)TexCoords3.Y] = value;
 
         static readonly Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState> GltfSamplerStates = new Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState>()
         {

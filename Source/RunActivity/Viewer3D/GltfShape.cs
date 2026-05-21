@@ -576,7 +576,7 @@ namespace Orts.Viewer3D
                             if (!Accessors.ContainsKey(attributes.Current.Value) && !VertexBufferBindings.ContainsKey(bindingKey))
                             {
                                 VertexElements.Add(new VertexElement(gltfFile.Accessors[attributes.Current.Value].ByteOffset - previousOffset,
-                                    GetVertexElementFormat(gltfFile.Accessors[attributes.Current.Value], shape.MsfsFlavoured), semantic, index));
+                                    GetVertexElementFormat(gltfFile.Accessors[attributes.Current.Value], shape.MsfsFlavoured, semantic), semantic, index));
                                 if (Debugger.IsAttached) DebugName = (DebugName != "" ? DebugName + "," : "") + attributes.Current.Key;
                             }
                             // Multiple accessors to same bufferview with same semantic. Will reuse the VertexBuffer:
@@ -738,6 +738,7 @@ namespace Orts.Viewer3D
                                         case PointerTypes.FloatVector:
                                         case PointerTypes.Float: channel.OutputFloats = outputFloats.ToArray(); break;
                                         case PointerTypes.Quaternion: channel.OutputQuaternion = MemoryMarshal.Cast<float, Quaternion>(outputFloats).ToArray(); break;
+                                        case PointerTypes.Vector2: channel.OutputVector2 = MemoryMarshal.Cast<float, Vector2>(outputFloats).ToArray(); break;
                                         case PointerTypes.Vector3: channel.OutputVector3 = MemoryMarshal.Cast<float, Vector3>(outputFloats).ToArray(); break;
                                         case PointerTypes.Vector4: channel.OutputVector4 = MemoryMarshal.Cast<float, Vector4>(outputFloats).ToArray(); break;
                                         default: break;
@@ -838,7 +839,37 @@ namespace Orts.Viewer3D
                                 case "/extensions/KHR_materials_specular/specularFactor": channel.SetTargetFloat = material.SetSpecularFactor; break;
                                 case "/extensions/KHR_materials_specular/specularColorFactor": channel.SetTargetVector3 = material.SetSpecularColorFactor; break;
                                 case "/extensions/KHR_materials_ior/ior": channel.SetTargetFloat = material.SetIor; break;
-                                default: channel.SetTargetFloat = null; channel.SetTargetVector3 = null; channel.SetTargetVector4 = null; break;
+                                case "/pbrMetallicRoughness/baseColorTexture/extensions/KHR_texture_transform/rotation": channel.SetTargetFloat = material.SetBaseColorTextureRotation; break;
+                                case "/pbrMetallicRoughness/baseColorTexture/extensions/KHR_texture_transform/scale": channel.SetTargetVector2 = material.SetBaseColorTextureScale; break;
+                                case "/pbrMetallicRoughness/baseColorTexture/extensions/KHR_texture_transform/offset": channel.SetTargetVector2 = material.SetBaseColorTextureOffset; break;
+                                case "/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/rotation": channel.SetTargetFloat = material.SetMetallicRoughnessTextureRotation; break;
+                                case "/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/scale": channel.SetTargetVector2 = material.SetMetallicRoughnessTextureScale; break;
+                                case "/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/offset": channel.SetTargetVector2 = material.SetMetallicRoughnessTextureOffset; break;
+                                case "/occlusionTexture/extensions/KHR_texture_transform/rotation": channel.SetTargetFloat = material.SetOcclusionTextureRotation; break;
+                                case "/occlusionTexture/extensions/KHR_texture_transform/scale": channel.SetTargetVector2 = material.SetOcclusionTextureScale; break;
+                                case "/occlusionTexture/extensions/KHR_texture_transform/offset": channel.SetTargetVector2 = material.SetOcclusionTextureOffset; break;
+                                case "/normalTexture/extensions/KHR_texture_transform/rotation": channel.SetTargetFloat = material.SetNormalTextureRotation; break;
+                                case "/normalTexture/extensions/KHR_texture_transform/scale": channel.SetTargetVector2 = material.SetNormalTextureScale; break;
+                                case "/normalTexture/extensions/KHR_texture_transform/offset": channel.SetTargetVector2 = material.SetNormalTextureOffset; break;
+                                case "/emissiveTexture/extensions/KHR_texture_transform/rotation": channel.SetTargetFloat = material.SetEmissiveTextureRotation; break;
+                                case "/emissiveTexture/extensions/KHR_texture_transform/scale": channel.SetTargetVector2 = material.SetEmissiveTextureScale; break;
+                                case "/emissiveTexture/extensions/KHR_texture_transform/offset": channel.SetTargetVector2 = material.SetEmissiveTextureOffset; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatTexture/extensions/KHR_texture_transform/rotation": channel.SetTargetFloat = material.SetClearcoatTextureRotation; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatTexture/extensions/KHR_texture_transform/scale": channel.SetTargetVector2 = material.SetClearcoatTextureScale; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatTexture/extensions/KHR_texture_transform/offset": channel.SetTargetVector2 = material.SetClearcoatTextureOffset; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatRoughnessTexture/extensions/KHR_texture_transform/rotation": channel.SetTargetFloat = material.SetClearcoatRoughnessTextureRotation; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatRoughnessTexture/extensions/KHR_texture_transform/scale": channel.SetTargetVector2 = material.SetClearcoatRoughnessTextureScale; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatRoughnessTexture/extensions/KHR_texture_transform/offset": channel.SetTargetVector2 = material.SetClearcoatRoughnessTextureOffset; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatNormalTexture/extensions/KHR_texture_transform/rotation": channel.SetTargetFloat = material.SetClearcoatNormalTextureRotation; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatNormalTexture/extensions/KHR_texture_transform/scale": channel.SetTargetVector2 = material.SetClearcoatNormalTextureScale; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatNormalTexture/extensions/KHR_texture_transform/offset": channel.SetTargetVector2 = material.SetClearcoatNormalTextureOffset; break;
+                                case "/extensions/KHR_materials_specular/specularTexture/extensions/KHR_texture_transform/rotation": channel.SetTargetFloat = material.SetSpecularTextureRotation; break;
+                                case "/extensions/KHR_materials_specular/specularTexture/extensions/KHR_texture_transform/scale": channel.SetTargetVector2 = material.SetSpecularTextureScale; break;
+                                case "/extensions/KHR_materials_specular/specularTexture/extensions/KHR_texture_transform/offset": channel.SetTargetVector2 = material.SetSpecularTextureOffset; break;
+                                case "/extensions/KHR_materials_specular/specularColorTexture/extensions/KHR_texture_transform/rotation": channel.SetTargetFloat = material.SetSpecularColorTextureRotation; break;
+                                case "/extensions/KHR_materials_specular/specularColorTexture/extensions/KHR_texture_transform/scale": channel.SetTargetVector2 = material.SetSpecularColorTextureScale; break;
+                                case "/extensions/KHR_materials_specular/specularColorTexture/extensions/KHR_texture_transform/offset": channel.SetTargetVector2 = material.SetSpecularColorTextureOffset; break;
+                                default: channel.SetTargetFloat = null; channel.SetTargetVector2 = null; channel.SetTargetVector3 = null; channel.SetTargetVector4 = null; break;
                             }
                         }
                         else if (isMatch("/extensions/KHR_lights_punctual/lights/", out index, out property))
@@ -948,33 +979,51 @@ namespace Orts.Viewer3D
                 }
             }
 
-            VertexElementFormat GetVertexElementFormat(Accessor accessor, bool msfsFlavoured = false)
+            VertexElementFormat GetVertexElementFormat(Accessor accessor, bool msfsFlavoured, VertexElementUsage semantic)
             {
-                // UNSIGNED_INT is reserved for the index buffers.
+                if (msfsFlavoured)
+                {
+                    // MSFS twisted out, reversed, non-standard definitions
+                    // non-normalized, VEC3 FLOAT, VEC4 BYTE, VEC2 SHORT, VEC4 USHORT, SCALAR FLOAT
+                    switch (semantic)
+                    {
+                        case VertexElementUsage.BlendWeight when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT & accessor.Normalized:
+                        case VertexElementUsage.BlendWeight when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT & accessor.Normalized:
+                            return VertexElementFormat.NormalizedShort4; // Needs shader adjustment because it is unsigned short in fact: * 0.5 + 0.5 to denormalize from [-1,1] to [0,1]
+                        case VertexElementUsage.Color when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
+                        case VertexElementUsage.Color when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT:
+                            return VertexElementFormat.NormalizedShort4; // Needs shader adjustment: * (32767.0 / 255.0). Trimmed down to UNORM8, like if it was a normalized BYTE -> .Color
+                        case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT & accessor.Type == Accessor.TypeEnum.VEC2:
+                        case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT & accessor.Type == Accessor.TypeEnum.VEC2:
+                            return VertexElementFormat.HalfVector2; // MSFS texcoords: normalized flag ignored, SHORT & UNSIGNED_SHORT treated as same
+                    }
+                    switch (accessor.Type)
+                    {
+                        case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: // MSFS texcoords: normalized flag ignored, SHORT & UNSIGNED_SHORT treated as same
+                        case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return VertexElementFormat.HalfVector2;
+                        case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE: // MSFS normals & tangents: normalized flag ignored, BYTE & UNSIGNED_BYTE treated as same, packed, only 3 components are used
+                        case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return VertexElementFormat.Color;
+                        case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: // MSFS weights: normalized flag set(!), but SHORT & UNSIGNED_SHORT treated as same
+                        case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return accessor.Normalized ? VertexElementFormat.Short4 : VertexElementFormat.HalfVector4;
+                    }
+                }
+
+                // Standard glTF, but MonoGame doesn't natively support the normalized unsigned types (especially the UNSIGNED_SHORT).
                 switch (accessor.Type)
                 {
                     case Accessor.TypeEnum.SCALAR when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Single;
 
-                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
-                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
                     case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector2;
 
                     case Accessor.TypeEnum.VEC3 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector3;
 
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT && !msfsFlavoured: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
                     case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector4;
-
-                    // MSFS twisted out, reversed definitions:
-                    // non-normalized, VEC3 FLOAT, VEC4 BYTE, VEC2 SHORT, VEC4 USHORT, SCALAR FLOAT
-                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT && msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Short2 : VertexElementFormat.HalfVector2;
-                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT && msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Short2 : VertexElementFormat.HalfVector2;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE && msfsFlavoured: return VertexElementFormat.Color;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE && msfsFlavoured: return VertexElementFormat.Color;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT && msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Short4 : VertexElementFormat.HalfVector4;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT && msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Short4 : VertexElementFormat.HalfVector4;
 
                     default: Trace.TraceWarning($"glTF: Unknown vertex attribute format is found in file {GltfFileName}"); return VertexElementFormat.Single;
                 }
@@ -1554,6 +1603,9 @@ namespace Orts.Viewer3D
                     amount = MathHelper.Clamp((time - time1) / (time2 - time1), 0, 1);
 
                 // See the formula for the cubic spline: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic
+                channel.SetTargetVector2?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                    ? Vector2.Hermite(channel.OutputVector2[Property(frame1)], channel.OutputVector2[OutTangent(frame2)], channel.OutputVector2[Property(frame2)], channel.OutputVector2[InTangent(frame2)], amount)
+                    : Vector2.Lerp(channel.OutputVector2[frame1], channel.OutputVector2[frame2], amount));
                 channel.SetTargetVector3?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
                     ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
                     : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount));
@@ -1622,6 +1674,36 @@ namespace Orts.Viewer3D
             { "/materials/{}/extensions/KHR_materials_specular/specularFactor", PointerTypes.Float },
             { "/materials/{}/extensions/KHR_materials_specular/specularColorFactor", PointerTypes.Vector3 },
             { "/materials/{}/extensions/KHR_materials_ior/ior", PointerTypes.Float },
+            { "/materials/{}/pbrMetallicRoughness/baseColorTexture/extensions/KHR_texture_transform/rotation", PointerTypes.Float },
+            { "/materials/{}/pbrMetallicRoughness/baseColorTexture/extensions/KHR_texture_transform/scale", PointerTypes.Vector2 },
+            { "/materials/{}/pbrMetallicRoughness/baseColorTexture/extensions/KHR_texture_transform/offset", PointerTypes.Vector2 },
+            { "/materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/rotation", PointerTypes.Float },
+            { "/materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/scale", PointerTypes.Vector2 },
+            { "/materials/{}/pbrMetallicRoughness/metallicRoughnessTexture/extensions/KHR_texture_transform/offset", PointerTypes.Vector2 },
+            { "/materials/{}/occlusionTexture/extensions/KHR_texture_transform/rotation", PointerTypes.Float },
+            { "/materials/{}/occlusionTexture/extensions/KHR_texture_transform/scale", PointerTypes.Vector2 },
+            { "/materials/{}/occlusionTexture/extensions/KHR_texture_transform/offset", PointerTypes.Vector2 },
+            { "/materials/{}/normalTexture/extensions/KHR_texture_transform/rotation", PointerTypes.Float },
+            { "/materials/{}/normalTexture/extensions/KHR_texture_transform/scale", PointerTypes.Vector2 },
+            { "/materials/{}/normalTexture/extensions/KHR_texture_transform/offset", PointerTypes.Vector2 },
+            { "/materials/{}/emissiveTexture/extensions/KHR_texture_transform/rotation", PointerTypes.Float },
+            { "/materials/{}/emissiveTexture/extensions/KHR_texture_transform/scale", PointerTypes.Vector2 },
+            { "/materials/{}/emissiveTexture/extensions/KHR_texture_transform/offset", PointerTypes.Vector2 },
+            { "/materials/{}/extensions/KHR_materials_clearcoat/clearcoatTexture/extensions/KHR_texture_transform/rotation", PointerTypes.Float },
+            { "/materials/{}/extensions/KHR_materials_clearcoat/clearcoatTexture/extensions/KHR_texture_transform/scale", PointerTypes.Vector2 },
+            { "/materials/{}/extensions/KHR_materials_clearcoat/clearcoatTexture/extensions/KHR_texture_transform/offset", PointerTypes.Vector2 },
+            { "/materials/{}/extensions/KHR_materials_clearcoat/clearcoatRoughnessTexture/extensions/KHR_texture_transform/rotation", PointerTypes.Float },
+            { "/materials/{}/extensions/KHR_materials_clearcoat/clearcoatRoughnessTexture/extensions/KHR_texture_transform/scale", PointerTypes.Vector2 },
+            { "/materials/{}/extensions/KHR_materials_clearcoat/clearcoatRoughnessTexture/extensions/KHR_texture_transform/offset", PointerTypes.Vector2 },
+            { "/materials/{}/extensions/KHR_materials_clearcoat/clearcoatNormalTexture/extensions/KHR_texture_transform/rotation", PointerTypes.Float },
+            { "/materials/{}/extensions/KHR_materials_clearcoat/clearcoatNormalTexture/extensions/KHR_texture_transform/scale", PointerTypes.Vector2 },
+            { "/materials/{}/extensions/KHR_materials_clearcoat/clearcoatNormalTexture/extensions/KHR_texture_transform/offset", PointerTypes.Vector2 },
+            { "/materials/{}/extensions/KHR_materials_specular/specularTexture/extensions/KHR_texture_transform/rotation", PointerTypes.Float },
+            { "/materials/{}/extensions/KHR_materials_specular/specularTexture/extensions/KHR_texture_transform/scale", PointerTypes.Vector2 },
+            { "/materials/{}/extensions/KHR_materials_specular/specularTexture/extensions/KHR_texture_transform/offset", PointerTypes.Vector2 },
+            { "/materials/{}/extensions/KHR_materials_specular/specularColorTexture/extensions/KHR_texture_transform/rotation", PointerTypes.Float },
+            { "/materials/{}/extensions/KHR_materials_specular/specularColorTexture/extensions/KHR_texture_transform/scale", PointerTypes.Vector2 },
+            { "/materials/{}/extensions/KHR_materials_specular/specularColorTexture/extensions/KHR_texture_transform/offset", PointerTypes.Vector2 },
 
         };
 
@@ -1630,6 +1712,7 @@ namespace Orts.Viewer3D
             FloatVector,
             Float,
             Quaternion,
+            Vector2,
             Vector3,
             Vector4,
             Boolean
@@ -1775,6 +1858,7 @@ namespace Orts.Viewer3D
         public float[] TimeArray;
         public float TimeMin;
         public float TimeMax;
+        public Vector2[] OutputVector2;
         public Vector3[] OutputVector3;
         public Vector4[] OutputVector4;
         public Quaternion[] OutputQuaternion;
@@ -1782,6 +1866,7 @@ namespace Orts.Viewer3D
 
         public string Pointer;
         public Action<float> SetTargetFloat;
+        public Action<Vector2> SetTargetVector2;
         public Action<Vector3> SetTargetVector3;
         public Action<Vector4> SetTargetVector4;
         public Action<Quaternion> SetTargetQuaternion;
