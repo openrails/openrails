@@ -929,12 +929,8 @@ namespace Orts.Simulation.RollingStocks
             realTimeTrackJointDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM; // Initialise track joint distance
             SoundAxleCount = (LocoNumDrvAxles + WagonNumAxles);
 
-            // make sure that sound axle count does not align with or exceed maximum possible sound triggers
-            if (SoundAxleCount < 2)
-            {
-                SoundAxleCount = 2;
-            }
-            else if (SoundAxleCount == 5) // No trigger for 5 axles, so increase to 6
+            // Where sound axle count does not align with sound triggers, then set to next highest value, also limit to 8 axles
+            if (SoundAxleCount == 5) // No trigger for 5 axles, so increase to 6
             {
                 SoundAxleCount = 6;
             }
