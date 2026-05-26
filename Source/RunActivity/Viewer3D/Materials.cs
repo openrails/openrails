@@ -393,6 +393,9 @@ namespace Orts.Viewer3D
             {
                 switch (materialName)
                 {
+                    case "Empty":
+                        Materials[materialKey] = new EmptyMaterial(Viewer);
+                        break;
                     case "Bloom":
                         Materials[materialKey] = new BloomMaterial(Viewer);
                         break;
@@ -1791,8 +1794,7 @@ namespace Orts.Viewer3D
                     {
                         gltfPrimitive.BonesTexture?.SetData(MemoryMarshal.Cast<Matrix, Vector4>(gltfPrimitive.RenderBonesRendered).ToArray());
                         shader.BonesTexture = gltfPrimitive.BonesTexture;
-                        shader.HasSkin = gltfPrimitive.BonesTexture != null;
-
+                        shader.VertexShaderOptions = (uint)gltfPrimitive.VertexShaderOptions;
                         if (gltfPrimitive.HasMorphTargets())
                         {
                             var morphingData = gltfPrimitive.GetMorphingData();
@@ -2048,7 +2050,7 @@ namespace Orts.Viewer3D
                         if (gltfPrimitive.BonesTexture != null)
                         {
                             shader.BonesTexture = gltfPrimitive.BonesTexture;
-                            shader.HasSkin = gltfPrimitive.BonesTexture != null;
+                            shader.VertexShaderOptions = (uint)gltfPrimitive.VertexShaderOptions;
                         }
 
                         if (gltfPrimitive.HasMorphTargets())
@@ -2059,6 +2061,10 @@ namespace Orts.Viewer3D
                             shader.MorphConfig = MorphConfig;
                             shader.MorphWeights = MorphWeights;
                         }
+                    }
+                    else
+                    {
+                        shader.VertexShaderOptions = 0;
                     }
 
                     passes[i].Apply();

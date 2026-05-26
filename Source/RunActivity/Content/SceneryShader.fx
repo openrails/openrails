@@ -24,6 +24,24 @@
 #define CLEARCOAT
 #define IOR_SPECULAR
 
+#define VERTEX_OPTION_NONE                          0u
+#define VERTEX_OPTION_HAS_SKIN                  (1u << 0)
+#define VERTEX_OPTION_NORM_USHORT_WEIGHT        (1u << 1)
+#define VERTEX_OPTION_NORM_USHORT_COLOR         (1u << 2)
+#define VERTEX_OPTION_NORM_USHORT_POSITION      (1u << 3)
+#define VERTEX_OPTION_NORM_USHORT_TEXCOORD      (1u << 4)
+#define VERTEX_OPTION_NORM_SBYTE_NORMAL         (1u << 5)
+#define VERTEX_OPTION_NORM_SBYTE_TANGENT        (1u << 6)
+#define VERTEX_OPTION_NORM_SBYTE_POSITION       (1u << 7)
+#define VERTEX_OPTION_NORM_SBYTE_TEXCOORD       (1u << 8)
+#define VERTEX_OPTION_INT_SBYTE_POSITION        (1u << 9)
+#define VERTEX_OPTION_INT_SBYTE_TEXCOORD        (1u << 10)
+#define VERTEX_OPTION_INT_USHORT_POSITION       (1u << 11)
+#define VERTEX_OPTION_INT_USHORT_TEXCOORD       (1u << 12)
+#define VERTEX_OPTION_SKIN_JOINT_SINGLE         (1u << 13)
+#define VERTEX_OPTION_SKIN_JOINT_DOUBLE         (1u << 14)
+
+
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
 cbuffer PerFrameVS
@@ -85,7 +103,7 @@ cbuffer PerMaterial
     float4 TextureScale; // xy: texCoords_0, zw: texCoords_1
     float4 TextureOffset; // xy: texCoords_0, zw: texCoords_1
     float2 TextureRotation; // x: texCoords_0, y: texCoords_1
-    bool HasSkin;
+    int VertexShaderOptions;
     float ZBias; // to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1
     
     float SignalLightIntensity;
@@ -203,7 +221,7 @@ struct VERTEX_INPUT_SKINNED
 	float3 Normal      : NORMAL;
     float4 Tangent     : TANGENT;
 	float2 TexCoordsPbr: TEXCOORD1;
-    min16uint4  Joints : BLENDINDICES0;
+    int4  Joints : BLENDINDICES0;
 	float4 Weights     : BLENDWEIGHT0;
 	float4 Color       : COLOR0;
 	float4x4 Instance  : TEXCOORD2;
@@ -216,7 +234,7 @@ struct VERTEX_INPUT_MORPHED
 	float3 Normal      : NORMAL;
     float4 Tangent     : TANGENT;
 	float2 TexCoordsPbr: TEXCOORD1;
-    min16uint4  Joints : BLENDINDICES0;
+    int4  Joints : BLENDINDICES0;
 	float4 Weights     : BLENDWEIGHT0;
 	float4 Color       : COLOR0;
     float4 MorphTargets[8] : POSITION1;
@@ -330,7 +348,7 @@ void _VSTransformUV(inout float4 texCoords)
     texCoords += TextureOffset;
 }
 
-float4x4 _VSBoneMatrix(min16uint index)
+float4x4 _VSBoneMatrix(int index)
 {
     float4 row1 = BonesTexture.Load(int3(0, index, 0));
     float4 row2 = BonesTexture.Load(int3(1, index, 0));
@@ -340,10 +358,10 @@ float4x4 _VSBoneMatrix(min16uint index)
     return float4x4(row1, row2, row3, row4);
 }
 
-float4x4 _VSSkinTransform(in min16uint4 Joints, in float4 Weights)
+float4x4 _VSSkinTransform(in int4 Joints, in float4 Weights)
 {
-	float4x4 skinTransform = 0;
-
+    float4x4 skinTransform = (float4x4) 0;
+    
     skinTransform += _VSBoneMatrix(Joints.x) * (float) Weights.x;
     skinTransform += _VSBoneMatrix(Joints.y) * (float) Weights.y;
     skinTransform += _VSBoneMatrix(Joints.z) * (float) Weights.z;
@@ -383,83 +401,65 @@ VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT_PBR VSPbrBaseColorMap(in VERTEX_INPUT In)
+VERTEX_OUTPUT_PBR _VSPbr(float4 position, float3 normal, float4 tangent,
+                        float2 texCoordsBase, float2 texCoordsPbr, float4 color,
+                        int4 joints, float4 weights,
+                        float4x4 instance, float4 morphTargets[8])
 {
-	VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR) 0;
+    // Workaround for the MonoGame limitation of not being able to supply these vertex attribute formats...
+    if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_POSITION) != 0u)
+        position.xyz = position.xyz * 2.0 - 1.0;
+    else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_POSITION) != 0u)
+        position.xyz = position.xyz * 0.5 + 0.5;
+    else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_POSITION) != 0u)
+        position.xyz = (position.xyz <= 127) ? position.xyz : position.xyz - 256;
+    else if ((VertexShaderOptions & VERTEX_OPTION_INT_USHORT_POSITION) != 0u)
+        position.xyz = (position.xyz >= 0) ? position.xyz : position.xyz + 65536;
 
-	_VSInstances(In.Position, In.Normal, In.Instance);
+    if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_NORMAL) != 0u)
+        normal.xyz = normal.xyz * 2.0 - 1.0;
 
-    Out.Position = In.Position;
-	_VSNormalProjection(In.Normal, World, Out.Position, Out.RelPosition, Out.Normal_Light);
-	_VSLightsAndShadows(In.Position, World, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
+    if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_TANGENT) != 0u)
+    {
+        tangent = tangent * 2.0 - 1.0;
+        tangent.w = sign(tangent.w);
+    }
 
-	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
-	Out.TexCoords.xy = In.TexCoords;
-    Out.TexCoords.zw = (float2) 0;
-    _VSTransformUV(Out.TexCoords);
+    if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_WEIGHT) != 0u)
+        weights = weights * 0.5 + 0.5;
 
-	Out.Color = float4(1, 1, 1, 1);
-	Out.Tangent.xyz = float3(-2, 0, 0);
-	Out.Bitangent.xyz = float3(0, 1, 0);
-
-	return Out;
-}
-
-VERTEX_OUTPUT_PBR VSNormalMap(in VERTEX_INPUT_NORMALMAP In)
-{
-	VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR)0;
-
-	_VSInstances(In.Position, In.Normal, In.Instance);
+    if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_COLOR) != 0u)
+        color = color * 0.5 + 0.5;
     
-    Out.Position = In.Position;
-	_VSNormalProjection(In.Normal, World, Out.Position, Out.RelPosition, Out.Normal_Light);
-	_VSLightsAndShadows(In.Position, World, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
+    if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_TEXCOORD) != 0u)
+    {
+        texCoordsBase = texCoordsBase * 2.0 - 1.0;
+        texCoordsPbr = texCoordsPbr * 2.0 - 1.0;
+    }
+    else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_TEXCOORD) != 0u)
+    {
+        texCoordsBase = texCoordsBase * 0.5 + 0.5;
+        texCoordsPbr = texCoordsPbr * 0.5 + 0.5;
+    }
+    else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_TEXCOORD) != 0u)
+    {
+        texCoordsBase =  (texCoordsBase <= 127) ? texCoordsBase : texCoordsBase - 256;
+        texCoordsPbr = (texCoordsPbr <= 127) ? texCoordsPbr : texCoordsPbr - 256;
+    }
+    else if ((VertexShaderOptions & VERTEX_OPTION_INT_USHORT_TEXCOORD) != 0u)
+    {
+        texCoordsBase = (texCoordsBase >= 0) ? texCoordsBase : texCoordsBase + 65536;
+        texCoordsPbr = (texCoordsPbr >= 0) ? texCoordsPbr : texCoordsPbr + 65536;
+    }
 
-	_VSNormalMapTransform(In.Tangent, In.Normal, World, Out);
+    VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR) 0;
 
-	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
-	Out.Color = In.Color;
-	Out.TexCoords.xy = In.TexCoords;
-	Out.TexCoords.zw = In.TexCoordsPbr;
-    _VSTransformUV(Out.TexCoords);
+    _VSInstances(position, normal, instance);
 
-	return Out;
-}
-
-VERTEX_OUTPUT_PBR VSSkinned(in VERTEX_INPUT_SKINNED In)
-{
-	VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR) 0;
-
-	_VSInstances(In.Position, In.Normal, In.Instance);
-	float4x4 worldTransform = _VSSkinTransform(In.Joints, In.Weights);
-    
-    Out.Position = In.Position;
-    _VSNormalProjection(In.Normal, worldTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
-	_VSLightsAndShadows(Out.Position, worldTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
-
-	_VSNormalMapTransform(In.Tangent, In.Normal, worldTransform, Out);
-
-	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
-	Out.Color = In.Color;
-	Out.TexCoords.xy = In.TexCoords;
-	Out.TexCoords.zw = In.TexCoordsPbr;
-    _VSTransformUV(Out.TexCoords);
-
-	return Out;
-}
-
-VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
-{
-    VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR)0;
-
-    float4x4 worldTransform = HasSkin ? _VSSkinTransform(In.Joints, In.Weights) : World;
-
-    Out.Position = In.Position;
-    float3 normal = In.Normal;
-    float4 tangent = In.Tangent;
-    Out.Color = In.Color;
-    Out.TexCoords.xy = In.TexCoords;
-    Out.TexCoords.zw = In.TexCoordsPbr;
+    Out.Position = position;
+    Out.Color = color;
+    Out.TexCoords.xy = texCoordsBase;
+    Out.TexCoords.zw = texCoordsPbr;
     _VSTransformUV(Out.TexCoords);
 
     int attrCount = MorphConfig[1].w;
@@ -471,17 +471,26 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
         int offset = attrCount * i;
 
         if (MorphConfig[0].x != -1)
-            Out.Position.xyz += In.MorphTargets[offset + MorphConfig[0].x].xyz * weight;
+            Out.Position.xyz += morphTargets[offset + MorphConfig[0].x].xyz * weight;
         if (MorphConfig[0].y != -1)
-            normal.xyz += In.MorphTargets[offset + MorphConfig[0].y].xyz * weight;
+            normal.xyz += morphTargets[offset + MorphConfig[0].y].xyz * weight;
         if (MorphConfig[0].z != -1)
-            tangent.xyz += In.MorphTargets[offset + MorphConfig[0].z].xyz * weight;
+            tangent.xyz += morphTargets[offset + MorphConfig[0].z].xyz * weight;
         if (MorphConfig[0].w != -1)
-            Out.TexCoords.xy += In.MorphTargets[offset + MorphConfig[0].w].xy * weight;
+            Out.TexCoords.xy += morphTargets[offset + MorphConfig[0].w].xy * weight;
         if (MorphConfig[1].x != -1)
-            Out.TexCoords.zw += In.MorphTargets[offset + MorphConfig[1].x].xy * weight;
+            Out.TexCoords.zw += morphTargets[offset + MorphConfig[1].x].xy * weight;
         if (MorphConfig[1].y != -1)
-            Out.Color += In.MorphTargets[offset + MorphConfig[1].y] * weight;
+            Out.Color += morphTargets[offset + MorphConfig[1].y] * weight;
+    }
+
+    float4x4 worldTransform = World;
+    if ((VertexShaderOptions & VERTEX_OPTION_HAS_SKIN) != 0u)
+    {
+        if ((VertexShaderOptions & VERTEX_OPTION_SKIN_JOINT_SINGLE) != 0u)
+            worldTransform = _VSBoneMatrix(joints.x);
+        else
+            worldTransform = _VSSkinTransform(joints, weights);
     }
 
     _VSNormalProjection(normal, worldTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
@@ -489,9 +498,29 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
 
     _VSNormalMapTransform(tangent, normal, worldTransform, Out);
 
-    Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
+    Out.Position.z -= ZBias * saturate(texCoordsBase.x) / 1000;
 
     return Out;
+}
+
+VERTEX_OUTPUT_PBR VSPbrBaseColorMap(in VERTEX_INPUT In)
+{
+    return _VSPbr(In.Position, In.Normal, float4(0, 0, 0, 1), In.TexCoords, float2(0, 0), float4(1, 1, 1, 1), min16uint4(0, 0, 0, 0), float4(0, 0, 0, 0), In.Instance, (float4[8]) 0);
+}
+
+VERTEX_OUTPUT_PBR VSNormalMap(in VERTEX_INPUT_NORMALMAP In)
+{
+    return _VSPbr(In.Position, In.Normal, In.Tangent, In.TexCoords, In.TexCoordsPbr, In.Color, min16uint4(0, 0, 0, 0), float4(0, 0, 0, 0), In.Instance, (float4[8]) 0);
+}
+
+VERTEX_OUTPUT_PBR VSSkinned(in VERTEX_INPUT_SKINNED In)
+{
+    return _VSPbr(In.Position, In.Normal, In.Tangent, In.TexCoords, In.TexCoordsPbr, In.Color, In.Joints, In.Weights, In.Instance, (float4[8]) 0);
+}
+
+VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
+{
+    return _VSPbr(In.Position, In.Normal, In.Tangent, In.TexCoords, In.TexCoordsPbr, In.Color, In.Joints, In.Weights, (float4x4) 0, In.MorphTargets);
 }
 
 
