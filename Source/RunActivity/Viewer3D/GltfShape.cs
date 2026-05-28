@@ -302,6 +302,7 @@ namespace Orts.Viewer3D
             readonly string GltfFileName;
             
             internal Dictionary<int, VertexBufferBinding> VertexBufferBindings;
+            internal Dictionary<int, VertexShaderOptions> VertexBufferOptions;
             internal Dictionary<int, IndexBuffer> IndexBuffers;
             internal Dictionary<int, byte[]> BinaryBuffers;
 
@@ -476,6 +477,7 @@ namespace Orts.Viewer3D
                     MatrixNames = lod0DetailLevel.MatrixNames;
                     IndexBuffers = lod0DetailLevel.IndexBuffers;
                     VertexBufferBindings = lod0DetailLevel.VertexBufferBindings;
+                    VertexBufferOptions = lod0DetailLevel.VertexBufferOptions;
                     BinaryBuffers = lod0DetailLevel.BinaryBuffers;
                 }
             }
@@ -486,6 +488,7 @@ namespace Orts.Viewer3D
                 BoundingBoxNodes = new Vector4[8];
                 GltfAnimations = new List<GltfAnimation>();
                 VertexBufferBindings = new Dictionary<int, VertexBufferBinding>();
+                VertexBufferOptions = new Dictionary<int, VertexShaderOptions>();
                 IndexBuffers = new Dictionary<int, IndexBuffer>();
                 BinaryBuffers = new Dictionary<int, byte[]>();
 
@@ -560,6 +563,7 @@ namespace Orts.Viewer3D
                         DebugName = "";
                         VertexElements.Clear();
                         Accessors.Clear();
+                        var options = VertexShaderOptions.None;
                         var previousOffset = gltfFile.Accessors[attributes.Current.Value].ByteOffset;
                         var currentOffset = previousOffset;
                         var previousAttribute = attributes.Current.Key;
@@ -575,8 +579,9 @@ namespace Orts.Viewer3D
                         {
                             if (!Accessors.ContainsKey(attributes.Current.Value) && !VertexBufferBindings.ContainsKey(bindingKey))
                             {
-                                VertexElements.Add(new VertexElement(gltfFile.Accessors[attributes.Current.Value].ByteOffset - previousOffset,
-                                    GetVertexElementFormat(gltfFile.Accessors[attributes.Current.Value], shape.MsfsFlavoured, semantic), semantic, index));
+                                var format = GetVertexElementFormat(gltfFile.Accessors[attributes.Current.Value], shape.MsfsFlavoured, semantic, ref options);
+                                VertexElements.Add(new VertexElement(gltfFile.Accessors[attributes.Current.Value].ByteOffset - previousOffset, format, semantic, index));
+
                                 if (Debugger.IsAttached) DebugName = (DebugName != "" ? DebugName + "," : "") + attributes.Current.Key;
                             }
                             // Multiple accessors to same bufferview with same semantic. Will reuse the VertexBuffer:
@@ -620,6 +625,7 @@ namespace Orts.Viewer3D
 
                         var vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
                         VertexBufferBindings.Add(bindingKey, vertexBufferBinding);
+                        VertexBufferOptions.Add(bindingKey, options);
 
                         if (Accessors.Count > 1)
                         {
@@ -979,54 +985,97 @@ namespace Orts.Viewer3D
                 }
             }
 
-            VertexElementFormat GetVertexElementFormat(Accessor accessor, bool msfsFlavoured, VertexElementUsage semantic)
+            VertexElementFormat GetVertexElementFormat(Accessor accessor, bool msfsFlavoured, VertexElementUsage semantic, ref VertexShaderOptions vertexShaderOptions)
             {
-                if (msfsFlavoured)
+                switch (semantic)
                 {
-                    // MSFS twisted out, reversed, non-standard definitions
-                    // non-normalized, VEC3 FLOAT, VEC4 BYTE, VEC2 SHORT, VEC4 USHORT, SCALAR FLOAT
-                    switch (semantic)
-                    {
-                        case VertexElementUsage.BlendWeight when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT & accessor.Normalized:
-                        case VertexElementUsage.BlendWeight when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT & accessor.Normalized:
-                            return VertexElementFormat.NormalizedShort4; // Needs shader adjustment because it is unsigned short in fact: * 0.5 + 0.5 to denormalize from [-1,1] to [0,1]
-                        case VertexElementUsage.Color when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
-                        case VertexElementUsage.Color when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT:
-                            return VertexElementFormat.NormalizedShort4; // Needs shader adjustment: * (32767.0 / 255.0). Trimmed down to UNORM8, like if it was a normalized BYTE -> .Color
-                        case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT & accessor.Type == Accessor.TypeEnum.VEC2:
-                        case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT & accessor.Type == Accessor.TypeEnum.VEC2:
-                            return VertexElementFormat.HalfVector2; // MSFS texcoords: normalized flag ignored, SHORT & UNSIGNED_SHORT treated as same
-                    }
-                    switch (accessor.Type)
-                    {
-                        case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: // MSFS texcoords: normalized flag ignored, SHORT & UNSIGNED_SHORT treated as same
-                        case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return VertexElementFormat.HalfVector2;
-                        case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE: // MSFS normals & tangents: normalized flag ignored, BYTE & UNSIGNED_BYTE treated as same, packed, only 3 components are used
-                        case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return VertexElementFormat.Color;
-                        case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: // MSFS weights: normalized flag set(!), but SHORT & UNSIGNED_SHORT treated as same
-                        case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return accessor.Normalized ? VertexElementFormat.Short4 : VertexElementFormat.HalfVector4;
-                    }
+                    // MSFS specifics
+                    case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT & msfsFlavoured:
+                        return VertexElementFormat.HalfVector2;
+                    case VertexElementUsage.Color when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE & msfsFlavoured:
+                        return VertexElementFormat.Color;
+                    case VertexElementUsage.BlendIndices when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT & msfsFlavoured:
+                        return VertexElementFormat.HalfVector4;
+
+                    // Even if it is VEC3, the binary buffer is padded to VEC4.
+                    // VertexElementFormat.Byte4 is unsigned, while VertexElementFormat.Short4 is signed.
+                    // VertexElementFormat.Color is unsigned, while VertexElementFormat.NormalizedShort4 is signed.
+                    // There is no signed byte and unsigned short available, eigher normalized or not, so we need to workaround them.
+                    case VertexElementUsage.Position when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
+                        if (accessor.Normalized) { vertexShaderOptions |= VertexShaderOptions.NormSbytePosition; return VertexElementFormat.Color; }
+                        vertexShaderOptions |= VertexShaderOptions.IntSbytePosition; return VertexElementFormat.Byte4;
+                    case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
+                        if (accessor.Normalized) { vertexShaderOptions |= VertexShaderOptions.NormSbyteTexcoord; return VertexElementFormat.Color; }
+                        vertexShaderOptions |= VertexShaderOptions.IntSbyteTexcoord; return VertexElementFormat.Byte4;
+
+                    // Color is actually normalized unsigned byte4
+                    case VertexElementUsage.Normal when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
+                        vertexShaderOptions |= VertexShaderOptions.NormSbyteNormal;
+                        return VertexElementFormat.Color;
+                    case VertexElementUsage.Tangent when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
+                        vertexShaderOptions |= VertexShaderOptions.NormSbyteTangent;
+                        return VertexElementFormat.Color;
+
+                    case VertexElementUsage.Position when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
+                        if (accessor.Normalized) { vertexShaderOptions |= VertexShaderOptions.NormUshortPosition; return VertexElementFormat.NormalizedShort4; }
+                        vertexShaderOptions |= VertexShaderOptions.IntUshortPosition; return VertexElementFormat.Short4;
+                    case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
+                        if (accessor.Normalized) { vertexShaderOptions |= VertexShaderOptions.NormUshortTexcoord; return VertexElementFormat.NormalizedShort2; }
+                        vertexShaderOptions |= VertexShaderOptions.IntUshortTexcoord; return VertexElementFormat.Short2;
+
+                    case VertexElementUsage.BlendWeight when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
+                        vertexShaderOptions |= VertexShaderOptions.NormUshortWeight;
+                        return VertexElementFormat.NormalizedShort4;
+                    case VertexElementUsage.Color when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
+                        vertexShaderOptions |= VertexShaderOptions.NormUshortColor;
+                        return VertexElementFormat.NormalizedShort4;
                 }
 
-                // Standard glTF, but MonoGame doesn't natively support the normalized unsigned types (especially the UNSIGNED_SHORT).
+                // Standard glTF, but MonoGame doesn't natively support the unsigned short and signed byte types.
                 switch (accessor.Type)
                 {
                     case Accessor.TypeEnum.SCALAR when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Single;
 
-                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
-                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
                     case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector2;
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return accessor.Normalized || msfsFlavoured ? VertexElementFormat.Color : VertexElementFormat.Byte4;
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return msfsFlavoured ? VertexElementFormat.HalfVector2 : accessor.Normalized ? VertexElementFormat.NormalizedShort2 : VertexElementFormat.Short2;
 
                     case Accessor.TypeEnum.VEC3 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector3;
+                    case Accessor.TypeEnum.VEC3 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return accessor.Normalized || msfsFlavoured ? VertexElementFormat.Color : VertexElementFormat.Byte4;
+                    case Accessor.TypeEnum.VEC3 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return accessor.Normalized || msfsFlavoured ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
 
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return accessor.Normalized ? VertexElementFormat.Color : VertexElementFormat.Byte4;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
-                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return accessor.Normalized ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
                     case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return accessor.Normalized || msfsFlavoured ? VertexElementFormat.Color : VertexElementFormat.Byte4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT: return accessor.Normalized || msfsFlavoured ? VertexElementFormat.NormalizedShort4 : VertexElementFormat.Short4;
 
-                    default: Trace.TraceWarning($"glTF: Unknown vertex attribute format is found in file {GltfFileName}"); return VertexElementFormat.Single;
+                    // There is no proper VertexElementFormat support in MonoGame for these, their normalized variants got already handled above.
+                    case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return VertexElementFormat.Short2;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE: return VertexElementFormat.Byte4;
+                    case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return VertexElementFormat.Short4;
+
+                    default: Trace.TraceWarning($"glTF: Unknown vertex attribute format {(int)accessor.ComponentType} found in file {GltfFileName}"); return VertexElementFormat.Single;
                 }
+            }
+
+            [Flags]
+            public enum VertexShaderOptions : uint
+            {
+                None = 0,
+                HasSkin = 1 << 0,
+                NormUshortWeight = 1 << 1,
+                NormUshortColor = 1 << 2,
+                NormUshortPosition = 1 << 3,
+                NormUshortTexcoord = 1 << 4,
+                NormSbyteNormal = 1 << 5,
+                NormSbyteTangent = 1 << 6,
+                NormSbytePosition = 1 << 7,
+                NormSbyteTexcoord = 1 << 8,
+                IntSbytePosition = 1 << 9, // Non-normalized, the normalization is coded into the node transform matrix
+                IntSbyteTexcoord = 1 << 10, // Non-normalized, the normalization is delivered via the KHR_texture_transform extension
+                IntUshortPosition = 1 << 11,
+                IntUshortTexcoord = 1 << 12,
+                SkinJointSingle = 1 << 13, // MSFS: "BLEND1" skin with only one joint influence, so the joint index can be stored in a single component and the weight is always 1
+                SkinJointDouble = 1 << 14, // MSFS: "BLEND2", TODO
             }
 
             internal static VertexElementUsage GetVertexElementSemantic(string semantic, out int index)
@@ -1101,6 +1150,7 @@ namespace Orts.Viewer3D
             public GltfSubObject(MeshPrimitive meshPrimitive, string name, int hierarchyIndex, int[] hierarchy, Gltf gltfFile, GltfShape shape, GltfDistanceLevel distanceLevel, Skin skin)
             {
                 var options = SceneryMaterialOptions.None;
+                var vertexShaderOptions = GltfDistanceLevel.VertexShaderOptions.None;
 
                 if (skin != null)
                     options |= SceneryMaterialOptions.PbrHasSkin;
@@ -1109,20 +1159,38 @@ namespace Orts.Viewer3D
 
                 HierarchyIndex = hierarchyIndex;
 
+                object extension = null;
+                ASOBO_primitive msfsPrimitive = null;
+                if (shape.MsfsFlavoured & gltfFile.ExtensionsUsed?.Contains("ASOBO_primitive") & meshPrimitive.Extensions?.TryGetValue("ASOBO_primitive", out extension) ?? false)
+                {
+                    msfsPrimitive = Newtonsoft.Json.JsonConvert.DeserializeObject<ASOBO_primitive>(extension.ToString(), PopulateDefaults);
+                    if (msfsPrimitive?.VertexType == "BLEND1")
+                        vertexShaderOptions |= GltfDistanceLevel.VertexShaderOptions.SkinJointSingle;
+                    else if (msfsPrimitive?.VertexType == "BLEND2")
+                        vertexShaderOptions |= GltfDistanceLevel.VertexShaderOptions.SkinJointDouble;
+                }
+
                 var indexBufferSet = new GltfIndexBufferSet();
                 var indexCount = 0;
 
                 if (gltfFile.Accessors.ElementAtOrDefault(meshPrimitive.Indices ?? -1) is var accessor && accessor != null)
                 {
                     indexBufferSet.IndexBuffer = distanceLevel.IndexBuffers[(int)meshPrimitive.Indices];
-                    indexBufferSet.PrimitiveOffset = 0;
+                    indexBufferSet.StartIndex = msfsPrimitive?.StartIndex ?? 0;
+                    indexBufferSet.BaseVertexIndex = msfsPrimitive?.BaseVertexIndex ?? 0;
                     indexCount = accessor.Count;
                     options |= SceneryMaterialOptions.PbrHasIndices;
                 }
 
+                Func<KeyValuePair<string, int>, int> getAccessorKey = (KeyValuePair<string, int> kvp) => kvp.Value + (int)GltfDistanceLevel.GetVertexElementSemantic(kvp.Key, out _) * GltfDistanceLevel.BUFFER_INDEX_OFFSET;
+
+                foreach (var a in meshPrimitive.Attributes)
+                    if (distanceLevel.VertexBufferOptions.TryGetValue(getAccessorKey(a), out var vertexShaderOption))
+                        vertexShaderOptions |= vertexShaderOption;
+
                 var vertexAttributes = meshPrimitive.Attributes
                     .SelectMany(a => distanceLevel.VertexBufferBindings
-                    .Where(kvp => kvp.Key == a.Value + (int)GltfDistanceLevel.GetVertexElementSemantic(a.Key, out _) * GltfDistanceLevel.BUFFER_INDEX_OFFSET)
+                    .Where(kvp => kvp.Key == getAccessorKey(a))
                     .Select(kvp => kvp.Value))
                     .ToList();
                 var vertexCount = vertexAttributes.FirstOrDefault().VertexBuffer?.VertexCount ?? 0;
@@ -1272,7 +1340,10 @@ namespace Orts.Viewer3D
                     default: indexBufferSet.PrimitiveType = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = verticesDrawn / 2; break;
                 }
 
-                var shapePrimitive = new GltfPrimitive(vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, morphConfig);
+                if (shape.MsfsFlavoured && msfsPrimitive?.PrimitiveCount > 0)
+                    indexBufferSet.PrimitiveCount = msfsPrimitive.PrimitiveCount;
+
+                var shapePrimitive = new GltfPrimitive(vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, morphConfig, vertexShaderOptions);
 
                 var determinant = distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant();
                 if (!shape.MsfsFlavoured && determinant > 0) // This is according to the glTF spec
@@ -1280,7 +1351,6 @@ namespace Orts.Viewer3D
                 else if (shape.MsfsFlavoured && determinant < 0) // Msfs seems to be using this reversed
                     options |= SceneryMaterialOptions.PbrCullClockWise;
 
-                object extension = null;
                 KHR_materials_variants variants = null;
                 if (gltfFile.ExtensionsUsed?.Contains("KHR_materials_variants") & meshPrimitive.Extensions?.TryGetValue("KHR_materials_variants", out extension) ?? false)
                     variants = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_materials_variants>(extension.ToString(), PopulateDefaults);
@@ -1292,10 +1362,14 @@ namespace Orts.Viewer3D
                     {
                         var materialGltf = mapping.Material == null ? DefaultGltfFile : gltfFile;
                         var materialRefIndex = mapping.Material ?? 0; // Index 0 is the default material number in the default gltf file.
+                        var material = materialGltf.Materials?.ElementAtOrDefault(materialRefIndex);
                         var pbrMaterial = shape.Viewer.MaterialManager.Load("PBR",
-                            $"{shape.FilePath}#{materialRefIndex}#{materialGltf.Materials?.ElementAtOrDefault(materialRefIndex)?.Name ?? ""}",
+                            $"{shape.FilePath}#{materialRefIndex}#{material?.Name ?? ""}",
                             (int)options, 0, null, materialGltf) as PbrMaterial;
                         shapePrimitive.Materials.Add(mapping.Material ?? -1, pbrMaterial);
+
+                        if (shape.MsfsFlavoured & gltfFile.ExtensionsUsed?.Contains("ASOBO_material_draw_order") & material.Extensions?.TryGetValue("ASOBO_material_draw_order", out extension) ?? false)
+                            shapePrimitive.ZBias = Newtonsoft.Json.JsonConvert.DeserializeObject<ASOBO_material_draw_order>(extension.ToString(), PopulateDefaults)?.DrawOrderOffset ?? 0;
                     }
                 }
 
@@ -1369,10 +1443,14 @@ namespace Orts.Viewer3D
             readonly float[] MorphWeights;
             readonly float MaxActiveMorphTargets;
 
+            readonly int BaseVertexIndex;
+
+            public readonly GltfDistanceLevel.VertexShaderOptions VertexShaderOptions;
+
             public readonly Dictionary<int, PbrMaterial> Materials;
 
             public GltfPrimitive(KHR_lights_punctual light, Gltf gltfFile, GltfDistanceLevel distanceLevel, int hierarchyIndex, int[] hierarchy)
-                : this(Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Array.Empty<float>())
+                : this(Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Array.Empty<float>(), GltfDistanceLevel.VertexShaderOptions.None)
             {
                 object extension = null;
                 AttachedLight = new StaticLight
@@ -1390,13 +1468,14 @@ namespace Orts.Viewer3D
                     distanceLevel.MatrixNames.Add(AttachedLight.ManagedName);
             }
 
-            public GltfPrimitive(List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, float[] morphConfig)
+            public GltfPrimitive(List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, float[] morphConfig, GltfDistanceLevel.VertexShaderOptions vertexShaderOptions)
                 : base(vertexAttributes.ToArray())
             {
-                Material = new EmptyMaterial(distanceLevel.Shape.Viewer);
+                Material = distanceLevel.Shape.Viewer.MaterialManager.Load("Empty");
                 IndexBuffer = indexBufferSet.IndexBuffer;
                 PrimitiveCount = indexBufferSet.PrimitiveCount;
-                PrimitiveOffset = indexBufferSet.PrimitiveOffset;
+                PrimitiveOffset = indexBufferSet.StartIndex;
+                BaseVertexIndex = indexBufferSet.BaseVertexIndex;
                 PrimitiveType = indexBufferSet.PrimitiveType;
                 Hierarchy = hierarchy;
                 HierarchyIndex = hierarchyIndex;
@@ -1436,6 +1515,10 @@ namespace Orts.Viewer3D
                 MorphConfig = morphConfig;
                 MorphWeights = distanceLevel.Weights[hierarchyIndex];
                 MaxActiveMorphTargets = MorphConfig.ElementAtOrDefault(7) != 0 ? RenderProcess.MAX_MORPH_BUFFERS / MorphConfig.ElementAtOrDefault(7) : 0;
+
+                if (BonesTexture != null)
+                    vertexShaderOptions |= GltfDistanceLevel.VertexShaderOptions.HasSkin;
+                VertexShaderOptions = vertexShaderOptions;
             }
 
             /// <summary>
@@ -1522,7 +1605,7 @@ namespace Orts.Viewer3D
                     if (IndexBuffer != null)
                     {
                         graphicsDevice.Indices = IndexBuffer;
-                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: 0, startIndex: PrimitiveOffset, primitiveCount: PrimitiveCount);
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: BaseVertexIndex, startIndex: PrimitiveOffset, primitiveCount: PrimitiveCount);
                     }
                     else
                     {
@@ -1535,7 +1618,8 @@ namespace Orts.Viewer3D
         public struct GltfIndexBufferSet
         {
             public IndexBuffer IndexBuffer;
-            public int PrimitiveOffset;
+            public int StartIndex;
+            public int BaseVertexIndex;
             public int PrimitiveCount;
             public PrimitiveType PrimitiveType;
         }
@@ -2030,5 +2114,22 @@ namespace Orts.Viewer3D
         /// </summary>
         public int[][] SpecularImages { get; set; }
         public float SpecularImageSize { get; set; }
+    }
+
+    /// <summary>
+    /// MSFS/ASOBO extension for mesh primitives
+    /// </summary>
+    public class ASOBO_primitive
+    {
+        public int PrimitiveCount { get; set; }
+        public int StartIndex { get; set; }
+        public string VertexType { get; set; }
+        public int VertexVersion { get; set; }
+        public int BaseVertexIndex { get; set; }
+    }
+
+    public class ASOBO_material_draw_order
+    {
+        public int DrawOrderOffset { get; set; }
     }
 }

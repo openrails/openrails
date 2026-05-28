@@ -157,6 +157,8 @@ namespace ORTS.Common
                     }
 
                     var eng = $"{keyword}_{Path.GetFileNameWithoutExtension(file)}.eng";
+                    if (Wagons.ContainsKey(eng))
+                        continue;
                     Wagons.Add(eng, EngineTemplate
                         .Replace("shapefilename", file)
                         .Replace("enginname", Path.GetFileNameWithoutExtension(file)));

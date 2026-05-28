@@ -128,7 +128,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter hasNormals;
         readonly EffectParameter hasTangents;
         readonly EffectParameter bonesTexture;
-        readonly EffectParameter hasSkin;
+        readonly EffectParameter vertexShaderOptions;
         readonly EffectParameter morphConfig;
         readonly EffectParameter morphWeights;
         // Per-frame PBR uniforms:
@@ -319,7 +319,7 @@ namespace Orts.Viewer3D
 
         public Texture2D BonesTexture { set { bonesTexture.SetValue(value); } }
 
-        public bool HasSkin { set { hasSkin.SetValue(value); } }
+        public uint VertexShaderOptions { set { vertexShaderOptions.SetValue((int)value); } }
 
         public Vector4[] MorphConfig { set { morphConfig.SetValue(value); } }
 
@@ -390,7 +390,7 @@ namespace Orts.Viewer3D
             hasNormals = Parameters["HasNormals"];
             hasTangents = Parameters["HasTangents"];
             bonesTexture = Parameters["BonesTexture"];
-            hasSkin = Parameters["HasSkin"];
+            vertexShaderOptions = Parameters["VertexShaderOptions"];
             morphConfig = Parameters["MorphConfig"];
             morphWeights = Parameters["MorphWeights"];
             environmentMapDaySpecularTexture = Parameters["EnvironmentMapDaySpecularTexture"];
@@ -458,7 +458,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter imageTexture;
         readonly EffectParameter shadowMapArray;
         readonly EffectParameter bonesTexture;
-        readonly EffectParameter hasSkin;
+        readonly EffectParameter vertexShaderOptions;
         readonly EffectParameter morphConfig;
         readonly EffectParameter morphWeights;
         readonly EffectParameter shadowMapIndex;
@@ -486,7 +486,7 @@ namespace Orts.Viewer3D
         }
 
         public Texture2D BonesTexture { set { bonesTexture.SetValue(value); } }
-        public bool HasSkin { set { hasSkin.SetValue(value); } }
+        public uint VertexShaderOptions { set { vertexShaderOptions.SetValue((int)value); } }
         public Vector4[] MorphConfig { set { morphConfig.SetValue(value); } }
         public Vector4[] MorphWeights { set { morphWeights.SetValue(value); } }
 
@@ -501,7 +501,7 @@ namespace Orts.Viewer3D
             imageTexture = Parameters["ImageTexture"];
             shadowMapArray = Parameters["ShadowMapArray"];
             bonesTexture = Parameters["BonesTexture"];
-            hasSkin = Parameters["HasSkin"];
+            vertexShaderOptions = Parameters["VertexShaderOptions"];
             morphConfig = Parameters["MorphConfig"];
             morphWeights = Parameters["MorphWeights"];
             shadowMapIndex = Parameters["ShadowMapIndex"];

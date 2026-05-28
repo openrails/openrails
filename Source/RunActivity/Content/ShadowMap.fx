@@ -21,6 +21,23 @@
 //                     S H A D O W   M A P   S H A D E R                      //
 ////////////////////////////////////////////////////////////////////////////////
 
+#define VERTEX_OPTION_NONE                          0u
+#define VERTEX_OPTION_HAS_SKIN                  (1u << 0)
+#define VERTEX_OPTION_NORM_USHORT_WEIGHT        (1u << 1)
+#define VERTEX_OPTION_NORM_USHORT_COLOR         (1u << 2)
+#define VERTEX_OPTION_NORM_USHORT_POSITION      (1u << 3)
+#define VERTEX_OPTION_NORM_USHORT_TEXCOORD      (1u << 4)
+#define VERTEX_OPTION_NORM_SBYTE_NORMAL         (1u << 5)
+#define VERTEX_OPTION_NORM_SBYTE_TANGENT        (1u << 6)
+#define VERTEX_OPTION_NORM_SBYTE_POSITION       (1u << 7)
+#define VERTEX_OPTION_NORM_SBYTE_TEXCOORD       (1u << 8)
+#define VERTEX_OPTION_INT_SBYTE_POSITION        (1u << 9)
+#define VERTEX_OPTION_INT_SBYTE_TEXCOORD        (1u << 10)
+#define VERTEX_OPTION_INT_USHORT_POSITION       (1u << 11)
+#define VERTEX_OPTION_INT_USHORT_TEXCOORD       (1u << 12)
+#define VERTEX_OPTION_SKIN_JOINT_SINGLE         (1u << 13)
+#define VERTEX_OPTION_SKIN_JOINT_DOUBLE         (1u << 14)
+
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
 cbuffer PerFrame
@@ -36,7 +53,7 @@ cbuffer PerObject
     float4 MorphConfig[2]; // 0.x: POS, 0.y: NORM, 0.z: TANG, 0.w: TEX0, 1.x: TEX1, 1.y: COL0, 1.z: targets count, 1.w: attributes count
     float4 MorphWeights[2];
     float ImageBlurStep; // = 1 / shadow map texture width and height
-    bool HasSkin;
+    int VertexShaderOptions;
 };
 
 int    ShadowMapIndex;
@@ -78,7 +95,7 @@ struct VERTEX_INPUT_BLUR
 struct VERTEX_INPUT_NORMALMAP
 {
 	float4 Position    : POSITION;
-	float2 TexCoord    : TEXCOORD0;
+	float2 TexCoords    : TEXCOORD0;
 	float3 Normal      : NORMAL;
 	float4 Tangent     : TANGENT;
 	float2 TexCoordsPbr: TEXCOORD1;
@@ -89,7 +106,7 @@ struct VERTEX_INPUT_NORMALMAP
 struct VERTEX_INPUT_SKINNED
 {
 	float4 Position    : POSITION;
-	float2 TexCoord    : TEXCOORD0;
+	float2 TexCoords    : TEXCOORD0;
 	float3 Normal      : NORMAL;
 	float4 Tangent     : TANGENT;
 	float2 TexCoordsPbr: TEXCOORD1;
@@ -130,20 +147,122 @@ struct VERTEX_OUTPUT_BLUR
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
 
-VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
+float4x4 _VSBoneMatrix(int index)
 {
+    float4 row1 = BonesTexture.Load(int3(0, index, 0));
+    float4 row2 = BonesTexture.Load(int3(1, index, 0));
+    float4 row3 = BonesTexture.Load(int3(2, index, 0));
+    float4 row4 = BonesTexture.Load(int3(3, index, 0));
+
+    return float4x4(row1, row2, row3, row4);
+}
+
+float4x4 _VSSkinTransform(in int4 Joints, in float4 Weights)
+{
+    float4x4 skinTransform = 0;
+
+    skinTransform += _VSBoneMatrix(Joints.x) * (float) Weights.x;
+    skinTransform += _VSBoneMatrix(Joints.y) * (float) Weights.y;
+    skinTransform += _VSBoneMatrix(Joints.z) * (float) Weights.z;
+    skinTransform += _VSBoneMatrix(Joints.w) * (float) Weights.w;
+
+    return skinTransform;
+}
+
+VERTEX_OUTPUT _VSPbr(float4 position, float3 normal, float4 tangent,
+                        float2 texCoordsBase, float2 texCoordsPbr, float4 color,
+                        int4 joints, float4 weights,
+                        float4x4 instance, float4 morphTargets[8])
+{
+    // Workaround for the MonoGame limitation of not being able to supply these vertex attribute formats...
+    if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_POSITION) != 0u)
+        position.xyz = position.xyz * 2.0 - 1.0;
+    else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_POSITION) != 0u)
+        position.xyz = position.xyz * 0.5 + 0.5;
+    else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_POSITION) != 0u)
+        position.xyz = (position.xyz <= 127) ? position.xyz : position.xyz - 256;
+    else if ((VertexShaderOptions & VERTEX_OPTION_INT_USHORT_POSITION) != 0u)
+        position.xyz = (position.xyz >= 0) ? position.xyz : position.xyz + 65536;
+
+    if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_WEIGHT) != 0u)
+        weights = weights * 0.5 + 0.5;
+
+    if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_TEXCOORD) != 0u)
+    {
+        texCoordsBase = texCoordsBase * 2.0 - 1.0;
+        texCoordsPbr = texCoordsPbr * 2.0 - 1.0;
+    }
+    else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_TEXCOORD) != 0u)
+    {
+        texCoordsBase = texCoordsBase * 0.5 + 0.5;
+        texCoordsPbr = texCoordsPbr * 0.5 + 0.5;
+    }
+    else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_TEXCOORD) != 0u)
+    {
+        texCoordsBase = (texCoordsBase <= 127) ? texCoordsBase : texCoordsBase - 256;
+        texCoordsPbr = (texCoordsPbr <= 127) ? texCoordsPbr : texCoordsPbr - 256;
+    }
+    else if ((VertexShaderOptions & VERTEX_OPTION_INT_USHORT_TEXCOORD) != 0u)
+    {
+        texCoordsBase = (texCoordsBase >= 0) ? texCoordsBase : texCoordsBase + 65536;
+        texCoordsPbr = (texCoordsPbr >= 0) ? texCoordsPbr : texCoordsPbr + 65536;
+    }
+
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
-	if (determinant(In.Instance) != 0) {
-		In.Position = mul(In.Position, transpose(In.Instance));
-		In.Normal = mul(In.Normal, (float3x3)transpose(In.Instance));
-	}
+	if (determinant(instance) != 0)
+		position = mul(position, transpose(instance));
 
-    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
-	Out.TexCoord_Depth.xy = In.TexCoord;
+    Out.Position = position;
+    
+    int attrCount = MorphConfig[1].w;
+
+    [unroll(8)]
+    for (int i = 0; i < MorphConfig[1].z; i++)
+    {
+        float weight = MorphWeights[i / 4][i % 4];
+        int offset = attrCount * i;
+
+        if (MorphConfig[0].x != -1)
+            Out.Position.xyz += morphTargets[offset + MorphConfig[0].x].xyz * weight;
+        if (MorphConfig[0].w != -1)
+            Out.TexCoord_Depth.xy += morphTargets[offset + MorphConfig[0].w].xy * weight;
+    }
+
+    float4x4 worldTransform = World;
+    if ((VertexShaderOptions & VERTEX_OPTION_HAS_SKIN) != 0u)
+    {
+        if ((VertexShaderOptions & VERTEX_OPTION_SKIN_JOINT_SINGLE) != 0u)
+            worldTransform = _VSBoneMatrix(joints.x);
+        else
+            worldTransform = _VSSkinTransform(joints, weights);
+    }
+
+    Out.Position = mul(mul(mul(Out.Position, worldTransform), View), Projection);
+	Out.TexCoord_Depth.xy = texCoordsBase;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
 	return Out;
+}
+
+VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
+{
+    return _VSPbr(In.Position, In.Normal, float4(0, 0, 0, 1), In.TexCoord, float2(0, 0), float4(1, 1, 1, 1), min16uint4(0, 0, 0, 0), float4(0, 0, 0, 0), In.Instance, (float4[8]) 0);
+}
+
+VERTEX_OUTPUT VSShadowMapNormalMap(in VERTEX_INPUT_NORMALMAP In)
+{
+    return _VSPbr(In.Position, In.Normal, In.Tangent, In.TexCoords, In.TexCoordsPbr, In.Color, min16uint4(0, 0, 0, 0), float4(0, 0, 0, 0), In.Instance, (float4[8]) 0);
+}
+
+VERTEX_OUTPUT VSShadowMapSkinned(in VERTEX_INPUT_SKINNED In)
+{
+    return _VSPbr(In.Position, In.Normal, In.Tangent, In.TexCoords, In.TexCoordsPbr, In.Color, In.Joints, In.Weights, In.Instance, (float4[8]) 0);
+}
+
+VERTEX_OUTPUT VSShadowMapMorphed(in VERTEX_INPUT_MORPHED In)
+{
+    return _VSPbr(In.Position, In.Normal, In.Tangent, In.TexCoords, In.TexCoordsPbr, In.Color, In.Joints, In.Weights, (float4x4) 0, In.MorphTargets);
 }
 
 VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT_FOREST In)
@@ -191,92 +310,6 @@ VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT_BLUR In)
 	Out.SampleCentre = offsetTexCoord * ImageBlurStep;
 	Out.Sample_01 = (offsetTexCoord - float2(0, 1.5)) * ImageBlurStep;
 	Out.Sample_23 = (offsetTexCoord + float2(0, 1.5)) * ImageBlurStep;
-
-	return Out;
-}
-
-VERTEX_OUTPUT VSShadowMapNormalMap(in VERTEX_INPUT_NORMALMAP In)
-{
-	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
-
-	if (determinant(In.Instance) != 0) {
-		In.Position = mul(In.Position, transpose(In.Instance));
-	}
-
-    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
-	Out.TexCoord_Depth.xy = In.TexCoord;
-	Out.TexCoord_Depth.z = Out.Position.z;
-
-	return Out;
-}
-
-float4x4 _VSBoneMatrix(min16uint index)
-{
-    float4 row1 = BonesTexture.Load(int3(0, index, 0));
-    float4 row2 = BonesTexture.Load(int3(1, index, 0));
-    float4 row3 = BonesTexture.Load(int3(2, index, 0));
-    float4 row4 = BonesTexture.Load(int3(3, index, 0));
-
-    return float4x4(row1, row2, row3, row4);
-}
-
-float4x4 _VSSkinTransform(in min16uint4 Joints, in float4 Weights)
-{
-    float4x4 skinTransform = 0;
-
-    skinTransform += _VSBoneMatrix(Joints.x) * (float) Weights.x;
-    skinTransform += _VSBoneMatrix(Joints.y) * (float) Weights.y;
-    skinTransform += _VSBoneMatrix(Joints.z) * (float) Weights.z;
-    skinTransform += _VSBoneMatrix(Joints.w) * (float) Weights.w;
-
-    return skinTransform;
-}
-
-VERTEX_OUTPUT VSShadowMapSkinned(in VERTEX_INPUT_SKINNED In)
-{
-	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
-
-	if (determinant(In.Instance) != 0) {
-		In.Position = mul(In.Position, transpose(In.Instance));
-	}
-
-    float4x4 skinTransform = _VSSkinTransform(In.Joints, In.Weights);
-
-	In.Position = mul(In.Position, skinTransform);
-
-    Out.Position = mul(mul(mul(In.Position, World), View), Projection);
-	Out.TexCoord_Depth.xy = In.TexCoord;
-	Out.TexCoord_Depth.z = Out.Position.z;
-
-	return Out;
-}
-
-VERTEX_OUTPUT VSShadowMapMorphed(in VERTEX_INPUT_MORPHED In)
-{
-	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
-
-    float4x4 skinTransform = HasSkin ? _VSSkinTransform(In.Joints, In.Weights) : Identity;
-
-    Out.Position = In.Position;
-    Out.TexCoord_Depth.xy = In.TexCoords;
-    
-    int attrCount = MorphConfig[1].w;
-
-    [unroll(8)]
-    for (int i = 0; i < MorphConfig[1].z; i++)
-    {
-        float weight = MorphWeights[i / 4][i % 4];
-        int offset = attrCount * i;
-
-        if (MorphConfig[0].x != -1)
-            Out.Position.xyz += In.MorphTargets[offset + MorphConfig[0].x].xyz * weight;
-        if (MorphConfig[0].w != -1)
-            Out.TexCoord_Depth.xy += In.MorphTargets[offset + MorphConfig[0].w].xy * weight;
-    }
-
-    Out.Position = mul(Out.Position, skinTransform);
-    Out.Position = mul(mul(mul(Out.Position, World), View), Projection);
-	Out.TexCoord_Depth.z = Out.Position.z;
 
 	return Out;
 }
