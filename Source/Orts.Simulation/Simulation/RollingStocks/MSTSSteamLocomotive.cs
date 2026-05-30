@@ -75,6 +75,8 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using LibGit2Sharp;
+using Microsoft.CodeAnalysis;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Media;
 using Orts.Common;
@@ -1262,6 +1264,10 @@ namespace Orts.Simulation.RollingStocks
         float EvaporationAreaM2;  // No longer required??
         float SuperheatAreaM2;      // Heating area of superheater
 
+        double HallMaxSteam_kgps;
+        double FuelFeed_kgps;
+
+
         // Front End
         double SmokeBoxBlastNozzleDiameterM = Me.FromIn(5.375f);     // ~5.7 in equivalent or 2.91" at choke point?
         double ChimneyDiameterM = Me.FromIn(15.625f);     // ~15.625 in choke        
@@ -1280,6 +1286,26 @@ namespace Orts.Simulation.RollingStocks
 
         SmoothedData HallFrontEndLimitGasFlow_kgpsSmooth = new SmoothedData(0.45f); // HallCombustion Gas Flow)
         float HallFrontEndLimitGasFlow_kgpsSmoothed;
+
+        // ======================================================
+        // STOKER OVERLOAD LOCKOUT
+        // ======================================================
+
+        // Prevents rapid ON/OFF stoker oscillation
+        // when firebed reaches overload condition.
+
+        private bool StokerLockedOut = false;
+
+        // Optional debug visibility
+        private double StokerRestartThresholdKG = 0.0;
+        private double StokerLockoutThresholdKG = 0.0;
+        double CurrentFiremanFatigue_0_1 = 0.0;
+
+        double ActiveFireMass_kg;
+        private bool FiredoorOpenForFiring = false;
+        private double FiredoorHoldTimerS = 0.0;
+        double FiremanShovelAccumulatorKG;
+        float FuelFeedFireDoorControl = 0;
 
         public class BoilerFuelProperties
         {
@@ -1465,6 +1491,166 @@ namespace Orts.Simulation.RollingStocks
     }
                 };
 
+
+
+        // Fuel Management Model
+
+        // ======================================================
+        // FUEL FEED SYSTEM
+        // ======================================================
+
+        // ------------------------------------------------------
+        // Fuel feed operating modes
+        // ------------------------------------------------------
+
+        public enum FiremanOperatingMode
+        {
+            Banked,
+            Idle,
+            WorkingLight,
+            WorkingHeavy,
+            Recovery
+        }
+
+        public enum FuelFeedControlModes
+        {
+            Manual,
+            AI
+        }
+
+        public enum FuelFeedSystemTypes
+        {
+            Shovel,
+            MechanicalStoker,
+            OilBurner
+        }
+
+        // ------------------------------------------------------
+        // User selections
+        // ------------------------------------------------------
+
+        public FuelFeedControlModes FuelFeedControlMode =
+            FuelFeedControlModes.AI;
+
+        public FuelFeedSystemTypes FuelFeedSystemType =
+            FuelFeedSystemTypes.Shovel;
+
+        // ------------------------------------------------------
+        // AI firing
+        // ------------------------------------------------------
+
+        public bool UseAIFireman = true;
+
+        // ------------------------------------------------------
+        // Manual controls
+        // ------------------------------------------------------
+
+        // shovel firing trigger
+        public bool FiremanShovelCommand = false;
+
+        // shovel size
+        public double HallShovelMassKG;
+
+        // manual stoker command
+        public double DriverStokerCommand_0_1 = 0.0;
+
+        // manual oil firing command
+        public double DriverOilValveCommand_0_1 = 0.0;
+
+        // ------------------------------------------------------
+        // Dynamic fuel feed
+        // ------------------------------------------------------
+
+        // RAW instantaneous target feed request
+        public double TargetFuelFeedRateKGpS = 0.0;
+
+        // PHYSICAL delayed fuel delivery
+        public double HallFuelFeedRateSmoothedKGpS = 0.0;
+
+        // RESPONSE TIME CONSTANT
+        // *** THIS WAS THE MISSING VARIABLE ***
+        public double FuelFeedResponseTimeSeconds = 20.0;
+
+        // final feed actually entering combustion model
+        public double HallFuelFeedRateKGpS = 0.0;
+
+        // ------------------------------------------------------
+        // Mechanical stoker
+        // ------------------------------------------------------
+
+        public double MechanicalStokerMaxFeedKGpS = 4.5;
+
+        // ------------------------------------------------------
+        // Oil burner
+        // ------------------------------------------------------
+
+        public double OilBurnerMaxFeedKGpS = 3.5;
+
+        // ------------------------------------------------------
+        // Shovel firing
+        // ------------------------------------------------------
+
+        public double PendingShovelFuelKG = 0.0;
+
+        public double ShovelDeliveryRateKGpS = 1.2;
+
+        public double FiremanRecoveryTimerS = 0.0;
+
+        public double FiremanRecoveryTimeSeconds = 5.0;
+
+        // ------------------------------------------------------
+        // AI firing targets
+        // ------------------------------------------------------
+
+        public double TargetFirebedMassKG = 0.0;
+
+        public double TargetSteamGenerationKGpS = 0.0;
+
+        public double AIReserveFactor = 1.15;
+
+        // ------------------------------------------------------
+        // Route anticipation
+        // ------------------------------------------------------
+
+        public bool AIExpectHeavyGrade = false;
+
+        public double UpcomingGradePercent = 0.0;
+
+        public double AnticipatoryFireBoost = 0.0;
+
+        // ------------------------------------------------------
+        // Boiler protection
+        // ------------------------------------------------------
+
+        public double SafetyValveMarginPSI = 6.0;
+
+        // ------------------------------------------------------
+        // Firebed physics layering
+        // ------------------------------------------------------
+
+        public bool UseLayeredFirebedPhysics = true;
+
+        // fresh fuel layer
+        public double FreshFuelLayerKG = 0.0;
+
+        // devolatilizing layer
+        public double VolatileLayerKG = 0.0;
+
+        // incandescent coke layer
+        public double CokeLayerKG = 0.0;
+
+        // ash layer
+        public double AshLayerKG = 0.0;
+
+        // ------------------------------------------------------
+        // Layer transition rates
+        // ------------------------------------------------------
+
+        public double FreshToVolatileRate = 0.08;
+
+        public double VolatileToCokeRate = 0.05;
+
+        public double CokeToAshRate = 0.025;
 
         public double ValveEccentricRadiusM;   // Eccentric Radius (r) - typically half of total valve travel, say 2.25 inches for a 4.5 inch cylinder stroke
         public double ValvePortWidthM;      // Valve travel (2r) - Eccentric Radius (r) (Typically half of total valve travel) = 2.25in
@@ -2605,6 +2791,96 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 //                Console.WriteLine($"BurnLimit Initialise {MaxFuelBurnLimitKgpS:F4} kg/s : Effective Combustion Area = {EffectiveCombustionAreaM2:F4} m^2 : MaxCumbustionIntensity = {fuel.MaxCombustionIntensity_kg_m2_s:F4} kg/m^2/s");
 
             }
+
+            if (HallShovelMassKG == 0 && ShovelMassKG != 0)
+            {
+                HallShovelMassKG = ShovelMassKG;
+            }
+            else
+            {
+                HallShovelMassKG = 6;
+            }
+
+
+                // ======================================================
+                // INITIALIZE FUEL FEED SYSTEM
+                // ======================================================
+
+                // reset feed system
+            HallFuelFeedRateSmoothedKGpS = 0.0;
+            TargetFuelFeedRateKGpS = 0.0;
+            HallFuelFeedRateKGpS = 0.0;
+
+            PendingShovelFuelKG = 0.0;
+
+            FreshFuelLayerKG = 0.0;
+            VolatileLayerKG = 0.0;
+            CokeLayerKG = 0.0;
+            AshLayerKG = 0.0;
+
+            // ------------------------------------------------------
+            // Configure feed response times
+            // ------------------------------------------------------
+
+            switch (SteamLocomotiveFuelType)
+            {
+                case SteamLocomotiveFuelTypes.Coal:
+
+                    if (FuelFeedSystemType ==
+                        FuelFeedSystemTypes.Shovel)
+                    {
+                        // hand-fired coal
+                        FuelFeedResponseTimeSeconds =
+                            UseLayeredFirebedPhysics ? 24.0 : 35.0;
+                    }
+                    else
+                    {
+                        // mechanical stoker coal
+                        FuelFeedResponseTimeSeconds =
+                            UseLayeredFirebedPhysics ? 8.0 : 12.0;
+                    }
+
+                    break;
+
+                case SteamLocomotiveFuelTypes.Wood:
+
+                    FuelFeedResponseTimeSeconds =
+                        UseLayeredFirebedPhysics ? 14.0 : 20.0;
+
+                    break;
+
+                default: // oil
+
+                    FuelFeedResponseTimeSeconds = 4.0;
+
+                    break;
+            }
+
+            // ------------------------------------------------------
+            // Firebed targets
+            // ------------------------------------------------------
+
+            switch (SteamLocomotiveFuelType)
+            {
+                case SteamLocomotiveFuelTypes.Coal:
+
+                    TargetFirebedMassKG = 0.85 * MaxFirebedMass_kg;
+
+                    break;
+
+                case SteamLocomotiveFuelTypes.Wood:
+
+                    TargetFirebedMassKG = 0.75 * MaxFirebedMass_kg;
+
+                    break;
+
+                default:
+
+                    TargetFirebedMassKG = 0.0;
+
+                    break;
+            }
+
 
 
 
@@ -5825,16 +6101,748 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             #endregion
         }
 
-
+        /// <summary>
+        ///
+        /// AI / Driver command 
+        /// → TargetFuelFeedRateKGpS
+        /// → Fuel delivery lag filter
+        /// → HallFuelFeedRateSmoothedKGpS
+        /// → (optional firebed layering physics)
+        /// → HallFuelFeedRateKGpS
+        /// → combustion model
+        /// 
+        /// 
+        /// TargetFuelFeedRateKGpS - requested fuel
+        /// HallFuelFeedRateSmoothedKGpS - mechanically delayed delivery
+        /// HallFuelFeedRateKGpS - actual thermally active fuel
+        /// 
+        /// </summary>
+        /// <param name="elapsedClockSeconds"></param>
         private void UpdateFuelFeedtoFirebed(float elapsedClockSeconds)
         {
 
+            // Temporary Operating States
+            UseLayeredFirebedPhysics = false;
+
+        BoilerFuelProperties fuel = FuelDatabase[SteamLocomotiveFuelType];
+
+            double dt = Math.Max(elapsedClockSeconds, 0.001);
+
+            // =========================================================================
+            // 1. DERIVED OPERATING STATE
+            // =========================================================================
+
+            // Remove at some stage as this maybe incorrect
+            if (throttle < 0.01)
+            {
+                SteamCylinderConsumptionRateKgpS = 0;
+            }
+
+            double SteamDemandRatio = SteamCylinderConsumptionRateKgpS / Math.Max(HallMaxSteam_kgps, 0.1);
+
+            SteamDemandRatio = Math.Max(0.0, Math.Min(SteamDemandRatio, 2.0));
+
+            double BoilerPressureRatio = BoilerPressurePSI / Math.Max(MaxBoilerPressurePSI, 1.0);
+
+            BoilerPressureRatio = Math.Max(0.0, Math.Min(BoilerPressureRatio, 1.2));
+
+            double BoilerPressureError = 1.0 - BoilerPressureRatio;
+
+            BoilerPressureError = Math.Max(0.0, BoilerPressureError);
+
+            // =========================================================================
+            // 2. FIREMAN OPERATING MODE SELECTION
+            // =========================================================================
+
+            FiremanOperatingMode FireMode;
+
+            if (BoilerPressureRatio > 0.985 && SteamDemandRatio < 0.02)
+            {
+                FireMode = FiremanOperatingMode.Banked;
+            }
+            else if (BoilerPressureRatio < 0.82)
+            {
+                FireMode = FiremanOperatingMode.Recovery;
+            }
+            else if (SteamDemandRatio < 0.08)
+            {
+                FireMode = FiremanOperatingMode.Idle;
+            }
+            else if (SteamDemandRatio < 0.45)
+            {
+                FireMode = FiremanOperatingMode.WorkingLight;
+            }
+            else
+            {
+                FireMode = FiremanOperatingMode.WorkingHeavy;
+            }
+
+            // =========================================================================
+            // 3. ANTICIPATORY FIRING
+            // =========================================================================
+
+            double AnticipatoryFireBoost = 0.0;
+
+            if (AIExpectHeavyGrade)
+            {
+                AnticipatoryFireBoost = 0.08 + 0.03 * UpcomingGradePercent;
+            }
+
+            // =========================================================================
+            // 4. FIREBED INVENTORY TARGETING
+            // =========================================================================
+
+            double DesiredFirebedFraction;
+
+            switch (FireMode)
+            {
+                case FiremanOperatingMode.Banked: DesiredFirebedFraction = 0.35;
+                    break;
+
+                case FiremanOperatingMode.Idle: DesiredFirebedFraction = 0.50;
+                    break;
+
+                case FiremanOperatingMode.WorkingLight: DesiredFirebedFraction = 0.72;
+                    break;
+
+                case FiremanOperatingMode.WorkingHeavy: DesiredFirebedFraction = 0.92;
+                    break;
+
+                default: // Recovery
+                    DesiredFirebedFraction = 1.05;
+                    break;
+            }
+
+            double DesiredFirebedMassKG = TargetFirebedMassKG * DesiredFirebedFraction;
+
+            double FirebedError = (DesiredFirebedMassKG - ActiveFireMass_kg) / Math.Max(TargetFirebedMassKG, 1.0);
+
+            // =========================================================================
+            // 5. FIRE MAINTENANCE DEMAND
+            // =========================================================================
+
+            // Represents minimum fuel needed to keep fire alive.
+
+            double FireMaintenanceDemand;
+
+            if (fuel.UsesFirebed)
+            {
+                FireMaintenanceDemand = 0.015 + 0.020 * fuel.VolatileFraction;
+            }
+            else
+            {
+                FireMaintenanceDemand = 0.0;
+            }
+
+            // =========================================================================
+            // 6. STEAM PRODUCTION DEMAND
+            // =========================================================================
+
+            double SteamProductionDemand = 0.60 * SteamDemandRatio + 0.30 * BoilerPressureError;
+
+            // =========================================================================
+            // 7. FIREBED RECOVERY DEMAND
+            // =========================================================================
+
+            double FirebedRecoveryDemand = 0.45 * FirebedError;
+
+            // =====================================================================
+            // LOW FIREBED RECOVERY / FIRE COLLAPSE PROTECTION
+            // =====================================================================
+
+            double FirebedMassRatio = ActiveFireMass_kg / Math.Max(TargetFirebedMassKG, 1.0);
+
+            // Tracks severe fire depletion.
+            bool FirebedCriticallyLow = false;
+
+            // =====================================================================
+            // SUSTAINABLE FIREBED MASS MONITORING
+            // =====================================================================
+
+            // =====================================================================
+            // PREDICTED FIRE CONSUMPTION RATE
+            // =====================================================================
+
+            // Use forward-looking combustion demand, not delayed historical combustion output.
+
+            // Steam demand driven burn estimate.
+
+            double BurnRateFromCombustion = HallFuelFeedRateKGpS;
+
+            double BurnRateFromAirflow = Airflow_kgps / AirToFuelRatio;
+
+            double PredictedBurnRateKGpS = Math.Max(BurnRateFromCombustion, BurnRateFromAirflow);
+            // -------------------------------------------------------------
+            // Fire survival time
+            // -------------------------------------------------------------
+
+            double FireSurvivalTimeS = ActiveFireMass_kg / Math.Max(PredictedBurnRateKGpS, 0.01);
+            // double FireSurvivalTimeS = FirebedMass_kg / Math.Max(HallBurnRateSmoothedKgpS, 0.01);
+
+            // -------------------------------------------------------------
+            // Survival-time emergency detection
+            // -------------------------------------------------------------
+
+            // Hand-fired locomotives require substantial reserve.
+
+            double MinimumSafeFireTimeS;
+
+            switch (FuelFeedSystemType)
+            {
+                case FuelFeedSystemTypes.Shovel:
+
+                    MinimumSafeFireTimeS = 180.0 + 240.0 * SteamDemandRatio; 
+
+                    break;
+
+                case FuelFeedSystemTypes.MechanicalStoker:
+
+                    MinimumSafeFireTimeS = 120.0;
+
+                    break;
+
+                default:
+
+                    MinimumSafeFireTimeS = 30.0;
+
+                    break;
+            }
+
+            double SurvivalDeficit = 0;
+
+            if (FireSurvivalTimeS < MinimumSafeFireTimeS)
+            {
+                FirebedCriticallyLow = true;
+
+                SurvivalDeficit = 1.0 - (FireSurvivalTimeS / MinimumSafeFireTimeS);
+
+                // VERY strong rebuild demand.
+
+                FirebedRecoveryDemand += 0.85 * SurvivalDeficit;
+            }
+
+        //    Console.WriteLine($"Firebed Critical - {FirebedCriticallyLow} : FireMode {FireMode}: FireMass {FireMassKG:F3} : FireSurvivalTime {FireSurvivalTimeS:F3} : SteamConsumption {SteamCylinderConsumptionRateKgpS:F3} : BurnRate {HallBurnRateSmoothedKgpS:F3} : FeedRate {FuelFeed_kgps:F3} : FirebedRecoveryDemand {FirebedRecoveryDemand:F3} : SurvivalDeficit {SurvivalDeficit}");
 
 
+            // =========================================================================
+            // 8. MODE-DEPENDENT FIRING CONTROL
+            // =========================================================================
 
+            // Thin fire overrides banking mode.
+            // Prevents fire from dying while standing.
 
+            if (FirebedCriticallyLow && FireMode == FiremanOperatingMode.Banked)
+            {
+                FireMode = FiremanOperatingMode.Recovery;
+            }
 
+            double AIBaseFeedKGpS = 0.0;
+
+            switch (FireMode)
+            {
+                case FiremanOperatingMode.Banked:
+
+                    // Fireman stops firing entirely.
+                    AIBaseFeedKGpS = 0.0;
+
+                    break;
+
+                case FiremanOperatingMode.Idle:
+
+                    // Maintain small stable fire.
+                    AIBaseFeedKGpS = FireMaintenanceDemand + 0.15 * BoilerPressureError + 0.20 * FirebedRecoveryDemand;
+
+       //         Console.WriteLine($"Firing Control - FireMode {FireMode} : AIBaseFeedKGpS {AIBaseFeedKGpS:F3} : FireMaintenanceDemand {FireMaintenanceDemand:F3} : BoilerPressureError {BoilerPressureError:F3} : FirebedRecoveryDemand {FirebedRecoveryDemand:F3}");
+
+                    break;
+
+                case FiremanOperatingMode.WorkingLight:
+
+                    AIBaseFeedKGpS = FireMaintenanceDemand + 0.55 * SteamProductionDemand + 0.30 * FirebedRecoveryDemand + AnticipatoryFireBoost;
+
+                    break;
+
+                case FiremanOperatingMode.WorkingHeavy:
+
+                    AIBaseFeedKGpS = FireMaintenanceDemand + 0.90 * SteamProductionDemand + 0.45 * FirebedRecoveryDemand + AnticipatoryFireBoost;
+
+                    break;
+
+                case FiremanOperatingMode.Recovery:
+
+                    // Aggressive rebuild after pressure collapse.
+
+                    AIBaseFeedKGpS = FireMaintenanceDemand + 1.15 * SteamProductionDemand + 0.65 * FirebedRecoveryDemand +    AnticipatoryFireBoost;
+
+                    break;
+            }
+
+            // =========================================================================
+            // 9. SAFETY VALVE PROTECTION
+            // =========================================================================
+
+            double PressureLimiter = 1.0;
+
+            if (BoilerPressurePSI > MaxBoilerPressurePSI - SafetyValveMarginPSI)
+            {
+                double ExcessPressure = BoilerPressurePSI - (MaxBoilerPressurePSI - SafetyValveMarginPSI);
+
+                PressureLimiter = 1.0 - Math.Min(ExcessPressure / Math.Max(SafetyValveMarginPSI, 0.1), 1.0);
+            }
+
+            AIBaseFeedKGpS *= PressureLimiter;
+
+            // =========================================================================
+            // 10. CLAMP AI FEED
+            // =========================================================================
+
+            AIBaseFeedKGpS = Math.Max(0.0, AIBaseFeedKGpS);
+
+            // =====================================================================
+            // FIREBED OVERLOAD / STOKER LOCKOUT SYSTEM
+            // =====================================================================
+
+            if (fuel.UsesFirebed)
+            {
+
+                // -------------------------------------------------------------
+                // Hysteresis thresholds
+                // -------------------------------------------------------------
+
+                // Stoker stops here.
+                StokerLockoutThresholdKG = MaxFirebedMass_kg;
+
+                // Stoker allowed to restart here.
+                // Must be LOWER than stop threshold.
+                // This creates hysteresis.
+                StokerRestartThresholdKG = MaxFirebedMass_kg * 0.90;
+
+                // -------------------------------------------------------------
+                // Mechanical stoker lockout logic
+                // -------------------------------------------------------------
+
+                if (FuelFeedSystemType == FuelFeedSystemTypes.MechanicalStoker)
+                {
+                    // Engage lockout.
+                    if (ActiveFireMass_kg >= StokerLockoutThresholdKG)
+                    {
+                        StokerLockedOut = true;
+                    }
+
+                    // Release lockout.
+                    else if (ActiveFireMass_kg <= StokerRestartThresholdKG)
+                    {
+                        StokerLockedOut = false;
+                    }
+
+                    // Apply lockout.
+                    if (StokerLockedOut)
+                    {
+                        AIBaseFeedKGpS = 0.0;
+                    }
+                }
+
+                // -------------------------------------------------------------
+                // Hand firing suppression
+                // -------------------------------------------------------------
+
+                else if (FuelFeedSystemType == FuelFeedSystemTypes.Shovel)
+                {
+                    // Fireman gradually reduces firing
+                    // as firebed approaches overload.
+
+                    double SuppressionStartKG = MaxFirebedMass_kg * 0.92;
+
+                    if (ActiveFireMass_kg > SuppressionStartKG)
+                    {
+                        double SuppressionFactor = 1.0 - ((ActiveFireMass_kg - SuppressionStartKG) / (MaxFirebedMass_kg - SuppressionStartKG));
+
+                        SuppressionFactor = Math.Max(0.0, Math.Min(SuppressionFactor, 1.0));
+
+                        AIBaseFeedKGpS *= SuppressionFactor;
+                    }
+
+                    // Absolute stop.
+                    if (ActiveFireMass_kg >= MaxFirebedMass_kg)
+                    {
+                        AIBaseFeedKGpS = 0.0;
+                    }
+                }
+            }
+
+            // =====================================================================
+            // MAXIMUM FIRING CAPACITY / FIREMAN FATIGUE MODEL
+            // =====================================================================
+
+            // Max sustainable firing rate.
+            // Represents:
+            //  - physical shoveling ability
+            //  - stoker throughput
+            //  - firedoor handling limits
+
+            double SustainedMaxFeedKGpS = MaxFiringRateKGpS;
+
+            // Short-term overload reserve.
+            // Human firemen can exceed sustainable rate briefly.
+            // Mechanical stokers only slightly.
+            // Oil burners effectively none.
+
+            double ShortTermOverfireFactor;
+
+            switch (FuelFeedSystemType)
+            {
+                case FuelFeedSystemTypes.Shovel:
+
+                    // Human fireman can heavily overfire briefly.
+                    ShortTermOverfireFactor = 1.35;
+
+                    break;
+
+                case FuelFeedSystemTypes.MechanicalStoker:
+
+                    // Mechanical stokers can overload slightly.
+                    ShortTermOverfireFactor = 1.12;
+
+                    break;
+
+                default: // oil
+
+                    // Oil systems already near continuous limit.
+                    ShortTermOverfireFactor = 1.02;
+
+                    break;
+            }
+
+            // Absolute short-term limit.
+            double AbsoluteMaxFeedKGpS = SustainedMaxFeedKGpS * ShortTermOverfireFactor;
+
+            // ======================================================
+            // FIREMAN FATIGUE ACCUMULATION
+            // ======================================================
+
+            // Current overload ratio.
+            double OverfireRatio = AIBaseFeedKGpS / Math.Max(SustainedMaxFeedKGpS, 0.01);
+
+            // Fatigue accumulation.
+            // Rises rapidly when overfiring.
+
+            if (OverfireRatio > 1.0)
+            {
+                double FatigueBuildRate = (OverfireRatio - 1.0) * 0.045;
+
+                CurrentFiremanFatigue_0_1 += FatigueBuildRate * dt;
+            }
+            else
+            {
+                // Recovery while below sustained rate.
+                double RecoveryRate = 0.018;
+
+                CurrentFiremanFatigue_0_1 -= RecoveryRate * dt;
+            }
+
+            // Clamp fatigue.
+            CurrentFiremanFatigue_0_1 = Math.Max(0.0, Math.Min(CurrentFiremanFatigue_0_1, 1.0));
+
+            // ======================================================
+            // FATIGUE EFFECT
+            // ======================================================
+
+            // As fatigue rises:
+            //  - effective firing capability falls
+            //  - overload reserve disappears
+
+            double FatiguePenalty = 1.0 - 0.45 * CurrentFiremanFatigue_0_1;
+
+            // Reduce effective sustainable capability.
+            double EffectiveMaxFeedKGpS = SustainedMaxFeedKGpS * FatiguePenalty;
+
+            // Final cap with overload allowance.
+            double EffectiveAbsoluteLimitKGpS = Math.Max(EffectiveMaxFeedKGpS, AbsoluteMaxFeedKGpS * (1.0 - 0.75 * CurrentFiremanFatigue_0_1));
+
+            // ======================================================
+            // FINAL FIRING LIMIT
+            // ======================================================
+
+            AIBaseFeedKGpS = Math.Min(AIBaseFeedKGpS, EffectiveAbsoluteLimitKGpS);
+
+            // =========================================================================
+            // 11. MANUAL CONTROL OVERRIDE
+            // =========================================================================
+
+            if (!UseAIFireman)
+            {
+                switch (FuelFeedSystemType)
+                {
+                    case FuelFeedSystemTypes.MechanicalStoker:
+
+                        AIBaseFeedKGpS = DriverStokerCommand_0_1 * MechanicalStokerMaxFeedKGpS;
+
+                        break;
+
+                    case FuelFeedSystemTypes.Shovel:
+
+                        // handled later
+                        break;
+
+                    default:
+
+                        AIBaseFeedKGpS = DriverOilValveCommand_0_1 * OilBurnerMaxFeedKGpS;
+
+                        break;
+                }
+            }
+
+            // =========================================================================
+            // 12. FUEL DELIVERY SYSTEMS
+            // =========================================================================
+
+            switch (FuelFeedSystemType)
+            {
+                // =====================================================================
+                // HAND FIRING
+                // =====================================================================
+
+                case FuelFeedSystemTypes.Shovel:
+                    {
+                        double DesiredShovelRateKGpS = Math.Max(AIBaseFeedKGpS, 0.0);
+
+                        double MinimumUsefulShovelRate = HallShovelMassKG / 150.0;
+
+                        double FutureProjectedFirebedKG = 0;
+
+                        // =====================================================
+                        // SHOVEL SCHEDULER
+                        // =====================================================
+
+                        if (DesiredShovelRateKGpS > MinimumUsefulShovelRate)
+                        {
+
+                            FiremanShovelAccumulatorKG += DesiredShovelRateKGpS * dt;
+
+                            while (FiremanShovelAccumulatorKG >= HallShovelMassKG)
+                            {
+                                FutureProjectedFirebedKG =
+                                    ActiveFireMass_kg +
+                                    PendingShovelFuelKG +
+                                    HallShovelMassKG;
+
+                                if (FutureProjectedFirebedKG < MaxFirebedMass_kg)
+                                {
+                                    PendingShovelFuelKG += HallShovelMassKG;
+
+                                    FiredoorOpenForFiring = true;
+
+                                    FiredoorHoldTimerS =
+                                        Math.Max(
+                                            FiredoorHoldTimerS,
+                                            4.0);
+                                }
+
+                                FiremanShovelAccumulatorKG -= HallShovelMassKG;
+
+      //                          Console.WriteLine($"Shovel Accumulator Loop - FiremanShovelAccumulator {FiremanShovelAccumulatorKG:F3} : FutureProjectedFirebed {FutureProjectedFirebedKG:F3}");
+
+                            }
+
+                    //        Console.WriteLine($"Shovel Iteration - PendingShovelFuel {PendingShovelFuelKG:F3} : FututreProjected {FutureProjectedFirebedKG:F3} : FiremanShovelAccumulator {FiremanShovelAccumulatorKG:F3} : ActiveFireMass {ActiveFireMass_kg:F3} : HallShovelMass {HallShovelMassKG:F3} : MaxFirebedMass {MaxFirebedMass_kg:F3} : dt {dt:F4}");
+
+                        }
+
+                        // =====================================================
+                        // DELIVER FUEL
+                        // =====================================================
+
+                        double DeliveredFuelKG = Math.Min(PendingShovelFuelKG, ShovelDeliveryRateKGpS * dt);
+
+                        PendingShovelFuelKG -= DeliveredFuelKG;
+
+                        TargetFuelFeedRateKGpS = DeliveredFuelKG / dt;
+
+                        TargetFuelFeedRateKGpS = Math.Min(TargetFuelFeedRateKGpS, EffectiveAbsoluteLimitKGpS);
+
+                  //      Console.WriteLine($"Shovel Feed - TargetFuelFeed {TargetFuelFeedRateKGpS:F3} : PendingShovelFuel {PendingShovelFuelKG:F3} :  AIBaseFeed {AIBaseFeedKGpS:F3} : DesiredShovelRate {DesiredShovelRateKGpS:F3} : MinimumUsefulShovelRate {MinimumUsefulShovelRate:F3}");
+
+                        break;
+                    }
+
+                // =====================================================================
+                // MECHANICAL STOKER
+                // =====================================================================
+
+                case FuelFeedSystemTypes.MechanicalStoker:
+
+                    {
+                        TargetFuelFeedRateKGpS = Math.Min(AIBaseFeedKGpS, MechanicalStokerMaxFeedKGpS);
+                        break;
+                    }
+
+                // =====================================================================
+                // OIL BURNER
+                // =====================================================================
+
+                default:
+
+                    {
+                        TargetFuelFeedRateKGpS = Math.Min(AIBaseFeedKGpS, OilBurnerMaxFeedKGpS);
+                        break;
+                    }
+            }
+
+            // =========================================================================
+            // 13. FIREMAN RECOVERY TIMER
+            // =========================================================================
+
+            if (FiremanRecoveryTimerS > 0.0)
+            {
+                FiremanRecoveryTimerS -= dt;
+            }
+
+            FiremanRecoveryTimerS = Math.Max(FiremanRecoveryTimerS, 0.0);
+
+            // =====================================================
+            // FIREDOOR CONTROL
+            // =====================================================
+
+            if (FiredoorHoldTimerS > 0.0)
+            {
+                FiredoorHoldTimerS -= dt;
+            }
+            else
+            {
+                FiredoorOpenForFiring = false;
+            }
+
+            // -----------------------------------------------------
+            // Continuous firing detection
+            // -----------------------------------------------------
+
+            double ShovelsPerMinute = 60.0 * AIBaseFeedKGpS / Math.Max(HallShovelMassKG, 0.1);
+
+            // Heavy firing:
+            // keep firedoors mostly open continuously.
+
+            if (ShovelsPerMinute > 6.0)
+            {
+                FiredoorOpenForFiring = true;
+            }
+
+            // -----------------------------------------------------
+            // Output to combustion model - to be added later
+            // -----------------------------------------------------
+
+            FuelFeedFireDoorControl = (float)(FiredoorOpenForFiring ? 1.0 : 0.0);
+
+            // =========================================================================
+            // 14. FUEL DELIVERY RESPONSE DYNAMICS
+            // =========================================================================
+
+            // Represents:
+            //  - fuel travel delay
+            //  - stoker inertia
+            //  - oil valve lag
+            //  - fireman handling lag
+
+            double ResponseTau;
+
+            switch (FuelFeedSystemType)
+            {
+                case FuelFeedSystemTypes.Shovel:
+                    ResponseTau = 4.5;
+                    break;
+
+                case FuelFeedSystemTypes.MechanicalStoker:
+                    ResponseTau = 2.0;
+                    break;
+
+                default: // oil
+                    ResponseTau = 0.7;
+                    break;
+            }
+
+            double FuelFeedAlpha = dt / Math.Max(ResponseTau, 0.1);
+
+            FuelFeedAlpha = Math.Min(FuelFeedAlpha, 1.0);
+
+     //     Console.WriteLine($"Smooth Feed - HallFuelFeedSmoothed {HallFuelFeedRateSmoothedKGpS:F3} : TargetFuelFeed {TargetFuelFeedRateKGpS:F3} : FuelFeedAlpha {FuelFeedAlpha:F3} : Diff {((TargetFuelFeedRateKGpS - HallFuelFeedRateSmoothedKGpS) * FuelFeedAlpha):F4}");
+
+            HallFuelFeedRateSmoothedKGpS += (TargetFuelFeedRateKGpS - HallFuelFeedRateSmoothedKGpS) * FuelFeedAlpha;
+
+            HallFuelFeedRateSmoothedKGpS = Math.Max(HallFuelFeedRateSmoothedKGpS, 0.0);
+
+            // =========================================================================
+            // 15. OPTIONAL LAYERED FIREBED PHYSICS
+            // =========================================================================
+
+            if (UseLayeredFirebedPhysics && fuel.UsesFirebed)
+            {
+                double IncomingFuelKG = HallFuelFeedRateSmoothedKGpS * dt;
+
+                // -------------------------------------------------------------
+                // Fresh fuel layer
+                // -------------------------------------------------------------
+
+                FreshFuelLayerKG += IncomingFuelKG;
+
+                double FreshToVolatileKG = FreshFuelLayerKG * FreshToVolatileRate * dt;
+
+                FreshFuelLayerKG -= FreshToVolatileKG;
+
+                // -------------------------------------------------------------
+                // Volatile layer
+                // -------------------------------------------------------------
+
+                VolatileLayerKG += FreshToVolatileKG;
+
+                double VolatileToCokeKG = VolatileLayerKG * VolatileToCokeRate * dt;
+
+                VolatileLayerKG -= VolatileToCokeKG;
+
+                // -------------------------------------------------------------
+                // Coke layer
+                // -------------------------------------------------------------
+
+                CokeLayerKG += VolatileToCokeKG;
+
+                double CokeToAshKG = CokeLayerKG * CokeToAshRate * dt;
+
+                CokeLayerKG -= CokeToAshKG;
+
+                // -------------------------------------------------------------
+                // Ash layer
+                // -------------------------------------------------------------
+
+                AshLayerKG += CokeToAshKG;
+
+                // -------------------------------------------------------------
+                // Thermally active combustion feed
+                // -------------------------------------------------------------
+
+                double VolatileCombustionRate = VolatileLayerKG * 0.050;
+
+                double CokeCombustionRate = CokeLayerKG * 0.022;
+
+                HallFuelFeedRateKGpS = VolatileCombustionRate + CokeCombustionRate;
+            }
+            else
+            {
+                // Direct combustion feed.
+                HallFuelFeedRateKGpS = HallFuelFeedRateSmoothedKGpS;
+            }
+
+            // =========================================================================
+            // 16. FINAL CLAMPS
+            // =========================================================================
+
+            HallFuelFeedRateKGpS = Math.Max(HallFuelFeedRateKGpS, 0.0);
+
+            // =========================================================================
+            // 17. DEBUG OUTPUT
+            // =========================================================================
+
+    //   Console.WriteLine($"Final Results - FireMode {FireMode} : SteamDemand {SteamDemandRatio:F3} : PressureRatio {BoilerPressureRatio:F3} : FirebedMass {FirebedMass_kg:F1} : TargetFuelFeed {TargetFuelFeedRateKGpS:F3} : SmoothedFeed {HallFuelFeedRateSmoothedKGpS:F3} : ActualFeed {HallFuelFeedRateKGpS:F3} : PendingFuel {PendingShovelFuelKG:F2} : SteamDemandRatio {SteamDemandRatio:F3} : BoilerPressureRatio {BoilerPressureRatio:F3} : BoilerPressureError {BoilerPressureError:F3} : UseAIFireman {UseAIFireman} : LayeredFirebed {UseLayeredFirebedPhysics} FuelFeedSystemType {FuelFeedSystemType}");
         }
+
+
 
 
         /// <summary>
@@ -5859,9 +6867,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         {
             BoilerFuelProperties fuel = FuelDatabase[SteamLocomotiveFuelType];
 
-            double MaxSteam_kgps = Kg.FromLb(EvaporationLBpS);
+            HallMaxSteam_kgps = Kg.FromLb(EvaporationLBpS);
 
-            double FuelFeed_kgps = FuelFeedRateSmoothedKGpS;
+            //    double FuelFeed_kgps = FuelFeedRateSmoothedKGpS;  // For original CTN model
+            FuelFeed_kgps = HallFuelFeedRateKGpS; // New fuel feed model
 
             // Boiler
             double BoilerPressure_Pa = BoilerPressurePSI * 6894.76;   // 250 psi
@@ -5870,7 +6879,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Steam gas constant
             double SteamR = 461.5;
             double FireResistanceFactor;
-            double DamperResponseRate;
+            double DamperResponseRate = 1;
 
             double LatentHeat = 2.26e6 - 1200.0 * BoilerPressurePSI;
 
@@ -5893,6 +6902,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             BlowerSteamConsumption_kgps = 0.045 * BlowerPosition_0_1 * Math.Sqrt(Math.Max(BoilerPressurePSI / MaxBoilerPressurePSI, 0.1));
 
             SteamCylinderConsumptionRateKgpS += BlowerSteamConsumption_kgps; // blower consumes steam - CHECK - is this the right way to model this?
+
+            UpdateFuelFeedtoFirebed(elapsedClockSeconds);
 
             // ============================================================
             // MAIN UPDATE
@@ -6177,11 +7188,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             double FirebedBulkDensity = 1.0;
             double SwellingFactor = 1;
             double ActiveDepth_m = 0.07;
-            double ActiveFireMass_kg = 200;
+            ActiveFireMass_kg = 200;
 
             if (fuel.UsesFirebed) // Coal and wood fires
             {
-                FirebedMass_kg += FuelFeed_kgps * elapsedClockSeconds;
+                // add and remove burned fuel
+                FirebedMass_kg += (FuelFeed_kgps - HallBurnRateSmoothedKgpS) * elapsedClockSeconds;
 
                 FirebedMass_kg = Math.Min(FirebedMass_kg, MaxFirebedMass_kg);
 
@@ -6232,6 +7244,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 ActiveFireMass_kg = ActiveDepth_m * GrateAreaM2 * FirebedBulkDensity;
 
+                ActiveFireMass_kg = Math.Min(ActiveFireMass_kg, FirebedMass_kg);
+
       //          Console.WriteLine($"Fire Bed Mass - FireBedMass {FirebedMass_kg:F3} kg : FuelFeed {FuelFeed_kgps:F3} kg/s : FireThickness {FireThickness_m:F3} m : MaxFireBedMass {MaxFirebedMass_kg:F3} kg : FirebedBulkDensity {FirebedBulkDensity:F3} : SwellingFactor {SwellingFactor:F3} : ActiveDepth {ActiveDepth_m:F3} m : ActiveFireMass {ActiveFireMass_kg:F3} kg");
             }
             else
@@ -6263,12 +7277,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 // BASE AI TARGET
                 if (fuel.UsesFirebed)
                 {
-                    SteamDemandRatio = Math.Pow(SteamCylinderConsumptionRateKgpS / Math.Max(MaxSteam_kgps, 0.1), 0.65);
+                    SteamDemandRatio = Math.Pow(SteamCylinderConsumptionRateKgpS / Math.Max(HallMaxSteam_kgps, 0.1), 0.65);
                     targetDamper = 0.30 + 0.45 * SteamDemandRatio + 0.35 * BoilerPressureError + 0.20 * FirebedCompensation;
+                    DamperResponseRate = 0.35;
                 }
                 else
                 {
-                    SteamDemandRatio = SteamCylinderConsumptionRateKgpS / Math.Max(MaxSteam_kgps, 0.1);
+                    SteamDemandRatio = SteamCylinderConsumptionRateKgpS / Math.Max(HallMaxSteam_kgps, 0.1);
                     targetDamper = 0.20 + 0.55 * SteamDemandRatio + 0.25 * BoilerPressureError;
 
                     // oil firing responds faster
@@ -6298,10 +7313,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
 
             // DAMPER INERTIA - real dampers move slowly
-            DamperResponseRate = 0.35;
 
             DamperPosition_0_1 += (AIDamperTarget_0_1 - DamperPosition_0_1) * DamperResponseRate * elapsedClockSeconds;
-
             DamperPosition_0_1 = Math.Max(0.0, Math.Min(DamperPosition_0_1, 1.0));
 
             //----------------------------------------------------------
@@ -6340,6 +7353,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     if (SteamCylinderConsumptionRateKgpS < 0.5)
                     {
                         targetFiredoor *= 0.35;
+                    }
+
+                   // if AI fireman has opened firedoor then override combustion requirements
+                    if (FuelFeedFireDoorControl > 0)
+                    {
+                        targetFiredoor = FuelFeedFireDoorControl;
                     }
 
                     // clamp
@@ -6613,8 +7632,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             if (fuel.UsesFirebed)
             {
-                // remove burned fuel
-                FirebedMass_kg -= HallBurnRateSmoothedKgpS * elapsedClockSeconds;
 
                 // WOOD FIREBED COLLAPSE - Wood fires continuously settle and collapse. Prevents unrealistic long-term accumulation of large porous fuel masses.
                 if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
@@ -7026,7 +8043,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             //----------------------------------------------------------
 
             // Theoretical continuous evaporation capability
-            double BoilerEvapCapacity_W = MaxSteam_kgps * LatentHeat;
+            double BoilerEvapCapacity_W = HallMaxSteam_kgps * LatentHeat;
 
             // Current boiler loading
             double BoilerLoadRatio = Q_evaporation_W / Math.Max(BoilerEvapCapacity_W, 1.0);
@@ -12271,7 +13288,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                );
             }
 
-            status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N0}\t{5}\t{6:N0}\t{7}\t{8:N2}\t\t{9}\t{10:F2}\t{11}\t{12:F2}\t{13}\t{14:F2}\t{15}\t{16:F2}\t{17}\t{18:F2}\t{19}\t{20:F2}\t{21}\t{22:F2}\n",
+            status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N0}\t{5}\t{6:N0}\t{7}\t{8:N2}\t\t{9}\t{10:F2}\t{11}\t{12:F2}\t{13}\t{14:F2}\t{15}\t{16:F2}\t{17}\t{18:F2}\t{19}\t{20:F2}\t{21}\t{22:F2}\t{23}\t{24:F2}\n",
             Simulator.Catalog.GetString("HallComb:"),
             Simulator.Catalog.GetString("Cons:"),
             FormatStrings.FormatMass(pS.TopH((float)SteamCylinderConsumptionRateKgpS), IsMetric),
@@ -12281,6 +13298,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             Draft_Pa,
             Simulator.Catalog.GetString("AirFlow:"),
             Airflow_kgps,
+            Simulator.Catalog.GetString("Feed:"),
+            FormatStrings.FormatMass(pS.TopH((float)HallFuelFeedRateKGpS), IsMetric),
             Simulator.Catalog.GetString("Burn:"),
             FormatStrings.FormatMass(pS.TopH((float)HallBurnRateSmoothedKgpS), IsMetric),
             Simulator.Catalog.GetString("Gen:"),
@@ -12288,7 +13307,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             Simulator.Catalog.GetString("Boiler:"),
             BoilerEff,
             Simulator.Catalog.GetString("Bed:"),
-            FormatStrings.FormatMass((float)FirebedMass_kg, IsMetric),
+            FormatStrings.FormatMass((float)ActiveFireMass_kg, IsMetric),
             Simulator.Catalog.GetString("Damp:"),
             DamperPosition_0_1,
             Simulator.Catalog.GetString("Fire:"),
