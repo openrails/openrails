@@ -505,16 +505,17 @@ namespace Orts.Viewer3D
                 {
                     if (gltfFile.Accessors[a] is var accessor && accessor.Sparse != null)
                     {
+                        var byteStride = gltfFile.BufferViews.ElementAtOrDefault(accessor.BufferView ?? -1)?.ByteStride ?? GetSizeInBytes(accessor);
+
                         // Sparse buffers may index into a null buffer, so create a real one for these.
                         if (GetBufferViewSpan(accessor.BufferView, 0) is var buffer && buffer.IsEmpty)
                         {
-                            BinaryBuffers.Add(BUFFER_INDEX_OFFSET + a, new byte[accessor.Count * GetSizeInBytes(accessor)]);
+                            BinaryBuffers.Add(BUFFER_INDEX_OFFSET + a, new byte[accessor.Count * byteStride]);
                             buffer = BinaryBuffers.Last().Value.AsSpan();
                         }
                         // It might have already been processed in another distance level.
                         var sparseValues = GetBufferViewSpan(accessor.Sparse?.Values);
                         var sparseIndices = GetBufferViewSpan(accessor.Sparse?.Indices);
-                        var byteStride = gltfFile.BufferViews.ElementAtOrDefault(accessor.BufferView ?? -1)?.ByteStride ?? GetSizeInBytes(accessor);
                         switch (accessor.Sparse.Indices.ComponentType)
                         {
                             case AccessorSparseIndices.ComponentTypeEnum.UNSIGNED_BYTE:
@@ -939,8 +940,7 @@ namespace Orts.Viewer3D
             {
                 var componentNumber = GetComponentNumber(accessor.Type);
                 var size = componentNumber * GetComponentSizeInBytes(accessor.ComponentType);
-                var padding = componentNumber == 1 ? 0 : size % 4; // do not add padding to the index buffers
-                return size + padding;
+                return componentNumber == 1 ? size : (size + 3) & ~3; // align to 4 bytes, do not add padding to the index buffers
             }
             
             internal int GetComponentNumber(Accessor.TypeEnum type)
@@ -1002,13 +1002,11 @@ namespace Orts.Viewer3D
                     // VertexElementFormat.Color is unsigned, while VertexElementFormat.NormalizedShort4 is signed.
                     // There is no signed byte and unsigned short available, eigher normalized or not, so we need to workaround them.
                     case VertexElementUsage.Position when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
-                        if (accessor.Normalized) { vertexShaderOptions |= VertexShaderOptions.NormSbytePosition; return VertexElementFormat.Color; }
-                        vertexShaderOptions |= VertexShaderOptions.IntSbytePosition; return VertexElementFormat.Byte4;
+                        vertexShaderOptions |= accessor.Normalized ? VertexShaderOptions.NormSbytePosition : VertexShaderOptions.IntSbytePosition;
+                        return VertexElementFormat.Color;
                     case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
-                        if (accessor.Normalized) { vertexShaderOptions |= VertexShaderOptions.NormSbyteTexcoord; return VertexElementFormat.Color; }
-                        vertexShaderOptions |= VertexShaderOptions.IntSbyteTexcoord; return VertexElementFormat.Byte4;
-
-                    // Color is actually normalized unsigned byte4
+                        vertexShaderOptions |= accessor.Normalized ? VertexShaderOptions.NormSbyteTexcoord : VertexShaderOptions.IntSbyteTexcoord;
+                        return VertexElementFormat.Color;
                     case VertexElementUsage.Normal when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
                         vertexShaderOptions |= VertexShaderOptions.NormSbyteNormal;
                         return VertexElementFormat.Color;
@@ -1017,11 +1015,13 @@ namespace Orts.Viewer3D
                         return VertexElementFormat.Color;
 
                     case VertexElementUsage.Position when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
-                        if (accessor.Normalized) { vertexShaderOptions |= VertexShaderOptions.NormUshortPosition; return VertexElementFormat.NormalizedShort4; }
-                        vertexShaderOptions |= VertexShaderOptions.IntUshortPosition; return VertexElementFormat.Short4;
+                        if (accessor.Normalized) vertexShaderOptions |= VertexShaderOptions.NormUshortPosition;
+                        else vertexShaderOptions |= VertexShaderOptions.IntUshortPosition;
+                        return VertexElementFormat.NormalizedShort4;
                     case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
-                        if (accessor.Normalized) { vertexShaderOptions |= VertexShaderOptions.NormUshortTexcoord; return VertexElementFormat.NormalizedShort2; }
-                        vertexShaderOptions |= VertexShaderOptions.IntUshortTexcoord; return VertexElementFormat.Short2;
+                        if (accessor.Normalized) vertexShaderOptions |= VertexShaderOptions.NormUshortTexcoord;
+                        else vertexShaderOptions |= VertexShaderOptions.IntUshortTexcoord;
+                        return VertexElementFormat.NormalizedShort2;
 
                     case VertexElementUsage.BlendWeight when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
                         vertexShaderOptions |= VertexShaderOptions.NormUshortWeight;
