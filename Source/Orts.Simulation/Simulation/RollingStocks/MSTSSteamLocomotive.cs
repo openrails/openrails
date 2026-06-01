@@ -365,6 +365,8 @@ namespace Orts.Simulation.RollingStocks
 
         float BoilerVolumeFT3;      // total space in boiler that can hold water and steam
         float BoilerVolumeM3;      // Approximate steam space + water volume
+        float SteamMassVolumeM3;
+        float WaterMassVolumeM3;
         float MSTSBoilerLengthM;
         float ORBoilerLengthM;
         float BoilerLengthM;
@@ -810,7 +812,9 @@ namespace Orts.Simulation.RollingStocks
         // Hall Model
 
         double SteamGenerationRateKgpS;  // kg/s
-
+        double SteamR = 461.5;    // J/(kg·K)
+        double Tsat_K;
+        double Tsat_C;
 
         /// <summary>
         /// EFFECTIVE COMBUSTED FUEL RATE
@@ -834,18 +838,13 @@ namespace Orts.Simulation.RollingStocks
         double FirebedMass_kg; // Mass of the firebed - used to model the heat capacity of the firebed and how it changes with fuel burn rate, etc.
         double MaxFirebedMass_kg;
         double BoilerEff;
-        double SteamMass_kg = 200.0;
+        double WaterVolumeM3;
+        double SteamVolumeM3;
+        double WaterMassKg;
+        double SteamMass_kg;
+
         double Airflow_kgps;
         double Draft_Pa; // Draft through the fire - used to model the combustion rate of the fuel and the steam generation rate of the boiler
-
-        /// <summary>
-        /// FRONT-END EFFICIENCY
-        /// 
-        /// Represents increasing turbulence, smokebox pressure rise, entrainment collapse, and chimney choking. 
-        /// 
-        /// </summary>
-
-
 
         /// <summary>
         /// FrontEndRatio
@@ -4075,6 +4074,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 BoilerHeatBTU = BoilerWaterFractionAbs * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - BoilerWaterFractionAbs) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SaturatedSteamHeatPSItoBTUpLB[BoilerPressurePSI];
             }
 
+            double WaterHeightFromBottomM = BoilerCrownHeightM + BoilerCrownCoverageHeightM;
+            CalculateInitialBoilerInventory(BoilerVolumeM3, BoilerDiameterM, WaterHeightFromBottomM, BoilerPressurePSI, out WaterVolumeM3,
+            out SteamVolumeM3, out WaterMassKg, out SteamMass_kg);
+
+            Console.WriteLine($"Boiler Inventory - BoilerVolume {BoilerVolumeM3} : BoilerCrownHeight {BoilerCrownHeightM} : BoilerCrownCoverage {BoilerCrownCoverageHeightM} : WaterHeight {WaterHeightFromBottomM} : WaterVolume {WaterVolumeM3} : SteamVolume {SteamVolumeM3} : WaterMass {WaterMassKg} : SteamMass {SteamMass_kg}");
+
             HallBoilerPressure_Pa = BoilerPressurePSI * 6894.76; // Initial boiler pressure
 
             WaterTempNewK = C.ToK(C.FromF(SaturatedSteamHeatPressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
@@ -6102,8 +6107,111 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             #endregion
         }
 
+
+        //=====================================================================
+        // Calculate boiler water and steam masses
+        //
+        // Assumes:
+        //   TotalBoilerVolumeM3 is the usable internal volume
+        //   (tube/flue displacement already removed)
+        //
+        // Inputs:
+        //   TotalBoilerVolumeM3
+        //   BoilerRadiusM
+        //   WaterHeightFromBottomM
+        //   BoilerPressurePSI
+        //
+        // Outputs:
+        //   WaterVolumeM3
+        //   SteamVolumeM3
+        //   WaterMassKg
+        //   SteamMassKg
+        //=====================================================================
+
+        private void CalculateInitialBoilerInventory(
+            double TotalBoilerVolumeM3,
+            double BoilerRadiusM,
+            double WaterHeightFromBottomM,
+            double BoilerPressurePSI,
+            out double WaterVolumeM3,
+            out double SteamVolumeM3,
+            out double WaterMassKg,
+            out double SteamMassKg)
+        {
+            //---------------------------------------------------------
+            // Clamp water level
+            //---------------------------------------------------------
+
+            double DiameterM = 2.0 * BoilerRadiusM;
+
+            double h = Math.Max(0.0, Math.Min(DiameterM, WaterHeightFromBottomM));
+
+            //---------------------------------------------------------
+            // Determine fraction of cylinder filled
+            //---------------------------------------------------------
+
+            double FillFraction;
+
+            if (h <= 0.0)
+            {
+                FillFraction = 0.0;
+            }
+            else if (h >= DiameterM)
+            {
+                FillFraction = 1.0;
+            }
+            else
+            {
+                double SegmentArea = BoilerRadiusM * BoilerRadiusM * Math.Acos((BoilerRadiusM - h) / BoilerRadiusM) - (BoilerRadiusM - h) *
+                    Math.Sqrt(2.0 * BoilerRadiusM * h - h * h);
+
+                double FullArea = Math.PI * BoilerRadiusM * BoilerRadiusM;
+
+                FillFraction = SegmentArea / FullArea;
+            }
+
+            //---------------------------------------------------------
+            // Water and steam volumes
+            //---------------------------------------------------------
+
+            WaterVolumeM3 = TotalBoilerVolumeM3 * FillFraction;
+
+            SteamVolumeM3 = TotalBoilerVolumeM3 - WaterVolumeM3;
+
+            //---------------------------------------------------------
+            // Water mass
+            //
+            // Typical locomotive boiler water density
+            //---------------------------------------------------------
+
+            const double WaterDensityKgM3 = 900.0;
+
+            WaterMassKg = WaterVolumeM3 * WaterDensityKgM3;
+
+            //---------------------------------------------------------
+            // Steam mass
+            //---------------------------------------------------------
+
+            double PressurePa = BoilerPressurePSI * 6894.757 + 101325.0;
+
+            double TsatC = 0;
+            double TsatK = 0;
+            
+            SteamSaturationTemperatureFromPressure(BoilerPressurePSI, out TsatK, out TsatC);
+
+            const double SteamR = 461.5;
+
+            SteamMassKg = PressurePa * SteamVolumeM3 / (SteamR * TsatK);
+
+            //---------------------------------------------------------
+            // Safety
+            //---------------------------------------------------------
+
+            SteamMassKg = Math.Max(0.0, SteamMassKg);
+        }
+
+
         /// <summary>
-        ///
         /// AI / Driver command 
         /// → TargetFuelFeedRateKGpS
         /// → Fuel delivery lag filter
@@ -6919,7 +7027,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             double FuelCV_Jpkg = FuelCalorificKJpKG * 1000;      // Blidworth coal - units in J
 
             // Steam gas constant
-            double SteamR = 461.5;
             double FireResistanceFactor;
             double DamperResponseRate = 1;
 
@@ -7859,12 +7966,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             combustionHeat_W -= CombustionLoss_W;
 
-         //   Console.WriteLine($"Heating - CombustionHeat {combustionHeat_W:F2} W : CombustionQualityFactor {CombustionQualityFactor:F3} : VolatileCombustionFactor {VolatileCombustionFactor:F3} : CombustionLossFraction {CombustionLossFraction:F3} : CombustionLoss {CombustionLoss_W:F2} W : RadiationLoss {RadiationLoss_W:F2} W : AtomizationEfficiency {AtomizationEfficiency:F3}");
+            //   Console.WriteLine($"Heating - CombustionHeat {combustionHeat_W:F2} W : CombustionQualityFactor {CombustionQualityFactor:F3} : VolatileCombustionFactor {VolatileCombustionFactor:F3} : CombustionLossFraction {CombustionLossFraction:F3} : CombustionLoss {CombustionLoss_W:F2} W : RadiationLoss {RadiationLoss_W:F2} W : AtomizationEfficiency {AtomizationEfficiency:F3}");
 
             // =============== 9 Evaporation ================ - represents: firebox absorption, tube absorption, superheater, stack losses, evaporative transfer
 
-            // Saturation temperature at ~250 psi
-            double Tsat_K = 470.0;
+            SteamSaturationTemperatureFromPressure(BoilerPressurePSI, out Tsat_C, out Tsat_K);
 
             // Approximate flame temperature
             double FlameTemp_K = fuel.FlameTemperature_K * (0.85 + 0.15 * Math.Min(HallBurnRateSmoothedKgpS / 0.5, 1.0));
@@ -8181,12 +8287,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Fuel-rich combustion produces soot.
             // ------------------------------------------------------
 
-            double RichSmokeFactor =
-                Math.Max(Richness - 1.0, 0.0);
+            double RichSmokeFactor = Math.Max(Richness - 1.0, 0.0);
 
             // soften response
-            RichSmokeFactor =
-                1.0 - Math.Exp(-2.2 * RichSmokeFactor);
+            RichSmokeFactor = 1.0 - Math.Exp(-2.2 * RichSmokeFactor);
 
             // ------------------------------------------------------
             // 2. Poor combustion efficiency
@@ -8253,6 +8357,170 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
         }
 
+
+
+        /// <summary>
+        /// Calculates saturated steam temperature from pressure.
+        /// Input pressure: psi (gauge)
+        /// Returns: Saturation temperature in °C and K
+        /// </summary>
+        public static void SteamSaturationTemperatureFromPressure(
+            double pressurePSI,
+            out double tempC,
+            out double tempK)
+        {
+            if (pressurePSI <= 0.0)
+                throw new ArgumentException("Pressure must be greater than zero.");
+
+            // Convert psiG to psia
+            float OneAtmospherePSI = 14.696f; // Atmospheric pressure conversion
+            pressurePSI = pressurePSI + OneAtmospherePSI;
+
+            // Convert psi -> MPa
+            double p = pressurePSI * 0.006894757293168361;
+
+            // IAPWS-IF97 Region 4 backward equation Tsat(p)
+
+            const double n1 = 1167.0521452767;
+            const double n2 = -724213.16703206;
+            const double n3 = -17.073846940092;
+            const double n4 = 12020.82470247;
+            const double n5 = -3232555.0322333;
+            const double n6 = 14.91510861353;
+            const double n7 = -4823.2657361591;
+            const double n8 = 405113.40542057;
+            const double n9 = -0.23855557567849;
+            const double n10 = 650.17534844798;
+
+            double beta = Math.Pow(p, 0.25);
+
+            double E = beta * beta + n3 * beta + n6;
+            double F = n1 * beta * beta + n4 * beta + n7;
+            double G = n2 * beta * beta + n5 * beta + n8;
+
+            double D = (2.0 * G) / (-F - Math.Sqrt(F * F - 4.0 * E * G));
+
+            tempK = (n10 + D - Math.Sqrt((n10 + D) * (n10 + D) - 4.0 * (n9 + n10 * D))) / 2.0;
+
+            tempC = tempK - 273.15;
+        }
+
+
+
+        /// <summary>
+        /// Saturated steam density from pressure.
+        /// Input pressure: psi gauge
+        /// Outputs:
+        ///     densityKGm3 = kg/m³
+        ///     densityLBft3 = lb/ft³
+        /// Valid range:
+        ///     0 - 400 psig
+        ///     
+        /// Use to call this section
+        /// double rhoKGm3;
+        /// double rhoLBft3;
+        /// SteamDensityFromPressure(boilerpressure, out rhoKGm3, out rhoLBft3);
+        /// 
+        /// AT a later date this can be streamlined by call pressure => temperature in the first part of the calculations, 
+        /// and then solving for density.
+        /// 
+        /// </summary>
+        public static void SteamDensityFromPressure(
+            double pressurePSIG,
+            out double densityKGm3,
+            out double densityLBft3)
+        {
+            if (pressurePSIG < 0.0)
+                throw new ArgumentException(
+                    "Pressure cannot be negative.");
+
+            //------------------------------------------------------
+            // Convert gauge pressure to absolute pressure
+            //------------------------------------------------------
+
+            const double AtmosphericPressurePSI = 14.6959488;
+
+            double pressurePSIA =
+                pressurePSIG + AtmosphericPressurePSI;
+
+            //------------------------------------------------------
+            // Convert psia -> MPa
+            //------------------------------------------------------
+
+            double pressureMPa =
+                pressurePSIA * 0.006894757293168361;
+
+            //------------------------------------------------------
+            // Saturation temperature (IAPWS Region 4)
+            //------------------------------------------------------
+
+            const double n1 = 1167.0521452767;
+            const double n2 = -724213.16703206;
+            const double n3 = -17.073846940092;
+            const double n4 = 12020.82470247;
+            const double n5 = -3232555.0322333;
+            const double n6 = 14.91510861353;
+            const double n7 = -4823.2657361591;
+            const double n8 = 405113.40542057;
+            const double n9 = -0.23855557567849;
+            const double n10 = 650.17534844798;
+
+            double beta = Math.Pow(pressureMPa, 0.25);
+
+            double E =
+                beta * beta +
+                n3 * beta +
+                n6;
+
+            double F =
+                n1 * beta * beta +
+                n4 * beta +
+                n7;
+
+            double G =
+                n2 * beta * beta +
+                n5 * beta +
+                n8;
+
+            double D =
+                (2.0 * G) /
+                (-F - Math.Sqrt(F * F - 4.0 * E * G));
+
+            double TsatK =
+                (n10 + D -
+                Math.Sqrt(
+                    (n10 + D) * (n10 + D)
+                    - 4.0 * (n9 + n10 * D)))
+                / 2.0;
+
+            //------------------------------------------------------
+            // Saturated steam density
+            //
+            // High-accuracy fit to IF97 saturation data.
+            //
+            // Returns specific volume in m³/kg.
+            //------------------------------------------------------
+
+            double T = TsatK;
+
+            double lnV =
+                13.47267
+              - 0.0213786 * T
+              + 1.26438e-5 * T * T;
+
+            double specificVolume =
+                Math.Exp(lnV);
+
+            densityKGm3 =
+                1.0 / specificVolume;
+
+            //------------------------------------------------------
+            // kg/m³ -> lb/ft³
+            //------------------------------------------------------
+
+            densityLBft3 =
+                densityKGm3 * 0.0624279606;
+        }
 
 
 
