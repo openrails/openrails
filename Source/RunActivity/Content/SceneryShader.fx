@@ -401,6 +401,17 @@ VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
 	return Out;
 }
 
+float4 _VSRestoreUshortFromSigned(float4 value)
+{
+    return (value + step(value, 0.0) * 2.0) * 0.5;
+}
+
+float4 _VSRestoreSbyteFromUnsigned(float4 value)
+{
+    float4 v2 = value * 2.0;
+    return v2 - step(1.0, v2) * 2.0;
+}
+
 VERTEX_OUTPUT_PBR _VSPbr(float4 position, float3 normal, float4 tangent,
                         float2 texCoordsBase, float2 texCoordsPbr, float4 color,
                         int4 joints, float4 weights,
@@ -408,48 +419,52 @@ VERTEX_OUTPUT_PBR _VSPbr(float4 position, float3 normal, float4 tangent,
 {
     // Workaround for the MonoGame limitation of not being able to supply these vertex attribute formats...
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_POSITION) != 0u)
-        position.xyz = position.xyz * 2.0 - 1.0;
+        position.xyz = _VSRestoreSbyteFromUnsigned(position).xyz;
     else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_POSITION) != 0u)
-        position.xyz = position.xyz * 0.5 + 0.5;
+        position.xyz = _VSRestoreUshortFromSigned(position).xyz;
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_POSITION) != 0u)
-        position.xyz = (position.xyz <= 127) ? position.xyz : position.xyz - 256;
+        position.xyz = _VSRestoreSbyteFromUnsigned(position).xyz * 127.0;
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_USHORT_POSITION) != 0u)
-        position.xyz = (position.xyz >= 0) ? position.xyz : position.xyz + 65536;
+        position.xyz = _VSRestoreUshortFromSigned(position).xyz * 65535.0;
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_NORMAL) != 0u)
-        normal.xyz = normal.xyz * 2.0 - 1.0;
+        normal.xyz = _VSRestoreSbyteFromUnsigned(float4(normal, 0)).xyz;
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_TANGENT) != 0u)
     {
-        tangent = tangent * 2.0 - 1.0;
+        tangent = _VSRestoreSbyteFromUnsigned(tangent);
         tangent.w = sign(tangent.w);
     }
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_WEIGHT) != 0u)
-        weights = weights * 0.5 + 0.5;
+        weights = _VSRestoreUshortFromSigned(weights);
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_COLOR) != 0u)
-        color = color * 0.5 + 0.5;
+        color = _VSRestoreUshortFromSigned(color);
     
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_TEXCOORD) != 0u)
     {
-        texCoordsBase = texCoordsBase * 2.0 - 1.0;
-        texCoordsPbr = texCoordsPbr * 2.0 - 1.0;
+        float4 texCoords = _VSRestoreSbyteFromUnsigned(float4(texCoordsBase, texCoordsPbr));
+        texCoordsBase = texCoords.xy;
+        texCoordsPbr = texCoords.zw;
     }
     else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_TEXCOORD) != 0u)
     {
-        texCoordsBase = texCoordsBase * 0.5 + 0.5;
-        texCoordsPbr = texCoordsPbr * 0.5 + 0.5;
+        float4 texCoords = _VSRestoreUshortFromSigned(float4(texCoordsBase, texCoordsPbr));
+        texCoordsBase = texCoords.xy;
+        texCoordsPbr = texCoords.zw;
     }
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_TEXCOORD) != 0u)
     {
-        texCoordsBase =  (texCoordsBase <= 127) ? texCoordsBase : texCoordsBase - 256;
-        texCoordsPbr = (texCoordsPbr <= 127) ? texCoordsPbr : texCoordsPbr - 256;
+        float4 texCoords = _VSRestoreSbyteFromUnsigned(float4(texCoordsBase, texCoordsPbr)) * 127.0;
+        texCoordsBase = texCoords.xy;
+        texCoordsPbr = texCoords.zw;
     }
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_USHORT_TEXCOORD) != 0u)
     {
-        texCoordsBase = (texCoordsBase >= 0) ? texCoordsBase : texCoordsBase + 65536;
-        texCoordsPbr = (texCoordsPbr >= 0) ? texCoordsPbr : texCoordsPbr + 65536;
+        float4 texCoords = _VSRestoreUshortFromSigned(float4(texCoordsBase, texCoordsPbr)) * 65535.0;
+        texCoordsBase = texCoords.xy;
+        texCoordsPbr = texCoords.zw;
     }
 
     VERTEX_OUTPUT_PBR Out = (VERTEX_OUTPUT_PBR) 0;
