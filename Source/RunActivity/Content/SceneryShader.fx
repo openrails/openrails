@@ -385,31 +385,30 @@ void _VSNormalMapTransform(in float4 Tangent, in float3 Normal, float4x4 WorldTr
     Out.Bitangent.xyz = cross(Out.Normal_Light.xyz, Out.Tangent.xyz) * Tangent.w;
 }
 
-VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
+float4 _VSUnpackUshort(float2 value)
 {
-	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
-	
-	_VSInstances(In.Position, In.Normal, In.Instance);
-
-    Out.Position = In.Position;
-	_VSNormalProjection(In.Normal, World, Out.Position, Out.RelPosition, Out.Normal_Light);
-	_VSLightsAndShadows(In.Position, World, length(Out.Position.xyz), Out.Fog, Out.Shadow);
-
-	Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
-	Out.TexCoords.xy = In.TexCoords;
-
-	return Out;
+    uint u1 = asuint(value.x);
+    uint u2 = asuint(value.y);
+    uint4 ushortUint;
+    ushortUint.x = u1 & 0xFFFF;
+    ushortUint.y = u1 >> 16;
+    ushortUint.z = u2 & 0xFFFF;
+    ushortUint.w = u2 >> 16;
+    return float4(ushortUint);
 }
 
-float4 _VSRestoreUshortFromSigned(float4 value)
+float4 _VSUnpackSByte(float value)
 {
-    return (value + step(value, 0.0) * 2.0) * 0.5;
-}
-
-float4 _VSRestoreSbyteFromUnsigned(float4 value)
-{
-    float4 v2 = value * 2.0;
-    return v2 - step(1.0, v2) * 2.0;
+    uint u = asuint(value);
+    // Left shift moves the sign byte to the most significant bits,
+    // then a signed int right shift performs the sign extension.
+    int4 sbyteInt;
+    sbyteInt.x = int(u << 24) >> 24;
+    sbyteInt.y = int(u << 16) >> 24;
+    sbyteInt.z = int(u << 8) >> 24;
+    sbyteInt.w = int(u) >> 24;
+    
+    return float4(sbyteInt);
 }
 
 VERTEX_OUTPUT_PBR _VSPbr(float4 position, float3 normal, float4 tangent,
@@ -419,50 +418,48 @@ VERTEX_OUTPUT_PBR _VSPbr(float4 position, float3 normal, float4 tangent,
 {
     // Workaround for the MonoGame limitation of not being able to supply these vertex attribute formats...
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_POSITION) != 0u)
-        position.xyz = _VSRestoreSbyteFromUnsigned(position).xyz;
+        position.xyz = _VSUnpackSByte(position.x).xyz / 127.0;
     else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_POSITION) != 0u)
-        position.xyz = _VSRestoreUshortFromSigned(position).xyz;
+        position.xyz = _VSUnpackUshort(position.xy).xyz / 65535.0;
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_POSITION) != 0u)
-        position.xyz = _VSRestoreSbyteFromUnsigned(position).xyz * 127.0;
+        position.xyz = _VSUnpackSByte(position.x).xyz;
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_USHORT_POSITION) != 0u)
-        position.xyz = _VSRestoreUshortFromSigned(position).xyz * 65535.0;
+        position.xyz = _VSUnpackUshort(position.xy).xyz;
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_NORMAL) != 0u)
-        normal.xyz = _VSRestoreSbyteFromUnsigned(float4(normal, 0)).xyz;
+        normal.xyz = _VSUnpackSByte(normal.x).xyz / 127.0;
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_TANGENT) != 0u)
     {
-        tangent = _VSRestoreSbyteFromUnsigned(tangent);
+        tangent = _VSUnpackSByte(tangent.x) / 127.0;
         tangent.w = sign(tangent.w);
     }
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_WEIGHT) != 0u)
-        weights = _VSRestoreUshortFromSigned(weights);
+        weights = _VSUnpackUshort(weights.xy) / 65535.0;
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_COLOR) != 0u)
-        color = _VSRestoreUshortFromSigned(color);
+        color = _VSUnpackUshort(color.xy) / 65535.0;
     
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_TEXCOORD) != 0u)
     {
-        float4 texCoords = _VSRestoreSbyteFromUnsigned(float4(texCoordsBase, texCoordsPbr));
-        texCoordsBase = texCoords.xy;
-        texCoordsPbr = texCoords.zw;
+        texCoordsBase = _VSUnpackSByte(texCoordsBase.x).xy / 127.0;
+        texCoordsPbr = _VSUnpackSByte(texCoordsPbr.x).xy / 127.0;
     }
     else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_TEXCOORD) != 0u)
     {
-        float4 texCoords = _VSRestoreUshortFromSigned(float4(texCoordsBase, texCoordsPbr));
+        float4 texCoords = _VSUnpackUshort(float2(texCoordsBase.x, texCoordsPbr.x)) / 65535.0;
         texCoordsBase = texCoords.xy;
         texCoordsPbr = texCoords.zw;
     }
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_TEXCOORD) != 0u)
     {
-        float4 texCoords = _VSRestoreSbyteFromUnsigned(float4(texCoordsBase, texCoordsPbr)) * 127.0;
-        texCoordsBase = texCoords.xy;
-        texCoordsPbr = texCoords.zw;
+        texCoordsBase = _VSUnpackSByte(texCoordsBase.x).xy;
+        texCoordsPbr = _VSUnpackSByte(texCoordsPbr.x).xy;
     }
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_USHORT_TEXCOORD) != 0u)
     {
-        float4 texCoords = _VSRestoreUshortFromSigned(float4(texCoordsBase, texCoordsPbr)) * 65535.0;
+        float4 texCoords = _VSUnpackUshort(float2(texCoordsBase.x, texCoordsPbr.x));
         texCoordsBase = texCoords.xy;
         texCoordsPbr = texCoords.zw;
     }
@@ -538,6 +535,21 @@ VERTEX_OUTPUT_PBR VSMorphing(in VERTEX_INPUT_MORPHED In)
     return _VSPbr(In.Position, In.Normal, In.Tangent, In.TexCoords, In.TexCoordsPbr, In.Color, In.Joints, In.Weights, (float4x4) 0, In.MorphTargets);
 }
 
+VERTEX_OUTPUT VSGeneral(in VERTEX_INPUT In)
+{
+    VERTEX_OUTPUT Out = (VERTEX_OUTPUT) 0;
+	
+    _VSInstances(In.Position, In.Normal, In.Instance);
+
+    Out.Position = In.Position;
+    _VSNormalProjection(In.Normal, World, Out.Position, Out.RelPosition, Out.Normal_Light);
+    _VSLightsAndShadows(In.Position, World, length(Out.Position.xyz), Out.Fog, Out.Shadow);
+
+    Out.Position.z -= ZBias * saturate(In.TexCoords.x) / 1000;
+    Out.TexCoords.xy = In.TexCoords;
+
+    return Out;
+}
 
 VERTEX_OUTPUT VSTransfer(in VERTEX_INPUT_TRANSFER In)
 {
