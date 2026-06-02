@@ -46,6 +46,7 @@ namespace Orts.Viewer3D
             "KHR_materials_ior",
             "KHR_materials_specular",
             "KHR_materials_variants",
+            "KHR_mesh_quantization",
             "KHR_node_visibility",
             "KHR_texture_transform",
             "KHR_lights_punctual",
@@ -996,6 +997,9 @@ namespace Orts.Viewer3D
                         return VertexElementFormat.Color;
                     case VertexElementUsage.BlendIndices when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT & msfsFlavoured:
                         return VertexElementFormat.HalfVector4;
+                    case VertexElementUsage.BlendWeight when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT & msfsFlavoured:
+                        vertexShaderOptions |= VertexShaderOptions.NormUshortWeight;
+                        return VertexElementFormat.HalfVector4;
 
                     // Even if it is VEC3, the binary buffer is padded to VEC4.
                     // VertexElementFormat.Byte4 is unsigned, while VertexElementFormat.Short4 is signed.
@@ -1003,32 +1007,32 @@ namespace Orts.Viewer3D
                     // There is no signed byte and unsigned short available, eigher normalized or not, so we need to workaround them.
                     case VertexElementUsage.Position when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
                         vertexShaderOptions |= accessor.Normalized ? VertexShaderOptions.NormSbytePosition : VertexShaderOptions.IntSbytePosition;
-                        return VertexElementFormat.Color;
+                        return VertexElementFormat.Single;
                     case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
                         vertexShaderOptions |= accessor.Normalized ? VertexShaderOptions.NormSbyteTexcoord : VertexShaderOptions.IntSbyteTexcoord;
-                        return VertexElementFormat.Color;
+                        return VertexElementFormat.Single;
                     case VertexElementUsage.Normal when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
                         vertexShaderOptions |= VertexShaderOptions.NormSbyteNormal;
-                        return VertexElementFormat.Color;
+                        return VertexElementFormat.Single;
                     case VertexElementUsage.Tangent when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE:
                         vertexShaderOptions |= VertexShaderOptions.NormSbyteTangent;
-                        return VertexElementFormat.Color;
+                        return VertexElementFormat.Single;
 
                     case VertexElementUsage.Position when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
                         if (accessor.Normalized) vertexShaderOptions |= VertexShaderOptions.NormUshortPosition;
                         else vertexShaderOptions |= VertexShaderOptions.IntUshortPosition;
-                        return VertexElementFormat.NormalizedShort4;
+                        return VertexElementFormat.Vector2;
                     case VertexElementUsage.TextureCoordinate when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
                         if (accessor.Normalized) vertexShaderOptions |= VertexShaderOptions.NormUshortTexcoord;
                         else vertexShaderOptions |= VertexShaderOptions.IntUshortTexcoord;
-                        return VertexElementFormat.NormalizedShort2;
+                        return VertexElementFormat.Single;
 
                     case VertexElementUsage.BlendWeight when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
                         vertexShaderOptions |= VertexShaderOptions.NormUshortWeight;
-                        return VertexElementFormat.NormalizedShort4;
+                        return VertexElementFormat.Vector2;
                     case VertexElementUsage.Color when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
                         vertexShaderOptions |= VertexShaderOptions.NormUshortColor;
-                        return VertexElementFormat.NormalizedShort4;
+                        return VertexElementFormat.Vector2;
                 }
 
                 // Standard glTF, but MonoGame doesn't natively support the unsigned short and signed byte types.
