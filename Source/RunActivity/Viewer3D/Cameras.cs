@@ -319,13 +319,18 @@ namespace Orts.Viewer3D
         // TODO: Add a way to record this zoom operation for Replay.
         protected void ZoomByMouseWheel(float speed)
         {
-            // Will not zoom-in-out when help windows is up.
             // TODO: Property input processing through WindowManager.
-            if (UserInput.IsMouseWheelChanged && (!UserInput.IsDown(UserCommand.GameSwitchWithMouse) || !(this is ThreeDimCabCamera)) && !Viewer.HelpWindow.Visible)
+            if (UserInput.IsMouseWheelChanged && (!UserInput.IsDown(UserCommand.GameSwitchWithMouse) || !(this is ThreeDimCabCamera)))
+            {
+                Point mousePosition = new Point(UserInput.MouseX, UserInput.MouseY);
+                Window mouseActiveWindow = Viewer.WindowManager.VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mousePosition));
+                // Will not zoom-in-out when mouse pointer above a window
+                if (mouseActiveWindow == null) 
             {
                 var fieldOfView = MathHelper.Clamp(FieldOfView - speed * UserInput.MouseWheelChange / 10, 1, 135);
                 new FieldOfViewCommand(Viewer.Log, fieldOfView);
             }
+        }
         }
 
         /// <summary>
