@@ -1165,7 +1165,7 @@ namespace Orts.Viewer3D
 
                 object extension = null;
                 ASOBO_primitive msfsPrimitive = null;
-                if (shape.MsfsFlavoured & gltfFile.ExtensionsUsed?.Contains("ASOBO_primitive") & meshPrimitive.Extensions?.TryGetValue("ASOBO_primitive", out extension) ?? false)
+                if (shape.MsfsFlavoured & meshPrimitive.Extras?.TryGetValue("ASOBO_primitive", out extension) ?? false)
                 {
                     msfsPrimitive = Newtonsoft.Json.JsonConvert.DeserializeObject<ASOBO_primitive>(extension.ToString(), PopulateDefaults);
                     if (msfsPrimitive?.VertexType == "BLEND1")

@@ -418,7 +418,7 @@ VERTEX_OUTPUT_PBR _VSPbr(float4 position, float3 normal, float4 tangent,
 {
     // Workaround for the MonoGame limitation of not being able to supply these vertex attribute formats...
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_POSITION) != 0u)
-        position.xyz = _VSUnpackSByte(position.x).xyz / 127.0;
+        position.xyz = max(_VSUnpackSByte(position.x).xyz / 127.0, -1.0);
     else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_POSITION) != 0u)
         position.xyz = _VSUnpackUshort(position.xy).xyz / 65535.0;
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_POSITION) != 0u)
@@ -427,11 +427,11 @@ VERTEX_OUTPUT_PBR _VSPbr(float4 position, float3 normal, float4 tangent,
         position.xyz = _VSUnpackUshort(position.xy).xyz;
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_NORMAL) != 0u)
-        normal.xyz = _VSUnpackSByte(normal.x).xyz / 127.0;
+        normal.xyz = max(_VSUnpackSByte(normal.x).xyz / 127.0, -1.0);
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_TANGENT) != 0u)
     {
-        tangent = _VSUnpackSByte(tangent.x) / 127.0;
+        tangent = max(_VSUnpackSByte(tangent.x) / 127.0, -1.0);
         tangent.w = sign(tangent.w);
     }
 
@@ -443,8 +443,8 @@ VERTEX_OUTPUT_PBR _VSPbr(float4 position, float3 normal, float4 tangent,
     
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_TEXCOORD) != 0u)
     {
-        texCoordsBase = _VSUnpackSByte(texCoordsBase.x).xy / 127.0;
-        texCoordsPbr = _VSUnpackSByte(texCoordsPbr.x).xy / 127.0;
+        texCoordsBase = max(_VSUnpackSByte(texCoordsBase.x).xy / 127.0, -1.0);
+        texCoordsPbr = max(_VSUnpackSByte(texCoordsPbr.x).xy / 127.0, -1.0);
     }
     else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_TEXCOORD) != 0u)
     {
