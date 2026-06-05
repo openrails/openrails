@@ -48,6 +48,7 @@ using SharpDX.X3DAudio;
 using static Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine;
 using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
 using static Orts.Simulation.RollingStocks.TrainCar;
+using static Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies.SteamEngine;
 
 namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
@@ -927,9 +928,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 if (Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("Steam Locomotive Valve Gear Type: copied from ENG file and set to value of {0}", SESteamLocomotiveValveGearType);
             }
-            else
+            else if (SESteamLocomotiveValveGearType == SESteamLocomotiveValveGearTypes.Unknown)
             {
-                SESteamLocomotiveValveGearType = SESteamLocomotiveValveGearTypes.Walschaert_Inside; // default value
+                SESteamLocomotiveValveGearType = SESteamLocomotiveValveGearTypes.Walschaert_Outside; // default value
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("Steam Locomotive Valve Gear Type: not found in Steam Engine Configuration: set to Default value of {0}", SESteamLocomotiveValveGearType);
@@ -1015,6 +1016,19 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                 SESteamLapM = 0.001f; // default value - 0.04 inches
                 if (Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("Valve Steam Lap: not found in Steam Engine Configuration: set to default value = {0}", FormatStrings.FormatMillimeterDistanceDisplay((float)SEValveExhaustLapM, Locomotive.IsMetric));
+            }
+
+            if (SECylinderClearancePC == 0 && Locomotive.CylinderClearancePC != 0 && Id == 1)
+            {
+                SECylinderClearancePC = Locomotive.CylinderClearancePC;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Cylinder Clearance: copied from ENG file and set to value of {0}", SECylinderClearancePC);
+            }
+            else if (SECylinderClearancePC == 0)
+            {
+                SECylinderClearancePC = 0.1f; // default value - 10%
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Cylinder Clearance: not found in Steam Engine Configuration: set to default value = {0}", SECylinderClearancePC);
             }
 
             if (SEConnectRodLengthM == 0 && Locomotive.ConnectRodLengthM != 0 && Id == 1)
@@ -1440,7 +1454,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     HalfTravelMaxCutoffM = CalculateValveHalfTravel(SESteamLapM, SEValveLeadM, MaxCutoffAngleofAdvanceRad);
 
                     FullTravelMaxCutoffM = 2 * HalfTravelMaxCutoffM;
-
+                                     
                     break;
 
                 case SESteamLocomotiveValveGearTypes.Stephenson_Outside:
@@ -2370,6 +2384,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             // =========================
             // Initialise
             // =========================
+
+       //     Console.WriteLine($"Parameter Check - LocomotiveValveGearType {SESteamLocomotiveValveGearType} : PortWidth {SEValvePortWidthM:F3} : CylinderLead {SEValveLeadM:F3} : ExhaustLap {SEValveExhaustLapM:F3} : Lap {SESteamLapM:F3} : Clearance {SECylinderClearancePC:F3} : ChestVolume {SESteamChestVolumeM3:F3} : RegulatorArea {SERegulatorMaxAreaM2:F3} : ConnectRodLength {SEConnectRodLengthM:F3} : CrankRadius {SECrankRadiusM:F3}");
 
             double steps = 720;
             double omega = Math.Max(2 * Math.PI * rpm / 60.0, 0.5);
