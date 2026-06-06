@@ -630,7 +630,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             Stephenson_Inside,
             Stephenson_Outside,
             Walschaerts,
-            Stephenson,
             Baker,
             Caprotti,
             FranklinPoppet,
@@ -2032,8 +2031,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (SESteamLocomotiveValveGearType)
             {
                 case SESteamLocomotiveValveGearTypes.Walschaert_Outside:
-                case SESteamLocomotiveValveGearTypes.Walschaerts:
-                case SESteamLocomotiveValveGearTypes.Stephenson:
+                case SESteamLocomotiveValveGearTypes.Walschaert_Inside:
+                case SESteamLocomotiveValveGearTypes.Stephenson_Outside:
+                case SESteamLocomotiveValveGearTypes.Stephenson_Inside:
                 case SESteamLocomotiveValveGearTypes.Baker:
 
                     ComputePistonValveGear(theta, out yi, out yo);
@@ -2052,7 +2052,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             double rv = ComputeValveTravelRadius();
 
-            bool inside = (SESteamLocomotiveValveGearType == SESteamLocomotiveValveGearTypes.Stephenson)
+            bool inside = (SESteamLocomotiveValveGearType == SESteamLocomotiveValveGearTypes.Stephenson_Inside)
                           ? InsideAdmission : false;
 
             AoA = AngleofAdvanceRad;
