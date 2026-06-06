@@ -79,6 +79,7 @@ using LibGit2Sharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Media;
+using Newtonsoft.Json.Linq;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
@@ -93,8 +94,10 @@ using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
+using ORTS.Scripting.Api.ETCS;
 using SharpDX.Direct2D1;
 using SharpDX.Direct2D1.Effects;
+using SharpDX.Direct3D11;
 using SharpDX.Direct3D9;
 using SharpDX.DXGI;
 using SharpDX.MediaFoundation;
@@ -1088,6 +1091,20 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         double AirToFuelRatio;
 
+        /// <summary>
+        /// Key Tuning value
+        /// 
+        /// Higher values
+        /// - Larger reserve fire
+        /// - Better steam recovery
+        /// - Slower response
+        /// - Higher fuel use
+        /// 
+        /// Lower values
+        /// - More responsive
+        /// - Easier to collapse pressure
+        /// </summary>
+        double DesiredFirebedFraction;
 
         /// <summary>
         /// COMBUSTION QUALITY LOSSES
@@ -1255,6 +1272,27 @@ namespace Orts.Simulation.RollingStocks
 
         public SteamLocomotiveFrontEndTypes SteamLocomotiveFrontEndType;
 
+        /// <summary>
+        /// Stack Types - Applies for wood burning locomotives.
+        /// Balloon Stack: Standard on early wood-burning locomotives. Because wood burns with more popping embers, these large funnels housed
+        /// a fine-wire mesh screen. Larger sparks would hit a deflector, fall into the bulbous lower section, and cool before starting
+        /// trackside fires.
+        /// Diamond Stack: Named for its distinct geometric profile, this design was an evolution of the balloon stack. It contained an 
+        /// internal deflecting cone that threw glowing cinders to the sides. The cinders were collected in an external hopper at the bottom 
+        /// of the diamond that the crew emptied at the end of the day. The widened area also increased the draft.
+        /// Plain (Straight) Stack: Used once railroads transitioned to higher-density, hotter-burning coal and oil, which throw fewer sparks.
+        /// Because the spark-arresting screens were moved inside the front-end "smokebox," the stack was simplified into a straight forward
+        /// pipe.
+        /// 
+        /// Stack Type = Balloon Stack,     Shape = Large, bulbous funnel (bulb at the top),     Fuel Used = Wood   Key Function = Heavy-duty 
+        /// spark arrestor; slows down exhaust to drop and cool large, dangerous embers in a basket.
+        /// Stack Type = Diamond Stack,    Shape = Ressembles an upside-down pyramid or diamond atop a straight base, Fuel Used = Wood or 
+        /// early Coal, Key Function = Uses internal baffle cones to spin and throw sparks into a collection hopper, while creating 
+        /// stronger draft.
+        /// Stack Type = Plain Stack (or "Shotgun"), Shape = Straight, vertical cylinder, Fuel Used = Coal or Oil, Key Function = Simple
+        /// venturi effect to pull air; no external spark arrestor is needed because the mesh is moved internally into the smokebox.
+        ///  
+        /// </summary>
         public enum SteamLocomotiveStackTypes
         {
             Unknown,
@@ -1321,15 +1359,46 @@ namespace Orts.Simulation.RollingStocks
             // Thermochemistry
             public double StoichMaxAFR; // Stoichiometric air-fuel ratio	-Controls airflow demand
             public double StoichMinAFR;
+
+            /// <summary>
+            /// Fraction of fuel energy converted into useful heat. - direct multiplier between 0 and 1
+            /// </summary>
             public double CombustionEfficiency; // Fuel combustion quality - Directly scales available heat
 
             // Combustion kinetics
+
+            /// <summary>
+            /// Fuel Burn Rate Constant
+            /// BRC = 1 / characteristic time for combustion - higher value means faster combustion - typical values for anthracite coal are
+            /// around 0.005 to 0.01, reactive bituminous coals can be around 0.01 to 0.02, and lignite coals can be around 0.02 to 0.05 -
+            /// these values are very approximate and can vary widely based upon the specific coal properties, firebed conditions, etc.
+            /// </summary>
             public double BurnRateConstant;  // Firebed reaction rate -	Controls combustion responsiveness
+            
 
             // Firebed physics
             public bool UsesFirebed; // Replaced by fuel type????
             public double BulkDensity;   // Firebed density	Determines - fire thickness
+
+            /// <summary>
+            /// Controls airflow restriction.
+            /// Higher Value:
+            /// - Less airflow
+            /// - Lower burn rate
+            /// 
+            /// Lower Value:
+            /// - More airflow
+            /// - Higher burn rate
+            /// 
+            /// </summary>
             public double FireResistanceCoeff;  // Firebed airflow resistance	- Strong impact on draught airflow
+
+
+            /// <summary>
+            /// Controls choking behaviour.
+            /// Higher Value: More sudden airflow collapse.
+            /// 
+            /// </summary>
             public double FireResistanceExponent;   // Nonlinearity of choking	- Controls permeability collapse
 
             // Fuel behaviour
@@ -1405,7 +1474,7 @@ namespace Orts.Simulation.RollingStocks
             StoichMaxAFR = 11.10, // typically falls between 10:1 and 15:1 by weight
             CombustionEfficiency = 0.92,
 
-            BurnRateConstant = 0.02, // BRC = 1 / characteristic time for combustion - higher value means faster combustion - typical values for anthracite coal are around 0.005 to 0.01, reactive bituminous coals can be around 0.01 to 0.02, and lignite coals can be around 0.02 to 0.05 - these values are very approximate and can vary widely based upon the specific coal properties, firebed conditions, etc.
+            BurnRateConstant = 0.02, 
 
             UsesFirebed = true,
             BulkDensity = 420.0,
@@ -6215,9 +6284,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             SteamVolumeM3 = TotalBoilerVolumeM3 - WaterVolumeM3;
 
             //---------------------------------------------------------
-            // Water mass
-            //
-            // Typical locomotive boiler water density
+            // Water mass - Typical locomotive boiler water density
             //---------------------------------------------------------
 
             const double WaterDensityKgM3 = 900.0;
@@ -6248,6 +6315,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
 
         /// <summary>
+        /// Fuel Feed Management Model
+        /// - Determines how much fuel is delivered to the fire.
+        /// - Simulates fireman, stoker, wood loading, or oil burner behaviour.
+        /// - Maintains firebed inventory.
+        /// - Anticipates future steam demand.
+        /// - Applies fatigue, overload protection and delivery lag.
+        /// 
         /// AI / Driver command 
         /// → TargetFuelFeedRateKGpS
         /// → Fuel delivery lag filter
@@ -6256,6 +6330,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         /// → HallFuelFeedRateKGpS
         /// → combustion model
         /// 
+        /// Key 
         /// 
         /// TargetFuelFeedRateKGpS - requested fuel
         /// HallFuelFeedRateSmoothedKGpS - mechanically delayed delivery
@@ -6355,9 +6430,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // =========================================================================
             // 4. FIREBED INVENTORY TARGETING
             // =========================================================================
-
-            double DesiredFirebedFraction;
-
+            
             switch (FireMode)
             {
                 case FiremanOperatingMode.Banked: DesiredFirebedFraction = 0.35;
@@ -7087,6 +7160,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
         /// <summary>
         /// Fuel Combustion and Steam Generation model - this is the main part of the steam locomotive simulation
+        /// - Converts fuel into heat.
+        /// - Converts heat into steam.
+        /// - Models airflow, draft, front-end performance and combustion quality.
+        /// - Produces steam generation.
         /// 
         /// Correct sequence is:
         /// 
