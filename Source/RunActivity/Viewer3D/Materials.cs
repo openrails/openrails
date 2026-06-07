@@ -887,6 +887,17 @@ namespace Orts.Viewer3D
         UndergroundTexture = 0x40000000,
     }
 
+    [Flags]
+    public enum PixelShaderOptions : uint
+    {
+        None = 0,
+        HasNormals = 1 << 0,
+        HasTangents = 1 << 1,
+        Unlit = 1 << 2,
+        ReversedNormalMapConvention = 1 << 3, // Y (G) coordinate is 0: OpenGL, 1: DirectX
+        MstsIsNightTexture = 1 << 4,
+    }
+
     public class SceneryMaterial : Material
     {
         public SceneryMaterialOptions Options;
@@ -897,8 +908,7 @@ namespace Orts.Viewer3D
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
         readonly float LightingSpecular;
         protected float LightingDiffuse;
-        protected bool HasNormals;
-        protected bool HasTangents;
+        protected PixelShaderOptions PixelShaderOptions;
 
         protected RasterizerState RasterizerState;
         protected BlendState BlendState;
@@ -969,8 +979,8 @@ namespace Orts.Viewer3D
             }
 
             LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
-            HasNormals = true;
-            HasTangents = false;
+            PixelShaderOptions |= (Options & SceneryMaterialOptions.Diffuse) == 0 ? PixelShaderOptions.Unlit : 0;
+            PixelShaderOptions |= PixelShaderOptions.HasNormals;
 
             // Record the number of bits in the alpha channel of the original ace file
             var texture = SharedMaterialManager.MissingTexture;
@@ -1076,12 +1086,15 @@ namespace Orts.Viewer3D
             if (shader.CurrentTechnique == VegetationTechnique)
                 shader.SetVegetationMaterial(LightingDiffuse);
 
-            shader.ImageTextureIsNight = NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && IsNightTimeOrUnderground();
-            shader.ImageTexture = shader.ImageTextureIsNight ? NightTexture : Texture;
+            var imageTextureIsNight = NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && IsNightTimeOrUnderground();
+            PixelShaderOptions = imageTextureIsNight
+                ? (PixelShaderOptions | PixelShaderOptions.MstsIsNightTexture)
+                : (PixelShaderOptions & ~PixelShaderOptions.MstsIsNightTexture);
+
+            shader.ImageTexture = imageTextureIsNight ? NightTexture : Texture;
+            shader.ImageTextureIsNight = imageTextureIsNight;
+            shader.PixelShaderOptions = (uint)PixelShaderOptions;
             shader.LightingSpecular = LightingSpecular;
-            shader.LightingDiffuse = LightingDiffuse;
-            shader.HasNormals = HasNormals;
-            shader.HasTangents = HasTangents;
 
             var transparentPass = previousMaterial != null;
 
@@ -1114,7 +1127,7 @@ namespace Orts.Viewer3D
         {
             var shader = Viewer.MaterialManager.SceneryShader;
             shader.ImageTextureIsNight = false;
-            shader.LightingDiffuse = 1;
+            shader.PixelShaderOptions = 0;
             shader.LightingSpecular = 0;
             shader.ReferenceAlpha = 0;
 
@@ -1246,6 +1259,7 @@ namespace Orts.Viewer3D
         protected float[] UvRotation = new float[2];
 
         bool EmissiveFollowsDayNightCycle = false;
+        bool DoubleSided;
         readonly Gltf GltfFile;
         readonly string ShapeFilePath;
         readonly string ShapeFileDir;
@@ -1351,6 +1365,8 @@ namespace Orts.Viewer3D
 
             if (!(gltfFile.ExtensionsUsed?.Contains("KHR_materials_unlit") & material.Extensions?.ContainsKey("KHR_materials_unlit") ?? false))
                 options |= SceneryMaterialOptions.Diffuse;
+            else
+                PixelShaderOptions |= PixelShaderOptions.Unlit;
 
             switch (material.AlphaMode)
             {
@@ -1502,17 +1518,18 @@ namespace Orts.Viewer3D
                 Ior = float.PositiveInfinity; // By the specification
 
             LightingDiffuse = (options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
-            HasNormals = (options & SceneryMaterialOptions.PbrHasNormals) != 0;
-            HasTangents = (options & SceneryMaterialOptions.PbrHasTangents) != 0;
+            PixelShaderOptions |= (options & SceneryMaterialOptions.PbrHasNormals) != 0 ? PixelShaderOptions.HasNormals : 0;
+            PixelShaderOptions |= (options & SceneryMaterialOptions.PbrHasTangents) != 0 ? PixelShaderOptions.HasTangents : 0;
 
-            RasterizerState = material.DoubleSided ? RasterizerState.CullNone :
-                ((options & SceneryMaterialOptions.PbrCullClockWise) != 0) ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
-
-            if ((options & SceneryMaterialOptions.PbrCullClockWise) == 0)
+            ASOBO_normal_map_convention normalMapConvention = null;
+            if (gltfFile.ExtensionsUsed?.Contains("ASOBO_normal_map_convention") & gltfFile.Asset?.Extensions?.TryGetValue("ASOBO_normal_map_convention", out extension) ?? false)
             {
-                NormalScale = -NormalScale;
-                ClearcoatNormalScale = -ClearcoatNormalScale;
+                normalMapConvention = Newtonsoft.Json.JsonConvert.DeserializeObject<ASOBO_normal_map_convention>(extension.ToString(), GltfShape.PopulateDefaults);
+                if (normalMapConvention.Tangent_space_convention == "DirectX")
+                    PixelShaderOptions |= PixelShaderOptions.ReversedNormalMapConvention;
             }
+
+            DoubleSided = material.DoubleSided;
 
             var shader = Viewer.MaterialManager.SceneryShader;
 
@@ -1651,8 +1668,6 @@ namespace Orts.Viewer3D
                 lightsOn && EmissiveFactor.LengthSquared() > 0 ? EmissiveFactor : Vector3.Zero,
                 float.IsPositiveInfinity(Ior) ? 1 : Ior < 1 ? 0 : (float)Math.Pow((Ior - 1) / (Ior + 1), 2));
             shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, NormalScale);
-            shader.HasNormals = HasNormals;
-            shader.HasTangents = HasTangents;
             shader.ClearcoatFactor = ClearcoatFactor;
             if (ClearcoatFactor > 0 && RenderProcess.CLEARCOAT)
             {
@@ -1671,7 +1686,7 @@ namespace Orts.Viewer3D
             shader.TextureCoordinates2 = TexCoords2;
             shader.TextureCoordinates3 = TexCoords3;
 
-            shader.LightingDiffuse = LightingDiffuse;
+            shader.PixelShaderOptions = (uint)PixelShaderOptions;
 
             if (lightsOn && SphericalHarmonics != null)
                 Viewer.MaterialManager.SetSphericalHarmonics(SphericalHarmonics);
@@ -1684,7 +1699,6 @@ namespace Orts.Viewer3D
 
             shader.ReferenceAlpha = transparentPass ? ReferenceAlphaTransparentPass : DefaultAlphaCutOff;
             graphicsDevice.DepthStencilState = transparentPass ? DepthStencilStateTransparentPass : DepthStencilStateOpaquePass;
-            graphicsDevice.RasterizerState = RasterizerState;
             graphicsDevice.BlendState = BlendState;
 
             // ShaderPasses.Current.Apply() would overwrite the SamplerStates, but by removing the fix states and
@@ -1797,6 +1811,30 @@ namespace Orts.Viewer3D
                 {
                     shader.SetMatrix(item.XNAMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
+
+                    // The animated matrix can change the rasterizer state
+                    if (DoubleSided)
+                    {
+                        graphicsDevice.RasterizerState = RasterizerState.CullNone;
+                    }
+                    else if (item.XNAMatrix.Determinant() > 0)
+                    {
+                        graphicsDevice.RasterizerState = (Options & SceneryMaterialOptions.PbrCullClockWise) != 0 ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
+                        if ((Options & SceneryMaterialOptions.PbrCullClockWise) == 0) // MSFS gltf with > 0 determinant, thus inside out
+                        {
+                            shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, -NormalScale);
+                            shader.ClearcoatNormalScale = -ClearcoatNormalScale;
+                        }
+                    }
+                    else
+                    {
+                        graphicsDevice.RasterizerState = (Options & SceneryMaterialOptions.PbrCullClockWise) != 0 ? RasterizerState.CullCounterClockwise : RasterizerState.CullClockwise;
+                        if ((Options & SceneryMaterialOptions.PbrCullClockWise) != 0) // normal gltf with < 0 determinant, thus inside out
+                        {
+                            shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, -NormalScale);
+                            shader.ClearcoatNormalScale = -ClearcoatNormalScale;
+                        }
+                    }
 
                     if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)
                     {

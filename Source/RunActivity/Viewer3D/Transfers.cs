@@ -149,6 +149,7 @@ namespace Orts.Viewer3D
         readonly EffectTechnique Technique;
         readonly Texture2D Texture;
         readonly SamplerState TransferSamplerState;
+        readonly PixelShaderOptions PixelShaderOptions;
 
         public TransferMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
@@ -161,6 +162,7 @@ namespace Orts.Viewer3D
                 MaxAnisotropy = 16,
             };
             Technique = Viewer.MaterialManager.SceneryShader.Techniques["Transfer"];
+            PixelShaderOptions = PixelShaderOptions.None;
 
             SetSortingEffectId(Technique);
             SetSortingTextureId(Texture);
@@ -172,8 +174,7 @@ namespace Orts.Viewer3D
             shader.CurrentTechnique = Technique;
             shader.ImageTexture = Texture;
             shader.ReferenceAlpha = 10f / 255f;
-            shader.HasNormals = false;
-            shader.HasTangents = false;
+            shader.PixelShaderOptions = (uint)PixelShaderOptions;
 
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = TransferSamplerState;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;

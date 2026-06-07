@@ -163,12 +163,14 @@ namespace Orts.Viewer3D
     {
         readonly EffectTechnique Technique;
         readonly Texture2D WaterTexture;
+        readonly PixelShaderOptions PixelShaderOptions;
 
         public WaterMaterial(Viewer viewer, string waterTexturePath)
             : base(viewer, waterTexturePath)
         {
             WaterTexture = Viewer.TextureManager.Get(waterTexturePath, true);
             Technique = Viewer.MaterialManager.SceneryShader.Techniques["Image"];
+            PixelShaderOptions |= PixelShaderOptions.HasNormals;
 
             SetSortingEffectId(Technique);
             SetSortingBlendStateId(BlendState.NonPremultiplied);
@@ -184,8 +186,7 @@ namespace Orts.Viewer3D
             shader.CurrentTechnique = Technique;
             shader.ImageTexture = WaterTexture;
             shader.ReferenceAlpha = 10f / 255f;
-            shader.HasNormals = true;
-            shader.HasTangents = false;
+            shader.PixelShaderOptions = (uint)PixelShaderOptions;
 
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearWrap;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;

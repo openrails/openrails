@@ -504,6 +504,7 @@ namespace Orts.Viewer3D
         readonly Texture2D PatchTexture;
         readonly Texture2D PatchTextureOverlay;
         readonly float OverlayScale;
+        readonly PixelShaderOptions PixelShaderOptions;
         static readonly SamplerState OverlaySamplerState = new SamplerState
         {
             AddressU = TextureAddressMode.Wrap,
@@ -522,6 +523,7 @@ namespace Orts.Viewer3D
             var converted = textures.Length > 2 && float.TryParse(textures[2], out OverlayScale);
             OverlayScale = OverlayScale != 0 && converted ?  OverlayScale : 32;
             Technique = Viewer.MaterialManager.SceneryShader.Techniques["Terrain"];
+            PixelShaderOptions |= PixelShaderOptions.HasNormals;
 
             SetSortingEffectId(Technique);
             SetSortingBlendStateId(BlendState.NonPremultiplied);
@@ -536,8 +538,7 @@ namespace Orts.Viewer3D
             shader.ImageTexture = PatchTexture;
             shader.OverlayTexture = PatchTextureOverlay;
             shader.OverlayScale = OverlayScale;
-            shader.HasNormals = true;
-            shader.HasTangents = false;
+            shader.PixelShaderOptions = (uint)PixelShaderOptions;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;

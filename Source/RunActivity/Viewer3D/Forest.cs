@@ -408,14 +408,15 @@ namespace Orts.Viewer3D
     {
         readonly Texture2D TreeTexture;
         readonly EffectTechnique Technique;
+        readonly PixelShaderOptions PixelShaderOptions;
 
         [CallOnThread("Loader")]
         public ForestMaterial(Viewer viewer, string treeTexture)
             : base(viewer, treeTexture)
         {
             TreeTexture = Viewer.TextureManager.Get(treeTexture, true);
-
             Technique = Viewer.MaterialManager.SceneryShader.Techniques["Forest"];
+            PixelShaderOptions |= PixelShaderOptions.HasNormals;
 
             SetSortingEffectId(Technique);
             SetSortingTextureId(TreeTexture);
@@ -428,8 +429,7 @@ namespace Orts.Viewer3D
             shader.ImageTexture = TreeTexture;
             shader.ReferenceAlpha = 200f / 255f;
             shader.SetVegetationMaterial(1);
-            shader.HasNormals = true;
-            shader.HasTangents = true;
+            shader.PixelShaderOptions = (uint)PixelShaderOptions;
 
             // Enable alpha blending for everything: this allows distance scenery to appear smoothly.
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
