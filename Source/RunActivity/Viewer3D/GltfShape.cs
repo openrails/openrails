@@ -55,6 +55,9 @@ namespace Orts.Viewer3D
             "MSFT_texture_dds",
             "MSFT_packing_normalRoughnessMetallic",
             "MSFT_packing_occlusionRoughnessMetallic",
+            "ASOBO_asset_optimized",
+            "ASOBO_material_draw_order",
+            "ASOBO_normal_map_convention",
         };
 
         string FileDir { get; set; }
@@ -251,8 +254,7 @@ namespace Orts.Viewer3D
                     }
 
                     // An attempt to load MS Flight Simulator gltf-s. They use a strange non-standard optimization, not yet deciphered fully here
-                    if (gltfFile.Asset?.Extensions?.ContainsKey("ASOBO_asset_optimized") ?? false)
-                        shape.MsfsFlavoured = true;
+                    shape.MsfsFlavoured = gltfFile.Asset?.Extensions?.ContainsKey("ASOBO_asset_optimized") == true;
 
                     var internalLodsNumber = 0;
                     if (id == 0)
@@ -712,7 +714,7 @@ namespace Orts.Viewer3D
                         GltfAnimationChannel channel;
                         animation.Channels.Add(channel = new GltfAnimationChannel
                         {
-                            Interpolation = shape.MsfsFlavoured ? AnimationSampler.InterpolationEnum.LINEAR : sampler.Interpolation,
+                            Interpolation = sampler.Interpolation,
                             Path = gltfChannel.Target.Path,
                             TargetNode = gltfChannel.Target.Node,
                             TimeArray = inputFloats.ToArray(),
@@ -1165,7 +1167,7 @@ namespace Orts.Viewer3D
 
                 object extension = null;
                 ASOBO_primitive msfsPrimitive = null;
-                if (shape.MsfsFlavoured & meshPrimitive.Extras?.TryGetValue("ASOBO_primitive", out extension) ?? false)
+                if (meshPrimitive.Extras?.TryGetValue("ASOBO_primitive", out extension) ?? false)
                 {
                     msfsPrimitive = Newtonsoft.Json.JsonConvert.DeserializeObject<ASOBO_primitive>(extension.ToString(), PopulateDefaults);
                     if (msfsPrimitive?.VertexType == "BLEND1")
@@ -1344,15 +1346,13 @@ namespace Orts.Viewer3D
                     default: indexBufferSet.PrimitiveType = PrimitiveType.LineList; indexBufferSet.PrimitiveCount = verticesDrawn / 2; break;
                 }
 
-                if (shape.MsfsFlavoured && msfsPrimitive?.PrimitiveCount > 0)
+                if (msfsPrimitive?.PrimitiveCount > 0)
                     indexBufferSet.PrimitiveCount = msfsPrimitive.PrimitiveCount;
 
                 var shapePrimitive = new GltfPrimitive(vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, morphConfig, vertexShaderOptions);
 
-                var determinant = distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant();
-                if (!shape.MsfsFlavoured && determinant > 0) // This is according to the glTF spec
-                    options |= SceneryMaterialOptions.PbrCullClockWise;
-                else if (shape.MsfsFlavoured && determinant < 0) // Msfs seems to be using this reversed
+                // If shapes are not iside out (determinant < 0), then draw it with clocwise culling. In contrast, MSFS and s files are to be drawn with counter-clockwise culling.
+                if (!shape.MsfsFlavoured)
                     options |= SceneryMaterialOptions.PbrCullClockWise;
 
                 KHR_materials_variants variants = null;
@@ -1372,7 +1372,7 @@ namespace Orts.Viewer3D
                             (int)options, 0, null, materialGltf) as PbrMaterial;
                         shapePrimitive.Materials.Add(mapping.Material ?? -1, pbrMaterial);
 
-                        if (shape.MsfsFlavoured & gltfFile.ExtensionsUsed?.Contains("ASOBO_material_draw_order") & material.Extensions?.TryGetValue("ASOBO_material_draw_order", out extension) ?? false)
+                        if (gltfFile.ExtensionsUsed?.Contains("ASOBO_material_draw_order") & material.Extensions?.TryGetValue("ASOBO_material_draw_order", out extension) ?? false)
                             shapePrimitive.ZBias = Newtonsoft.Json.JsonConvert.DeserializeObject<ASOBO_material_draw_order>(extension.ToString(), PopulateDefaults)?.DrawOrderOffset ?? 0;
                     }
                 }
@@ -2135,5 +2135,10 @@ namespace Orts.Viewer3D
     public class ASOBO_material_draw_order
     {
         public int DrawOrderOffset { get; set; }
+    }
+
+    public class ASOBO_normal_map_convention
+    {
+        public string Tangent_space_convention { get; set; }
     }
 }

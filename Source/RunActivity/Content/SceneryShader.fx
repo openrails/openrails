@@ -41,6 +41,12 @@
 #define VERTEX_OPTION_SKIN_JOINT_SINGLE         (1u << 13)
 #define VERTEX_OPTION_SKIN_JOINT_DOUBLE         (1u << 14)
 
+#define PIXEL_OPTION_NONE                           0u
+#define PIXEL_OPTION_HAS_NORMALS                (1u << 0)
+#define PIXEL_OPTION_HAS_TANGENTS               (1u << 1)
+#define PIXEL_OPTION_UNLIT                      (1u << 2)
+#define PIXEL_OPTION_REVERSED_NORMAL_MAP        (1u << 3)
+#define PIXEL_OPTION_MSTS_IS_NIGHT              (1u << 4)
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
@@ -73,10 +79,10 @@ cbuffer PerFramePS
 // PS only
 cbuffer PerMaterial
 {
-    float ImageTextureIsNight;
     float VegetationAmbientModifier;
     float ReferenceAlpha;
     float OverlayScale;
+    int PixelShaderOptions;
 
     float4 BaseColorFactor; // linear color multiplier
     float4 OcclusionFactor; // x: occlusion strength, y: roughness factor, z: metallic factor, w: normal scale
@@ -89,9 +95,6 @@ cbuffer PerMaterial
     float4 TextureCoordinates2; // x: clearcoat, y: clearcoat-roughness, z: clearcoat-normal, w: occlusion
     float4 TextureCoordinates3; // x: specular, y: specular-color, z: transmission (not implemented), w: texture-packing 0: occlusion (R) and roughnessMetallic (GB) separate, 1: roughnessMetallicOcclusion, 2: normalRoughnessMetallic (RG+B+A), 3: occlusionRoughnessMetallic, 4: roughnessMetallicOcclusion + normal (RG) 2 channel separate, 5: occlusionRoughnessMetallic + normal (RG) 2 channel separate
     float2 LightingSpecular; // x = specular, y = step(1, x)
-    float LightingDiffuse; // diffuse, not-unlit
-    bool HasNormals;
-    bool HasTangents; // true: tangents were pre-calculated, false: tangents must be calculated in the pixel shader
 //};
 
 // VS only (except SignalLightIntensity, but at signals there is no PerMaterial buffer at all)
@@ -221,7 +224,7 @@ struct VERTEX_INPUT_SKINNED
 	float3 Normal      : NORMAL;
     float4 Tangent     : TANGENT;
 	float2 TexCoordsPbr: TEXCOORD1;
-    int4  Joints : BLENDINDICES0;
+    int4   Joints      : BLENDINDICES0;
 	float4 Weights     : BLENDWEIGHT0;
 	float4 Color       : COLOR0;
 	float4x4 Instance  : TEXCOORD2;
@@ -234,7 +237,7 @@ struct VERTEX_INPUT_MORPHED
 	float3 Normal      : NORMAL;
     float4 Tangent     : TANGENT;
 	float2 TexCoordsPbr: TEXCOORD1;
-    int4  Joints : BLENDINDICES0;
+    int4   Joints      : BLENDINDICES0;
 	float4 Weights     : BLENDWEIGHT0;
 	float4 Color       : COLOR0;
     float4 MorphTargets[8] : POSITION1;
@@ -641,7 +644,8 @@ float pow50(float x)
 // Gets the ambient light effect.
 float _PSGetAmbientEffect(in VERTEX_OUTPUT In)
 {
-	return In.Normal_Light.w * LightingDiffuse;
+    float diffuse = (PixelShaderOptions & PIXEL_OPTION_UNLIT) ? 0.0 : 1.0;
+	return In.Normal_Light.w * diffuse;
 }
 
 float3 _PSGetShadowEffectMoments(in VERTEX_OUTPUT In)
@@ -726,7 +730,7 @@ float3 _PSApplyMstsLights(in float3 diffuseColor, in VERTEX_OUTPUT In, float sha
 	float3 n = In.Normal_Light.xyz;
 	float3 v = normalize(-In.RelPosition.xyz);
     
-    if (!HasNormals)
+    if ((PixelShaderOptions & PIXEL_OPTION_HAS_NORMALS) == 0)
         n = cross(ddx(In.RelPosition.xyz), ddy(In.RelPosition.xyz));
     n = normalize(n);
 
@@ -809,7 +813,7 @@ float2 _PSUV(float4 inTexCoords, float texCoordsSelector)
 float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, float normalScale, float3 normalSample, bool isBackFace, bool hasNormalTexture)
 {
     float3 n = In.Normal_Light.xyz;
-    if (!HasNormals)
+    if ((PixelShaderOptions & PIXEL_OPTION_HAS_NORMALS) == 0)
         n = cross(ddx(In.RelPosition.xyz), ddy(In.RelPosition.xyz));
     n = normalize(n);
     if (!hasNormalTexture)
@@ -821,7 +825,7 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, float normalScale, float3 normalSam
     
     float3 t = In.Tangent.xyz;
     float3 b = In.Bitangent.xyz;
-    if (!HasTangents)
+    if ((PixelShaderOptions & PIXEL_OPTION_HAS_TANGENTS) == 0)
     {
         float3 pos_dx = ddx(In.RelPosition.xyz);
         float3 pos_dy = ddy(In.RelPosition.xyz);
@@ -846,8 +850,9 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, float normalScale, float3 normalSam
     float3x3 tbn = float3x3(t, b, n);
     
     float3 tangentNormal = normalSample * 2.0 - 1.0;
-    tangentNormal.xy *= normalScale;
+    tangentNormal.y *= (PixelShaderOptions & PIXEL_OPTION_REVERSED_NORMAL_MAP) ? -1.0 : 1.0;
     tangentNormal.z = sqrt(saturate(1.0 - dot(tangentNormal.xy, tangentNormal.xy)));
+    tangentNormal.xy *= normalScale;
 
     n = mul(tangentNormal, tbn);
     if (isBackFace)
@@ -936,7 +941,7 @@ PIXEL_OUTPUT PSImage(uniform bool ClampTexCoords, in VERTEX_OUTPUT In)
 	float shadowFactor = _PSGetShadowEffect(true, In);
 	
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * shadowFactor + ImageTextureIsNight));
+    float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * shadowFactor + (PixelShaderOptions & PIXEL_OPTION_MSTS_IS_NIGHT)));
 	// Specular effect next.
 	// 
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
@@ -999,7 +1004,7 @@ PIXEL_OUTPUT PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace)
     float3 emissiveContrib = float3(0, 0, 0);
 
     [branch]
-    if (!LightingDiffuse)
+    if ((PixelShaderOptions & PIXEL_OPTION_UNLIT) != 0)
     {
     	// Unlit material
         litColor = Color.rgb;
@@ -1311,7 +1316,7 @@ PIXEL_OUTPUT PSTerrain(in VERTEX_OUTPUT In)
 {
     float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(true, In) + ImageTextureIsNight));
+    float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(true, In) + (PixelShaderOptions & PIXEL_OPTION_MSTS_IS_NIGHT)));
 	// No specular effect for terrain.
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), Overcast.x);

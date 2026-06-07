@@ -699,6 +699,7 @@ namespace Orts.Viewer3D
         readonly SceneryShader SceneryShader;
         readonly Texture2D Texture;
         readonly EffectTechnique Technique;
+        readonly PixelShaderOptions PixelShaderOptions;
 
         public SignalLightMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
@@ -706,6 +707,7 @@ namespace Orts.Viewer3D
             SceneryShader = Viewer.MaterialManager.SceneryShader;
             Texture = Viewer.TextureManager.Get(textureName, true);
             Technique = SceneryShader.Techniques["SignalLight"];
+            PixelShaderOptions |= PixelShaderOptions.HasNormals;
 
             SetSortingEffectId(Technique);
             SetSortingTextureId(Texture);
@@ -715,8 +717,7 @@ namespace Orts.Viewer3D
         {
             SceneryShader.CurrentTechnique = Technique;
             SceneryShader.ImageTexture = Texture;
-            SceneryShader.HasNormals = true;
-            SceneryShader.HasTangents = false;
+            SceneryShader.PixelShaderOptions = (uint)PixelShaderOptions;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -756,6 +757,7 @@ namespace Orts.Viewer3D
         readonly SceneryShader SceneryShader;
         readonly Texture2D Texture;
         readonly EffectTechnique Technique;
+        readonly PixelShaderOptions PixelShaderOptions;
 
         float NightEffect;
 
@@ -765,6 +767,7 @@ namespace Orts.Viewer3D
             SceneryShader = Viewer.MaterialManager.SceneryShader;
             Texture = SharedTextureManager.LoadInternal(Viewer.GraphicsDevice, Path.Combine(Viewer.ContentPath, "SignalLightGlow.png"));
             Technique = SceneryShader.Techniques["SignalLightGlow"];
+            PixelShaderOptions |= PixelShaderOptions.HasNormals;
 
             SetSortingEffectId(Technique);
         }
@@ -773,8 +776,7 @@ namespace Orts.Viewer3D
         {
             SceneryShader.CurrentTechnique = Technique;
             SceneryShader.ImageTexture = Texture;
-            SceneryShader.HasNormals = true;
-            SceneryShader.HasTangents = false;
+            SceneryShader.PixelShaderOptions = (uint)PixelShaderOptions;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;

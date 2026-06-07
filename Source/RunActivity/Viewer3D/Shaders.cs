@@ -86,13 +86,11 @@ namespace Orts.Viewer3D
         readonly EffectParameter shadowMapArray;
         readonly EffectParameter shadowMapLimit;
         readonly EffectParameter zBias;
-        readonly EffectParameter lightingDiffuse;
         readonly EffectParameter lightingSpecular;
         readonly EffectParameter fog;
         readonly EffectParameter zFar;
         readonly EffectParameter overcast;
         readonly EffectParameter viewerPos;
-        readonly EffectParameter imageTextureIsNight;
         readonly EffectParameter nightColorModifier;
         readonly EffectParameter halfNightColorModifier;
         readonly EffectParameter vegetationAmbientModifier;
@@ -125,10 +123,9 @@ namespace Orts.Viewer3D
         readonly EffectParameter textureCoordinates1;
         readonly EffectParameter textureCoordinates2;
         readonly EffectParameter textureCoordinates3;
-        readonly EffectParameter hasNormals;
-        readonly EffectParameter hasTangents;
         readonly EffectParameter bonesTexture;
         readonly EffectParameter vertexShaderOptions;
+        readonly EffectParameter pixelShaderOptions;
         readonly EffectParameter morphConfig;
         readonly EffectParameter morphWeights;
         // Per-frame PBR uniforms:
@@ -236,7 +233,6 @@ namespace Orts.Viewer3D
         }
 
         public float ZBias { set { zBias.SetValue(value); } }
-        public float LightingDiffuse { set { lightingDiffuse.SetValue(value); } }
         public float LightingSpecular { set { lightingSpecular.SetValue(new Vector2(value >= 1 ? value : 1, value >= 1 ? 1 : 0)); } }
         // Setting this exponent of HLSL pow() function to 0 in DX11 leads to undefined result ^^^^
 
@@ -257,7 +253,7 @@ namespace Orts.Viewer3D
 
         public Color Fog { set { fog.SetValue(value.ToVector3()); } }
 
-        public bool ImageTextureIsNight { set { _imageTextureIsNight = value; imageTextureIsNight.SetValue(value ? 1f : 0f); } get => _imageTextureIsNight; }
+        public bool ImageTextureIsNight { set { _imageTextureIsNight = value; } }
 
         Texture2D ImageTextureCache;
         public Texture2D ImageTexture { set { if (ImageTextureCache != value) imageTexture.SetValue(ImageTextureCache = value); } }
@@ -313,13 +309,11 @@ namespace Orts.Viewer3D
         
         public Vector4 TextureCoordinates3 { set { textureCoordinates3.SetValue(value); } }
         
-        public bool HasNormals { set { hasNormals.SetValue(value); } }
-
-        public bool HasTangents { set { hasTangents.SetValue(value); } }
-
         public Texture2D BonesTexture { set { bonesTexture.SetValue(value); } }
 
         public uint VertexShaderOptions { set { vertexShaderOptions.SetValue((int)value); } }
+
+        public uint PixelShaderOptions { set { pixelShaderOptions.SetValue((int)value); } }
 
         public Vector4[] MorphConfig { set { morphConfig.SetValue(value); } }
 
@@ -351,13 +345,11 @@ namespace Orts.Viewer3D
             shadowMapArray = Parameters["ShadowMapArray"];
             shadowMapLimit = Parameters["ShadowMapLimit"];
             zBias = Parameters["ZBias"];
-            lightingDiffuse = Parameters["LightingDiffuse"];
             lightingSpecular = Parameters["LightingSpecular"];
             fog = Parameters["Fog"];
             zFar = Parameters["ZFar"];
             overcast = Parameters["Overcast"];
             viewerPos = Parameters["ViewerPos"];
-            imageTextureIsNight = Parameters["ImageTextureIsNight"];
             nightColorModifier = Parameters["NightColorModifier"];
             halfNightColorModifier = Parameters["HalfNightColorModifier"];
             vegetationAmbientModifier = Parameters["VegetationAmbientModifier"];
@@ -387,10 +379,9 @@ namespace Orts.Viewer3D
             textureCoordinates1 = Parameters["TextureCoordinates1"];
             textureCoordinates2 = Parameters["TextureCoordinates2"];
             textureCoordinates3 = Parameters["TextureCoordinates3"];
-            hasNormals = Parameters["HasNormals"];
-            hasTangents = Parameters["HasTangents"];
             bonesTexture = Parameters["BonesTexture"];
             vertexShaderOptions = Parameters["VertexShaderOptions"];
+            pixelShaderOptions = Parameters["PixelShaderOptions"];
             morphConfig = Parameters["MorphConfig"];
             morphWeights = Parameters["MorphWeights"];
             environmentMapDaySpecularTexture = Parameters["EnvironmentMapDaySpecularTexture"];
