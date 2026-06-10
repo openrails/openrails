@@ -58,11 +58,14 @@ namespace Orts.Viewer3D
         Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
         Dictionary<string, bool> TextureMarks = new Dictionary<string, bool>();
 
+        internal static bool HighlightMissingTextures = false;
+
         [CallOnThread("Render")]
         internal SharedTextureManager(Viewer viewer, GraphicsDevice graphicsDevice)
         {
             Viewer = viewer;
             GraphicsDevice = graphicsDevice;
+            if (Viewer.Settings?.SuppressShapeWarnings == false) HighlightMissingTextures = true;
         }
 
         /// <summary>
@@ -171,11 +174,8 @@ namespace Orts.Viewer3D
         internal static Texture2D GetInternalMissingTexture(GraphicsDevice graphicsDevice)
         {
             var texture = new Texture2D(graphicsDevice, 1, 1);
-#if DEBUG
-            texture.SetData(new[] { Color.Magenta});
-#else
-            texture.SetData(new[] { Color.Gray });
-#endif
+            if (HighlightMissingTextures) texture.SetData(new[] { Color.Magenta });
+            else texture.SetData(new[] { Color.Gray });
             return texture;
         }
 

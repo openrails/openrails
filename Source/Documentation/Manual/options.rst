@@ -851,9 +851,12 @@ Multi-gauge routes are not fully supported at the moment.
 Show shape warnings
 -------------------
 
-When this option is selected, when ORTS is loading the shape (.s) files it
-will report errors in syntax and structure (even if these don't cause
-runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop.
+When this option is selected, ORTS will:
+
+- when loading the shape (.s) files,
+  report errors in syntax and structure (even if these don't cause
+  runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop;
+- use high-visible magenta for missing textures (instead of grey).
 
 
 Correct questionable braking parameters
