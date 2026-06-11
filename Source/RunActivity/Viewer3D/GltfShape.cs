@@ -144,7 +144,22 @@ namespace Orts.Viewer3D
             var bone = Matrix.Identity;
             for (var j = 0; j < shapePrimitive.Joints.Length; j++)
             {
-                bone = MsfsFlavoured ? Matrix.Identity : shapePrimitive.InverseBindMatrices[j];
+                bone = shapePrimitive.InverseBindMatrices[j];
+                if (MsfsFlavoured)
+                {
+                    var determinantSign = Vector3.Dot(Vector3.Cross(bone.Right, bone.Up), bone.Backward);
+                    if (determinantSign > 0 && bone.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation))
+                    {
+                        // See FBW A32N model WING_right (node 150)
+                        if (Math.Abs(Math.Abs(rotation.X) - 1.0f) < 0.001f && Math.Abs(rotation.Y) < 0.001f && Math.Abs(rotation.Z) < 0.001f)
+                            rotation = Quaternion.Identity;
+
+                        bone = Matrix.CreateScale(Vector3.One) *
+                               Matrix.CreateFromQuaternion(rotation) *
+                               Matrix.CreateTranslation(translation);
+                    }
+                }
+
                 var hi = shapePrimitive.Joints[j];
                 while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
                 {
@@ -1350,6 +1365,7 @@ namespace Orts.Viewer3D
                     indexBufferSet.PrimitiveCount = msfsPrimitive.PrimitiveCount;
 
                 var shapePrimitive = new GltfPrimitive(vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, morphConfig, vertexShaderOptions);
+                shapePrimitive.DebugName = name;
 
                 // If shapes are not iside out (determinant < 0), then draw it with clocwise culling. In contrast, MSFS and s files are to be drawn with counter-clockwise culling.
                 if (!shape.MsfsFlavoured)
@@ -1448,6 +1464,7 @@ namespace Orts.Viewer3D
             readonly float MaxActiveMorphTargets;
 
             readonly int BaseVertexIndex;
+            public string DebugName;
 
             public readonly GltfDistanceLevel.VertexShaderOptions VertexShaderOptions;
 
