@@ -1817,23 +1817,13 @@ namespace Orts.Viewer3D
                     {
                         graphicsDevice.RasterizerState = RasterizerState.CullNone;
                     }
-                    else if (item.XNAMatrix.Determinant() > 0)
-                    {
-                        graphicsDevice.RasterizerState = (Options & SceneryMaterialOptions.PbrCullClockWise) != 0 ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
-                        if ((Options & SceneryMaterialOptions.PbrCullClockWise) == 0) // MSFS gltf with > 0 determinant, thus inside out
-                        {
-                            shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, -NormalScale);
-                            shader.ClearcoatNormalScale = -ClearcoatNormalScale;
-                        }
-                    }
                     else
                     {
-                        graphicsDevice.RasterizerState = (Options & SceneryMaterialOptions.PbrCullClockWise) != 0 ? RasterizerState.CullCounterClockwise : RasterizerState.CullClockwise;
-                        if ((Options & SceneryMaterialOptions.PbrCullClockWise) != 0) // normal gltf with < 0 determinant, thus inside out
-                        {
-                            shader.OcclusionFactor = new Vector4(OcclusionStrength, RoughnessFactor, MetallicFactor, -NormalScale);
-                            shader.ClearcoatNormalScale = -ClearcoatNormalScale;
-                        }
+                        var determinantSign = Vector3.Dot(Vector3.Cross(item.XNAMatrix.Right, item.XNAMatrix.Up), item.XNAMatrix.Backward);
+                        if (determinantSign > 0)
+                            graphicsDevice.RasterizerState = (Options & SceneryMaterialOptions.PbrCullClockWise) != 0 ? RasterizerState.CullClockwise : RasterizerState.CullCounterClockwise;
+                        else
+                            graphicsDevice.RasterizerState = (Options & SceneryMaterialOptions.PbrCullClockWise) != 0 ? RasterizerState.CullCounterClockwise : RasterizerState.CullClockwise;
                     }
 
                     if (item.RenderPrimitive is GltfShape.GltfPrimitive gltfPrimitive)

@@ -169,6 +169,32 @@ float4x4 _VSSkinTransform(in int4 Joints, in float4 Weights)
     return skinTransform;
 }
 
+float4 _VSUnpackUshort(float2 value)
+{
+    uint u1 = asuint(value.x);
+    uint u2 = asuint(value.y);
+    uint4 ushortUint;
+    ushortUint.x = u1 & 0xFFFF;
+    ushortUint.y = u1 >> 16;
+    ushortUint.z = u2 & 0xFFFF;
+    ushortUint.w = u2 >> 16;
+    return float4(ushortUint);
+}
+
+float4 _VSUnpackSByte(float value)
+{
+    uint u = asuint(value);
+    // Left shift moves the sign byte to the most significant bits,
+    // then a signed int right shift performs the sign extension.
+    int4 sbyteInt;
+    sbyteInt.x = int(u << 24) >> 24;
+    sbyteInt.y = int(u << 16) >> 24;
+    sbyteInt.z = int(u << 8) >> 24;
+    sbyteInt.w = int(u) >> 24;
+    
+    return float4(sbyteInt);
+}
+
 VERTEX_OUTPUT _VSPbr(float4 position, float3 normal, float4 tangent,
                         float2 texCoordsBase, float2 texCoordsPbr, float4 color,
                         int4 joints, float4 weights,
@@ -176,36 +202,38 @@ VERTEX_OUTPUT _VSPbr(float4 position, float3 normal, float4 tangent,
 {
     // Workaround for the MonoGame limitation of not being able to supply these vertex attribute formats...
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_POSITION) != 0u)
-        position.xyz = position.xyz * 2.0 - 1.0;
+        position.xyz = max(_VSUnpackSByte(position.x).xyz / 127.0, -1.0);
     else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_POSITION) != 0u)
-        position.xyz = position.xyz * 0.5 + 0.5;
+        position.xyz = _VSUnpackUshort(position.xy).xyz / 65535.0;
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_POSITION) != 0u)
-        position.xyz = (position.xyz <= 127) ? position.xyz : position.xyz - 256;
+        position.xyz = _VSUnpackSByte(position.x).xyz;
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_USHORT_POSITION) != 0u)
-        position.xyz = (position.xyz >= 0) ? position.xyz : position.xyz + 65536;
+        position.xyz = _VSUnpackUshort(position.xy).xyz;
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_WEIGHT) != 0u)
-        weights = weights * 0.5 + 0.5;
+        weights = _VSUnpackUshort(weights.xy) / 65535.0;
 
     if ((VertexShaderOptions & VERTEX_OPTION_NORM_SBYTE_TEXCOORD) != 0u)
     {
-        texCoordsBase = texCoordsBase * 2.0 - 1.0;
-        texCoordsPbr = texCoordsPbr * 2.0 - 1.0;
+        texCoordsBase = max(_VSUnpackSByte(texCoordsBase.x).xy / 127.0, -1.0);
+        texCoordsPbr = max(_VSUnpackSByte(texCoordsPbr.x).xy / 127.0, -1.0);
     }
     else if ((VertexShaderOptions & VERTEX_OPTION_NORM_USHORT_TEXCOORD) != 0u)
     {
-        texCoordsBase = texCoordsBase * 0.5 + 0.5;
-        texCoordsPbr = texCoordsPbr * 0.5 + 0.5;
+        float4 texCoords = _VSUnpackUshort(float2(texCoordsBase.x, texCoordsPbr.x)) / 65535.0;
+        texCoordsBase = texCoords.xy;
+        texCoordsPbr = texCoords.zw;
     }
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_SBYTE_TEXCOORD) != 0u)
     {
-        texCoordsBase = (texCoordsBase <= 127) ? texCoordsBase : texCoordsBase - 256;
-        texCoordsPbr = (texCoordsPbr <= 127) ? texCoordsPbr : texCoordsPbr - 256;
+        texCoordsBase = _VSUnpackSByte(texCoordsBase.x).xy;
+        texCoordsPbr = _VSUnpackSByte(texCoordsPbr.x).xy;
     }
     else if ((VertexShaderOptions & VERTEX_OPTION_INT_USHORT_TEXCOORD) != 0u)
     {
-        texCoordsBase = (texCoordsBase >= 0) ? texCoordsBase : texCoordsBase + 65536;
-        texCoordsPbr = (texCoordsPbr >= 0) ? texCoordsPbr : texCoordsPbr + 65536;
+        float4 texCoords = _VSUnpackUshort(float2(texCoordsBase.x, texCoordsPbr.x));
+        texCoordsBase = texCoords.xy;
+        texCoordsPbr = texCoords.zw;
     }
 
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
