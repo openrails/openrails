@@ -1007,6 +1007,27 @@ namespace Orts.Simulation.RollingStocks
 
         double SteamGenerationLagTimeS = 1.0; // 45-90 s
 
+        // =======================================================
+        // FIRE SURVIVAL PARAMETERS
+        // =======================================================
+
+        // Minimum fire maintained when locomotive is standing.
+
+        // Wood fires can be kept alive with less fuel.
+        const double WoodMinimumFireFraction = 0.30;
+
+        // Coal needs a deeper bed.
+        const double CoalMinimumFireFraction = 0.40;
+
+        // Minimum accumulator fill rates while idle/banked.
+        // Represents fireman occasionally preparing a charge.
+
+        const double WoodIdleAccumulatorRateKGpS = 0.05;
+        const double CoalIdleAccumulatorRateKGpS = 0.03;
+
+        const double WoodBankedAccumulatorRateKGpS = 0.025;
+        const double CoalBankedAccumulatorRateKGpS = 0.015;
+
         /// <summary>
         /// ======================================================
         // MINIMUM DRAFT TRANSFER EFFICIENCY MODEL
@@ -6394,7 +6415,37 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             TargetFirebedMass_kg = Math.Min(TargetFirebedMass_kg, MaxFirebedMass_kg);
 
-       //     Console.WriteLine($"TargetFireBedMass {TargetFirebedMass_kg:F3} : FirebedMass {FirebedMass_kg:F3} : FirethicknessTarget {FireThicknessTarget_m}");
+            //     Console.WriteLine($"TargetFireBedMass {TargetFirebedMass_kg:F3} : FirebedMass {FirebedMass_kg:F3} : FirethicknessTarget {FireThicknessTarget_m}");
+
+            // =======================================================
+            // MINIMUM FIRE SURVIVAL MASS
+            // =======================================================
+
+            double MinimumFirebedMassKG;
+
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                MinimumFirebedMassKG =
+                    TargetFirebedMass_kg * WoodMinimumFireFraction;
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Coal)
+            {
+                MinimumFirebedMassKG =
+                    TargetFirebedMass_kg * CoalMinimumFireFraction;
+            }
+            else
+            {
+                MinimumFirebedMassKG = 0.0;
+            }
+
+            bool FirebedBelowMinimum =
+            (
+                FirebedMass_kg +
+                PendingFuelAvailableKG
+            )
+            <
+            MinimumFirebedMassKG;
+
 
             // =========================================================================
             // 2. FIREMAN OPERATING MODE SELECTION
@@ -6571,6 +6622,25 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             double DesiredFirebedMassKG = TargetFirebedMass_kg * DesiredFirebedFraction;
 
             double FirebedError = (DesiredFirebedMassKG - FirebedMass_kg) / Math.Max(TargetFirebedMass_kg, 1.0);
+
+            // =======================================================
+            // INITIAL FIRE RECOVERY
+            // =======================================================
+
+            if
+            (
+                AbsSpeedMpS < 1.0 &&
+                FirebedMass_kg <
+                (0.80 * DesiredFirebedMassKG)
+            )
+            {
+                PendingFuelAvailableKG =
+                    Math.Max
+                    (
+                        PendingFuelAvailableKG,
+                        DesiredFirebedMassKG - FirebedMass_kg
+                    );
+            }
 
             // =========================================================================
             // 5. FIRE MAINTENANCE DEMAND
@@ -6968,6 +7038,39 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // 12. FUEL DELIVERY SYSTEMS
             // =========================================================================
 
+            double MaintenanceAccumulatorRateKGpS = 0.0;
+
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                switch (FireMode)
+                {
+                    case FiremanOperatingMode.Banked:
+                        MaintenanceAccumulatorRateKGpS =
+                            WoodBankedAccumulatorRateKGpS;
+                        break;
+
+                    case FiremanOperatingMode.Idle:
+                        MaintenanceAccumulatorRateKGpS =
+                            WoodIdleAccumulatorRateKGpS;
+                        break;
+                }
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Coal)
+            {
+                switch (FireMode)
+                {
+                    case FiremanOperatingMode.Banked:
+                        MaintenanceAccumulatorRateKGpS =
+                            CoalBankedAccumulatorRateKGpS;
+                        break;
+
+                    case FiremanOperatingMode.Idle:
+                        MaintenanceAccumulatorRateKGpS =
+                            CoalIdleAccumulatorRateKGpS;
+                        break;
+                }
+            }
+
             switch (FuelFeedSystemType)
             {
                 // =====================================================================
@@ -7040,28 +7143,53 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 // WOOD SCHEDULER
                 case FuelFeedSystemTypes.Log:
                     {
-                        double DesiredWoodRateKGpS = Math.Max(AIBaseFeedKGpS, 0.0);
-                    
-                        double FirebedDeficiencyRatio = Math.Max(0.0, (DesiredFirebedMassKG - FirebedMass_kg) / Math.Max(DesiredFirebedMassKG, 1.0));
+                        double DesiredWoodRateKGpS =
+                            Math.Max(AIBaseFeedKGpS, 0.0);
 
-                        double EffectiveFeedRateKGpS = DesiredWoodRateKGpS + FirebedDeficiencyRatio * (EffectiveMaxFeedKGpS - DesiredWoodRateKGpS);
+                        // Ensure accumulator never stalls while standing.
 
-                        EffectiveFeedRateKGpS = Math.Min(EffectiveFeedRateKGpS, EffectiveMaxFeedKGpS);
+                        double EffectiveAccumulatorRateKGpS =
+                            Math.Max
+                            (
+                                DesiredWoodRateKGpS,
+                                MaintenanceAccumulatorRateKGpS
+                            );
 
-                        FiremanFuelAccumulatorKG += EffectiveFeedRateKGpS * TimePeriod; // Quicker that the accumulator fills, the quicker that fuel is addded to the fire.
+                        FiremanFuelAccumulatorKG +=
+                            EffectiveAccumulatorRateKGpS * TimePeriod;
 
                         while (FiremanFuelAccumulatorKG >= FuelChargeMassKG)
                         {
                             double FutureProjectedFirebedKG = FirebedMass_kg + PendingFuelAvailableKG + FuelChargeMassKG;
 
+                            bool NeedFuel = false;
+
+                            // Normal operation
+
                             if (FutureProjectedFirebedKG < DesiredFirebedMassKG)
+                            {
+                                NeedFuel = true;
+                            }
+
+                            // Fire survival mode
+
+                            if (FirebedBelowMinimum)
+                            {
+                                NeedFuel = true;
+                            }
+
+                            if (NeedFuel)
                             {
                                 PendingFuelAvailableKG += FuelChargeMassKG;
 
-                                // Firedoor action
                                 FiredoorOpenForFiring = true;
 
-                                FiredoorHoldTimerS = Math.Max(FiredoorHoldTimerS, WoodDoorHoldTimeS);
+                                FiredoorHoldTimerS =
+                                    Math.Max
+                                    (
+                                        FiredoorHoldTimerS,
+                                        WoodDoorHoldTimeS
+                                    );
                             }
 
                             FiremanFuelAccumulatorKG -= FuelChargeMassKG;
