@@ -18,7 +18,6 @@
 using Orts.Common;
 using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
-using SharpDX;
 using System.IO;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
