@@ -897,10 +897,12 @@ namespace Orts.Simulation.RollingStocks
         double OptimumFireThickness_m;
         double DraftFactor;
         double FrontEndResistanceCoefficient = 0.12;
-        double SteamCylinderConsumptionRateKgpS;
+        double HallSteamConsumptionRateKgpS;
         double grateRateKgpM2;
         double HallCylinderSweptVolumeM3;
         double HallCrownHeightM;
+        double PressureHoldingFactor;
+        double CombustionSuppressionFactor;
 
         // =====================================================
         // Boiler Water Thermal Model
@@ -1005,8 +1007,7 @@ namespace Orts.Simulation.RollingStocks
 
         double SteamDemandRatio = 1;
 
-        double SteamGenerationLagTimeS = 1.0; // 45-90 s
-
+        
         // =======================================================
         // FIRE SURVIVAL PARAMETERS
         // =======================================================
@@ -1237,7 +1238,7 @@ namespace Orts.Simulation.RollingStocks
         // can be set to automatic control by AI or manual control by player
         public double BlowerPosition_0_1 = 0.0;
         private double AIBlowerTarget_0_1 = 0.0; // 0.0 = off, 1.0 = on
-        public double BlowerSteamConsumption_kgps = 0.0;
+        public double HallBlowerSteamConsumption_kgps = 0.0;
 
         /// <summary>
         /// FrontEndGeometryFactor is a simplified representation of the overall aerodynamic quality and efficiency of the locomotive 
@@ -1342,7 +1343,13 @@ namespace Orts.Simulation.RollingStocks
         private bool FiredoorOpenForFiring = false;
         private double FiredoorHoldTimerS = 0.0;
         double FiremanFuelAccumulatorKG; // Used for both shovel and wood blocks
-        float FuelFeedFireDoorControl = 0;
+
+        double FreshFuelKG;
+        double IgnitedFuelKG;
+        private double EffectiveCombustionHeat_W;
+        private double SmoothedDesiredFirebedMassKG;
+        double BlowerDraft_Pa;
+        double SteamGenerationLagTimeS = 60; // 45-90 s
 
         public class BoilerFuelProperties
         {
@@ -1427,6 +1434,19 @@ namespace Orts.Simulation.RollingStocks
             public double CombustionLagRiseTimeS;
             public double CombustionLagFallTimeS;
 
+            /// <summary>
+            /// Represents the time constant for heat transfer in the boiler.
+            /// </summary>
+            public double BoilerHeatTransferDelayS;
+
+            /// <summary>
+            /// Represents the time constant for recovery of firebed conditions after a pressure drop event, such as when the throttle is 
+            /// opened or when the locomotive starts working hard.
+            /// </summary>
+            public double RecoveryFireTargetDelayS;
+
+            public double FuelDraftFactor;
+
         }
 
         private Dictionary<SteamLocomotiveFuelTypes, BoilerFuelProperties>
@@ -1457,7 +1477,13 @@ namespace Orts.Simulation.RollingStocks
 
             CombustionLagRiseTimeS = 180.0, // 120-300 s
             CombustionLagFallTimeS = 90.0,  // 60-180 s
-        }
+
+            BoilerHeatTransferDelayS = 60,
+            RecoveryFireTargetDelayS = 60,
+
+            FuelDraftFactor = 1,
+
+    }
     },
 
     {
@@ -1490,6 +1516,11 @@ namespace Orts.Simulation.RollingStocks
 
             CombustionLagRiseTimeS = 10.0, // 30-60 s
             CombustionLagFallTimeS = 5.0, // 20-40 s
+
+            BoilerHeatTransferDelayS = 60,
+            RecoveryFireTargetDelayS = 30,
+
+            FuelDraftFactor = 0.75,
         }
     },
 
@@ -1520,6 +1551,12 @@ namespace Orts.Simulation.RollingStocks
 
             CombustionLagRiseTimeS = 10.0, // 5-20 s
             CombustionLagFallTimeS = 10.0, // 5-20 s
+
+            BoilerHeatTransferDelayS = 45,
+            RecoveryFireTargetDelayS = 10,
+
+            FuelDraftFactor = 0.85,
+
         }
     }
                 };
@@ -6366,8 +6403,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
            
             double TimePeriod = Math.Max(elapsedClockSeconds, 0.001);
 
-            SteamDemandRatio = Math.Min(1.0, SteamCylinderConsumptionRateKgpS / Math.Max(HallMaxSteam_kgps, 0.1));
-
             double FuelChargeMassKG;
 
             switch (FuelFeedSystemType)
@@ -6392,7 +6427,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Remove at some stage as this maybe incorrect
             if (throttle < 0.01)
             {
-                SteamCylinderConsumptionRateKgpS = 0;
+                HallSteamConsumptionRateKgpS = 0;
             }
 
             double BoilerPressureRatio = HallBoilerPressurePSIG / Math.Max(MaxBoilerPressurePSI, 1.0);
@@ -6402,6 +6437,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             double BoilerPressureError = 1.0 - BoilerPressureRatio;
 
             BoilerPressureError = Math.Max(0.0, BoilerPressureError);
+
+            SteamDemandRatio = Math.Min(1.0, HallSteamConsumptionRateKgpS / Math.Max(HallMaxSteam_kgps, 0.1));
 
             // =========================================================
             // FIREMAN TARGET FIRE SIZE
@@ -6459,7 +6496,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             FiremanOperatingMode FireMode;
 
-            if (BoilerPressureRatio < 0.82)
+            if (BoilerPressureError < 0.82)
             {
                 FireMode = FiremanOperatingMode.Recovery;
             }
@@ -6468,7 +6505,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             {
                 FireMode = FiremanOperatingMode.Recovery;
             }
-            else if (BoilerPressureRatio > 0.985 &&
+            else if (BoilerPressureError > 0.985 &&
                      CombustionDemandRatio < 0.05)
             {
                 FireMode = FiremanOperatingMode.Banked;
@@ -6619,7 +6656,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     break;
             }
 
-            double DesiredFirebedMassKG = TargetFirebedMass_kg * DesiredFirebedFraction;
+            double RawDesiredFirebedMassKG = TargetFirebedMass_kg * DesiredFirebedFraction;
+
+            SmoothedDesiredFirebedMassKG += (RawDesiredFirebedMassKG - SmoothedDesiredFirebedMassKG) * TimePeriod / Math.Max(fuel.RecoveryFireTargetDelayS, 0.1);
+
+            double DesiredFirebedMassKG = SmoothedDesiredFirebedMassKG;
 
             double FirebedError = (DesiredFirebedMassKG - FirebedMass_kg) / Math.Max(TargetFirebedMass_kg, 1.0);
 
@@ -6643,42 +6684,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
 
             // =========================================================================
-            // 5. FIRE MAINTENANCE DEMAND
-            // =========================================================================
-
-            // Represents minimum fuel needed to keep fire alive.
-
-            double FireMaintenanceDemand;
-
-            if (fuel.UsesFirebed)
-            {
-                FireMaintenanceDemand = 0.015 + 0.020 * fuel.VolatileFraction;
-            }
-            else
-            {
-                FireMaintenanceDemand = 0.0;
-            }
-
-            // =========================================================================
-            // 6. STEAM PRODUCTION DEMAND
-            // =========================================================================
-
-            double SteamProductionDemand; 
-
-            if (fuel.UsesFirebed)
-            {
-                SteamProductionDemand = 0.60 * SteamDemandRatio + 0.30 * BoilerPressureError;
-            }
-            else
-            {
-                SteamProductionDemand = 1.00 * SteamDemandRatio + 0.30 * BoilerPressureError;
-            }
-
-            // =========================================================================
             // 7. FIREBED RECOVERY DEMAND
             // =========================================================================
 
-            double FirebedRecoveryDemand = 0.45 * FirebedError;
+            double FirebedRecoveryDemand = Math.Max(0.0, DesiredFirebedMassKG - FirebedMass_kg);
 
             // =====================================================================
             // LOW FIREBED RECOVERY / FIRE COLLAPSE PROTECTION
@@ -6701,7 +6710,27 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             double BurnRateFromAirflow = Airflow_kgps / AirToFuelRatio;
 
-            double PredictedBurnRateKGpS = Math.Max(BurnRateFromCombustion, BurnRateFromAirflow);
+            double PredictedBurnRateKGpS = 0.7 * HallBurnRateSmoothedKgpS + 0.3 * BurnRateFromAirflow;
+
+            double InventoryReplacementDemand = PredictedBurnRateKGpS;
+
+            // =========================================================================
+            // 5. FIRE MAINTENANCE DEMAND
+            // =========================================================================
+
+            // Represents minimum fuel needed to keep fire alive.
+
+            double FireMaintenanceDemand;
+
+            if (fuel.UsesFirebed)
+            {
+                FireMaintenanceDemand = InventoryReplacementDemand;
+            }
+            else
+            {
+                FireMaintenanceDemand = 0.0;
+            }
+
             // -------------------------------------------------------------
             // Fire survival time
             // -------------------------------------------------------------
@@ -6793,7 +6822,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 case FiremanOperatingMode.Idle:
 
                     // Maintain small stable fire.
-                    AIBaseFeedKGpS = FireMaintenanceDemand + 0.15 * BoilerPressureError + 0.20 * FirebedRecoveryDemand;
+                    AIBaseFeedKGpS = InventoryReplacementDemand + 0.20 * FirebedRecoveryDemand;
 
        //         Console.WriteLine($"Firing Control - FireMode {FireMode} : AIBaseFeedKGpS {AIBaseFeedKGpS:F3} : FireMaintenanceDemand {FireMaintenanceDemand:F3} : BoilerPressureError {BoilerPressureError:F3} : FirebedRecoveryDemand {FirebedRecoveryDemand:F3}");
 
@@ -6801,13 +6830,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 case FiremanOperatingMode.WorkingLight:
 
-                    AIBaseFeedKGpS = FireMaintenanceDemand + 0.55 * SteamProductionDemand + 0.30 * FirebedRecoveryDemand + AnticipatoryFireBoost;
+                    AIBaseFeedKGpS = FireMaintenanceDemand + 0.55 * InventoryReplacementDemand + 0.30 * FirebedRecoveryDemand + AnticipatoryFireBoost;
 
                     break;
 
                 case FiremanOperatingMode.WorkingHeavy:
 
-                    AIBaseFeedKGpS = FireMaintenanceDemand + 0.90 * SteamProductionDemand + 0.45 * FirebedRecoveryDemand + AnticipatoryFireBoost;
+                    AIBaseFeedKGpS = FireMaintenanceDemand + 0.90 * InventoryReplacementDemand + 0.45 * FirebedRecoveryDemand + AnticipatoryFireBoost;
 
                     break;
 
@@ -6815,7 +6844,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                     // Aggressive rebuild after pressure collapse.
 
-                    AIBaseFeedKGpS = FireMaintenanceDemand + 1.15 * SteamProductionDemand + 0.65 * FirebedRecoveryDemand +    AnticipatoryFireBoost;
+                    AIBaseFeedKGpS = FireMaintenanceDemand + 1.15 * InventoryReplacementDemand + 0.65 * FirebedRecoveryDemand +    AnticipatoryFireBoost;
 
                     break;
             }
@@ -7097,9 +7126,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                         if (DesiredShovelRateKGpS > MinimumUsefulShovelRate)
                         {
-
-                            FiremanFuelAccumulatorKG += DesiredShovelRateKGpS * TimePeriod;
-
                             while (FiremanFuelAccumulatorKG >= HallShovelMassKG)
                             {
                                 FutureProjectedFirebedKG = FirebedMass_kg + PendingFuelAvailableKG + HallShovelMassKG;
@@ -7155,8 +7181,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                                 MaintenanceAccumulatorRateKGpS
                             );
 
-                        FiremanFuelAccumulatorKG +=
-                            EffectiveAccumulatorRateKGpS * TimePeriod;
+                        FiremanFuelAccumulatorKG += EffectiveAccumulatorRateKGpS * TimePeriod;
 
                         while (FiremanFuelAccumulatorKG >= FuelChargeMassKG)
                         {
@@ -7270,12 +7295,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 FiredoorOpenForFiring = true;
             }
 
-            // -----------------------------------------------------
-            // Output to combustion model - to be added later
-            // -----------------------------------------------------
-
-            FuelFeedFireDoorControl = (float)(FiredoorOpenForFiring ? 1.0 : 0.0);
-
             // =========================================================================
             // 14. FUEL DELIVERY RESPONSE DYNAMICS
             // =========================================================================
@@ -7381,6 +7400,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 HallFuelFeedRateKGpS = HallFuelFeedRateSmoothedKGpS;
             }
 
+            // ==========================================================
+            // PRESSURE HOLDING FUEL REDUCTION
+            // ==========================================================
+
+            HallFuelFeedRateKGpS *= (1.0 - 0.95 * CombustionSuppressionFactor);
+
             // =========================================================================
             // 16. FINAL CLAMPS
             // =========================================================================
@@ -7391,7 +7416,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // 17. DEBUG OUTPUT
             // =========================================================================
 
-    //  Console.WriteLine($"Final Results - FireMode {FireMode} : FirebedMass {FirebedMass_kg:F1} : TargetFuelFeed {TargetFuelFeedRateKGpS:F3} : SmoothedFeed {HallFuelFeedRateSmoothedKGpS:F3} : ActualFeed {HallFuelFeedRateKGpS:F3} : PendingFuel {PendingFuelAvailableKG:F2} : SteamDemandRatio {SteamDemandRatio:F3} : BoilerPressureRatio {BoilerPressureRatio:F3} : BoilerPressureError {BoilerPressureError:F3} : ManualFireman {FiringIsManual} : LayeredFirebed {UseLayeredFirebedPhysics} : FuelFeedSystemType {FuelFeedSystemType}");
+            //  Console.WriteLine($"Final Results - FireMode {FireMode} : FirebedMass {FirebedMass_kg:F1} : TargetFuelFeed {TargetFuelFeedRateKGpS:F3} : SmoothedFeed {HallFuelFeedRateSmoothedKGpS:F3} : ActualFeed {HallFuelFeedRateKGpS:F3} : PendingFuel {PendingFuelAvailableKG:F2} : SteamDemandRatio {ObservedSteamDemandRatio:F3} : BoilerPressureRatio {BoilerPressureRatio:F3} : BoilerPressureError {BoilerPressureError:F3} : ManualFireman {FiringIsManual} : LayeredFirebed {UseLayeredFirebedPhysics} : FuelFeedSystemType {FuelFeedSystemType}");
         }
 
         /// <summary>
@@ -7422,11 +7447,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             HallMaxSteam_kgps = Kg.FromLb(EvaporationLBpS);
 
-            //    double FuelFeed_kgps = FuelFeedRateSmoothedKGpS;  // For original CTN model
             FuelFeed_kgps = HallFuelFeedRateKGpS; // New fuel feed model
 
             // Boiler
-            
             double FuelCV_Jpkg = FuelCalorificKJpKG * 1000;      // Blidworth coal - units in J
 
             // Steam gas constant
@@ -7445,11 +7468,33 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             double CylinderSteamConsumptionKgpS = Kg.FromLb(CylinderSteamUsageLBpS); // Only steam cylinder usage, ie up the stack, impacts combustion model
 
-            SteamCylinderConsumptionRateKgpS = CylinderSteamConsumptionKgpS; // Total steam consumption
+            double HallTotalSteamConsumptionKgpS = Kg.FromLb(PreviousTotalSteamUsageLBpS);
 
-            BlowerSteamConsumption_kgps = 0.045 * BlowerPosition_0_1 * Math.Sqrt(Math.Max(HallBoilerPressurePSIG / MaxBoilerPressurePSI, 0.1));
+            HallSteamConsumptionRateKgpS = CylinderSteamConsumptionKgpS; // Total steam consumption
 
-            SteamCylinderConsumptionRateKgpS += BlowerSteamConsumption_kgps; // blower consumes steam - CHECK - is this the right way to model this?
+            double RadiationLossW = (BoilerHeatRadiationLossBTU) * 1055.06 / 3600.0; // Convert BTU/hr to W
+
+            // ==========================================================
+            // STEAM BALANCE
+            // ==========================================================
+
+            // Positive = boiler gaining steam
+            // Negative = boiler losing steam
+
+            double SteamBalance_kgps = SteamGenerationRateKgpS - HallTotalSteamConsumptionKgpS;
+
+            // Normalized steam balance
+
+            double NormalizedSteamBalance = SteamBalance_kgps / Math.Max(SteamGenerationRateKgpS, 0.10);
+
+            NormalizedSteamBalance = Math.Max(-1.0, Math.Min(NormalizedSteamBalance, 1.0));
+
+            double SteamDensitykgm3;
+            double SteamDensityLBft3;
+
+            SteamDensityFromPressure(HallBoilerPressurePSIG, out SteamDensitykgm3, out SteamDensityLBft3);
+
+     //       Console.WriteLine($"Blower - SteamConsumption {HallBlowerSteamConsumption_kgps:F3} : BlowerPosition {BlowerPosition_0_1:F2} : BP {HallBoilerPressurePSIG:F3} : MaxBP {MaxBoilerPressurePSI:F2}");
 
             UpdateFuelFeedtoFirebed(elapsedClockSeconds);
 
@@ -7619,7 +7664,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             MultiJetFactor = Math.Min(MultiJetFactor, 1.35);
             VelocityFactor = Math.Pow(Math.Max(BlastVelocity, 1.0) / 120.0, 0.15);
             VelocityFactor = Math.Max(0.80, Math.Min(VelocityFactor, 1.20));
-            SteamMassFlux = SteamCylinderConsumptionRateKgpS / NozzleArea_m2;
+            SteamMassFlux = HallSteamConsumptionRateKgpS / NozzleArea_m2;
             LoadFactor = Math.Pow(Math.Max(SteamMassFlux, 1.0) / 250.0, 0.18);
             if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
             {
@@ -7652,7 +7697,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             MaximumFrontEndLimitGasFlow = HallMaxSteam_kgps * FrontEndEntrainmentRatio;
 
-     //      Console.WriteLine($"Entrainment Ratio - {FrontEndEntrainmentRatio:F3} : Front End Type {SteamLocomotiveFrontEndType} : Stack Type {SteamLocomotiveStackType} : BaseEntrainmentRatio {BaseEntrainmentRatio:F3} : AreaRatio {AreaRatio:F3} : SparkArrestorFactor {SparkArrestorFactor:F3} : FrontEndResistanceFactor {FrontEndResistanceFactor:F3} : FrontEndResistanceCoeff {FrontEndResistanceCoefficient:F3} : MultipleJetFactor {MultiJetFactor:F3} : VelocityFactor {VelocityFactor:F3} : LoadFactor {LoadFactor:F3} : ChimneyArea {ChimneyArea_m2:F3} : NozzleArea {NozzleArea_m2:F3} : SteamConsumption {SteamCylinderConsumptionRateKgpS:F3} : SteamMassFlux {SteamMassFlux:F3}");
+            //      Console.WriteLine($"Entrainment Ratio - {FrontEndEntrainmentRatio:F3} : Front End Type {SteamLocomotiveFrontEndType} : Stack Type {SteamLocomotiveStackType} : BaseEntrainmentRatio {BaseEntrainmentRatio:F3} : AreaRatio {AreaRatio:F3} : SparkArrestorFactor {SparkArrestorFactor:F3} : FrontEndResistanceFactor {FrontEndResistanceFactor:F3} : FrontEndResistanceCoeff {FrontEndResistanceCoefficient:F3} : MultipleJetFactor {MultiJetFactor:F3} : VelocityFactor {VelocityFactor:F3} : LoadFactor {LoadFactor:F3} : ChimneyArea {ChimneyArea_m2:F3} : NozzleArea {NozzleArea_m2:F3} : SteamConsumption {SteamCylinderConsumptionRateKgpS:F3} : SteamMassFlux {SteamMassFlux:F3}");
 
             // =============== 2 Draft Generation ================
 
@@ -7705,6 +7750,28 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // ACTUAL DRAFT
             Draft_Pa = IdealDraft_Pa * DraftTransferEfficiency;
 
+            // ==========================================================
+            // BLOWER GENERATED DRAFT
+            // ==========================================================
+
+            double BlowerSteamNozzleDiameterM = 0.0047625;
+            double NumberOfBlowerNozzles = 10;
+            double TotalBlowerArea_m2 = NumberOfBlowerNozzles * Math.PI * BlowerSteamNozzleDiameterM * BlowerSteamNozzleDiameterM / 4.0;
+
+            double BlowerJetVelocity = Math.Sqrt(gamma * SteamR * Tsat_K);
+
+            double BlowerMomentum = HallBlowerSteamConsumption_kgps * BlowerJetVelocity;
+
+            double BlowerDraft_Pa = BlowerMomentum * DraftTransferEfficiency;
+
+            // =============== Effective Draft ================
+            // BLOWER-INDUCED DRAUGHT - Blower steam maintains draught when exhaust steam flow is insufficient.
+
+            // add blower draft
+            Draft_Pa += BlowerDraft_Pa;
+
+       //     Console.WriteLine($"Blower Draft - Draft {BlowerDraft_Pa:F3} : Velocity {BlowerJetVelocity:F3} : BlowerSteam {HallBlowerSteamConsumption_kgps:F3}");
+
             // =============== 3 Front-End Saturation ================
 
             // Front-end saturation factor
@@ -7748,13 +7815,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             double FrontEndBackPressure_Pa = 12000.0 * FrontEndOverload * FrontEndOverload;
 
     //       Console.WriteLine($"Draft - Speed {MpS.ToMpH(AbsSpeedMpS):F2} mph : Draft {Draft_Pa:F2} Pa : IdealDraft {IdealDraft_Pa:F2} Pa : FrontEndLoadRatio {FrontEndLoadRatio:F2} : DraftTransferEfficiency {DraftTransferEfficiency:F3} : MaxFrontEndLimitGasFlow {MaximumFrontEndLimitGasFlow:F2} kg/s : AirFlow {Airflow_kgps:F2} kg/s : SteamConsumption {SteamCylinderConsumptionRateKgpS:F2} kg/s : FrontEndDraftLossFactor {FrontEndDraftLossFactor:F3}");
-
-            // =============== Effective Draft ================
-            // BLOWER-INDUCED DRAUGHT - Blower steam maintains draught when exhaust steam flow is insufficient.
-            double BlowerDraft_Pa = 220.0 * BlowerPosition_0_1 * (0.35 + 0.65 * Math.Sqrt(Math.Max(HallBoilerPressurePSIG / MaxBoilerPressurePSI, 0.1)));
-
-            // add blower draft
-            Draft_Pa += BlowerDraft_Pa;
 
             //----------------------------------------------------------
             // 3. Firebed thickness calculation
@@ -7834,14 +7894,50 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // 3.5 Damper Control
             //----------------------------------------------------------
 
-            double targetDamper;
+            // BOILER PRESSURE HOLDING MODE
+
+            bool PressureHoldingMode = HallBoilerPressurePSIG > (0.95 * MaxBoilerPressurePSI);
+
+            PressureHoldingFactor = 0.0;
+
+            if (PressureHoldingMode)
+            {
+                PressureHoldingFactor = (HallBoilerPressurePSIG - 0.95 * MaxBoilerPressurePSI) / (0.05 * MaxBoilerPressurePSI);
+
+                PressureHoldingFactor = Math.Max(0.0, Math.Min(PressureHoldingFactor, 1.0));
+            }
+
+            // ==========================================================
+            // COMBUSTION SUPPRESSION FACTOR
+            // ==========================================================
+
+            // Pressure component
+
+            double PressureSuppression = PressureHoldingFactor;
+
+            // Steam balance component
+
+            double SteamBalanceSuppression = 0.0;
+
+            if (SteamBalance_kgps > 0.0)
+            {
+                SteamBalanceSuppression = Math.Min(SteamBalance_kgps / Math.Max(HallMaxSteam_kgps * 0.20, 0.5), 1.0);
+            }
+
+            // Combined suppression
+
+            CombustionSuppressionFactor = Math.Max(PressureSuppression, SteamBalanceSuppression);
+
+        //    Console.WriteLine($"CombustionSuppression - PressureSuppression {PressureSuppression:F3} : SteamBalanceSuppression {SteamBalanceSuppression:F3} : CombustionSuppressionFactor {CombustionSuppressionFactor:F3} : PressureHoldingFactor {PressureHoldingFactor:F3} : SteamBalance_kgps {SteamBalance_kgps:F3} : MaxSteam {HallMaxSteam_kgps:F3} : BoilerPressure {HallBoilerPressurePSIG:F3} : MaxBP {MaxBoilerPressurePSI:F3}");
+
+            double targetDamper = 0;
+            double BoilerPressureError = 0;
 
             // AI damper control is designed to maintain boiler pressure and steam generation under varying demand, while also preventing overfiring and managing firebed thickness. It uses a combination of steam demand, boiler pressure, and firebed thickness to calculate an optimal damper position.
 
             if (!FiringIsManual && HallAIControlEnabled)
             {
-              //  double SteamDemandRatio = 1;
-                double BoilerPressureError = (MaxBoilerPressurePSI - HallBoilerPressurePSIG) / MaxBoilerPressurePSI;
+                BoilerPressureError = (MaxBoilerPressurePSI - HallBoilerPressurePSIG) / MaxBoilerPressurePSI;
 
                 // +++++ Firebed thickness compensation is designed to prevent overfiring when the firebed is thin, and underfiring when the firebed is thick. +++
                 double FirebedCompensation = Math.Min(FireThickness_m / 0.25, 1.0);
@@ -7849,13 +7945,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 // BASE AI TARGET
                 if (fuel.UsesFirebed)
                 {
-            //        SteamDemandRatio = Math.Pow(SteamCylinderConsumptionRateKgpS / Math.Max(HallMaxSteam_kgps, 0.1), 0.65);
-                    targetDamper = 0.30 + 0.45 * SteamDemandRatio + 0.35 * BoilerPressureError + 0.20 * FirebedCompensation;
+                    targetDamper = 0.10 + 0.55 * SteamDemandRatio + 0.25 * BoilerPressureError + 0.10 * FirebedCompensation;
                     DamperResponseRate = 0.35;
                 }
                 else
                 {
-               //     SteamDemandRatio = SteamCylinderConsumptionRateKgpS / Math.Max(HallMaxSteam_kgps, 0.1);
                     targetDamper = 0.20 + 0.55 * SteamDemandRatio + 0.25 * BoilerPressureError;
 
                     // oil firing responds faster
@@ -7863,17 +7957,26 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
 
                 // HIGH DEMAND BOOST
-
-                if (SteamCylinderConsumptionRateKgpS > 6.0)
+                if (SteamDemandRatio > 0.15)
                 {
                     targetDamper += 0.15;
                 }
 
                 // DRIFTING / COASTING - reduce overfiring
+                bool CanReduceFire = SteamDemandRatio < 0.03 && CombustionSuppressionFactor > 0.25;
 
-                if (SteamCylinderConsumptionRateKgpS < 0.5)
+                if (CanReduceFire)
                 {
-                    targetDamper *= 0.45;
+                    targetDamper *= 0.30;
+                }
+
+                // pressure holding suppression
+                targetDamper *= (1.0 - 0.90 * CombustionSuppressionFactor);
+
+                // Damper shouldn't be closed too much when blower is on - risk of stalling fire and losing pressure
+                if (BlowerPosition_0_1 > 0.10)
+                {
+                    targetDamper = Math.Max(targetDamper, 0.25);
                 }
 
                 AIDamperTarget_0_1 = Math.Max(0.05, Math.Min(targetDamper, 1.0));
@@ -7884,16 +7987,20 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 AIDamperTarget_0_1 = DamperController.CurrentValue;
             }
 
+
+
             // DAMPER INERTIA - real dampers move slowly
 
             DamperPosition_0_1 += (AIDamperTarget_0_1 - DamperPosition_0_1) * DamperResponseRate * elapsedClockSeconds;
             DamperPosition_0_1 = Math.Max(0.0, Math.Min(DamperPosition_0_1, 1.0));
 
+       //     Console.WriteLine($"Damper Control - DamperPosition {DamperPosition_0_1:F3} : targetDamper {targetDamper:F3} : BoilerPressureError {BoilerPressureError:F3}");
+
             //----------------------------------------------------------
             // 3.6 Firedoor / Secondary Air Control
             //----------------------------------------------------------
 
-            double targetFiredoor;
+            double targetFiredoor = 0;
 
             if (fuel.UsesFirebed)
             {
@@ -7922,16 +8029,18 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     }
 
                     // drifting -> mostly closed
-                    if (SteamCylinderConsumptionRateKgpS < 0.5)
+                    if (SteamDemandRatio < 0.03)
                     {
                         targetFiredoor *= 0.35;
                     }
 
                    // if AI fireman has opened firedoor in fuel feed model then override combustion requirements
-                    if (FuelFeedFireDoorControl > 0)
+                    if (FiredoorOpenForFiring)
                     {
-                        targetFiredoor = FuelFeedFireDoorControl;
+                        targetFiredoor = 1.0;
                     }
+
+                    targetFiredoor *= (1.0 - 0.90 * CombustionSuppressionFactor);
 
                     // clamp
                     AIFiredoorTarget_0_1 = Math.Max(0.0, Math.Min(targetFiredoor, 1.0));
@@ -7954,49 +8063,87 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 AIFiredoorTarget_0_1 = 0.0;
             }
 
+            //           Console.WriteLine($"Firedoor Control - Position {FiredoorPosition_0_1:F3} : targetFiredoor {targetFiredoor:F3}");
+
             //----------------------------------------------------------
             // 3.7 Blower Control
             //----------------------------------------------------------
+
+            // TARGET DRAFT REQUIREMENT
+            double TargetDraft_Pa;
+
+            // standing
+            if (SteamDemandRatio < 0.01)
+            {
+                if (SteamBalance_kgps > 0.0) // more steam being generated then used - minimal blower draft required to maintain combustion
+                {
+                    TargetDraft_Pa = 1.5; 
+                }
+                else // boiler losing steam - need more blower draft to maintain combustion
+                {
+                    TargetDraft_Pa = 5.0 + 20.0 * Math.Min( -SteamBalance_kgps, 1.0);
+                }
+            }
+
+            // drifting
+            else if (SteamDemandRatio < 0.03)
+            {
+//                if (SteamBalance_kgps > 0.0)
+//                {
+                    TargetDraft_Pa = 5.0;
+//                }
+//                else
+//                {
+//                    TargetDraft_Pa = 5.0 + 20.0 * Math.Min(-SteamBalance_kgps, 1.0);
+//                }
+            }
+
+            // light running
+            else if (SteamDemandRatio < 0.15)
+            {
+                TargetDraft_Pa = 60.0;
+            }
+
+            // working
+            else
+            {
+                TargetDraft_Pa = 100.0 + 150.0 * SteamDemandRatio;
+            }
+
+            TargetDraft_Pa *= fuel.FuelDraftFactor;
+
+            // Oil burners require minimum draft
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                TargetDraft_Pa = Math.Max(TargetDraft_Pa, 35.0);
+            }
+
+            // pressure holding mode
+            TargetDraft_Pa *= (1.0 - 0.90 * CombustionSuppressionFactor);
 
             double targetBlower;
 
             if (!FiringIsManual && HallAIControlEnabled)
             {
-                // weak exhaust blast requires blower
-                double ExhaustWeakness = 1.0 - Math.Min(SteamCylinderConsumptionRateKgpS / 2.5, 1.0);
+                // ==========================================================
+                // DRAFT DEFICIENCY BLOWER CONTROL
+                // ==========================================================
 
-                // low pressure recovery assistance
-                double PressureRecoveryNeed = Math.Max((MaxBoilerPressurePSI - HallBoilerPressurePSIG) / MaxBoilerPressurePSI, 0.0);
+                double DraftDeficiency = Math.Max(TargetDraft_Pa - Draft_Pa, 0.0);
 
-                // idle steaming support
-                double IdleFactor = SteamCylinderConsumptionRateKgpS < 0.4 ? 1.0 : 0.0;
+                targetBlower = DraftDeficiency / Math.Max(TargetDraft_Pa, 1.0);
 
-                if (fuel.UsesFirebed)
+                // safety blower
+                //            if (CylinderSteamConsumptionKgpS < 0.10 && HallBurnRateSmoothedKgpS > 0.10 && HallBoilerPressurePSIG < 0.90 * MaxBoilerPressurePSI)
+                if (SteamDemandRatio == 0 && HallBurnRateSmoothedKgpS > 0.10 && HallBoilerPressurePSIG < 0.90 * MaxBoilerPressurePSI)
                 {
-                    // baseline blower requirement
-                    targetBlower = 0.55 * ExhaustWeakness + 0.25 * PressureRecoveryNeed + 0.35 * IdleFactor;
-
-                    // drifting protection - prevents blowback
-                    if (SteamCylinderConsumptionRateKgpS < 0.25 && HallBurnRateSmoothedKgpS > 0.15)
-                    {
-                        targetBlower += 0.25;
-                    }
-                }
-                else
-                {
-                    // baseline blower requirement
-                    targetBlower = 0.35 * ExhaustWeakness + 0.20 * PressureRecoveryNeed;
-
-                    // drifting protection - prevents blowback
-                    if (SteamCylinderConsumptionRateKgpS < 0.2)
-                    {
-                        targetBlower += 0.15;
-                    }
+                    targetBlower = Math.Max(targetBlower, 0.08);
                 }
 
-                AIBlowerTarget_0_1 = Math.Max(0.0, Math.Min(targetBlower, 1.0));
+                // clamp
+                AIBlowerTarget_0_1 = Math.Max(0.02, Math.Min(targetBlower, 1.0));
 
-         //       Console.WriteLine($"Blower Control - AIBlowerTarget {AIBlowerTarget_0_1:F2} : ExhaustWeakness {ExhaustWeakness:F2} : PressureRecoveryNeed {PressureRecoveryNeed:F2} : IdleFactor {IdleFactor:F2}");
+           //  Console.WriteLine($"Blower Control - AIBlowerTarget {AIBlowerTarget_0_1:F2} : DraftDeficiency {DraftDeficiency:F2} : TargetDraft {TargetDraft_Pa:F2} : targetblower {targetBlower:F3} : PressureHoldingFactor {PressureHoldingFactor:F3} : CombustionSuppression {CombustionSuppressionFactor:F3} : FuelDraftFactor {fuel.FuelDraftFactor:F3} : SteamDemandRatio {SteamDemandRatio:F3}");
             }
             else if (FiringIsManual)
             {
@@ -8009,6 +8156,19 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             BlowerPosition_0_1 += (AIBlowerTarget_0_1 - BlowerPosition_0_1) * BlowerResponseRate * elapsedClockSeconds;
 
             BlowerPosition_0_1 = Math.Max(0.0, Math.Min(BlowerPosition_0_1, 1.0));
+
+            // Calculate blower steam consumption - this calculation according to Cardew may give high results
+            const double Cb = 0.92;
+
+            double CriticalFactor = Math.Sqrt(gamma * Math.Pow(2.0 / (gamma + 1.0), (gamma + 1.0) / (gamma - 1.0))); // Already calculated????
+
+            double MaxBlowerSteamFlow_kgps = Cb * TotalBlowerArea_m2 * HallBoilerPressure_PaA * CriticalFactor / Math.Sqrt(SteamR * Tsat_K);
+
+            HallBlowerSteamConsumption_kgps = MaxBlowerSteamFlow_kgps * BlowerPosition_0_1;
+
+            HallSteamConsumptionRateKgpS += HallBlowerSteamConsumption_kgps;
+
+        //    Console.WriteLine($"Blower Steam Consumption - Steam {HallBlowerSteamConsumption_kgps:F3} : Density {SteamDensitykgm3:F3} : TotalNozzleArea {TotalBlowerArea_m2:F4} : BlowerPosition {BlowerPosition_0_1:F3} : MaxSteamConsumption {MaxBlowerSteamFlow_kgps:F3}");
 
             // =============== 5 Fire Resistance ================
 
@@ -8241,15 +8401,15 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         //        Console.WriteLine($"Oil Combustion - Speed {MpS.ToMpH(AbsSpeedMpS):F2} mph : SmoothedBurnRate {HallBurnRateSmoothedKgpS:F3} : Burn Rate {HallBurnRateSmoothedKgpS:F3} kg : Draft_Pa {Draft_Pa:F3} kg : FuelFeed {FuelFeed_kgps:F3} kg : AFR {AirToFuelRatio:F2} : Airflow {Airflow_kgps:F3} kg/s : OilAtomizationEff {OilAtomizationEfficiency:F3} : OilBurnerCapacityFactor {OilBurnerCapacityFactor:F3} : BurnLimit {MaxFuelBurnLimitKgpS:F3}");
             }
 
-            double CombustionTau = (HallFuelBurnRateKgpS > HallBurnRateSmoothedKgpS) ? fuel.CombustionLagRiseTimeS : fuel.CombustionLagFallTimeS;
+            double CombustionDelayTimeS = (HallFuelBurnRateKgpS > HallBurnRateSmoothedKgpS) ? fuel.CombustionLagRiseTimeS : fuel.CombustionLagFallTimeS;
 
             if (HallFuelBurnRateKgpS > HallBurnRateSmoothedKgpS)  // Burn Increase
             {
-                HallBurnRateSmoothedKgpS += (HallFuelBurnRateKgpS - HallBurnRateSmoothedKgpS) * elapsedClockSeconds / CombustionTau;
+                HallBurnRateSmoothedKgpS += (HallFuelBurnRateKgpS - HallBurnRateSmoothedKgpS) * elapsedClockSeconds / CombustionDelayTimeS;
             }
             else if (HallFuelBurnRateKgpS < HallBurnRateSmoothedKgpS) // Burn Decrease
             {
-                HallBurnRateSmoothedKgpS -= (HallBurnRateSmoothedKgpS - HallFuelBurnRateKgpS) * elapsedClockSeconds / CombustionTau;
+                HallBurnRateSmoothedKgpS -= (HallBurnRateSmoothedKgpS - HallFuelBurnRateKgpS) * elapsedClockSeconds / CombustionDelayTimeS;
             }
 
             //   HallBurnRateSmoothedKgpS += (PreviousHallFuelBurnRateKgpS - HallFuelBurnRateKgpS) / CombustionTau;
@@ -8287,7 +8447,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // =============== 8 Heat Release ================ includes: calorific release, combustion quality, volatile combustion, moisture losses, radiation losses, combustion losses
 
-            combustionHeat_W = HallBurnRateSmoothedKgpS * FuelCV_Jpkg;
+            double RawCombustionHeat_W = HallBurnRateSmoothedKgpS * FuelCV_Jpkg;
+
+            EffectiveCombustionHeat_W += (RawCombustionHeat_W - EffectiveCombustionHeat_W) * elapsedClockSeconds / Math.Max(fuel.BoilerHeatTransferDelayS, 0.1);
+
+            combustionHeat_W = EffectiveCombustionHeat_W;
 
             if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
             {
@@ -8414,11 +8578,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
 
             // Boiler radiation losses
-            double RadiationLossFraction = 0.025 + 0.020 * Math.Min(grateRateKgpM2 / 0.18, 1.0);
-
-            double RadiationLoss_W = combustionHeat_W * RadiationLossFraction;
-
-            combustionHeat_W -= RadiationLoss_W;
+            // Reduce generated heat by other losses
+            combustionHeat_W -= RadiationLossW;
 
             double AtomizationEfficiency = 0;
             // Oil atomization losses
@@ -8517,13 +8678,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             FireboxEfficiency = Math.Max(0.32, Math.Min(FireboxEfficiency, 0.50));
 
             // BLOWER OVERDRAFT PENALTY - excessive blower wastes heat
+            double DraftRatio = Draft_Pa / 300.0;
 
-            if (BlowerPosition_0_1 > 0.6)
+            if (DraftRatio > 1.0)
             {
-                double OverblowerFactor = BlowerPosition_0_1 - 0.6;
+                double OverdraftFactor = DraftRatio - 1.0;
 
-                // Excessive blower use increases gas velocity and carries heat up the chimney.
-                combustionHeat_W *= (1.0 - 0.10 * OverblowerFactor);
+                combustionHeat_W *= 1.0 - 0.08 * Math.Min(OverdraftFactor, 1.0);
             }
 
             // Radiant firebox absorption dominates at moderate firing rates.
@@ -8534,7 +8695,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // ++++++++++ Tubes +++++++++++++++++
             // Tube effectiveness rises with gas flow. - approximated using airflow scaling.
-            double EffectiveGasFlow = Airflow_kgps + 0.8 * BlowerPosition_0_1;
+            double EffectiveGasFlow = Airflow_kgps;
 
             double tubeVelocityFactor = Math.Pow(Math.Max(EffectiveGasFlow, 0.1), 0.90);
 
@@ -8736,7 +8897,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             HallWaterMass_kg = Math.Max(HallWaterMass_kg, 1.0);
 
-            HallSteamMass_kg += (SteamGenerationRateKgpS - SteamCylinderConsumptionRateKgpS) * elapsedClockSeconds;
+            HallSteamMass_kg += (SteamGenerationRateKgpS - HallSteamConsumptionRateKgpS) * elapsedClockSeconds;
 
             HallSteamMass_kg = Math.Max(HallSteamMass_kg, 1.0);
 
@@ -8796,6 +8957,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             SteamGenerationRateKgpS = EvaporativeSteamRateKgpS + FlashSteamRateKgpS; // Remove above calculation once happy
 
             SteamGenerationRateKgpS += (SteamGenerationRateKgpS - PreviousSteamGenerationRateKgpS) * elapsedClockSeconds / SteamGenerationLagTimeS;
+
+            SteamGenerationRateKgpS = Math.Max(SteamGenerationRateKgpS, 0.0);
 
             PreviousSteamGenerationRateKgpS = SteamGenerationRateKgpS;
 
@@ -14346,10 +14509,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                );
             }
 
-            status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N0}\t{5}\t{6:N0}\t{7}\t{8:N2}\t\t{9}\t{10:F2}\t{11}\t{12:F2}\t{13}\t{14:F2}\t{15}\t{16:F2}\t{17}\t{18:F2}\t{19}\t{20:F2}\t{21}\t{22:F2}\t{23}\t{24:F2}\t{25}\t{26:F2}\n",
+            status.AppendFormat("\t{0}\t{1}\t{2:N3}\t{3}\t{4:N0}\t{5}\t{6:N0}\t{7}\t{8:N2}\t\t{9}\t{10:F2}\t{11}\t{12:F2}\t{13}\t{14:F2}\t{15}\t{16:F2}\t{17}\t{18:F2}\t{19}\t{20:F2}\t{21}\t{22:F2}\t{23}\t{24:F2}\t{25}\t{26:F2}\n",
             Simulator.Catalog.GetString("HallComb:"),
             Simulator.Catalog.GetString("Cons:"),
-            FormatStrings.FormatMass(pS.TopH((float)SteamCylinderConsumptionRateKgpS), IsMetric),
+            FormatStrings.FormatMass(pS.TopH((float)HallSteamConsumptionRateKgpS), IsMetric),
             Simulator.Catalog.GetString("Blast:"),
             BlastVelocity,
             Simulator.Catalog.GetString("Draft:"),
