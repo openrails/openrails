@@ -56,6 +56,8 @@ namespace Orts.Viewer3D.Debugging
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.groupBoxCache = new System.Windows.Forms.GroupBox();
             this.groupBoxSelectedSound = new System.Windows.Forms.GroupBox();
+            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.panelSoundVariables = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.speedLabel = new System.Windows.Forms.Label();
@@ -117,6 +119,10 @@ namespace Orts.Viewer3D.Debugging
             this.splitContainer2.SuspendLayout();
             this.groupBoxCache.SuspendLayout();
             this.groupBoxSelectedSound.SuspendLayout();
+            this.splitContainer3.Panel1.SuspendLayout();
+            this.splitContainer3.Panel2.SuspendLayout();
+            this.splitContainer3.SuspendLayout();
+            this.panelSoundVariables.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -144,9 +150,13 @@ namespace Orts.Viewer3D.Debugging
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.IsSplitterFixed = false;
             this.splitContainer1.Location = new System.Drawing.Point(0, 0);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.splitContainer1.Size = new System.Drawing.Size(288, 812);
+            this.splitContainer1.SplitterDistance = 420;
+            this.splitContainer1.TabIndex = 5;
             // 
             // splitContainer1.Panel1
             // 
@@ -157,9 +167,6 @@ namespace Orts.Viewer3D.Debugging
             // 
             this.splitContainer1.Panel2.Controls.Add(this.groupBoxInactiveSounds);
             this.splitContainer1.Panel2.Padding = new System.Windows.Forms.Padding(3);
-            this.splitContainer1.Size = new System.Drawing.Size(288, 812);
-            this.splitContainer1.SplitterDistance = 519;
-            this.splitContainer1.TabIndex = 5;
             // 
             // groupBoxActiveSounds
             // 
@@ -186,28 +193,50 @@ namespace Orts.Viewer3D.Debugging
             // splitContainer2
             // 
             this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.splitContainer2.IsSplitterFixed = false;
             this.splitContainer2.Location = new System.Drawing.Point(0, 0);
             this.splitContainer2.Name = "splitContainer2";
+            this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.splitContainer2.Size = new System.Drawing.Size(612, 812);
+            this.splitContainer2.SplitterDistance = 640;
+            this.splitContainer2.TabIndex = 6;
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.groupBoxCache);
             this.splitContainer2.Panel1.Controls.Add(this.groupBoxSelectedSound);
             this.splitContainer2.Panel1.Padding = new System.Windows.Forms.Padding(3);
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.splitContainer1);
-            this.splitContainer2.Size = new System.Drawing.Size(612, 812);
-            this.splitContainer2.SplitterDistance = 320;
-            this.splitContainer2.TabIndex = 6;
+            this.splitContainer2.Panel2.Controls.Add(this.groupBoxCache);
+            this.splitContainer2.Panel2.Padding = new System.Windows.Forms.Padding(3);
+            // 
+            // splitContainer3
+            // 
+            this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer3.IsSplitterFixed = false;
+            this.splitContainer3.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            this.splitContainer3.IsSplitterFixed = false;
+            this.splitContainer3.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer3.Name = "splitContainer3";
+            this.splitContainer3.Size = new System.Drawing.Size(612, 812);
+            this.splitContainer3.SplitterDistance = 380;
+            this.splitContainer3.TabIndex = 6;
+            // 
+            // splitContainer3.Panel1
+            // 
+            this.splitContainer3.Panel1.Controls.Add(this.splitContainer2);
+            this.splitContainer3.Panel1.Padding = new System.Windows.Forms.Padding(3);
+            // 
+            // splitContainer3.Panel2
+            // 
+            this.splitContainer3.Panel2.Controls.Add(this.splitContainer1);
+            this.splitContainer3.Panel2.Padding = new System.Windows.Forms.Padding(3);
             // 
             // groupBoxCache
             // 
             this.groupBoxCache.Controls.Add(this.tableLayoutPanel1);
-            this.groupBoxCache.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBoxCache.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.groupBoxCache.Location = new System.Drawing.Point(3, 196);
             this.groupBoxCache.Name = "groupBoxCache";
             this.groupBoxCache.Size = new System.Drawing.Size(176, 73);
@@ -217,17 +246,24 @@ namespace Orts.Viewer3D.Debugging
             // 
             // groupBoxSelectedSound
             // 
-            this.groupBoxSelectedSound.Controls.Add(this.concreteSleepers);
-            this.groupBoxSelectedSound.Controls.Add(this.carInTunnel);
-            this.groupBoxSelectedSound.Controls.Add(this.sound3D);
-            this.groupBoxSelectedSound.Controls.Add(this.tableLayoutPanel2);
-            this.groupBoxSelectedSound.Dock = System.Windows.Forms.DockStyle.Top;
-            this.groupBoxSelectedSound.Location = new System.Drawing.Point(3, 3);
+            this.groupBoxSelectedSound.Controls.Add(this.panelSoundVariables);
+            this.groupBoxSelectedSound.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBoxSelectedSound.Location = new System.Drawing.Point(3, 16);
             this.groupBoxSelectedSound.Name = "groupBoxSelectedSound";
             this.groupBoxSelectedSound.Size = new System.Drawing.Size(310, 618);
             this.groupBoxSelectedSound.TabIndex = 0;
             this.groupBoxSelectedSound.TabStop = false;
             this.groupBoxSelectedSound.Text = "Selected Sound Source Variables";
+            //
+            // panelSoundVariables
+            //
+            this.panelSoundVariables.Controls.Add(this.concreteSleepers);
+            this.panelSoundVariables.Controls.Add(this.carInTunnel);
+            this.panelSoundVariables.Controls.Add(this.sound3D);
+            this.panelSoundVariables.Controls.Add(this.tableLayoutPanel2);
+            this.panelSoundVariables.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelSoundVariables.Size = new System.Drawing.Size(310, 618);
+            this.panelSoundVariables.AutoScroll = true;
             // 
             // sound3D
             // 
@@ -316,28 +352,28 @@ namespace Orts.Viewer3D.Debugging
             this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 16);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 21;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 4.75F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(190, 526);
             this.tableLayoutPanel2.TabIndex = 8;
             // 
@@ -801,8 +837,8 @@ namespace Orts.Viewer3D.Debugging
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(500, 700);
-            this.Controls.Add(this.splitContainer2);
+            this.ClientSize = new System.Drawing.Size(512, 512);
+            this.Controls.Add(this.splitContainer3);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SoundDebugForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
@@ -819,6 +855,10 @@ namespace Orts.Viewer3D.Debugging
             this.groupBoxCache.ResumeLayout(false);
             this.groupBoxSelectedSound.ResumeLayout(false);
             this.groupBoxSelectedSound.PerformLayout();
+            this.splitContainer3.Panel1.ResumeLayout(false);
+            this.splitContainer3.Panel2.ResumeLayout(false);
+            this.splitContainer3.ResumeLayout(false);
+            this.panelSoundVariables.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -833,10 +873,12 @@ namespace Orts.Viewer3D.Debugging
         private System.Windows.Forms.TreeView activeSoundList;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.GroupBox groupBoxSelectedSound;
         private System.Windows.Forms.GroupBox groupBoxActiveSounds;
         private System.Windows.Forms.GroupBox groupBoxInactiveSounds;
         private System.Windows.Forms.GroupBox groupBoxCache;
+        private System.Windows.Forms.Panel panelSoundVariables;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.Label speedLabel;

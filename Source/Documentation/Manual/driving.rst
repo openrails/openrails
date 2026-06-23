@@ -2574,8 +2574,9 @@ populated with the data used by the SMS file to control volume curves and freque
 curves. The majority of these values are only relevant for train car and track
 sounds, many are for locomotives only, and some are only useful for specific types
 of locomotives (back pressure is only for steam locomotives, for example). The
-units of each value are set to the same units used in SMS files, so no conversions
-are needed when using these values to tune SMS settings.
+units of each value are set to the default units used by OpenRails, but other
+units can be used inside SMS files. The units accepted by OR for various
+measurements can be found :ref:`in the appendix <appendices-units-of-measure>`.
 
 Additionally, if an active sound stream is selected, the "Volume" and "Frequency (Hz)"
 values will be activated to show the volume and frequency applied to the sound
