@@ -21900,7 +21900,7 @@ namespace Orts.Simulation.Physics
                                 (car as MSTSDieselLocomotive).Variable1[0] = 0.7f;
                                 (car as MSTSDieselLocomotive).Variable2 = 0.7f;
                                 (car as MSTSDieselLocomotive).EnginesRPM[0] = (car as MSTSDieselLocomotive).MaxRPM * 0.7f;
-                                (car as MSTSDieselLocomotive).EnginesPower[0] = (car as MSTSDieselLocomotive).MaxPowerW * 0.7f / 1000.0f; // Convert to kW
+                                (car as MSTSDieselLocomotive).EnginesPower[0] = (car as MSTSDieselLocomotive).MaxPowerW * 0.7f;
                                 (car as MSTSDieselLocomotive).EnginesTorque[0] = (car as MSTSDieselLocomotive).MaxPowerW / ((car as MSTSDieselLocomotive).MaxRPM * (2.0f * (float)Math.PI) / 60.0f);
                             }
                             else if (car is MSTSSteamLocomotive)

@@ -718,7 +718,7 @@ namespace Orts.Simulation.RollingStocks
             for (int i = 0; i < DieselEngines.Count; i++)
             {
                 EnginesRPM[i] = DieselEngines[i].RealRPM;
-                EnginesPower[i] = DieselEngines[i].OutputPowerW / 1000.0f; // Convert to kW
+                EnginesPower[i] = DieselEngines[i].OutputPowerW;
                 EnginesTorque[i] = DieselEngines[i].OutputPowerW / (DieselEngines[i].RealRPM * (2.0f * (float)Math.PI / 60.0f));
             }
 

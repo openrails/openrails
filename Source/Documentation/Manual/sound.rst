@@ -541,33 +541,33 @@ Force) and the related variable. This applies to Variable2 and Variable3.
 
 New variables introduced by OR:
 
-- BrakeCyl, which contains the brake cylinder pressure in PSI. Like the 
-  traditional MSTS variables, it can be used to control volume or frequency 
-  curves (``BrakeCylControlled``) and within variable triggers 
-  (``BrakeCyl_Inc_Past`` and ``BrakeCyl_Dec_Past``).
-- CurveForce, in Newtons when the rolling stock is in a curve. Can be used for 
-  curve flange sounds, with two volume curves: one is ``SpeedControlled``, 
-  which makes the sound speed dependent too, and ``CurveForceControlled``. 
+- BrakeCyl, which contains the brake cylinder pressure in PSI by default, though
+  other pressure units can be specified. Like the traditional MSTS variables, it can
+  be used to control volume or frequency curves (``BrakeCylControlled``) and within
+  variable triggers (``BrakeCyl_Inc_Past`` and ``BrakeCyl_Dec_Past``).
+- CurveForce, in Newtons by default, when the rolling stock is in a curve. Can be used for 
+  curve flange sounds, with two volume curves: one is ``SpeedControlled``, which makes the
+  sound speed dependent too (default units are m/s), and ``CurveForceControlled``. 
   Of course ``CurveForce_Inc_Past``, and ``CurveForce_Dec_Past`` are also 
   available for activating and deactivating the sound.
-- Tractive effort (kN) and tractive power (kW):
+- Tractive effort (default N) and tractive power (default W):
   - For curves, ``TractiveEffortControlled``, and for triggers, ``TractiveEffort_Inc_Past`` and ``TractiveEffort_Dec_Past``, can be used
-    to make sounds tractive effort dependant, with the tractive effort values measured in *kilonewtons*. The tractive effort value used by
-    the sound system can be positive or negative, negative values indicate force opposite the direction of travel (either dynamic braking,
-    or using the throttle in the wrong direction).
+    to make sounds tractive effort dependant, with the tractive effort values measured in *newtons* by default (values with other force units can be
+    entered in the SMS file as desired). The tractive effort value used by the sound system can be positive or negative, negative values
+    indicate force opposite the direction of travel (either dynamic braking, or using the throttle in the wrong direction).
   - Similarly, ``TractivePowerControlled`` can be used on curves and ``TractivePower_Inc_Past`` or ``TractivePower_Dec_Past`` on triggers
-    to vary sounds with the power, measured in *kilowatts*, applied to the rails. Like for tractive effort, a negative value indicates
-    dynamic braking or traction against the motion of the train.
-- Diesel engine rotation speed (RPM), diesel engine power (kW), and diesel engine torque (Nm):
+    to vary sounds with the power, measured in *watts* by default, using other power units as specified in the SMS files, applied to the
+    rails. Like for tractive effort, a negative value indicates dynamic braking or traction against the motion of the train.
+- Diesel engine rotation speed (RPM), diesel engine power (default W), and diesel engine torque (Nm):
   - Curve control ``EngineXRPMControlled`` and variable triggers ``EngineXRPM_Inc_Past`` and ``EngineXRPM_Dec_Past`` can control sounds based
     on engine RPM (note: unlike Variable2, EngineRPM values are NOT scaled to a range of 0-1, the values used must correspond to the actual
     RPM values of the engine) where X is the diesel engine number, allowing for sounds to respond to individual engines on locomotives with
     multiple diesel engines. On locomotives with only one engine, the X value can be removed (eg: ``EngineRPMControlled``) and the RPM value
     of the #1 engine will be used by default.
   - Curve control ``EngineXPowerControlled`` and variable triggers ``EngineXPower_Inc_Past`` and ``EngineXPower_Dec_Past`` similarly control sounds
-    depending on the actual instantaneous power output of the engine, measured in *kilowatts*. This allows for more dynamic engine sounds than
-    using RPM alone, as real engines sound very different when unloaded (generating low power) and loaded (generating high power). As with engine
-    RPM, X must be replaced with the diesel engine number, but X can be removed if there is only one diesel engine.
+    depending on the actual instantaneous power output of the engine, measured in *watts* unless specified otherwise.
+    This allows for more dynamic engine sounds than using RPM alone, as real engines sound very different when unloaded (generating low power) and
+    loaded (generating high power). As with engine RPM, X must be replaced with the diesel engine number, but X can be removed if there is only one diesel engine.
   - Curve control ``EngineXTorqueControlled`` and variable triggers ``EngineXTorque_Inc_Past`` and ``EngineXTorque_Dec_Past`` likewise control sounds
     using the instantaneous torque output of the engine in *newton meters*. Like for engine power, this is another option to create sounds that vary
     with engine load. As with engine RPM and power, the value X is optionally included to specify which diesel engine to measure the torque of.

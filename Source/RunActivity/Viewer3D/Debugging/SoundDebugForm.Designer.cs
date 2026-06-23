@@ -387,7 +387,7 @@ namespace Orts.Viewer3D.Debugging
             this.tractiveEffortLabel.Name = "tractiveEffortLabel";
             this.tractiveEffortLabel.Size = new System.Drawing.Size(130, 13);
             this.tractiveEffortLabel.TabIndex = 2;
-            this.tractiveEffortLabel.Text = "Tractive Effort (kN)";
+            this.tractiveEffortLabel.Text = "Tractive Effort (N)";
             // 
             // tractiveEffort
             // 
@@ -406,7 +406,7 @@ namespace Orts.Viewer3D.Debugging
             this.tractivePowerLabel.Name = "tractivePowerLabel";
             this.tractivePowerLabel.Size = new System.Drawing.Size(130, 13);
             this.tractivePowerLabel.TabIndex = 3;
-            this.tractivePowerLabel.Text = "Tractive Power (kW)";
+            this.tractivePowerLabel.Text = "Tractive Power (W)";
             // 
             // tractivePower
             // 
@@ -520,7 +520,7 @@ namespace Orts.Viewer3D.Debugging
             this.enginePowerLabel.Name = "enginePowerLabel";
             this.enginePowerLabel.Size = new System.Drawing.Size(130, 13);
             this.enginePowerLabel.TabIndex = 9;
-            this.enginePowerLabel.Text = "Engine Power (kW)";
+            this.enginePowerLabel.Text = "Engine Power (W)";
             // 
             // enginePower
             // 
