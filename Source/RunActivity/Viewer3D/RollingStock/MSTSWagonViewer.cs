@@ -805,6 +805,8 @@ namespace Orts.Viewer3D.RollingStock
             }
         }
 
+        public static float RunningGearCumulativeR;
+        public static float WheelCumulativeR;
 
         private void UpdateAnimation(RenderFrame frame, ElapsedTime elapsedTime)
         {
@@ -818,18 +820,22 @@ namespace Orts.Viewer3D.RollingStock
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                                distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
                 distanceTravelledM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
+                var logdata = "";
                 foreach (var kvp in RunningGears)
                 {
                     if (!kvp.Value.Empty())
                     {
                         var axle = kvp.Key >= 0 && kvp.Key < loco.LocomotiveAxles.Count ? loco.LocomotiveAxles[kvp.Key] : null;
                         if (axle != null)
+                        {
                             //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                             kvp.Value.UpdateLoop(((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * (float)axle.AxleSpeedMpS * elapsedTime.ClockSeconds / MathHelper.TwoPi / axle.WheelRadiusM);
+                            var rotation = (float)axle.AxleSpeedMpS * elapsedTime.ClockSeconds / axle.WheelRadiusM;
+                            RunningGearCumulativeR += rotation;
+                        }
                         else if (AnimationDriveWheelRadiusM > 0.001)
                             kvp.Value.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
-                    }
-                        
+                    }                        
                 }
                 foreach (var kvp in WheelPartIndexes)
                 {
@@ -837,7 +843,13 @@ namespace Orts.Viewer3D.RollingStock
                     if (axle != null)
                     {
                         //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
-                        WheelRotationR = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * -(float)axle.AxlePositionRad;
+                        WheelRotationR = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) 
+                            * -(float)axle.AxlePositionRad;
+                        if (kvp.Key == 0)
+                        {
+                            WheelCumulativeR = -WheelRotationR;
+                            logdata += $", WheelCumulativeR = {WheelCumulativeR:F5}, difference = {RunningGearCumulativeR - WheelCumulativeR:F6}";
+                        }
                     }
                     else
                     {

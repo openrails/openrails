@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Orts.Simulation.RollingStocks;
+using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
 using ORTS.Common.Input;
 
@@ -166,6 +167,13 @@ namespace Orts.Viewer3D
                 Logger.Data(VersionInfo.Version);
                 Logger.Data(FrameNumber.ToString("F0"));
                 Logger.Data(FormatStrings.FormatPreciseTime(Viewer.Simulator.ClockTime));
+                if (Viewer.Settings.DataLogMotion)
+                {
+                    DataLoggerLogSpeed(Viewer.PlayerLocomotive.SpeedMpS);
+                    Logger.Data(MSTSWagonViewer.WheelCumulativeR.ToString("F5"));
+                    Logger.Data(MSTSWagonViewer.RunningGearCumulativeR.ToString("F5"));
+                    Logger.Data((MSTSWagonViewer.WheelCumulativeR - MSTSWagonViewer.RunningGearCumulativeR).ToString("F5"));
+                }
                 if (Viewer.Settings.DataLogPerformance)
                 {
                     Logger.Data(Viewer.Game.HostProcess.CPUMemoryWorkingSet.ToString("F0"));
@@ -337,6 +345,14 @@ namespace Orts.Viewer3D
                 Logger.Data("Version");
                 Logger.Data("Frame");
                 Logger.Data("Time");
+                if (Viewer.Settings.DataLogMotion)
+                {
+                    Logger.Data($"Player Speed [{Viewer.Settings.DataLogSpeedUnits}]");
+                    Logger.Data("WheelCumulativeR");
+                    Logger.Data("RunningGearCumulativeR");
+                    Logger.Data("Cumulative Difference");
+                }
+
                 if (Viewer.Settings.DataLogPerformance)
                 {
                     Logger.Data("Memory");

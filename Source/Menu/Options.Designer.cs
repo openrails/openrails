@@ -234,6 +234,7 @@
             this.checkUseSuperElevation = new System.Windows.Forms.CheckBox();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkDataLogMotion = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -2054,6 +2055,7 @@
             // 
             // tabPageDataLogger
             // 
+            this.tabPageDataLogger.Controls.Add(this.checkDataLogMotion);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogSteamPowerCurve);
             this.tabPageDataLogger.Controls.Add(this.pbDataLoggerOptions);
             this.tabPageDataLogger.Controls.Add(this.comboDataLogSpeedUnits);
@@ -3043,6 +3045,16 @@
             this.ElevationText.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.ElevationText.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
+            // checkDataLogMotion
+            // 
+            this.checkDataLogMotion.AutoSize = true;
+            this.checkDataLogMotion.Location = new System.Drawing.Point(6, 203);
+            this.checkDataLogMotion.Name = "checkDataLogMotion";
+            this.checkDataLogMotion.Size = new System.Drawing.Size(102, 17);
+            this.checkDataLogMotion.TabIndex = 27;
+            this.checkDataLogMotion.Text = "Log motion data";
+            this.checkDataLogMotion.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -3369,5 +3381,6 @@
         private System.Windows.Forms.CheckBox checkDataLogSteamPowerCurve;
         private System.Windows.Forms.NumericUpDown dataLoggerInterval;
         private System.Windows.Forms.Label dataLoggerIntervalLabel;
+        private System.Windows.Forms.CheckBox checkDataLogMotion;
     }
 }

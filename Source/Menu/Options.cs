@@ -477,6 +477,7 @@ namespace Menu
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;
             Settings.DataLogExclusiveSteamPerformance = checkDataLogSteamPerformance.Checked;
             Settings.DataLogExclusiveSteamPowerCurve = checkDataLogSteamPowerCurve.Checked;
+            Settings.DataLogMotion = checkDataLogMotion.Checked;
             Settings.DataLoggerInterval = (int)dataLoggerInterval.Value;
             Settings.VerboseConfigurationMessages = checkVerboseConfigurationMessages.Checked;
 
