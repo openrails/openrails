@@ -326,11 +326,11 @@ namespace Orts.Viewer3D
                 Window mouseActiveWindow = Viewer.WindowManager.VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mousePosition));
                 // Will not zoom-in-out when mouse pointer above a window
                 if (mouseActiveWindow == null) 
-            {
-                var fieldOfView = MathHelper.Clamp(FieldOfView - speed * UserInput.MouseWheelChange / 10, 1, 135);
-                new FieldOfViewCommand(Viewer.Log, fieldOfView);
+                {
+                    var fieldOfView = MathHelper.Clamp(FieldOfView - speed * UserInput.MouseWheelChange / 10, 1, 135);
+                    new FieldOfViewCommand(Viewer.Log, fieldOfView);
+                }
             }
-        }
         }
 
         /// <summary>
