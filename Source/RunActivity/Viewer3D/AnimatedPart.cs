@@ -32,20 +32,20 @@ namespace Orts.Viewer3D
         readonly PoseableShape PoseableShape;
 
         /// <summary>
-        /// .S file: maximum animation key-frame value used by this part. This is calculated from the matrices provided.
-        /// glTF file: the frames are measured in seconds, so the frame count is actually the total length of the animation clip in seconds.
+        /// shape format: maximum animation key-frame value used by this part. This is calculated from the matrices provided.
+        /// glTF format: the frames are measured in seconds, so the frame count is actually the total length of the animation clip in seconds.
         /// </summary>
         public float MaxFrame;
 
         /// <summary>
-        /// .S file: Current frame of the animation.
-        /// glTF file: The actual time in seconds within the animation clip.
+        /// shape format: Current frame of the animation.
+        /// glTF format: The actual time in seconds within the animation clip.
         /// </summary>
         float AnimationKey;
 
         /// <summary>
-        /// .S file: List of the matrices we're animating for this part.
-        /// glTF file: The animation clip's numbers we are playing for this part.
+        /// shape format: List of the matrices we're animating for this part.
+        /// glTF format: The animation clip's numbers we are playing for this part.
         /// </summary>
         public List<int> MatrixIndexes = new List<int>();
 
@@ -69,7 +69,7 @@ namespace Orts.Viewer3D
 
         void UpdateMaxFrame(int matrix)
         {
-            // .S file:
+            // shape format:
             if (PoseableShape.SharedShape.Animations != null
                 && PoseableShape.SharedShape.Animations.Count > 0
                 && PoseableShape.SharedShape.Animations[0].anim_nodes.Count > matrix
@@ -83,7 +83,7 @@ namespace Orts.Viewer3D
                     MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].ToArray().Cast<KeyPosition>().Last().Frame);
             }
 
-            // glTF file:
+            // glTF format:
             if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.HasAnimation(matrix))
             {
                 // Use the clip's length in time as the frame count
@@ -205,14 +205,14 @@ namespace Orts.Viewer3D
         {
             if (PoseableShape.SharedShape.Animations?.Count > 0 && MaxFrame > 0)
             {
-                // .S shape
+                // shape format
                 // The speed of rotation is set at 8 frames of animation per rotation at 30 FPS (so 16 frames = 60 FPS, etc.).
                 var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 8 / 30f;
                 SetFrameWrap(AnimationKey + change * frameRate);
             }
             else if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.GetAnimationLength(MatrixIndexes.FirstOrDefault()) > 0)
             {
-                // glTf shape
+                // glTF format
                 // Assume the animation is 1 loop long
                 var loopLength = MaxFrame;
                 SetFrameWrap(AnimationKey + change * loopLength);
@@ -226,7 +226,7 @@ namespace Orts.Viewer3D
         {
             if (PoseableShape.SharedShape.Animations?.Count > 0 && MaxFrame > 0)
             {
-                // .S shape
+                // shape format
                 // The speed of cycling is as default 1.5 frames of animation per second at 30 FPS.
                 var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * frameRateMultiplier / 30f;
                 if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds * frameRate < MaxFrame))
@@ -236,10 +236,11 @@ namespace Orts.Viewer3D
             }
             else if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.GetAnimationLength(MatrixIndexes.FirstOrDefault()) > 0)
             {
-                // glTf shape
+                // glTF format
                 if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds < MaxFrame))
                     SetFrameWrap(AnimationKey + elapsedTime.ClockSeconds); // * frameRateMultiplier: ignore it for glTF-s, that was probably for historical reasons
-                // In glTF multiple animations may target the same node, so we must not SetFrame(0) in the update.
+                // In glTF multiple animations may target the same node, so we must not SetFrame(0) in the update,
+                // otherwise the lastly defined (non-running) animation will block the previously defined ones at keyframe 0.
             }
         }
 
