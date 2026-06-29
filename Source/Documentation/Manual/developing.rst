@@ -78,7 +78,7 @@ The parameters used in content files have been mentioned throughout this manual 
 +------------------------------+-----------------------------+
 | world tile                   |        w                    |
 +------------------------------+-----------------------------+
-| 3D shape                     |        s, gltf, glb         |
+| 3D model                     |        s, gltf, glb         |
 +------------------------------+-----------------------------+
 | train timetable              |        timetable-or         |
 +------------------------------+-----------------------------+
@@ -97,33 +97,33 @@ tools eases the testing and debugging of content under development.
 3D shape files
 ==============
 
-Additionally to the S file format used in MSTS, Openrails is able to read the
-glTF format shape files. However there are some conceptual differences between
+In addition to the ``.s`` file format used in MSTS, Open Rails is able to read the
+glTF format model files. However there are some conceptual differences between
 the two formats that the content developers need to be aware of when creating
-such files. One of the important scpecification constraints must be noted, 
-:math:`+Z` is the forward direction in glTF models, as opposed to .s, where the
-forward was :math:`-Z`.
+such files. One of the important specification constraints must be noted, 
+:math:`+Z` is the forward direction in glTF format, as opposed to ``.s``, where 
+the forward is :math:`-Z`.
 
 Textures
 --------
 
-The texture format can be png, jpg or dds. The `MSFT_texture_dds 
+The texture format can be PNG, JPG or DDS. The `MSFT_texture_dds 
 <https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/MSFT_texture_dds/README.md>`_
-extension must be used for referencing a dds texture, it is not just a 
-drop-in file replacement as for the .s files. For final game content try to 
-avoid using png and jpg formats at least for the base, emissive and specular 
-textures, because as sRGB types they can only be loaded in two passes, 
-because the dotnet built-in loader is unable to declare sRGB surface format 
+extension must be used for referencing a DDS texture; it is not just a 
+drop-in file replacement as for the ``.s`` files. For final game content try to 
+avoid using PNG and JPG formats at least for the base, emissive and specular 
+textures, because as sRGB types they can only be loaded in two passes; 
+the .NET built-in loader is unable to declare sRGB surface format 
 at load time, and the whole pixel data must be copied a second time. 
-Png and jpg formats also lack the ability to store mipmaps.
+PNG and JPG formats also lack the ability to store mipmaps.
 
-The base, emissive and specular color textures rgb channels are in sRGB color 
-space. The alpha channels and any other textures are in linear space.
+The RGB channels of the base, emissive and specular color textures are in sRGB 
+color space. The alpha channels and any other textures are in linear space.
 
 Instead of the night texture set, the authors can use an emissive texture 
-for night illumination, they will bloom, glow. The emissive texture display 
-can be made to switch on-off automatically at day-night change if specified 
-in the material:
+for night illumination, creating a bloom or glow effect. The emissive texture 
+display can be made to switch on-off automatically at day-to-night transitions 
+if specified in the material:
 
 .. code-block:: json
 
@@ -131,11 +131,11 @@ in the material:
 
 (This setting also affects the IBL lights assigned to a material, see below.)
 
-The max value of the emissive strength is 1.0 by the standard, but sometimes 
-a bigger glow is needed for being distinctively visible at daytime. 
-(LED panels, etc...) There is the `KHR_materials_emissive_strength 
+The max value of the emissive strength is 1.0 in the core standard, but sometimes 
+a bigger glow is needed to remain distinctly visible during the day. 
+(LED panels, etc...) The `KHR_materials_emissive_strength 
 <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_emissive_strength/README.md>`_.
-extension available for achieving any strength.
+extension can be used to achieve any desired strength.
 
 .. code-block:: json
 
@@ -150,20 +150,20 @@ at load time.
 Animations
 ----------
 
-The animation driving array is in seconds, unlike in s, where that was the 
-frame number. The author may create any number of frames, even with unequal 
-time intervals between them, this will not be counted by the program. Rather 
-it will precisely interpolate to a required time moment to get the pose, 
-even if then is no assigned frame there. So e.g. for a 8-notched throttle 
-controller one can skip all the intermediate frames and define only the 
-first (at 0 second) and last one (at 8 seconds), it will still work. 
-Looped animations can have any time length, they will still be considered one
-loop regardless.
+The animation driving array is in seconds, unlike in ``.s`` files, which use  
+frame numbers. Authors can create any number of frames, even with unequal 
+time intervals between them, as the software does not rely on a fixed frame 
+count. Instead, Open Rails precisely interpolates the pose for any required 
+moment in time, even if there is no keyframe assigned to that specific moment. 
+So e.g. for a 8-notched throttle controller one can skip all the intermediate 
+frames and define only the first (at 0 second) and last one (at 8 seconds), it 
+will still work. Looped animations can have any duration and will be treated 
+as a single continuous loop regardless of length.
 
-Two types of animation are supported by Openrails. Predefined animations are 
+Two types of animation are supported by Open Rails. Predefined animations are 
 designated with the “animations” “name” attributes. The parent-child relations 
-of the defined animations or the nodes they target are irrelevant in gltf. 
-A node will not be animated just because it is a child of another animated node. 
+of the defined animations or the nodes they target are irrelevant in glTF. 
+A node will not be animated simply because it is a child of another animated node. 
 Instead an animation can have multiple target nodes via its multiple “channels”.
 
 The other supported animation type is the node-animation. Such “nodes” are to 
@@ -173,7 +173,7 @@ be marked with the syntax:
 
   "extras": { "OPENRAILS_animation_name": "WHEELS1" },
 
-This will mark the location for Openrails where to engage its built-in
+This will mark the location for Open Rails where to engage its built-in
 animation logic when needed. The traditional naming pattern applies here, and
 a node should not be both part of a predefined animation and also marked for
 node-animation.
@@ -185,10 +185,10 @@ Level-Of-Detail
 LOD-s can be defined either as internals via the `MSFT_lod 
 <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/MSFT_lod/README.md>`_
 extension, or externals by creating multiple gltf files and adding the 
-suffixes of pattern <name>_LOD01.gltf, <name>_LOD02.gltf, etc… The _LOD00
-suffix for LOD 0 is optional. The author may still define the displaying 
-criteria in the root node of the LOD 0, as described in the extension, 
-using a line like:
+suffixes of pattern ``<name>_LOD01.gltf``, ``<name>_LOD02.gltf``, etc… 
+The ``_LOD00`` suffix for LOD 0 is optional. The author may still define 
+the displaying criteria in the root node of the LOD 0, as described in the 
+extension, using a line like:
 
 .. code-block:: json
 
@@ -235,7 +235,7 @@ subnodes:
 
 It is possible to inject own image based lighting (IBL) to an object via the
 `EXT_lights_image_based <https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_lights_image_based/README.md>`_
-extension. Although it allows only to define a model-wide IBL, Openrails 
+extension. Although it allows only to define a model-wide IBL, Open Rails 
 allows to limit its effect to a single material instead (requires the IBL 
 not to be assigned to the whole "scene"):
 
