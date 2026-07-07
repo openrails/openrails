@@ -30,11 +30,11 @@ namespace Orts.Formats.Msts
         public string Name; // from the Name field or label field of the consist file
         public Train_Config Train;
 
-        public ConsistFile(string filePath)
+        public ConsistFile(string filePath, bool checkDuplicates = true)
         {
             using (var stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("train", ()=>{ Train = new Train_Config(stf); }),
+                    new STFReader.TokenProcessor("train", ()=>{ Train = new Train_Config(stf, checkDuplicates); }),
                 });
             Name = Train.TrainCfg.Name;
         }

@@ -166,7 +166,10 @@ namespace Orts.Viewer3D
         {
             var worldFiles = WorldFiles;
             foreach (var tile in worldFiles)
+            {
                 tile.Mark();
+                if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) break;
+            }
         }
 
         [CallOnThread("Updater")]

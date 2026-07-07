@@ -171,7 +171,10 @@ namespace Orts.Viewer3D
         {
             var tiles = TerrainTiles;
             foreach (var tile in tiles)
+            {
                 tile.Mark();
+                if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) break;
+            }
         }
 
         [CallOnThread("Updater")]

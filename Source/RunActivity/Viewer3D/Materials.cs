@@ -55,11 +55,14 @@ namespace Orts.Viewer3D
         Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
         HashSet<Texture2D> MarkedTextures = new HashSet<Texture2D>();
 
+        internal static bool HighlightMissingTextures = false;
+
         [CallOnThread("Render")]
         internal SharedTextureManager(Viewer viewer, GraphicsDevice graphicsDevice)
         {
             Viewer = viewer;
             GraphicsDevice = graphicsDevice;
+            if (Viewer.Settings?.SuppressShapeWarnings == false) HighlightMissingTextures = true;
         }
 
         /// <summary>
@@ -111,8 +114,15 @@ namespace Orts.Viewer3D
                             {
                                 return Textures[textureKey] = AceFile.Texture2DFromFile(GraphicsDevice, ace);
                             }
-                            // When a texture is not found, and it is in a selector directory (e.g. "Snow"), we
-                            // go up a level and try again. This repeats a fixed number of times, or until we run
+                            if (defaultTexture != SharedMaterialManager.MissingTexture)
+                            {
+                                // This texture has been set to use a non-standard default texture,
+                                // use this default texture instead of searching other folders
+                                return defaultTexture;
+                            }
+                            // When a texture is not found, there is no special missing texture defined,
+                            // and it is in a selector directory (e.g. "Snow"), we go up a level and
+                            // try again. This repeats a fixed number of times, or until we run
                             // out of known selector directories.
                             var directory = Path.GetDirectoryName(depthPath);
                             if (string.IsNullOrEmpty(directory) || !SelectorDirectoryNames.Contains(Path.GetFileName(directory))) break;
@@ -135,7 +145,10 @@ namespace Orts.Viewer3D
         internal static Texture2D GetInternalMissingTexture(GraphicsDevice graphicsDevice)
         {
             var texture = new Texture2D(graphicsDevice, 1, 1);
-            texture.SetData(new[] { Color.Magenta });
+            
+            if (HighlightMissingTextures) texture.SetData(new[] { Color.Magenta });
+            else texture.SetData(new[] { Color.Gray });
+            
             texture.Tag = new TextureTag();
             return texture;
         }
@@ -689,6 +702,7 @@ namespace Orts.Viewer3D
     {
         public readonly Viewer Viewer;
         public readonly string Key;
+        internal (string, string, int, float, Effect) MarkKey;
 
         public bool StaleData = false;
 

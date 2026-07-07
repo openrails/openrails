@@ -122,6 +122,7 @@ namespace Orts.Viewer3D
             {
                 car.Mark();
                 car.lightDrawer?.Mark();
+                if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) break;
             }
             CABTextureManager.Mark(Viewer);
         }

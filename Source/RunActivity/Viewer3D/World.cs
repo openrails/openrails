@@ -97,12 +97,13 @@ namespace Orts.Viewer3D
         {
             if (Viewer.ManualReloadQueued)
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Forced asset reload started."));
-
-            Terrain.Load();
-            Scenery.Load();
-            Trains.Load();
-            RoadCars.Load();
-            Containers.Load();
+            
+            // Trigger the WatchDog after each phase
+            Terrain.Load(); if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) return;
+            Scenery.Load(); if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) return;
+            Trains.Load(); if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) return;
+            RoadCars.Load(); if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) return;
+            Containers.Load(); if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) return;
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
                 TileX = VisibleTileX;
