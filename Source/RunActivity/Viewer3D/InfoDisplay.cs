@@ -20,11 +20,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Common.Input;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 
 namespace Orts.Viewer3D
 {
@@ -37,6 +38,15 @@ namespace Orts.Viewer3D
         readonly DataLogger Logger;
         readonly int ProcessorCount = System.Environment.ProcessorCount;
 
+        readonly bool UseNativeUnits = false;  // when true, do not perform any conversions
+        readonly bool IsMetric = true;
+
+        readonly string DistanceUnit = FormatStrings.m;
+        readonly string SpeedUnit = "m/s";  // there isn't a format for this
+        readonly string ForceUnit = FormatStrings.n;
+        readonly PressureUnit BrakeCylinderPressureUnitEnum = PressureUnit.PSI;
+        readonly PressureUnit MainReservoirPressureUnitEnum = PressureUnit.PSI;
+
         int FrameNumber;
         double LastUpdateRealTime;   // update text message only 10 times per second
         double NextLogTime;
@@ -46,6 +56,32 @@ namespace Orts.Viewer3D
         public InfoDisplay(Viewer viewer)
         {
             Viewer = viewer;
+            UseNativeUnits = viewer.Settings.DataLogUseInternalUnits;
+
+            IsMetric = viewer.Settings.Units == "Metric" || (viewer.Settings.Units == "Automatic" && System.Globalization.RegionInfo.CurrentRegion.IsMetric) ||
+                (viewer.Settings.Units == "Route" && viewer.Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric);
+
+            if (!UseNativeUnits)
+            {
+                DistanceUnit = IsMetric ? FormatStrings.km : FormatStrings.mi;
+                SpeedUnit = IsMetric ? FormatStrings.kmph : FormatStrings.mph;
+                ForceUnit = IsMetric ? FormatStrings.kN : FormatStrings.klbf;
+
+                // being paranoid, as player locomotive should always be initialized at this time
+                try
+                {
+                    if (!(Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir].Equals(PressureUnit.None))
+                    {
+                        BrakeCylinderPressureUnitEnum = (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.BrakeCylinder];
+                        MainReservoirPressureUnitEnum = (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir];
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceWarning("Player Locomotive not initialized; cannot determine pressure unit.");
+                }
+            }
+
             Logger = new DataLogger(Path.Combine(Viewer.Settings.LoggingPath, "OpenRailsDump.csv"));
 
             if (Viewer.Settings.DataLogger)
@@ -188,19 +224,19 @@ namespace Orts.Viewer3D
                     Logger.Data(Viewer.PlayerLocomotive.Direction.ToString());
                     Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
                     Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
-                    Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
-                    Logger.Data(Viewer.PlayerLocomotive.BrakeForceN.ToString("F0"));
-                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.AxleMotiveForceN.ToString("F2"));
+                    Logger.Data(ConvertForce(Viewer.PlayerLocomotive.MotiveForceN));
+                    Logger.Data(ConvertForce(Viewer.PlayerLocomotive.BrakeForceN));
+                    Logger.Data(ConvertForce((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.AxleMotiveForceN));
                     Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.SlipSpeedPercent.ToString("F1"));
-                    DataLoggerLogSpeed(Viewer.PlayerLocomotive.SpeedMpS);
-                    DataLoggerLogSpeed(Viewer.PlayerTrain.AllowedMaxSpeedMpS);
-                    Logger.Data((Viewer.PlayerLocomotive.DistanceM.ToString("F0")));
-                    Logger.Data((Viewer.PlayerLocomotive.GravityForceN.ToString("F0")));
+                    Logger.Data(ConvertSpeed(Viewer.PlayerLocomotive.SpeedMpS));
+                    Logger.Data(ConvertSpeed(Viewer.PlayerTrain.AllowedMaxSpeedMpS));  // loco does not have a max speed
+                    Logger.Data(ConvertDistance(Viewer.PlayerLocomotive.DistanceM));
+                    Logger.Data(ConvertForce(Viewer.PlayerLocomotive.GravityForceN));
                     Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeController?.CurrentValue.ToString("F2"));
                     Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeController?.CurrentValue.ToString("F2"));
                     Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).BrakemanBrakeController?.CurrentValue.ToString("F2"));
-                    Logger.Data(Viewer.PlayerLocomotive.BrakeSystem.GetCylPressurePSI().ToString("F0"));
-                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI.ToString("F0"));
+                    Logger.Data(ConvertPressure(Viewer.PlayerLocomotive.BrakeSystem.GetCylPressurePSI(), BrakeCylinderPressureUnitEnum));
+                    Logger.Data(ConvertPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, MainReservoirPressureUnitEnum));
                     if (Viewer.PlayerLocomotive is MSTSDieselLocomotive diesel)
                     {
                         Logger.Data(diesel.DieselEngines[0].RealRPM.ToString("F0"));
@@ -258,30 +294,6 @@ namespace Orts.Viewer3D
                 }
             }
             Logger.End();
-        }
-
-        void DataLoggerLogSpeed(float speedMpS)
-        {
-            string result;
-            switch (Viewer.Settings.DataLogSpeedUnits)
-            {
-                case "route":
-                    result = FormatStrings.FormatSpeed(speedMpS, Viewer.MilepostUnitsMetric);
-                    break;
-                case "mps":
-                    result = speedMpS.ToString("F1");
-                    break;
-                case "mph":
-                    result = MpS.FromMpS(speedMpS, false).ToString("F1");
-                    break;
-                case "kmph":
-                    result = MpS.FromMpS(speedMpS, true).ToString("F1");
-                    break;
-                default:
-                    result = FormatStrings.FormatSpeed(speedMpS, Viewer.MilepostUnitsMetric);
-                    break;
-            }
-            Logger.Data(result);
         }
 
         void DataLoggerStart()
@@ -359,19 +371,19 @@ namespace Orts.Viewer3D
                     Logger.Data("Player Direction");
                     Logger.Data("Player Reverser [%]");
                     Logger.Data("Player Throttle [%]");
-                    Logger.Data("Player Motive Force [N]");
-                    Logger.Data("Player Brake Force [N]");
-                    Logger.Data("Player Axle Force [N]");
+                    Logger.Data($"Player Motive Force [{ForceUnit}]");
+                    Logger.Data($"Player Brake Force [{ForceUnit}]");
+                    Logger.Data($"Player Axle Force [{ForceUnit}]");
                     Logger.Data("Player Wheelslip");
-                    Logger.Data($"Player Speed [{Viewer.Settings.DataLogSpeedUnits}]");
-                    Logger.Data($"Speed Limit [{Viewer.Settings.DataLogSpeedUnits}]");
-                    Logger.Data("Distance [m]");
-                    Logger.Data("Player Gravity Force [N]");
+                    Logger.Data($"Player Speed [{SpeedUnit}]");
+                    Logger.Data($"Speed Limit [{SpeedUnit}]");
+                    Logger.Data($"Distance [{DistanceUnit}]");
+                    Logger.Data($"Player Gravity Force [{ForceUnit}]");
                     Logger.Data("Train Brake");
                     Logger.Data("Engine Brake");
                     Logger.Data("Brakeman Brake");
-                    Logger.Data("Player Cylinder PSI");
-                    Logger.Data("Player Main Res PSI");
+                    Logger.Data($"Player Cylinder [{BrakeCylinderPressureUnitEnum.ToString()}]");
+                    Logger.Data($"Player Main Res [{MainReservoirPressureUnitEnum.ToString()}]");
                     Logger.Data("D:Real RPM / E:panto 1 / S:Blower usage LBpS");
                     Logger.Data("D:Demanded RPM / E:panto 2 / S:Boiler PSI");
                     Logger.Data("D:Load % / E:panto 3 / S:Cylinder Cocks open");
@@ -392,6 +404,38 @@ namespace Orts.Viewer3D
         void DataLoggerStop()
         {
             Logger.Flush();
+        }
+
+        /// <summary>Convert distance in meters to the desired unit, but without appending the unit.</summary>
+        string ConvertDistance(float distanceM)
+        {
+            if (UseNativeUnits) return distanceM.ToString("F0");
+            float value = IsMetric ? Me.ToKiloM(distanceM) : Me.ToMi(distanceM);
+            return string.Format(CultureInfo.CurrentCulture, "{0:F3}", value);
+        }
+
+        /// <summary>Convert speed in meters per second to the desired unit, but without appending the unit.</summary>
+        string ConvertSpeed(float speedMpS)
+        {
+            if (UseNativeUnits) return speedMpS.ToString("F1");
+            float value = IsMetric ? MpS.ToKpH(speedMpS) : MpS.ToMpH(speedMpS);
+            return string.Format(CultureInfo.CurrentCulture, "{0:F1}", value);
+        }
+
+        /// <summary>Convert force in Newton to the desired unit, but without appending the unit.</summary>
+        string ConvertForce(float forceN)
+        {
+            if (UseNativeUnits) return forceN.ToString("F0");
+            float value = IsMetric ? forceN / 1000 : N.ToLbf(forceN) / 1000;
+            return string.Format(CultureInfo.CurrentCulture, "{0:F3}", value);
+        }
+
+        /// <summary>Convert pressure in PSI to the desired unit, but without appending the unit.</summary>
+        string ConvertPressure(float pressurePsi, PressureUnit outUnit)
+        {
+            if (UseNativeUnits) return pressurePsi.ToString("F1");
+            string value = FormatStrings.FormatPressure(pressurePsi, PressureUnit.PSI, outUnit, false);
+            return value;
         }
 
         public void Profile(double elapsedRealSeconds) // should be called every 100mS
