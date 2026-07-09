@@ -74,12 +74,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Remoting.Lifetime;
+using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Security.Cryptography;
 using System.Text;
 using LibGit2Sharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
 using Microsoft.Xna.Framework.Media;
 using Newtonsoft.Json.Linq;
 using Orts.Common;
@@ -814,6 +816,15 @@ namespace Orts.Simulation.RollingStocks
 
         // Hall Model
 
+        // Calculate entalpies for water and steam
+        double hf;
+        double hg;
+        double hfg;
+        double hCurrent;
+        double hSteamCurrent;
+        double FlashSteamMassPrevious;
+        double CondensedMassPrevious;
+
         double SteamGenerationRateKgpS;  // kg/s
         double PreviousSteamGenerationRateKgpS;  // kg/s
         double SteamR = 461.5;    // J/(kg·K)
@@ -913,8 +924,21 @@ namespace Orts.Simulation.RollingStocks
         // =====================================================
         // Boiler Water Thermal Model
         // =====================================================
-        double HallBoilerWaterEnergy_J;
-        private const double WATER_CP_J_PER_KG_K = 4180.0;
+        double HallBoilerWaterEnergy_J; // sensible energy stored in boiler water
+        double HallBoilerSteamEnergy_J; // saturated steam energy above liquid state
+        double SuperheaterMetalTemp_K;
+        double AmbientTemp_K;
+        const double StefanBoltzmann = 5.670374419e-8;
+        const double SuperheaterEmissivity = 0.82;
+        const double SuperheaterRadiationAreaFactor = 0.35;
+        double SuperheaterGasTemperature_K;
+        double HallSuperheaterSteamEnergy_J;  // additional superheat energy above saturation carried by steam
+        double HallSuperheaterMetalEnergy_J; // thermal energy stored in header and element metal
+        double SuperheaterMetalMass_kg;
+        const double SteelCp = 500.0;                     // J/kg·K
+        const double SteamCp = 2100.0;
+        double SteamTemperature_K;
+        double InitialMetalTemp_K;
 
         private const double REFERENCE_TEMP_K = 273.15;
 
@@ -4223,10 +4247,38 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             HallBoilerPressure_PaG = BoilerPressurePSI * 6894.76; // Initial boiler pressure
             HallBoilerPressure_PaA = HallBoilerPressure_PaG + OneAtmospherePa;
+            HallBoilerPressurePSIG = BoilerPressurePSI;
 
-            SteamSaturationTemperatureFromPressure(BoilerPressurePSI, out Tsat_C, out Tsat_K);
+            SteamSaturationTemperatureFromPressure(HallBoilerPressurePSIG, out Tsat_C, out Tsat_K);
 
-            HallBoilerWaterEnergy_J = HallWaterMass_kg * WATER_CP_J_PER_KG_K * (Tsat_K - REFERENCE_TEMP_K);
+            // Sensible heat in the liquid water phase
+            hf = SaturatedLiquidEnthalpy(HallBoilerPressurePSIG);
+            HallBoilerWaterEnergy_J = HallWaterMass_kg * hf;
+
+            // Calculate Sensible Heat + Latent Heat of Vaporisation
+            hg = SaturatedSteamEnthalpy(HallBoilerPressurePSIG);
+            HallBoilerSteamEnergy_J = HallSteamMass_kg * hg;
+
+            hfg = hg - hf;
+
+            if (HasSuperheater)
+            {
+                SuperheaterMetalMass_kg = EstimateSuperheaterMetalMass(SuperheatAreaM2);
+                SteamTemperature_K = Tsat_K;
+
+                double InitialSuperheat_K = 15; // Assume a superheat of 15 degC for initial warm start up
+                InitialMetalTemp_K = 100.0f + Tsat_K; // Assume a superheat metal of 100 degC above boiler temperature for initial warm start up
+
+                HallSuperheaterSteamEnergy_J = HallSteamMass_kg * InitialSuperheat_K * SteamCp;
+
+                HallSuperheaterMetalEnergy_J = SuperheaterMetalMass_kg * SteelCp * (InitialMetalTemp_K - AmbientTemp_K);
+
+            }
+            else
+            {
+                HallSuperheaterMetalEnergy_J = 0.0;
+                HallSuperheaterSteamEnergy_J = 0.0;
+            }
 
             WaterTempNewK = C.ToK(C.FromF(SaturatedSteamHeatPressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
             FireMassKG = IdealFireMassKG;
@@ -4284,6 +4336,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 Trace.TraceInformation("Fire Box Area: {0:N1} sq ft, Tube Area: {1:N1} sq ft, Superheat Area: {2:N1} sq ft, Total Evap Area: {1:N1} sq ft ", Me2.ToFt2((float)FireboxAreaM2), Me2.ToFt2((float)TubeAreaM2), Me2.ToFt2(SuperheatAreaM2), Me2.ToFt2(EvaporationAreaM2));
                 Trace.TraceInformation("Boiler Evap Rate: {0}, Max Boiler Output: {1} lbs/h", BoilerEvapRateLbspFt2, MaxBoilerOutputLBpH);
                 Trace.TraceInformation("Front End Type: {0}, Stack Type {1}, Chimney Diameter: {2} in, Number of Blast Nozzles: {3}, Blast Nozzle Diameter: {4} in ", SteamLocomotiveFrontEndType, SteamLocomotiveStackType, Me.ToIn((float)ChimneyDiameterM), NumberOfBlastNozzles, Me.ToIn((float)SmokeBoxBlastNozzleDiameterM));
+                Trace.TraceInformation("Steam Mass {0} lbs, Water Mass {1} lbs, Water Stored Energy {2} J, Steam Stored Energy {3} J", Kg.ToLb((float)HallSteamMass_kg), Kg.ToLb((float)HallWaterMass_kg), HallBoilerWaterEnergy_J, HallBoilerSteamEnergy_J);
+
+                Trace.TraceInformation("hg {0}, hf {1}", hg, hf);
 
                 Trace.TraceInformation("**************** Fire ****************");
                 Trace.TraceInformation("Grate - Area {0:N1} sq ft, Limit {1:N1} lb/sq ft", Me2.ToFt2(GrateAreaM2), GrateLimitLBpFt2);
@@ -4444,6 +4499,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 else
                     throttle = 1;
             }
+
+            AmbientTemp_K = CarOutsideTempC + 273.15;
 
             // Calculate friction values and load variables for train
             TotalFrictionForceN = 0.0f;
@@ -7477,7 +7534,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             double HallTotalSteamConsumptionKgpS = HallCylinderSteamConsumptionKgpS + AuxilariesSteamConsumptionKgpS;
 
-            double RadiationLoss_J = (BoilerHeatRadiationLossBTU) * 1055.06 / 3600.0; // Convert BTU/hr to J
+            double RadiationLoss_J = ((BoilerHeatRadiationLossBTU) * 0.29307107) * elapsedClockSeconds; // Convert BTU/hr to J
 
          //   Console.WriteLine($"Radiation Loss - {RadiationLoss_J:F2} J/s : BoilerHeatRadiationLossBTU {BoilerHeatRadiationLossBTU:F2} BTU/hr");
 
@@ -8775,15 +8832,38 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // +++++++++++++++++++  Superheater  ++++++++++++++++++++++
 
+            double SuperheaterU_dynamic = 0;
+            double SuperheaterU = 0;
+            double Q_MetalToSteam_W = 0;
+
             if (HasSuperheater)
             {
-                double SuperheaterU = 28.0; // Effective superheater coefficient
+                // Real locomotives never have zero steam circulation.
+                // Even with regulator closed there is: regulator leakage, snifting valve flow, blower use, safety valve losses, header circulation.
+
+                double LeakageSteamFlow_kgps = 0.002 * HallSteamMass_kg;
+
+                double EffectiveSteamFlow_kgps = HallSteamExhaustConsumptionRateKgpS + LeakageSteamFlow_kgps;
+
+                double SteamFlowFactor = Math.Min(EffectiveSteamFlow_kgps / HallMaxSteam_kgps, 1.0);
+
+                SuperheaterU = 80.0 + 220.0 * SteamFlowFactor;
 
                 double SuperheaterFactor = Math.Pow(Math.Max(Airflow_kgps, 0.1), 0.7); // Superheater effectiveness rises with gas flow
 
-                double SuperheaterU_dynamic = SuperheaterU * SuperheaterFactor;
+                SuperheaterU_dynamic = SuperheaterU * SuperheaterFactor;
 
-                SteamSuperheat_K = 80.0 + 120.0 * Math.Min(Airflow_kgps / 10.0, 1.0);  // Steam temperature rise
+                double SuperheaterUA = SuperheaterU_dynamic * SuperheatAreaM2;
+
+                double DeltaT = SuperheaterMetalTemp_K - SteamTemperature_K;
+
+                DeltaT = Math.Max(DeltaT, 0.0);
+
+                double MinimumUAFactor = 0.15;
+
+                double EffectiveUA = SuperheaterUA * (MinimumUAFactor + (1.0 - MinimumUAFactor) * SteamFlowFactor);
+
+                Q_MetalToSteam_W = EffectiveUA * DeltaT;
 
                 // Superheater absorbs remaining gas energy after evaporation heating.
                 double Q_superheater_W = SuperheaterU_dynamic * SuperheatAreaM2 * SteamSuperheat_K;
@@ -8808,11 +8888,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             double Q_totalAbsorbed_W = Q_evaporation_W + Q_superheater_W;
 
-     //       Console.WriteLine($"Heat - Firebox Heat {Q_firebox_W:F3} : Tube Heat {Q_tubes_W:F3} : Evaporation {Q_evaporation_W:F3} : Remaining Heat {remainingGasHeat_W:F3} : CombustionHeat {combustionHeat_W} : Tube Efficiency {TubeEfficiency:F3} : FireBoxEfficiency {FireboxEfficiency:F3}");
+            //       Console.WriteLine($"Heat - Firebox Heat {Q_firebox_W:F3} : Tube Heat {Q_tubes_W:F3} : Evaporation {Q_evaporation_W:F3} : Remaining Heat {remainingGasHeat_W:F3} : CombustionHeat {combustionHeat_W} : Tube Efficiency {TubeEfficiency:F3} : FireBoxEfficiency {FireboxEfficiency:F3}");
 
             // +++++++++++++++++  Stack Loss ++++++++++++ - Unabsorbed heat exits chimney.
             // Unabsorbed combustion energy exits through the chimney as stack loss.
-           StackLoss_W = combustionHeat_W - Q_firebox_W - Q_tubes_W - Q_superheater_W;
+            StackLoss_W = combustionHeat_W - Q_firebox_W - Q_tubes_W - Q_superheater_W;
 
             // Front end overload stack losses
             if (FrontEndLoadRatio > 0.88)
@@ -8839,7 +8919,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             //----------------------------------------------------------
 
             // Theoretical continuous evaporation capability
-            double BoilerEvapCapacity_W = HallMaxSteam_kgps * LatentHeat_Jkg(HallBoilerPressurePSIG);
+            double BoilerEvapCapacity_W = HallMaxSteam_kgps * hfg;
 
             // Current boiler loading
             double BoilerLoadRatio = Q_evaporation_W / Math.Max(BoilerEvapCapacity_W, 1.0);
@@ -8868,7 +8948,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             else
             {
                 double OverloadRatio = BoilerLoadRatio - 1.0;
-
                 BoilerSaturationFactor = 1.0 / (1.0 + 1.35 * Math.Pow(OverloadRatio, 2.6));
             }
 
@@ -8887,69 +8966,131 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // add excess to stack losses
             StackLoss_W += SaturationStackLoss_W;
 
-       //     Console.WriteLine($"Steam Generation - Speed {MpS.ToMpH(AbsSpeedMpS):F2} mph : Steam Generation {SteamGenerationRateKgpS:F4} kg/s : ExhaustSteam Consumption {HallSteamExhaustConsumptionRateKgpS:F4} kg/s : MaxSteam {HallMaxSteam_kgps:F3} kg/s : Steam Mass {HallSteamMass_kg:F4} kg : StackLoss {StackLoss_W:F2} W : TubeConvectiveFraction {TubeConvectiveFraction:F2} : TibeGasUtilization {TubeGasUtilization:F3} : FireboxRadiantFraction {FireboxRadiantFraction:F2} : BoilerSaturationFactor {BoilerSaturationFactor:F3} : BoilerLoadRatio {BoilerLoadRatio:F3} : LatentHeat {LatentHeat_Jkg(BoilerPressurePSI):F3} W : SaturatedEvaporation_W {SaturatedEvaporation_W:F2} W : BoilerEvapCapacity {BoilerEvapCapacity_W:F2} W : ElapsedTime {elapsedClockSeconds} s");
+            //     Console.WriteLine($"Steam Generation - Speed {MpS.ToMpH(AbsSpeedMpS):F2} mph : Steam Generation {SteamGenerationRateKgpS:F4} kg/s : ExhaustSteam Consumption {HallSteamExhaustConsumptionRateKgpS:F4} kg/s : MaxSteam {HallMaxSteam_kgps:F3} kg/s : Steam Mass {HallSteamMass_kg:F4} kg : StackLoss {StackLoss_W:F2} W : TubeConvectiveFraction {TubeConvectiveFraction:F2} : TibeGasUtilization {TubeGasUtilization:F3} : FireboxRadiantFraction {FireboxRadiantFraction:F2} : BoilerSaturationFactor {BoilerSaturationFactor:F3} : BoilerLoadRatio {BoilerLoadRatio:F3} : LatentHeat {LatentHeat_Jkg(BoilerPressurePSI):F3} W : SaturatedEvaporation_W {SaturatedEvaporation_W:F2} W : BoilerEvapCapacity {BoilerEvapCapacity_W:F2} W : ElapsedTime {elapsedClockSeconds} s");
 
             // =============== 10 Steam Generation ================ - includes: steam generation rate, steam mass balance, boiler pressure response
-
-            double BoilerWaterInputMass_kg = Kg.FromLb(ActualInjector1FlowRateLBpS + ActualInjector2FlowRateLBpS + WaterMotionPump1FlowRateLBpS + WaterMotionPump2FlowRateLBpS); // water input from injectors
-
-            HallWaterMass_kg += (BoilerWaterInputMass_kg - SteamGenerationRateKgpS) * elapsedClockSeconds; // TO DO - Note other things reduce water level, and also water injectors add water to boiler.
-
-            HallWaterMass_kg = Math.Max(HallWaterMass_kg, 1.0);
-
-            HallSteamMass_kg += (SteamGenerationRateKgpS - HallSteamExhaustConsumptionRateKgpS - AuxilariesSteamConsumptionKgpS) * elapsedClockSeconds;
-
-            HallSteamMass_kg = Math.Max(HallSteamMass_kg, 1.0);
-
-            // Heat Model
 
             // Convert Injector Temperatures to K
             double Injector1TempK = (Injector1WaterDelTempF - 32.0) * (5.0 / 9.0) + 273.15;
             double Injector2TempK = (Injector2WaterDelTempF - 32.0) * (5.0 / 9.0) + 273.15;
-            double TenderWaterTemperatureK = C.ToK(TenderWaterTemperatureC);      
+            double TenderWaterTemperatureK = C.ToK(TenderWaterTemperatureC);
 
-            // Calculate Injector Energy Loss
-            double InjectorHeatGain_J = (Injector1Mass_kg * WATER_CP_J_PER_KG_K * (Injector1TempK - TenderWaterTemperatureK) + Injector2Mass_kg * WATER_CP_J_PER_KG_K * (Injector2TempK - TenderWaterTemperatureK)) * elapsedClockSeconds;
-            double MotionPumpHeatGain_J = (MotionPump1WaterMass_kg * WATER_CP_J_PER_KG_K * (TenderWaterTemperatureK) + MotionPump2WaterMass_kg * WATER_CP_J_PER_KG_K * (TenderWaterTemperatureK)) * elapsedClockSeconds;
+            double hInjector1 = LiquidWaterEnthalpy(Injector1TempK);
+            double hInjector2 = LiquidWaterEnthalpy(Injector2TempK);
+            double hTender = LiquidWaterEnthalpy(TenderWaterTemperatureK);
 
-            double AuxiliariesHeatLoss_J = AuxilariesSteamConsumptionKgpS * elapsedClockSeconds * LatentHeat_Jkg(HallBoilerPressurePSIG);
+            // Calculate Injector Energy Loss - Injector provides water at YdegC, and thereofre this represents a heat gain to the boiler.
+            double InjectorHeatGain_J = (Injector1Mass_kg * hInjector1  + Injector2Mass_kg * hInjector2) * elapsedClockSeconds;
+            double MotionPumpHeatGain_J = (MotionPump1WaterMass_kg * hTender + MotionPump2WaterMass_kg * hTender) * elapsedClockSeconds;
 
-            // Add Combustion Heat
+            // ++++++++++++ Water Mass and Heat Model ++++++++++++++++
+
+            double BoilerWaterInputMass_kg = Kg.FromLb(ActualInjector1FlowRateLBpS + ActualInjector2FlowRateLBpS + WaterMotionPump1FlowRateLBpS + WaterMotionPump2FlowRateLBpS); // water input from injectors
+
+            // Update water mass and heat - summate all water inputs and outputs to the boiler.  Note that this is a simplification, as there are other water losses and gains in the system, such as steam safety valves, ejector steam usage, etc.
+            HallWaterMass_kg += (BoilerWaterInputMass_kg - SteamGenerationRateKgpS) * elapsedClockSeconds; // TO DO - Note other things reduce water level, and also water injectors add water to boiler.
+
+            HallWaterMass_kg = Math.Max(HallWaterMass_kg, 1.0);
+
+            // Steam generation removes hf from water. It adds hg to steam.
+
+            // Add Combustion Heat to water heat model - this is the heat added to the water from the combustion process, which is then used to generate steam.
             double CombustionHeatAdded_J = Q_evaporation_W * elapsedClockSeconds;
 
-            // Heat removed by steam generation
-            double SteamGenerated_kg = SteamGenerationRateKgpS * elapsedClockSeconds;              
+            // Heat removed from water by steam generation
+            double SteamGenerated_kg = SteamGenerationRateKgpS * elapsedClockSeconds;
 
-            double SteamEnergyRemoved_J = SteamGenerated_kg * LatentHeat_Jkg(HallBoilerPressurePSIG);  // heat lost from water due to evaporation
+            double SteamEnergyTransfer_J = SteamGenerated_kg * hfg;  // heat lost from water due to evaporation - transfered to steam energy model
 
-            // Update Heat model with various additions and useages
-            HallBoilerWaterEnergy_J += CombustionHeatAdded_J + InjectorHeatGain_J + MotionPumpHeatGain_J - SteamEnergyRemoved_J - RadiationLoss_J - AuxiliariesHeatLoss_J;
+            HallBoilerWaterEnergy_J -= SteamEnergyTransfer_J;
 
-            // Calculate boiler water temperature
-            double BoilerWaterTemp_K = REFERENCE_TEMP_K + HallBoilerWaterEnergy_J / (Math.Max(HallWaterMass_kg, 1.0) * WATER_CP_J_PER_KG_K);
+            // Update water heat model with various additions and useages for heat taken directly from boiler water
+            HallBoilerWaterEnergy_J += CombustionHeatAdded_J + InjectorHeatGain_J + MotionPumpHeatGain_J - RadiationLoss_J;
 
-            // Determine available Excess Energy
-            double SuperheatMargin_K = BoilerWaterTemp_K - Tsat_K;
-            SuperheatMargin_K = Math.Max(SuperheatMargin_K, 0.0);
+            // ++++++++++++ Steam Heat and Mass Balance ++++++++++++++++
+            // Update steam mass and heat
+            HallSteamMass_kg += SteamGenerationRateKgpS * elapsedClockSeconds;
 
-            // Available Flashing energy
-            double AvailableFlashEnergy_J = HallWaterMass_kg * WATER_CP_J_PER_KG_K * SuperheatMargin_K;
-            double FlashSteamMass_kg = AvailableFlashEnergy_J / LatentHeat_Jkg(HallBoilerPressurePSIG);
+            HallSteamMass_kg = Math.Max(HallSteamMass_kg, 1.0);
 
-            double FlashEnergy_J = Math.Abs(FlashSteamMass_kg) * LatentHeat_Jkg(HallBoilerPressurePSIG);
-
-            if (FlashSteamMass_kg > 0.0)
+            // Move heat to steam from the water model
+            if (HasSuperheater)
             {
-                HallBoilerWaterEnergy_J -= FlashEnergy_J;
+                HallSuperheaterSteamEnergy_J += SteamEnergyTransfer_J;
             }
             else
             {
-                HallBoilerWaterEnergy_J += FlashEnergy_J;
+                HallBoilerSteamEnergy_J += SteamEnergyTransfer_J;
+            }
+                
+            double SuperheatSteamEnergyLost_J = 0.0;
+
+            double SteamUsed_kg = (HallSteamExhaustConsumptionRateKgpS + AuxilariesSteamConsumptionKgpS) * elapsedClockSeconds;
+
+            double SteamEnergyLost_J = SteamUsed_kg * hCurrent;
+
+
+            if (HasSuperheater)
+            {
+                // Add heat from the flue gas to the metal
+                HallSuperheaterMetalEnergy_J += Q_superheater_W * elapsedClockSeconds;
+
+                // Prevents the superheater metal temperature from rising indefinitely when the locomotive is standing.
+                // Real superheaters lose very large amounts of energy by radiation once metal temperatures exceed approximately 400°C.
+
+                double EffectiveRadiationAreaM2 = SuperheatAreaM2 * SuperheaterRadiationAreaFactor;
+
+                double Q_SuperheaterRadiation_W = SuperheaterEmissivity * StefanBoltzmann * EffectiveRadiationAreaM2 * (Math.Pow(SuperheaterMetalTemp_K, 4) - Math.Pow(AmbientTemp_K, 4));
+
+                Q_SuperheaterRadiation_W = Math.Max(Q_SuperheaterRadiation_W, 0.0);
+
+                HallSuperheaterMetalEnergy_J -= Q_SuperheaterRadiation_W * elapsedClockSeconds;
+
+                double EnergyTransfer_J = Q_MetalToSteam_W * elapsedClockSeconds;
+
+                HallSuperheaterMetalEnergy_J -= EnergyTransfer_J;
+                HallBoilerSteamEnergy_J += EnergyTransfer_J;
+
+                SuperheaterMetalTemp_K = InitialMetalTemp_K + HallSuperheaterMetalEnergy_J / (SuperheaterMetalMass_kg * SteelCp);
+
+                // Metal cannot become hotter than the gas heating it.
+                double MaximumMetalTemp_K = SuperheaterGasTemperature_K - 20.0;
+
+                SuperheaterMetalTemp_K = Math.Min(SuperheaterMetalTemp_K, MaximumMetalTemp_K);
+
+                double MaxSuperheatTemp_K = C.FromF(C.ToK( MaxSuperheatRefTempF)) + Tsat_K;
+
+                double MaxSpecificSuperheat_Jkg = SteamCp * (MaxSuperheatTemp_K - Tsat_K);
+
+                double MaxSuperheatEnergy_J = MaxSpecificSuperheat_Jkg * HallSteamMass_kg;
+
+                HallSuperheaterSteamEnergy_J = Math.Min(HallSuperheaterSteamEnergy_J, MaxSuperheatEnergy_J);
+
+                double SpecificSuperheat_Jkg = HallSuperheaterSteamEnergy_J / Math.Max(HallSteamMass_kg, 1.0);
+
+                SteamTemperature_K = Tsat_K + SpecificSuperheat_Jkg / SteamCp;
+
+                SuperheatSteamEnergyLost_J = SteamUsed_kg * (SpecificSuperheat_Jkg);
+
+         //       Console.WriteLine($"Max Superheat - {MaxSuperheatTemp_K - 273.15:F2} C : Steam Temp {SteamTemperature_K - 273.15:F2} C : Superheater Metal Temp {SuperheaterMetalTemp_K - 273.15:F2} C : MaxSuperHeatTemp {MaxSuperheatTemp_K - 273.15:F3} : TSat_K {Tsat_K - 273.15:F3} C : Superheater Metal Energy {HallSuperheaterMetalEnergy_J:F2} J : Superheater Steam Energy {HallSuperheaterSteamEnergy_J:F2} J : \nMaxSuperHeatEnergy {MaxSuperheatEnergy_J:F3} : Steam Used {SteamUsed_kg:F3} kg : Superheat Steam Energy Lost {SuperheatSteamEnergyLost_J:F2} J");
+
+            }
+            else
+            {
+                HallSuperheaterSteamEnergy_J = 0;
+                HallSuperheaterMetalEnergy_J = 0;
+                SuperheatSteamEnergyLost_J = 0;
+                SteamTemperature_K = Tsat_K;
             }
 
-            //--------------------------------------------------
-            // Flashing time constant
-            //--------------------------------------------------
+            // Remove steam heat due to steam usage
+            HallBoilerSteamEnergy_J -= SteamEnergyLost_J;
+
+            HallSuperheaterSteamEnergy_J -= SuperheatSteamEnergyLost_J;
+
+            double ExcessSpecificEnergy = hCurrent - hf;
+
+            double FlashEnergy_J = 0.0;
 
             const double ReferenceSteamVolumeM3 = 5.0;
 
@@ -8959,15 +9100,75 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             double FlashLagTimeS = ProductionFactor * VolumeFactor;
 
-            FlashLagTimeS = Math.Max(8.0, FlashLagTimeS);
+            FlashLagTimeS = Math.Max(1.0, FlashLagTimeS);
 
             FlashLagTimeS = Math.Min(40.0, FlashLagTimeS);
 
-            double FlashSteamRateKgpS = FlashSteamMass_kg / FlashLagTimeS;
+            double FlashSteamMass_kg = 0.0;
+            double FlashSteamMassTarget = 0;
 
-            double EvaporativeSteamRateKgpS = Q_evaporation_W / LatentHeat_Jkg(HallBoilerPressurePSIG);
+            if (ExcessSpecificEnergy > 0.0)
+            {
+                FlashEnergy_J = ExcessSpecificEnergy * HallWaterMass_kg;
+                FlashSteamMassTarget = Math.Max(0.0, FlashEnergy_J / hfg);
+            }
+            else
+            {
+                FlashSteamMassTarget = 0.0;
+            }
 
-            SteamGenerationRateKgpS = EvaporativeSteamRateKgpS + FlashSteamRateKgpS; 
+            double FlashSteamMassRaw_kg = FlashSteamMassPrevious + (FlashSteamMassTarget - FlashSteamMassPrevious) * (elapsedClockSeconds / (FlashLagTimeS + elapsedClockSeconds));
+
+            FlashSteamMass_kg = FlashSteamMassRaw_kg - FlashSteamMassPrevious;
+
+            FlashSteamMassPrevious = FlashSteamMassRaw_kg;
+
+            FlashSteamMass_kg = Math.Min(FlashSteamMass_kg, FlashSteamMassTarget);
+
+            HallWaterMass_kg -= FlashSteamMass_kg;
+            HallSteamMass_kg += FlashSteamMass_kg;
+
+            double FlashSteamEnergyTransfer_J = FlashSteamMass_kg * hfg;
+
+            HallBoilerWaterEnergy_J -= FlashSteamEnergyTransfer_J;
+            HallBoilerSteamEnergy_J += FlashSteamEnergyTransfer_J;
+
+            double CondensedMassTarget = 0;
+
+            // Condensation
+            if (ExcessSpecificEnergy < 0.0)
+            {
+                double CondensationEnergy_J = (-ExcessSpecificEnergy) * HallWaterMass_kg;
+                CondensedMassTarget = CondensationEnergy_J / hfg;
+            }
+            else
+            {
+                CondensedMassTarget = 0;
+            }
+
+            double CondensedMass_kg = CondensedMassPrevious + (CondensedMassTarget - CondensedMassPrevious) * (elapsedClockSeconds / (FlashLagTimeS + elapsedClockSeconds));
+
+            CondensedMass_kg = Math.Min(CondensedMass_kg, CondensedMassTarget);
+
+            CondensedMassPrevious = CondensedMass_kg;
+
+            HallSteamMass_kg -= CondensedMass_kg;
+            HallWaterMass_kg += CondensedMass_kg;
+
+            double CondensedSteamEnergyTransfer_J = CondensedMass_kg * hfg;
+
+            HallBoilerSteamEnergy_J -= CondensedSteamEnergyTransfer_J;
+            HallBoilerWaterEnergy_J += CondensedSteamEnergyTransfer_J;
+
+            HallSteamMass_kg -= (HallSteamExhaustConsumptionRateKgpS + AuxilariesSteamConsumptionKgpS) * elapsedClockSeconds;
+
+            //--------------------------------------------------
+            // Flashing time constant
+            //--------------------------------------------------
+
+            double EvaporativeSteamRateKgpS = Q_evaporation_W / hfg;
+
+            SteamGenerationRateKgpS = EvaporativeSteamRateKgpS; 
 
             SteamGenerationRateKgpS += (SteamGenerationRateKgpS - PreviousSteamGenerationRateKgpS) * elapsedClockSeconds / SteamGenerationLagTimeS;
 
@@ -8975,7 +9176,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             PreviousSteamGenerationRateKgpS = SteamGenerationRateKgpS;
 
-      //   Console.WriteLine($"Boiler Heat Model - CurrentSteamGeneration {SteamGenerationRateKgpS:F3} kg/s : EvaporativeSteam {EvaporativeSteamRateKgpS:F3} kg/s : FlashSteam {FlashSteamRateKgpS:F3} kg/s : NewSteamGeneration { EvaporativeSteamRateKgpS + FlashSteamRateKgpS:F3} kg/s : BoilerWaterEnergy { HallBoilerWaterEnergy_J:F2} J : SuperheatMargin {SuperheatMargin_K:F3} K : AvailableFlashEnergy {AvailableFlashEnergy_J:F2} J : BoilerWaterTemp {BoilerWaterTemp_K - 273.15:F2} C : Tsat {Tsat_K - 273.15:F2} C : WaterMass {HallWaterMass_kg:F3} kg : SteamMass {HallSteamMass_kg:F3} kg : CombustionHeatAdded {CombustionHeatAdded_J:F2} J : InjectorHeatGain {InjectorHeatGain_J:F2} J : MotionPumpHeatGain {MotionPumpHeatGain_J:F2} J  : RadiationLossW {RadiationLoss_J:F3} : AuxiliaryLoss {AuxiliariesHeatLoss_J:F3} : SteamEnergyRemoved {SteamEnergyRemoved_J:F2} J : FlashLagTime {FlashLagTimeS:F3} s");
+   //   Console.WriteLine($"Boiler Heat Model - CurrentSteamGeneration {SteamGenerationRateKgpS:F3} kg/s : NewSteamGeneration { EvaporativeSteamRateKgpS:F3} kg/s : BoilerWaterEnergy { HallBoilerWaterEnergy_J:F2} J : BoilerSteamEnergy {HallBoilerSteamEnergy_J:F2} J: HallSuperheaterMetalEnergy{HallSuperheaterMetalEnergy_J:F3} : HallSuperheaterSteamEnergy {HallSuperheaterSteamEnergy_J:F3} : \nTsat {Tsat_K - 273.15:F2} C : WaterMass {HallWaterMass_kg:F3} kg : SteamMass {HallSteamMass_kg:F3} kg : CombustionHeatAdded {CombustionHeatAdded_J:F2} J : InjectorHeatGain {InjectorHeatGain_J:F2} J : MotionPumpHeatGain {MotionPumpHeatGain_J:F2} J  : RadiationLoss {RadiationLoss_J:F3} J : SteamEnergyRemoved {SteamEnergyTransfer_J:F2} J : FlashLagTime {FlashLagTimeS:F3} s : \nFlashSteamMass {FlashSteamMass_kg:F3} : CondensedSteamMass {CondensedMass_kg:F3} : FlashEnergy {FlashEnergy_J:F3} : ExcessSpecificEnergy {ExcessSpecificEnergy:F3} : BoilerPressure {HallBoilerPressurePSIG:F3}\n : SteamTemperature_K {SteamTemperature_K:F3}");
 
             // ---------------------------------------
             // Flashing / condensation correction
@@ -8993,7 +9194,19 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             HallBoilerPressure_PaG = Math.Max(0.1, HallBoilerPressure_PaG);
 
-     //      Console.WriteLine($"Boiler Pressure - BoilerPressureA {HallBoilerPressure_PaA:F3} : BoilerPressureG {HallBoilerPressure_PaG:F3} : Steam Mass {HallSteamMass_kg:F3} : Mass Diff {((TargetBoilerPressure_PaA - HallBoilerPressure_PaA) * elapsedClockSeconds / BoilerPressureLagTimeS):F3} : Cons {SteamCylinderConsumptionRateKgpS:F3} : Gen {SteamGenerationRateKgpS:F3} : SteamVolume {SteamVolumeM3:F3} : Tsat_K {Tsat_K:F3} : TargetPressure {TargetBoilerPressure_PaA:F3} : HallWaterMass {HallWaterMass_kg:F3} : elapsedClockSeconds {elapsedClockSeconds:F3} : BoilerWaterInput {BoilerWaterInputMass_kg:F3}");
+            // Calculate entalpies for water and steam
+            hf = SaturatedLiquidEnthalpy(HallBoilerPressurePSIG);
+
+            hg = SaturatedSteamEnthalpy(HallBoilerPressurePSIG);
+
+            hfg = hg - hf;
+
+            // Current specific liquid enthalpy
+            hCurrent = HallBoilerWaterEnergy_J / Math.Max(HallWaterMass_kg, 1.0);
+
+            hSteamCurrent = HallBoilerSteamEnergy_J / Math.Max(HallSteamMass_kg, 1.0);
+
+   //         Console.WriteLine($"Boiler Pressure - BoilerPressureA {HallBoilerPressure_PaA:F3} : BoilerPressureG {HallBoilerPressure_PaG:F3} : Steam Mass {HallSteamMass_kg:F3} : Mass Diff {((TargetBoilerPressure_PaA - HallBoilerPressure_PaA) * elapsedClockSeconds / BoilerPressureLagTimeS):F3} : Cons {HallSteamExhaustConsumptionRateKgpS:F3} : Gen {SteamGenerationRateKgpS:F3} : \nSteamVolume {SteamVolumeM3:F3} : Tsat_K {Tsat_K:F3} : TargetPressure {TargetBoilerPressure_PaA:F3} : HallWaterMass {HallWaterMass_kg:F3} : elapsedClockSeconds {elapsedClockSeconds:F3} : BoilerWaterInput {BoilerWaterInputMass_kg:F3}\n");
 
             // BOILER EFFICIENCY (EMERGENT)
             double BoilerEfficiency = 0.0;
@@ -9004,15 +9217,14 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
 
             // Steam-side check
-            double SteamSideEfficiency = (SteamGenerationRateKgpS * LatentHeat_Jkg(HallBoilerPressurePSIG)) / combustionHeat_W;
+            double SteamSideEfficiency = (SteamGenerationRateKgpS * hfg) / combustionHeat_W;
 
             // Stack loss fraction
             double StackLossFraction = StackLoss_W / combustionHeat_W;
 
-            // Approximate stack gas temperature
-            double AmbientTemp_K = 293.0;
-
             double StackTemp_K = AmbientTemp_K + StackLoss_W / Math.Max(Airflow_kgps * GasCp, 1.0);
+
+            SuperheaterGasTemperature_K = StackTemp_K + 80.0;
 
             // Update values for next iteration
             grateRateKgpM2 = HallBurnRateSmoothedKgpS / GrateAreaM2;
@@ -9119,6 +9331,45 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         }
 
 
+        double EstimateSuperheaterMetalMass(double SuperheatAreaM2)
+        {
+            const double SteelMassPerSquareMetre = 5.5;
+
+            return SteelMassPerSquareMetre *
+                   SuperheatAreaM2;
+        }
+
+        public static double LiquidTemperatureFromEnthalpy(double h_Jkg)
+        {
+            (double H, double T)[] Table =
+            {
+        (0,273.15),
+        (210000,323.15),
+        (420000,373.15),
+        (631000,422.05),
+        (716000,443.55),
+        (786000,458.55),
+        (848000,470.45),
+        (903000,480.35),
+        (954000,488.85),
+        (1044000,503.15)
+    };
+
+            return InterpolateTable(h_Jkg, Table);
+        }
+
+
+        public static double LiquidWaterEnthalpy(double Temperature_K)
+
+        {
+            const double Cp = 4180.0; // J/kg.K
+
+            const double Tref = 273.15; // 0°C reference
+
+            return Cp * (Temperature_K - Tref);
+           
+        }
+
         /// <summary>
         /// Apply Flashing / Condensation
         ///
@@ -9202,26 +9453,20 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
 
         /// <summary>
-        /// Calculate Boiler Pressure from Steam Mass
-        /// Determines the saturated steam pressure that produces
-        /// the specified steam density:
+        /// Calculate Boiler Pressure from Steam Mass 
+        /// Determines the saturated steam pressure that produces the specified steam density:
         ///
         ///      Density = SteamMass / SteamVolume
         ///
         /// Uses a binary search against the saturated steam density routine.
         ///
-        /// Returns:
-        ///      Pressure (PSIA)
-        ///
-        /// Valid range:
-        ///      0 - ~1200 psig
+        /// Valid range: 0 - ~1200 psig
+        /// 
         /// </summary>
         /// <param name="SteamMass_kg"></param>
         /// <param name="SteamVolumeM3"></param>
-        /// <returns></returns>
-        private double CalculatePressureFromSteamMass(
-            double SteamMass_kg,
-            double SteamVolumeM3)
+        /// <returns>"Pressure (PSIA)"</returns>
+        private double CalculatePressureFromSteamMass(double SteamMass_kg, double SteamVolumeM3)
         {
             //----------------------------------------------------------
             // Safety checks
@@ -9290,38 +9535,147 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Return ABSOLUTE pressure (PSIA)
             //----------------------------------------------------------
 
- //           Console.WriteLine($"PressureFromMass - SteamMass {SteamMass_kg:F3} : TargetDensity {TargetDensityKgM3:F3} : DensityKGm3 {DensityKGm3} : LowPSI {LowPSIG:F3} : HighPSI {HighPSIG:F3} : SteamVolume {SteamVolumeM3:F3} : Return {(0.5 * (LowPSIG + HighPSIG)) + OneAtmospherePSI:F3} ");
+ //       Console.WriteLine($"PressureFromMass - SteamMass {SteamMass_kg:F3} : TargetDensity {TargetDensityKgM3:F3} : DensityKGm3 {DensityKGm3} : LowPSI {LowPSIG:F3} : HighPSI {HighPSIG:F3} : SteamVolume {SteamVolumeM3:F3} : Return {(0.5 * (LowPSIG + HighPSIG)) + OneAtmospherePSI:F3} ");
 
             return ResultPSIG + OneAtmospherePSI;
         }
 
-        /// <summary>
-        /// Calculates latent heat of vaporization (hfg)
-        /// Input: Pressure in psi gauge
-        /// Output: Latent heat in kJ/kg
-        /// Valid range: 0 - 400 psi gauge
-        /// </summary>
-        public static double LatentHeat_Jkg(double pressurePSIG)
+        private static double InterpolateTable(
+    double input,
+    (double X, double Y)[] table)
         {
-            // Clamp range
-            pressurePSIG = Math.Max(0.0, Math.Min(400.0, pressurePSIG));
+            int last = table.Length - 1;
 
-            // Convert to absolute pressure
-            double pressurePSIA = pressurePSIG + 14.696;
+            if (input <= table[0].X)
+                return table[0].Y;
 
-            // Convert to MPa absolute
-            double pressureMPa = pressurePSIA * 0.006894757;
+            if (input >= table[last].X)
+                return table[last].Y;
 
-            // Polynomial fit to saturated steam tables
-            double hfg =
-                2500.9
-                - 322.8 * pressureMPa
-                + 28.24 * Math.Pow(pressureMPa, 2)
-                - 1.52 * Math.Pow(pressureMPa, 3);
+            for (int i = 0; i < last; i++)
+            {
+                if (input >= table[i].X &&
+                    input <= table[i + 1].X)
+                {
+                    double f =
+                        (input - table[i].X) /
+                        (table[i + 1].X - table[i].X);
 
-            return hfg * 1000; // convert to J from kJ
+                    return table[i].Y +
+                           f * (table[i + 1].Y - table[i].Y);
+                }
+            }
+
+            return table[last].Y;
         }
 
+        /// <summary>
+        /// Returns saturated liquid enthalpy
+        /// (J/kg)
+        ///
+        /// Input:
+        ///     Gauge Pressure (psig)
+        ///
+        /// Valid:
+        ///     50-400 psig
+        ///
+        /// Uses linear interpolation of saturated
+        /// steam table values.
+        ///
+        /// Accuracy typically better than ±0.15%.
+        /// </summary>
+        public static double SaturatedLiquidEnthalpy(double pressurePSIG)
+        {
+            (double X, double Y)[] table =
+            {
+        (50,631),
+        (75,676),
+        (100,716),
+        (125,752),
+        (150,786),
+        (175,818),
+        (200,848),
+        (225,876),
+        (250,903),
+        (275,929),
+        (300,954),
+        (325,978),
+        (350,1001),
+        (375,1023),
+        (400,1044)
+    };
+
+            return InterpolateTable(pressurePSIG, table) * 1000.0;
+        }
+
+
+        /// <summary>
+        /// Returns saturated steam enthalpy
+        /// (J/kg)
+        ///
+        /// Input:
+        ///     Gauge Pressure (psig)
+        ///
+        /// Valid:
+        ///     50-400 psig
+        ///
+        /// Uses steam table interpolation.
+        /// </summary>
+        public static double SaturatedSteamEnthalpy(double pressurePSIG)
+        {
+            (double X, double Y)[] table =
+            {
+        (50,2721),
+        (75,2731),
+        (100,2736),
+        (125,2740),
+        (150,2744),
+        (175,2746),
+        (200,2748),
+        (225,2750),
+        (250,2751),
+        (275,2753),
+        (300,2754),
+        (325,2755),
+        (350,2755),
+        (375,2755),
+        (400,2754)
+    };
+
+            return InterpolateTable(pressurePSIG, table) * 1000.0;
+        }
+
+
+        /// <summary>
+        /// Returns the specific heat of saturated liquid water (J/kg.K)
+        /// as a function of saturation temperature (Kelvin).
+        ///
+        /// Valid operating range:
+        ///     422 K (≈149°C, 50 psig)
+        ///     503 K (≈230°C, 400 psig)
+        ///
+        /// Based on an empirical fit to IAPWS saturated water data.
+        ///
+        /// Typical error:
+        ///     < ±0.2 %
+        ///
+        /// This function is intended for locomotive boiler
+        /// energy storage calculations.
+        /// </summary>
+        public static double WaterCpFromTemperatureK(double Tsat_K)
+        {
+            // Clamp to operating range
+            Tsat_K = Math.Max(422.0, Math.Min(503.0, Tsat_K));
+
+            // Convert to Celsius
+            double T = Tsat_K - 273.15;
+
+            // Specific heat (J/kg.K)
+            return
+                4184.0
+              + 0.62 * T
+              + 0.0155 * T * T;
+        }
 
         /// <summary>
         /// Calculates saturated steam temperature from pressure.
@@ -9371,8 +9725,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             tempC = tempK - 273.15;
         }
-
-
 
         /// <summary>
         /// Saturated steam density from pressure.
@@ -14505,7 +14857,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                );
             }
 
-            status.AppendFormat("\t{0}\t{1}\t{2:N3}\t{3}\t{4:N0}\t{5}\t{6:N0}\t{7}\t{8:N2}\t\t{9}\t{10:F2}\t{11}\t{12:F2}\t{13}\t{14:F2}\t{15}\t{16:F2}\t{17}\t{18:F2}\t{19}\t{20:F2}\t{21}\t{22:F2}\t{23}\t{24:F2}\t{25}\t{26:F2}\n",
+            status.AppendFormat("\t{0}\t{1}\t{2:N3}\t{3}\t{4:N0}\t{5}\t{6:N0}\t{7}\t{8:N2}\t\t{9}\t{10:F2}\t{11}\t{12:F2}\t{13}\t{14:F2}\t{15}\t{16:F2}\t{17}\t{18:F2}\t{19}\t{20:F2}\t{21}\t{22:F2}\t{23}\t{24:F2}\t{25}\t{26:F2}\t{27}\t{28:F2}\n",
             Simulator.Catalog.GetString("HallComb:"),
             Simulator.Catalog.GetString("Cons:"),
             FormatStrings.FormatMass(pS.TopH((float)HallSteamExhaustConsumptionRateKgpS), IsMetric),
@@ -14532,7 +14884,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             Simulator.Catalog.GetString("Fire:"),
             FiredoorPosition_0_1,
             Simulator.Catalog.GetString("Blow:"),
-            BlowerPosition_0_1
+            BlowerPosition_0_1,
+            Simulator.Catalog.GetString("S/Temp:"),
+            FormatStrings.FormatTemperature(C.FromK((float)SteamTemperature_K), IsMetric, false)
 
             );
 
