@@ -509,7 +509,7 @@ VERTEX_OUTPUT_PBR _VSPbr(float4 position, float3 normal, float4 tangent,
     }
 
     _VSNormalProjection(normal, worldTransform, Out.Position, Out.RelPosition, Out.Normal_Light);
-    _VSLightsAndShadows(Out.Position, worldTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
+    _VSLightsAndShadows(position, worldTransform, length(Out.Position.xyz), Out.Tangent.w, Out.Shadow);
 
     _VSNormalMapTransform(tangent, normal, worldTransform, Out);
 
