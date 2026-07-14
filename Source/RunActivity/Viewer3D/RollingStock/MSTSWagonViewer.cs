@@ -712,9 +712,9 @@ namespace Orts.Viewer3D.RollingStock
             UnloadingParts.UpdateState(MSTSWagon.UnloadingPartsOpen, elapsedTime);
             Item1TwoState.UpdateState(MSTSWagon.GenericItem1, elapsedTime);
             Item2TwoState.UpdateState(MSTSWagon.GenericItem2, elapsedTime);
-            BrakeCylinders.UpdateFrameClamp(MSTSWagon.BrakeSystem.GetNormalizedCylTravel() * 10.0f, elapsedTime, 10.0f);
+            BrakeCylinders.UpdateState(MSTSWagon.BrakeSystem.GetNormalizedCylTravel(), elapsedTime);
             Handbrakes.UpdateState(MSTSWagon.GetTrainHandbrakeStatus(), elapsedTime);
-            BrakeRigging.UpdateFrameClamp(Math.Max(MSTSWagon.BrakeSystem.GetNormalizedCylTravel(), MSTSWagon.GetTrainHandbrakeStatus() ? 1.0f : 0.0f) * 10.0f, elapsedTime, 10.0f);
+            BrakeRigging.UpdateState(Math.Max(MSTSWagon.BrakeSystem.GetNormalizedCylTravel(), MSTSWagon.GetTrainHandbrakeStatus() ? 1.0f : 0.0f), elapsedTime);
             UpdateAnimation(frame, elapsedTime);
 
             var car = Car as MSTSWagon;
