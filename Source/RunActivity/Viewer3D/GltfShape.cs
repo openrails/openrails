@@ -1709,19 +1709,19 @@ namespace Orts.Viewer3D
 
                 // See the formula for the cubic spline: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic
                 channel.SetTargetVector2?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                    ? Vector2.Hermite(channel.OutputVector2[Property(frame1)], channel.OutputVector2[OutTangent(frame2)], channel.OutputVector2[Property(frame2)], channel.OutputVector2[InTangent(frame2)], amount)
+                    ? Vector2.Hermite(channel.OutputVector2[Property(frame1)], channel.OutputVector2[OutTangent(frame1)], channel.OutputVector2[Property(frame2)], channel.OutputVector2[InTangent(frame2)], amount)
                     : Vector2.Lerp(channel.OutputVector2[frame1], channel.OutputVector2[frame2], amount));
                 channel.SetTargetVector3?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                    ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
+                    ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame1)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
                     : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount));
                 channel.SetTargetVector4?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                    ? Vector4.Hermite(channel.OutputVector4[Property(frame1)], channel.OutputVector4[OutTangent(frame2)], channel.OutputVector4[Property(frame2)], channel.OutputVector4[InTangent(frame2)], amount)
+                    ? Vector4.Hermite(channel.OutputVector4[Property(frame1)], channel.OutputVector4[OutTangent(frame1)], channel.OutputVector4[Property(frame2)], channel.OutputVector4[InTangent(frame2)], amount)
                     : Vector4.Lerp(channel.OutputVector4[frame1], channel.OutputVector4[frame2], amount));
                 channel.SetTargetFloat?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                    ? MathHelper.Hermite(channel.OutputFloats[Property(frame1)], channel.OutputFloats[OutTangent(frame2)], channel.OutputFloats[Property(frame2)], channel.OutputFloats[InTangent(frame2)], amount)
+                    ? MathHelper.Hermite(channel.OutputFloats[Property(frame1)], channel.OutputFloats[OutTangent(frame1)], channel.OutputFloats[Property(frame2)], channel.OutputFloats[InTangent(frame2)], amount)
                     : MathHelper.Lerp(channel.OutputFloats[frame1], channel.OutputFloats[frame2], amount));
                 channel.SetTargetQuaternion?.Invoke(((channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                    ? CsInterp(channel.OutputQuaternion[Property(frame1)], channel.OutputQuaternion[OutTangent(frame2)], channel.OutputQuaternion[Property(frame2)], channel.OutputQuaternion[InTangent(frame2)], amount)
+                    ? CsInterp(channel.OutputQuaternion[Property(frame1)], channel.OutputQuaternion[OutTangent(frame1)], channel.OutputQuaternion[Property(frame2)], channel.OutputQuaternion[InTangent(frame2)], amount, time2 - time1)
                     : Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount))
                     is var q && q != new Quaternion(0, 0, 0, 0)) ? Quaternion.Normalize(q) : Quaternion.Identity);
                 if (channel.SetTargetFloatVector != null && channel.TargetFloatVectorLength > 0)
@@ -1729,7 +1729,7 @@ namespace Orts.Viewer3D
                     var count = channel.TargetFloatVectorLength;
                     for (var i = 0; i < count; i++)
                         channel.SetTargetFloatVector(i, channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                            ? MathHelper.Hermite(channel.OutputFloats[Property(frame1) * count + i], channel.OutputFloats[OutTangent(frame2) * count + i], channel.OutputFloats[Property(frame2) * count + i], channel.OutputFloats[InTangent(frame2) * count + i], amount)
+                            ? MathHelper.Hermite(channel.OutputFloats[Property(frame1) * count + i], channel.OutputFloats[OutTangent(frame1) * count + i], channel.OutputFloats[Property(frame2) * count + i], channel.OutputFloats[InTangent(frame2) * count + i], amount)
                             : MathHelper.Lerp(channel.OutputFloats[frame1 * count + i], channel.OutputFloats[frame2 * count + i], amount));
                 }
                 if (channel.Path == AnimationChannelTarget.PathEnum.rotation || channel.Path == AnimationChannelTarget.PathEnum.scale || channel.Path == AnimationChannelTarget.PathEnum.translation)
@@ -1745,8 +1745,11 @@ namespace Orts.Viewer3D
         static readonly Func<float, float> B = (t) => t*t*t - 2*t*t + t;
         static readonly Func<float, float> C = (t) => -2*t*t*t + 3*t*t;
         static readonly Func<float, float> D = (t) => t*t*t - t*t;
-        static readonly Func<Quaternion, Quaternion, Quaternion, Quaternion, float, Quaternion> CsInterp = (v1, b1, v2, a2, t) =>
-            Quaternion.Normalize(Quaternion.Multiply(v1, A(t)) + Quaternion.Multiply(b1, B(t)) + Quaternion.Multiply(v2, C(t)) + Quaternion.Multiply(a2, D(t)));
+        static readonly Func<Quaternion, Quaternion, Quaternion, Quaternion, float, float, Quaternion> CsInterp = (v1, b1, v2, a2, t, dt) =>
+        {
+            var q = Quaternion.Multiply(v1, A(t)) + Quaternion.Multiply(b1, B(t) * dt) + Quaternion.Multiply(v2, C(t)) + Quaternion.Multiply(a2, D(t) * dt);
+            return q.LengthSquared() > 0.000001f ? Quaternion.Normalize(q) : Quaternion.Identity;
+        };
 
         /// <summary>
         /// The pointers in the glTF animations are used to animate the properties of the materials and lights.
