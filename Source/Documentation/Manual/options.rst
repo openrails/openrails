@@ -643,6 +643,23 @@ A *Logging interval* of 0 (zero) dumps data for each frame (i.e. logs at the fra
 This is intended for analyzing system and graphics performance.
 Larger intervals are better for looking at train performance.
 
+.. _verbose-configuration-messages:
+
+Verbose ENG/WAG Configuration Messages
+--------------------------------------
+
+The "Verbose ENG/WAG configuration messages" option enables some
+additional logging for the ``OpenRailsLog.txt`` :ref:`log file <driving-logfile>`
+which reports information about the data Open Rails uses to simulate
+the engines and wagons used by the current activity.
+
+These messages do not report anything useful for normal sessions,
+but are very useful for content creators to understand what Open Rails
+is thinking. Logging from this setting will inform the creator about
+missing variables, invalid variables, and assumed values, which can help
+creators verify that their configuration includes all the necessary data
+for maximum functionality of their rolling stock.
+
 .. _options-system:
 
 System Options
