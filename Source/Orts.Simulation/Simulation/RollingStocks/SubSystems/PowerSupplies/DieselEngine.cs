@@ -691,7 +691,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public float RateOfChangeDownRPMpSS;
         /// <summary>
-        /// Maximum Rated Power output of the diesel engine (prime mover)
+        /// MAximum Rated Power output of the diesel engine (prime mover)
         /// </summary>
         public float MaximumDieselPowerW;
         /// <summary>
@@ -880,7 +880,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 else
                 {
-                    return CurrentDieselOutputPowerW <= 0f ? 0f : ((OutputPowerW) * 100f / CurrentDieselOutputPowerW);
+                    return CurrentDieselOutputPowerW <= 0f ? 0f : ((OutputPowerW + (Locomotive.DieselEngines.NumOfActiveEngines > 0 ? Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines : 0f)) * 100f / CurrentDieselOutputPowerW);
                 }
             }
         }
@@ -1041,15 +1041,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (State == DieselEngineState.Running)
             {
-                float abstempTractiveForce = Locomotive.TractionForceN;
-                float relativePower;
-
-                if (Locomotive.DieselEngines.MaxOutputPowerW > 0)
-                    relativePower = CurrentDieselOutputPowerW / Locomotive.DieselEngines.MaxOutputPowerW;
-                else
-                    relativePower = 0;
-
-                OutputPowerW = ((abstempTractiveForce > 0 ? abstempTractiveForce * Locomotive.AbsWheelSpeedMpS : 0) + Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW) * relativePower;
+                var abstempTractiveForce = Locomotive.TractionForceN;
+                OutputPowerW = ( abstempTractiveForce > 0 ? abstempTractiveForce * Locomotive.AbsWheelSpeedMpS : 0) / Locomotive.DieselEngines.NumOfActiveEngines;
             }
             else
             {
@@ -1407,12 +1400,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 if (LoadPercent != 0)
                 {
-                    // For ETS on multi-engine locomotives, estimate the proportion of power supplied by this engine relative to the total
-                    float relativePower = CurrentDieselOutputPowerW / Locomotive.DieselEngines.MaxOutputPowerW;
-
                     CurrentDieselOutputPowerW = GearBox.TractiveForceN * Locomotive.AbsTractionSpeedMpS * 100.0f / LoadPercent;
 
-                    CurrentDieselOutputPowerW += Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW * relativePower;
+                    if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
+                    {
+
+                        CurrentDieselOutputPowerW += Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
+                    }
+
                 }
                 else
                 {
