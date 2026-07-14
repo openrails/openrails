@@ -124,15 +124,17 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Smoothly changes the animation to a particular frame whilst clamping it to the frame count range,
-        /// with adjustable animation speed (default 1 animation frame/sec).
+        /// Smoothly changes the animation to a particular state between 0 and 1.
         /// </summary>
-        public void UpdateFrameClamp(float frame, ElapsedTime elapsedTime, float fps = 1.0f)
+        public void UpdateState(float state, ElapsedTime elapsedTime)
         {
-            if (Math.Abs(frame - AnimationKey) > elapsedTime.ClockSeconds * fps)
-                SetFrameClamp(AnimationKey + Math.Sign(frame - AnimationKey) * elapsedTime.ClockSeconds * fps);
+            var desiredKey = state * MaxFrame;
+            var speed = PoseableShape.SharedShape is GltfShape ? 1f : 10f; // shape format: 10 frames/sec, glTF format: realtime
+
+            if (Math.Abs(desiredKey - AnimationKey) > elapsedTime.ClockSeconds * speed)
+                SetFrameClamp(AnimationKey + Math.Sign(desiredKey - AnimationKey) * elapsedTime.ClockSeconds * speed);
             else
-                SetFrameClamp(frame);
+                SetFrameClamp(desiredKey);
         }
 
         /// <summary>
