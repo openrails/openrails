@@ -272,6 +272,7 @@ namespace Orts.Simulation.RollingStocks
                 DieselEngines[0].Initialize();
             }
 
+
             // Check initialization of power values for diesel engines
             for (int i = 0; i < DieselEngines.Count; i++)
             {
