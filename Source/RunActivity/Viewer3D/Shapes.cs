@@ -601,7 +601,7 @@ namespace Orts.Viewer3D
 
     public class SwitchTrackShape : PoseableShape
     {
-        protected float AnimationKey;  // tracks position of points as they move left and right
+        readonly AnimatedPart AnimatedPart;
 
         TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
         uint MainRoute;                  // 0 or 1 - which route is considered the main route
@@ -612,26 +612,23 @@ namespace Orts.Viewer3D
             TrJunctionNode = trj;
             TrackShape TS = viewer.Simulator.TSectionDat.TrackShapes.Get(TrJunctionNode.ShapeIndex);
             MainRoute = TS.MainRoute;
+
+            var animationsCount = SharedShape.GetAnimationNamesCount();
+            for (var i = 0; i < animationsCount; i++)
+            {
+                if (SharedShape.HasAnimation(i))
+                {
+                    AnimatedPart = AnimatedPart ?? new AnimatedPart(this);
+                    AnimatedPart.AddMatrix(i);
+                }
+            }
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // ie, with 2 frames of animation, the key will advance from 0 to 1
-            if (TrJunctionNode.SelectedRoute == MainRoute)
-            {
-                if (AnimationKey > 0.001) AnimationKey -= 0.002f * elapsedTime.ClockSeconds * 1000.0f;
-                if (AnimationKey < 0.001) AnimationKey = 0;
-            }
-            else
-            {
-                if (AnimationKey < 0.999) AnimationKey += 0.002f * elapsedTime.ClockSeconds * 1000.0f;
-                if (AnimationKey > 0.999) AnimationKey = 1.0f;
-            }
-
-            // Update the pose
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-                AnimateMatrix(iMatrix, AnimationKey);
-
+            // MSTS junction animations are tricky, they consist of 3 animation nodes: 0 is main, 1 is diverging, 2 is main again.
+            // So the UpdateState(bool, elapsedTime) cannot be used here, that would switch between frames 0 and 2.
+            AnimatedPart?.UpdateState(TrJunctionNode.SelectedRoute == MainRoute ? 0 : 0.5f, elapsedTime);
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
@@ -2807,6 +2804,10 @@ namespace Orts.Viewer3D
         public virtual int GetAnimationNamesCount() => LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault().ShapePrimitives?.FirstOrDefault()?.Hierarchy?.Length ?? 0;
 
         public virtual bool HasAnimations() => Animations != null;
+
+        public virtual bool HasAnimation(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?.Count > 0;
+
+        public virtual float GetAnimationLength(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?.Max(c => c.LastOrDefault()?.Frame ?? 0) ?? 0;
 
         [CallOnThread("Loader")]
         internal void Mark()

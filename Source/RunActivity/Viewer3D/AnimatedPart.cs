@@ -69,31 +69,13 @@ namespace Orts.Viewer3D
 
         void UpdateMaxFrame(int matrix)
         {
-            // shape format:
-            if (PoseableShape.SharedShape.Animations != null
-                && PoseableShape.SharedShape.Animations.Count > 0
-                && PoseableShape.SharedShape.Animations[0].anim_nodes.Count > matrix
-                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0
-                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].Count > 0)
-            {
-                MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].ToArray().Cast<KeyPosition>().Last().Frame);
-                // Sometimes there are more frames in the second controller than in the first
-                if (PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 1
-                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].Count > 0)
-                    MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].ToArray().Cast<KeyPosition>().Last().Frame);
-            }
+            MaxFrame = PoseableShape.SharedShape.GetAnimationLength(matrix);
 
-            // glTF format:
-            if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.HasAnimation(matrix))
-            {
-                // Use the clip's length in time as the frame count
-                MaxFrame = gltfShape.GetAnimationLength(matrix);
-            }
-            else
+            if (!(PoseableShape.SharedShape is GltfShape))
             {
                 for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
                     if (PoseableShape.Hierarchy[i] == matrix)
-                    UpdateMaxFrame(i);
+                        UpdateMaxFrame(i);
             }
         }
 
