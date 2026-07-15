@@ -1674,8 +1674,8 @@ namespace Orts.Viewer3D
         public override bool HasAnimations() => GetAnimationNamesCount() > 0;
         public bool HasLights() => Lights.Count > 0;
 
-        public bool HasAnimation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
-        public float GetAnimationLength(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TimeMax).Max() ?? 0;
+        public override bool HasAnimation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
+        public override float GetAnimationLength(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TimeMax).Max() ?? 0;
 
         /// <summary>
         /// Calculate the animation matrices of a glTF animation.
