@@ -1607,14 +1607,14 @@ namespace Orts.Viewer3D
                 case SoundVariable.ControlType.CurveForce: return car.CurveForceNFiltered;
                 case SoundVariable.ControlType.AngleofAttack: return car.CurveSquealAoAmRadFiltered;
                 case SoundVariable.ControlType.CarFriction: return car.Train.WagonCoefficientFriction;
-                case SoundVariable.ControlType.WheelRPM: var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS / (2 * Math.PI * car.WheelRadiusM))); return wheelRpM;
+                case SoundVariable.ControlType.WheelRPM: return pS.TopM((float)(Math.Abs(car.WheelSpeedMpS) / (2 * Math.PI * car.WheelRadiusM)));
                 case SoundVariable.ControlType.ConcreteSleepers: return SharedSMSFileManager.ConcreteSleepers;
                 case SoundVariable.ControlType.CarInTunnel: return car.TrackSoundInTunnelTriggered;
                 case SoundVariable.ControlType.CarDistanceTrack: return car.CarTrackControlledDistanceM;
                 case SoundVariable.ControlType.CarTunnelDistance: return car.CarTunnelDistanceM;
                 case SoundVariable.ControlType.BackPressure: return car.BackPressurePSIG;
-                case SoundVariable.ControlType.TractiveEffort: return car.MotiveForceN * Math.Sign(car.WheelSpeedMpS); // Ensure positive for traction, negative for dynamics
-                case SoundVariable.ControlType.TractivePower: return car.MotiveForceN * car.WheelSpeedMpS;
+                case SoundVariable.ControlType.TractiveEffort: return car.LocomotiveAxles.DriveForceN * Math.Sign(car.WheelSpeedMpS); // Ensure positive for traction, negative for dynamics
+                case SoundVariable.ControlType.TractivePower: return car.LocomotiveAxles.DriveForceN * car.WheelSpeedMpS;
                 case SoundVariable.ControlType.EngineRPM: return car.EnginesRPM.ElementAtOrDefault(variable.SourceID);
                 case SoundVariable.ControlType.EnginePower: return car.EnginesPower.ElementAtOrDefault(variable.SourceID);
                 case SoundVariable.ControlType.EngineTorque: return car.EnginesTorque.ElementAtOrDefault(variable.SourceID);
