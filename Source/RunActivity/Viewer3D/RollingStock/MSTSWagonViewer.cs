@@ -666,8 +666,11 @@ namespace Orts.Viewer3D.RollingStock
                     RunningGears[LinkedAxleIndex ?? drivenAxleIndex ?? -1].AddMatrix(matrix);
 
                 for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
+                {
+                    if (i == matrix) continue;
                     if (TrainCarShape.SharedShape.GetAnimationParent(i) == targetNode)
                         MatchMatrixToPart(car, i, 0);
+                }
             }
         }
 
