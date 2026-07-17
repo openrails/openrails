@@ -2807,7 +2807,8 @@ namespace Orts.Viewer3D
 
         public virtual bool HasAnimation(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?.Count > 0;
 
-        public virtual float GetAnimationLength(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?.Max(c => c.LastOrDefault()?.Frame ?? 0) ?? 0;
+        public virtual float GetAnimationLength(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?
+            .Select(c => c.LastOrDefault()?.Frame ?? 0).DefaultIfEmpty(0).Max() ?? 0;
 
         [CallOnThread("Loader")]
         internal void Mark()
