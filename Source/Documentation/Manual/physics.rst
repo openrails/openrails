@@ -579,42 +579,52 @@ It is also possible to operate a locomotive with the own engine off and
 the helper's engine on.
 
 ORTS Specific Diesel Engine Definition
-......................................
+''''''''''''''''''''''''''''''''''''''
 
 If no ORTS specific definition is found, a single diesel engine definition
-is created based on the MSTS settings. Since MSTS introduces a model
-without any data crosscheck, the behavior of MSTS and ORTS diesel
-locomotives can be very different. In MSTS, MaxPower is not considered in
-the same way and you can get much *better* performance than expected. In
-ORTS, diesel engines cannot be overloaded.
+is created automatically based on the MSTS settings in the .eng file.
+Since MSTS introduces a model without any data crosscheck, the behavior
+of MSTS and ORTS diesel locomotives can be very different. In MSTS, ``MaxPower``
+is not considered in the same way and you can get much *better* performance
+than expected. In ORTS, diesel engines cannot be overloaded.
 
 No matter which engine definition is used, the diesel engine is defined by
-its load characteristics (maximum output power vs. speed) for optimal fuel
-flow and/or mechanical characteristics (output torque vs. speed) for
+its load characteristics (rated output power vs. RPM) for optimal fuel
+flow and/or mechanical characteristics (output torque vs. RPM) for
 maximum fuel flow. The model computes output power / torque according to
 these characteristics and the throttle settings. If the characteristics
-are not defined (as they are in the example below), they are calculated
-based on the MSTS data and common normalized characteristics.
+are not defined as shown in the example ``ORTSDieselEngines`` block
+below, they are calculated based on the MSTS data and common normalized
+characteristics.
+
+In many cases the RPM vs. throttle and power vs. RPM curve should be
+customized based on locomotive specifications because RPM and power
+often do not have a linear response to the throttle setting.
+Nonetheless, a default linear RPM vs. throttle characteristic and generic
+power vs. RPM curve (shown in the figure below) are built in to provide
+functional diesel engines even when this data is missing.
 
 .. image:: images/physics-diesel-power.png
   :align: center
   :scale: 80%
 
-In many cases the throttle vs. speed curve is customized because power vs.
-speed is not linear. A default linear throttle vs. speed characteristics
-is built in to avoid engine overloading at lower throttle settings.
-Nevertheless, it is recommended to adjust the table below to get more
-realistic behavior.
-
-In ORTS, single or multiple engines can be set for one locomotive. In case
+In ORTS, one locomotive may have any number of diesel engines, as opposed
+to MSTS which only considered one engine per locomotive. In case
 there is more than one engine, other engines act like *helper* engines
 (start/stop control for helpers is ``<Ctrl+Y>`` by default). The power of
 each active engine is added to the locomotive power. The number of such
-diesel engines is not limited.
+diesel engines is not limited. Depending on the settings of ``ProvidesTractionPower``
+and ``ProvidesETSPower``, various multi-engine locomotives can be constructed,
+from gensets to locomotives with separate engines for ETS power only.
 
 If the ORTS specific definition is used, each parameter is tracked and if
-one is missing (except in the case of those marked with *Optional*), the
-simulation falls back to use MSTS parameters.
+any are missing the lacking data is estimated from other diesel engine
+parameters, from other locomotive parameters, or is given a sensible default
+value. For best results, enter as many parameters as are known and leave
+out unknown data to allow OR to provide more reasonable estimates. Any
+values that were estimated will be reported in the log if the
+:ref:`verbose eng/wag configuration messages option <verbose-configuration-messages>`
+is enabled.
 
 .. index::
    single: Engine
@@ -622,20 +632,29 @@ simulation falls back to use MSTS parameters.
    single: Diesel
    single: IdleRPM
    single: MaxRPM
+   single: GovernorRPM
    single: StartingRPM
    single: StartingConfirmRPM
    single: ChangeUpRPMpS
    single: ChangeDownRPMpS
    single: RateOfChangeUpRPMpSS
    single: RateOfChangeDownRPMpSS
+   single: ShaftInertia
    single: MaximalPower
+   single: ProvidesTractionPower
+   single: ProvidesETSPower
    single: IdleExhaust
    single: MaxExhaust
+   single: IdleExhaustMagnitude
+   single: MaxExhaustMagnitude
    single: ExhaustDynamics
    single: ExhaustDynamicsDown
-   single: ExhaustColor
    single: ExhaustTransientColor
+   single: ExhaustColor
+   single: ExhaustDecelColor
    single: DieselPowerTab
+   single: AuxiliaryPowerTab
+   single: IdleDieselConsumption
    single: DieselConsumptionTab
    single: ThrottleRPMTab
    single: DieselTorqueTab
@@ -643,131 +662,432 @@ simulation falls back to use MSTS parameters.
    single: MaxOilPressure
    single: Cooling
    single: TempTimeConstant
+   single: MaxTemperature
    single: OptTemperature
    single: IdleTemperature
 
-+---------------------------------+------------------------------------+
++------------------------------------------+-----------------------------------------------------------+
 |::                               |::                                  |
 |                                 |                                    |
-| Engine(                         | Engine section in eng file         |
+| Engine(                                  | All parameters must be inside the engine section          |
 | ...                             |                                    |
-| ORTSDieselEngines ( 2           | Number of engines                  |
-|   Diesel (                      |                                    |
-|     IdleRPM ( 510 )             | Idle RPM                           |
-|     MaxRPM ( 1250 )             | Maximal RPM                        |
-|     StartingRPM ( 400 )         | Starting RPM                       |
-|     StartingConfirmRPM ( 570 )  | Starting confirmation RPM          |
-|     ChangeUpRPMpS ( 50 )        | Increasing change rate RPM/s       |
-|     ChangeDownRPMpS ( 20 )      | Decreasing change rate RPM/s       |
-|     RateOfChangeUpRPMpSS ( 5 )  | Jerk of ChangeUpRPMpS RPM/s^2      |
-|     RateOfChangeDownRPMpSS ( 5 )| Jerk of ChangeDownRPMpS RPM/s^2    |
-|     MaximalPower ( 300kW )      | Maximal output power               |
-|     IdleExhaust ( 5 )           | Num of exhaust particles at IdleRPM|
-|     MaxExhaust ( 50 )           | Num of exhaust particles at MaxRPM |
-|     ExhaustDynamics ( 10 )      | Exhaust particle mult. at transient|
-|     ExhaustDynamicsDown (10)    | Mult. for down transient (Optional)|
-|     ExhaustColor ( 00 fe )      | Exhaust color at steady state      |
-|     ExhaustTransientColor(      | Exhaust color at RPM changing      |
-|         00 00 00 00)            |                                    |
-|     DieselPowerTab (            | Diesel engine power table          |
-|         0       0               |    RPM        Power in Watts       |
-|         510     2000            |                                    |
-|         520     5000            |                                    |
-|         600     2000            |                                    |
-|         800     70000           |                                    |
-|         1000    100000          |                                    |
-|         1100    200000          |                                    |
-|         1200    280000          |                                    |
-|         1250    300000          |                                    |
+| ORTSDieselEngines ( 2                    | Define the number of engines here                         |
+|   Diesel (                               | Beginning of first diesel engine definition               |
+|     IdleRPM ( 510 )                      | Minimum continuous RPM                                    |
+|     MaxRPM ( 1250 )                      | Maximum continuous RPM                                    |
+|     GovernorRPM ( 1400 )                 | Absolute maximum RPM, above which engine shuts down       |
+|     StartingRPM ( 400 )                  | Minimum RPM to start fuel injection, else engine stalls   |
+|     StartingConfirmRPM ( 570 )           | RPM when starter disengages                               |
+|     ChangeUpRPMpS ( 50 )                 | Maximum increasing RPM change rate in RPM per second      |
+|     ChangeDownRPMpS ( 20 )               | Maximum decreasing RPM change rate in RPM per second      |
+|     RateOfChangeUpRPMpSS ( 5 )           | Maximum change in ChangeUpRPMpS in RPM per second^2       |
+|     RateOfChangeDownRPMpSS ( 5 )         | Maximum change in ChangeDownRPMpS in RPM per second^2     |
+|     ShaftInertia ( 150 )                 | Mass moment of inertia of engine shaft in kg*m^2          |
+|                                          |                                                           |
+|     MaximalPower ( 300kW )               | Maximum engine gross power (default watts)                |
+|     ProvidesTractionPower ( 1 )          | Set to 0 if this engine isn't used to move the locomotive |
+|     ProvidesETSPower ( 1 )               | Set to 0 if this engine isn't used to provide coach power |
+|                                          |                                                           |
+|     IdleExhaust ( 5 )                    | Number of exhaust particles per second at IdleRPM         |
+|     MaxExhaust ( 50 )                    | Number of exhaust particles per second at MaxRPM          |
+|     IdleExhaustMagnitude ( 1.4 )         | Lifespan of exhaust particles at IdleRPM (default seconds)|
+|     MaxExhaustMagnitude ( 2.8 )          | Lifespan of exhaust particles at MaxRPM (default seconds) |
+|     ExhaustDynamics ( 3 )                | Exhaust particle per second multiplier at increasing RPM  |
+|     ExhaustDynamicsDown ( 0.5 )          | Exhaust particle per second multiplier at decreasing RPM  |
+|     ExhaustTransientColor ( ff 00 00 00 )| Exhaust color at increasing RPM                           |
+|     ExhaustColor ( ff 80 80 80 )         | Exhaust color at steady RPM                               |
+|     ExhaustDecelColor ( ff f5 f5 f5 )    | Exhaust color at decreasing RPM                           |
+|                                          |                                                           |
+|     DieselPowerTab (                     | Engine Gross Power vs. RPM Table                          |
+|         0       0                        |   RPM / Power (default watts)                             |
+|         510     5000                     |      Used when engine is under control of a governor,     |
+|         600     20000                    |      such as diesel-electric or diesel-hydraulic          |
+|         800     70000                    |      locomotives. Governor will try to match this power   |
+|         1000    100000                   |      output by matching the fuel injection specified      |
+|         1100    200000                   |      by DieselConsumptionTab.                             |
+|         1200    280000                   |      If missing, power values will be calculated          |
+|         1250    300000                   |      automatically using the DieselTorqueTab values.      |
 |     )                           |                                    |
-|     DieselConsumptionTab (      | Diesel fuel consumption table      |
-|         0       0               |  RPM   Vs consumption l/h/rpm      |
-|         510     10              |                                    |
-|         1250    245             |                                    |
-|     )                           |                                    |
-|     ThrottleRPMTab (            | Eengine RPM vs. throttle table     |
-|         0   510                 |    Throttle %      Demanded RPM    |
-|         5   520                 |                                    |
-|         10  600                 |                                    |
-|         20  700                 |                                    |
-|         50  1000                |                                    |
+|     AuxiliaryPowerTab (                  | Auxiliary Power Draw vs. RPM Table                        |
+|         0       2500                     |   RPM / Power (default watts)                             |
+|         510     3500                     |      Specifies power constantly consumed by auxiliary     |
+|         600     4000                     |      equipment, such as battery chargers and blowers,     |
+|         800     6000                     |      as a function of RPM.                                |
+|         1000    9000                     |      Subtracts from DieselPowerTab to determine the power |
+|         1100    11000                    |      available for tractive effort.                       |
+|         1200    13500                    |      If missing, auxiliary load will be calculated        |
+|         1250    15000                    |      automatically from DieselPowerTab and locomotive     |
+|     )                                    |      performance (ORTSMaxTractiveForceCurves).            |
+|     IdleDieselConsumption ( 5 )          | Diesel used per hour at IdleRPM with no load (default L)  |
+|     DieselConsumptionTab (               | Fuel use vs. RPM Table                                    |
+|         0       0                        |   RPM / Fuel per Hour (default liters)                    |
+|         510     10                       |      Set the fuel use that occurs when operating at the   |
+|         1250    245                      |      listed RPM and listed power output in DieselPowerTab,|
+|     )                                    |      actual fuel use will vary with power output.         |
+|     ThrottleRPMTab (                     | Target Engine RPM vs. Throttle Table                      |
+|         0       510                      |   Throttle % / Demanded RPM                               |
+|         5       510                      |      Used when engine is under control of a governor.     |
+|         10      600                      |      The throttle % values must increase with each entry  |
+|         20      700                      |      in the table, but RPM values can increase, decrease, |
+|         50      1000                     |      or stay the same as throttle setting increases.      |
 |         75  1200                |                                    |
 |         100 1250                |                                    |
 |     )                           |                                    |
-|     DieselTorqueTab (           | Diesel engine RPM vs. torque table |
-|         0       0               |    RPM           Force in Newtons  |
-|         510     25000           |                                    |
-|         1250    200000          |                                    |
-|     )                           |                                    |
-|     MinOilPressure ( 40 )       | Min oil pressure PSI               |
-|     MaxOilPressure ( 90 )       | Max oil pressure PSI               |
-|     MaxTemperature ( 120 )      | Maximal temperature Celsius        |
-|     Cooling ( 3 )               | Cooling 0=No cooling, 1=Mechanical,|
+|     DieselTorqueTab (                    | Torque vs. Engine RPM Table                               |
+|         0       0                        |   RPM / Torque in Newton-Meters                           |
+|         510     25000                    |      Used when running with mechanical transmissions.     |
+|         1250    200000                   |      If missing, torque values will be calculated         |
+|     )                                    |      automatically using the DieselPowerTab values.       |
+|     MinOilPressure ( 40 )                | Oil pressure at IdleRPM (default PSI)                     |
+|     MaxOilPressure ( 90 )                | Oil pressure at MaxRPM (default PSI)                      |
+|     Cooling ( 3 )                        | Cooling system behavior 0=No cooling, 1=Mechanical,       |
 |                                 | 2= Hysteresis, 3=Proportional      |
-|     TempTimeConstant ( 720 )    | Rate of temperature change         |
-|     OptTemperature ( 90 )       | Normal temperature Celsius         |
-|     IdleTemperature ( 70 )      | Idle temperature Celsius           |
-|   )                             |                                    |
-|   Diesel ( ... )                | The same as above, or different    |
-+---------------------------------+------------------------------------+
+|     TempTimeConstant ( 720 )             | Time required for engine to heat up (default seconds)     |
+|     MaxTemperature ( 120 )               | Maximum temperature for safe full power (default degC)    |
+|     OptTemperature ( 90 )                | Temperature to enable cooling system (default degC)       |
+|     IdleTemperature ( 70 )               | Minimum temperature for safe full power (default degC)    |
+|   )                                      | End of first diesel engine definition                     |
+|   Diesel (                               | Add as many diesel engines as required, repeating the     |
+|     ...                                  |   parameters listed here for each engine.                 |
+|   )                                      | ...                                                       |
++------------------------------------------+-----------------------------------------------------------+
 
 Diesel Engine Speed Behavior
 ............................
 
-The engine speed is calculated based on the RPM rate of change and its
-rate of change. The usual setting and the corresponding result is shown
-below. ``ChangeUpRPMpS`` means the slope of RPM, ``RateOfChangeUpRPMpSS``
-means how fast the RPM approaches the demanded RPM.
+The engine speed (RPM) is calculated based on the demanded RPM,
+set by ``ThrottleRPMTab`` for engines using governors, or
+set by wheel speed for engines uing mechanical transmissions. To
+achieve this demanded RPM, the current RPM is adjusted following
+the rate of change, either ``ChangeUpRPMpS`` or ``ChangeDownRPMpS``
+depending if the demanded RPM is, respectively, higher or lower
+than the current RPM. As the current RPM approaches the demanded
+RPM, this change in RPM is further smoothed by the setting of
+``RateOfChangeUpRPMpSS`` or ``RateOfChangeDownRPMpSS`` respectively.
+An example of this behavior is shown below.
 
 .. image:: images/physics-diesel-rpm.png
   :align: center
   :scale: 80%
 
+Larger values lead to faster changes in RPM, thus making the
+engine more responsive and allowing the locomotive to reach
+full power faster. Proper configuration of engine speed is
+vital for giving the expected locomotive operating behavior.
+
+.. index::
+   single: SpeedControl
+
+Types of Governors
+^^^^^^^^^^^^^^^^^^
+
+By default, OpenRails assumes engine speed control is fully
+analog and the engine can maintain any arbitrary speed, including
+speeds in-between the values defined in ``ThrottleRPMTab``. This
+is appropriate for locomotives with penumatic controlled governors,
+but many locomotives use electrically (solenoid) controlled governors.
+Electronic governors can only produce engine speed changes in discrete
+steps, even if the throttle handle is analog.
+
+To better model such an electronic governor, add the
+``SpeedControl ( "RoundDown" )`` parameter to the diesel
+engine definition. With round down speed control, any RPM
+table will round *down* the requested RPM to the next lowest
+value that has been defined, instead of an interpolated result.
+
+This is useful for engines that use the same RPM for multiple throttle
+settings, for example::
+
+    Engine (
+        ORTSDieselEngines ( 1
+            Diesel (
+                ...
+                SpeedControl ( "RoundDown" )
+                ThrottleRPMTab (
+                    0.0     340
+                    12.5    440    
+                    25.0    580    
+                    37.5    880  <- if the throttle were set to 50.0%,
+                    87.5    1000    62.5%, or 75.0% the demanded RPM 
+                    100.0   1050    would "round down" to the 37.5%
+                )                   throttle value of 880 RPM, instead of
+                ...                 an RPM between 880 and 1000 RPM
+            )
+        )
+    )
+
+To round the throttle setting *up* to the next greatest
+value defined, use ``SpeedControl ( "RoundUp" )``,
+while ``SpeedControl ( "RoundNearest" )`` would round up
+or down to whichever defined value is closest. The default
+behavior, as for a penumatic governor, can be achieved with
+``SpeedControl ( "Continuous" )``.
+
+Note that an engine with an electronic governor can still
+run at an RPM other than what has been programmed in the
+governor if the engine is running with a mechanical transmission.
+
+
+.. index::
+   single: DynamicsRPMTab
+   single: ETSThrottleRPMTab
+   single: ETSDynamicsRPMTab
+
+Dynamic Brake and ETS Dependant Engine Speed
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+While controlling engine RPM with the throttle setting is standard
+behavior, many real life engines have additional behaviors to control
+engine RPM as needed by systems other than the throttle. These
+behaviors are optional in OpenRails, but can be applied to engines
+where appropriate.
+
+Dynamic braking generates heat in many parts of the transmission,
+which may rely on engine-driven fans to provide cooling. For this reason,
+many diesel locomotives increase engine speed during dynamic braking
+to provide more cooling air to various components. This can be
+achieved in ORTS diesel engines by adding a ``DynamicsRPMTab``
+to an ORTS diesel engine.
+
+For example, a variant on the so-called "2-speed" dynamic brake
+system can be implemented as follows::
+
+    Engine (
+        ORTSDieselEngines ( 1
+            Diesel (
+                ...
+                SpeedControl ( "RoundDown" ) <- SpeedControl works with DynamicsRPMTab,
+                                                ETSThrottleRPMTab, and ETSDynamicsRPMTab
+                ThrottleRPMTab ( <- values are throttle lever % & engine RPM,
+                    0.0     318     will be overridden by DynamicsRPMTab
+                    25.0    388     if dynamic braking is active
+                    37.5    497 
+                    50.0    570
+                    62.5    636
+                    75.0    726
+                    87.5    829
+                    100.0   904
+                )
+                DynamicsRPMTab ( <- values are dynamic brake lever % & engine RPM,
+                    0.0     318     used when dynamic braking is active
+                    75.0    570  <- because of SpeedControl ( "RoundDown" ) any
+                )                   dynamic brake setting 75% or higher will
+                ...                 demand 570 RPM, otherwise 318 RPM is demanded
+            )
+        )
+    )
+
+
+In this example, the engine RPM increases from the same RPM as 0% throttle
+to the same RPM as 50% throttle as the dynamic brake control increases to 75%,
+instead of simply remaining at the 0% throttle RPM specified by
+``ThrottleRPMTab``. Of course, simpler or more complex arrangements are
+possible too as many older locomotives use a single fixed engine speed for all
+dynamic brake settings, and newer locomotives may use 3 or 4 different engine
+speeds to save fuel in dynamic braking. When the dynamic brake is disabled,
+engine RPM returns to control by the throttle. Note that if a locomotive is not
+equipped with dynamic braking, then ``DynamicsRPMTab`` will have no effect.
+
+Some passenger locomotives also use diesel engines to provide power
+to the :ref:`electric train supply system <physics-electric-train-supply>`,
+but this usually requires modifying the engine RPM as the standard engine speeds
+are inadequate for producing electric train supply power or would not
+produce the correct AC frequency of power. For this purpose, the
+engine RPM can be overridden using ``ETSThrottleRPMTab``, which behaves
+exactly like ``ThrottleRPMTab`` but is only used when ETS is enabled.
+
+For example, a modern passenger locomotive runs the engine at a higher
+RPM at low throttle settings to allow the engine to produce power for
+the coaches without bogging down::
+
+    Engine (
+        ORTSDieselEngines ( 1
+            Diesel (
+                ...
+                ThrottleRPMTab ( <- values are throttle lever % & engine RPM,
+                    0.0     440     will be overridden by ETSThrottleRPMTab
+                    12.5    440     if ETS is enabled
+                    25.0    580 
+                    37.5    730
+                    50.0    800
+                    62.5    888
+                    75.0    925
+                    87.5    995
+                    100.0   1050
+                )
+                ETSThrottleRPMTab ( <- values are throttle lever % & engine RPM,
+                    0.0     720        overrides ThrottleRPMTab if ETS is enabled
+                    12.5    800 
+                    37.5    800
+                    50.0    888
+                    62.5    995
+                    87.5    995
+                    100.0   1050
+                )
+                ...
+            )
+        )
+    )
+
+This example would keep the engine RPM higher than normal in all
+lower throttle settings, but only when ETS is enabled. If ETS was
+disabled, ``ThrottleRPMTab`` would be used as usual. Older locomotives
+may use a constant RPM with ETS enabled, which can be achieved by
+setting all RPM values in ``ETSThrottleRPMTab`` to the same value.
+
+In dynamic braking with ETS enabled, the 0% throttle ETS RPM would be used
+unless an ``ETSDynamicsRPMTab`` has been specified. Like ``DynamicsRPMTab``,
+this table specifies engine RPM vs. dynamic brake setting %, but is only
+used when ETS is enabled.
+
+Expanding off the previous example, this locomotive normally employs
+"3-speed" dynamic braking, but with ETS enabled the engine must
+maintain a higher RPM constantly, so the system becomes "1-speed"::
+
+    Engine (
+        ORTSDieselEngines ( 1
+            Diesel (
+                ...
+                DynamicsRPMTab ( <- values are dynamic brake lever % & engine RPM,
+                    0.0     440     will be overridden by ETSDynamicsRPMTab if
+                    45.0    440     ETS is enabled
+                    46.0    580 
+                    70.0    580
+                    71.0    720
+                    100.0   720
+                )
+                ETSDynamicsRPMTab ( <- values are dynamic brake lever % & engine RPM,
+                    0.0     720        overrides DynamicsRPMTab if ETS is enabled
+                    100.0   720 
+                )
+                ...
+            )
+        )
+    )
+
+Note that in this case, because the RPM in dynamic braking is identical
+to the RPM for 0% throttle specified in ``ETSThrottleRPMTab``, the behavior
+is the same whether or not ``ETSDynamicsRPMTab`` has been defined.
+
 Fuel Consumption
 ................
 
-Following the MSTS model, ORTS computes the diesel engine fuel consumption
-based on .eng file parameters. The fuel flow and level are indicated by
-the HUD view. Final fuel consumption is adjusted according to the current
-diesel power output (load).
+The fuel consumption defined by ``DieselConsumptionTab`` defines the
+fuel consumption when running at the power specified in ``DieselPowerTab``
+for the specified RPM. However, if the engine is producing more than
+this power (which may be possible when operating with a mechanical
+transmission and ``DieselTorqueTab`` is used) the fuel consumption
+will be higher. Or, if the power output is lower (such as with the
+reverser in neutral), the fuel consumption will be lower than specified.
+The auxiliary loads specified by ``AuxiliaryPowerTab`` and engine
+friction (calculated automatically) will always consume some fuel, even
+if no tractive effort is produced.
+
+Additionally, increasing the engine speed requires additional fuel,
+with larger values of ``ShaftInertia`` and ``ChangeUpRPMpS``
+requiring more fuel to increase speed. Conversely, reducing engine
+speed will lead to less fuel consumption, with larger values of
+``ShaftInertia`` and ``ChangeDownRPMpS`` leading to larger reductions
+in fuel consumption. The mass moment of inertia of an engine can
+be incredibly difficult to estimate and usually isn't given in
+engine specifications, so if ``ShaftInertia`` is missing, it will be
+estimated, and the estimated value reported in the log file if the
+:ref:`verbose eng/wag configuration messages option <verbose-configuration-messages>`
+is enabled. This estimate can be used as a starting point to fine-tune
+the transient behavior of the engine.
+
+The ``IdleDieselConsumption`` parameter should be used to specify the
+idle fuel consumption separately from ``DieselConsumptionTab`` to
+help OpenRails estimate fuel consumption at low engine load (ie: working
+against auxiliary loads and friction only). While ``DieselConsumptionTab``
+should specify the fuel use when running at full load (as specified
+by ``DieselPowerTab``), ``IdleDieselConsumption`` should be the
+fuel used per hour at ``IdleRPM`` when working against the auxiliary
+power and friction only.
+
+Proper setting of fuel consumption helps the diesel engine model
+behave more accurately, and better informs players of the efficiency
+of their driving style.
 
 Diesel Exhaust
 ..............
 
-The diesel engine exhaust feature can be modified as needed. The main idea
-of this feature is based on the general combustion engine exhaust. When
-operating in a steady state, the color of the exhaust is given by the new
-ENG parameter ``engine (ORTS (Diesel (ExhaustColor)))``.
+The provided diesel exhaust parameters can be used to fine-tune the
+appearance of exhaust particle emitters to fit the character of the
+engine modeled. The amount, lifespan, and color of particles can be
+adjusted to create a variety of exhaust styles.
 
-The amount of particles emitted is given by a linear interpolation of the
-values of ``engine(ORTS (Diesel (IdleExhaust)))`` and ``engine(ORTS (Diesel
-(MaxExhaust)))`` in the range from 1 to 50. In a transient state, the
-amount of the fuel increases but the combustion is not optimal. Thus, the
-quantity of particles is temporarily higher: e.g. multiplied by the value
-of
+When the engine is at ``IdleRPM``, ``IdleExhaust`` determines the
+number of exhaust particles emitted per second and ``IdleExhaustMagnitude``
+determines how long these particles stay on screen. At ``MaxRPM``,
+the ``MaxExhaust`` and ``MaxExhaustMagnitude`` parameters do the
+same thing, but preferably are set to higher values to replicate
+the larger amount of exhaust emitted at higher RPMs. Between
+``IdleRPM`` and ``MaxRPM``, these values are interpolated to
+provide a smooth transition in the amount of exhaust emitted.
 
-``engine(ORTS (Diesel (ExhaustDynamics)))`` and displayed with the color
-given by ``engine(ORTS(Diesel(ExhaustTransientColor)))``.
+Other exhaust parameters are sensitive to the rate of change of engine
+RPM, rather than the exact value of engine RPM. At a constant engine
+speed, the color of exhaust particles is set by ``ExhaustColor``.
 
-The format of the *color* value is (aarrggbb) where:
+When engine RPM increases, this requires a substantial increase
+in fuel injection, and thus leads to more visible exhaust due to richer
+air-fuel ratio. ``ExhaustDynamics`` multiplies the number of
+exhaust particles per second by the given value to represent
+the extra exhaust emitted, as long as the entered value
+is greater than 1. ``ExhaustTransientColor`` sets the color
+of the exhaust when engine RPM increases, which should traditionally
+be a darker color than ``ExhaustColor``.
 
-- aa = intensity of light;
+Conversely, when engine RPM is decreasing much less fuel injection
+is needed, which should lead to much cleaner exhaust. ``ExhaustDynamicsDown``
+multiplies the number of exhaust particles per second by the given value,
+which should be between 0 and 1, to reduce the number of exhaust particles.
+And ``ExhaustDecelColor`` is used to set the exhaust color in this situation.
+A lighter or more transparent color should be used in this situation
+to represent the reduced fuel burn.
+
+When entering a color parameter, the format of the *color* value is
+( aarrggbb ) where:
+
+- aa = opacity of the color (lower is more transparent);
 - rr = red color component;
 - gg = green color component;
 - bb = blue color component;
 
 and each component is in HEX number format (00 to ff).
 
-Cooling System
-..............
+Cooling and Lubricating System
+..............................
 
 ORTS introduces a simple cooling and oil system within the diesel engine
-model. The engine temperature is based on the output power and the cooling
-system output. A maximum value of 100\ |deg|\ C can be reached with no impact on
-performance. It is just an indicator, but the impact on the engine's
+model.
+
+The engine temperature is based on fuel use, cooling system
+performance, and the ambient temperature. The type of cooling system
+defined by the ``Cooling`` parameter changes exactly how the system behaves,
+but the overall performance of the cooling system is determined using
+``TempTimeConstant``, ``IdleTemperature``, ``OptTemperature``, and
+``MaxTemperature``. Larger values of ``TempTimeConstant`` make the engine
+take longer to change temperature, emulating an engine with lower heat
+generation or with a larger coolant capacity. ``IdleTemperature`` influences
+the minimum amount of cooling when the engine is idling on a cold day, with
+larger values producing less effective cooling. ``MaxTemperature`` conversely
+determines the maximum amount of cooling with the engine running at full power
+on a hot summer day. A higher max temperature indicates a less effective cooling
+system. The hysteresis (``Cooling ( 2 )``) and proportional (``Cooling ( 3 )``)
+cooling systems are not always active; for these cooling systems, cooling is
+only applied when above the ``OptTemperature``. The hysteresis system applies
+maximum cooling immediately, while the proportional system gradually changes
+the amount of cooling, representing systems with multiple fans or variable speed
+fans.
+
+The resulting engine temperature is just an indicator with no impact on
+the actual behavior of the engine, but the impact on the engine's
 performance will be implemented later. The oil pressure feature is
-simplified and the value is proportional to the RPM. There will be further
-improvements of the system later.
+simplified and the value is proportional to the RPM, where ``MinOilPressure``
+gives the oil pressure at idle RPM and ``MaxOilPressure`` is the oil pressure
+at max RPM. There will be further improvements to the system later.
 
 Diesel-Electric Locomotives
 '''''''''''''''''''''''''''
@@ -781,6 +1101,7 @@ diesel engine rated power.
 .. index::
    single: ORTSTractionCharacteristics
    single: ORTSMaxTractiveForceCurves
+   single: ORTSTransmissionEfficiency
    single: MaxForce
    single: MaxPower
    single: MaxVelocity
@@ -789,8 +1110,13 @@ diesel engine rated power.
 
 In ORTS, the diesel-electric locomotive can use
 ``ORTSTractionCharacteristics`` or tables of ``ORTSMaxTractiveForceCurves``
-to provide a better approximation to real world performance. If a table is
-not used, the tractive force is limited by MaxForce, MaxPower and
+to provide a better approximation to real world performance.
+``ORTSTransmissionEfficiency`` can also be added to consider the
+efficiency of all transmission components between the engine and
+wheels (generator, cabling, motors, gearboxes, etc.) and increase the
+power required by the diesel engine accordingly. Efficiency should be
+entered as a number between 0 and 1, like ``ORTSTransmissionEfficiency ( 0.91 )``
+If a table is not used, the tractive force is limited by MaxForce, MaxPower and
 MaxVelocity. The throttle setting is passed to the ThrottleRPMTab, where
 the RPM demand is selected. The output force increases with the Throttle
 setting, but the power follows maximal output power available (RPM
@@ -802,7 +1128,9 @@ Diesel-Hydraulic Locomotives
 Diesel-hydraulic locomotives are not implemented in ORTS. However, by
 using either ``ORTSTractionCharacteristics`` or ``ORTSMaxTractiveForceCurves``
 tables, the desired performance can be achieved, when no gearbox is in use
-and the ``DieselEngineType`` is *electric*.
+and the ``DieselEngineType`` is *electric*. ``ORTSTransmissionEfficiency``
+is also applicable here to consider the efficiency of the torque converters
+and gearboxes between the engine and the wheels.
 
 Diesel-Mechanical Locomotives
 '''''''''''''''''''''''''''''
@@ -874,16 +1202,16 @@ rpm and maximum power . As an example, the values for a typical British Railways
 
 ``GearBoxMaxSpeedForGears( 15.3 27 41 65.5 )`` - The default values are in mph, although other units can be entered. 
 In the above case the maximum permitted speed of the train is 70 mph; a small amount of ‘overspeed’ being allowed
- in top gear. The fourth gear speed of 65.5 mph corresponds to the maximum engine rpm set in the eng file by 
- ``DieselEngineMaxRPM``. The diesel engine may continue to ‘runaway’ above its normal ‘maximum speed’ until it 
- reaches the maximum governed speed or ‘redline’ speed at which the engine governor will cut off the fuel 
- supply until the engine speed is reduced. This speed can be set in basic Open Rails eng files using ``ORTSDieselEngineGovenorRpM``. 
- In the case of the above train, then these would be
+in top gear. The fourth gear speed of 65.5 mph corresponds to the maximum engine rpm set in the eng file by 
+``DieselEngineMaxRPM``. The diesel engine may continue to ‘runaway’ above its normal ‘maximum speed’ until it 
+reaches the maximum governed speed or ‘redline’ speed at which the engine governor will cut off the fuel 
+supply until the engine speed is reduced. This speed can be set in basic Open Rails eng files using ``ORTSDieselEngineGovernorRpM``. 
+In the case of the above train, then these would be
 
 DieselEngineMaxRPM( 1800 )
-ORTSDieselEngineGovenorRpM ( 2000 )
+ORTSDieselEngineGovernorRpM ( 2000 )
 
-If under any circumstances the engine reaches ``ORTSDieselEngineGovenorRpM`` then the diesel engine will automatically be shut down.
+If under any circumstances the engine reaches ``ORTSDieselEngineGovernorRpM`` then the diesel engine will automatically be shut down.
 
 ``ORTSGearBoxTractiveForceAtSpeed`` - The tractive force available in each gear at the speed indicated in GearBoxMaxSpeedForGears. Units 
 by default are in N, however lbf, N or kN. Published values for tractive effort of geared locomotives and multiple units 
@@ -893,6 +1221,10 @@ are generally those at the maximum speed for each gear.
 gear selector to display gears in the correct order for this type of gearbox arrangement. If using this parameter, note in the 
 above example that ``GearBoxMaxSpeedForGears`` and ``ORTSGearBoxTractiveForceatSpeed`` need to list the gears in the order 4-3-2-1 
 rather than in ascending order.
+
+And, as with the other transmission types, ``ORTSTransmissionEfficiency`` can be entered in the
+Engine section to simulate the power lost in the clutch and gearbox, increasing the power
+demand on the engine to compensate.
 
 Hence a typical gear configuration for a diesel mechanic locomotive might look like the following:
 
