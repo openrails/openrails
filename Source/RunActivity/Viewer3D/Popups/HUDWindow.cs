@@ -68,7 +68,6 @@ namespace Orts.Viewer3D.Popups
         HUDGraphSet LocomotiveGraphs;
         HUDGraphMesh LocomotiveGraphsThrottle;
         HUDGraphMesh LocomotiveGraphsInputPower;
-        HUDGraphMesh LocomotiveGraphsAuxiliaryPower;
         HUDGraphMesh LocomotiveGraphsOutputPower;
 
         HUDGraphSet DebugGraphs;
@@ -110,7 +109,6 @@ namespace Orts.Viewer3D.Popups
             LocomotiveGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             LocomotiveGraphsThrottle = LocomotiveGraphs.Add(Viewer.Catalog.GetString("Throttle"), "0", "100%", Color.Blue, 50);
             LocomotiveGraphsInputPower = LocomotiveGraphs.Add(Viewer.Catalog.GetString("Power In/Out"), "0", "100%", Color.Yellow, 50);
-            LocomotiveGraphsAuxiliaryPower = LocomotiveGraphs.AddOverlapped(Color.Orange, 50);
             LocomotiveGraphsOutputPower = LocomotiveGraphs.AddOverlapped(Color.Green, 50);
 
             ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
@@ -213,20 +211,22 @@ namespace Orts.Viewer3D.Popups
             if (Visible && TextPages[TextPage] == TextPageLocomotiveInfo)
             {
                 var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
+                var locoD = Viewer.PlayerLocomotive as MSTSDieselLocomotive;
+                var locoE = Viewer.PlayerLocomotive as MSTSElectricLocomotive;
+                var locoS = Viewer.PlayerLocomotive as MSTSSteamLocomotive;
                 LocomotiveGraphsThrottle.AddSample(loco.ThrottlePercent * 0.01f);
-                if (loco is MSTSDieselLocomotive locoD)
+                if (locoD != null)
                 {
                         LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
-                    LocomotiveGraphsAuxiliaryPower.AddSample(locoD.DieselEngines.OutputPowerW / locoD.DieselEngines.MaxPowerW);
-                    LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.TractionPowerW / locoD.DieselEngines.MaxPowerW);
+                        LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
                 }
-                if (loco is MSTSElectricLocomotive)
+                if (locoE != null)
                 {
                     LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
                     LocomotiveGraphsOutputPower.AddSample(Math.Abs(loco.LocomotiveAxles.AxleMotivePowerW) / loco.MaxPowerW);
                 }
                 //TODO: plot correct values
-                if (loco is MSTSSteamLocomotive)
+                if (locoS != null)
                 {
                     LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
                     LocomotiveGraphsOutputPower.AddSample(Math.Abs(loco.LocomotiveAxles.AxleMotivePowerW) / loco.MaxPowerW);

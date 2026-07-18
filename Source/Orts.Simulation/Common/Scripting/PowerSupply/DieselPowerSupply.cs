@@ -51,7 +51,6 @@ namespace ORTS.Scripting.Api
             }
         }
         protected float DieselEngineOutputPowerW => DieselEngines.MaxOutputPowerW;
-        protected float DieselEngineAvailablePowerW => DieselEngines.AvailablePowerW;
 
         public float DieselEngineMinRpmForElectricTrainSupply => DpsHost.DieselEngineMinRpmForElectricTrainSupply;
 

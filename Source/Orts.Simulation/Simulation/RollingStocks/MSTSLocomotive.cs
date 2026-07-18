@@ -140,8 +140,6 @@ namespace Orts.Simulation.RollingStocks
         public bool DynamicBrake;
         public float MaxPowerW;
         public float MaxForceN;
-        public float RunUpTimeToMaxForceS = -1;
-        public float TransmissionEfficiency = 1.0f;
         public float AbsTractionSpeedMpS;
         public float PrevAbsTractionSpeedMpS;
         public float MaxCurrentA = 0;
@@ -615,38 +613,6 @@ namespace Orts.Simulation.RollingStocks
                 InitialDrvWheelWeightKg = MassKG; // // set Initial Drive wheel weight as well, as it is used as a reference
             }
 
-            if (TractionForceRampDownToZeroNpS < 0) TractionForceRampDownToZeroNpS = TractionForceRampDownNpS;
-            if (TractionPowerRampDownToZeroWpS < 0) TractionPowerRampDownToZeroWpS = TractionPowerRampDownWpS;
-            if (DynamicBrakeForceRampDownToZeroNpS < 0) DynamicBrakeForceRampDownToZeroNpS = DynamicBrakeForceRampDownNpS;
-            if (DynamicBrakePowerRampDownToZeroWpS < 0) DynamicBrakePowerRampDownToZeroWpS = DynamicBrakePowerRampDownWpS;
-
-            // Estimate tractive and braking ramp rates if none were given
-            if (RunUpTimeToMaxForceS < 0 && this is MSTSDieselLocomotive)
-            {
-                if (this is MSTSDieselLocomotive)
-                    RunUpTimeToMaxForceS = 10.0f; // Use 10 second ramp up as default for diesels
-                else
-                    RunUpTimeToMaxForceS = 5.0f; // Use 5 second ramp up as default for electrics
-            }
-
-            // Estimate that ramp up takes as long as specified in "RunUpTimeToMaxForce"
-            // Half as long to ramp down
-            // And 1/10th as long to ramp down to zero
-            if (MaxForceN > 0 && RunUpTimeToMaxForceS > 0 &&
-                TractionForceRampUpNpS <= 0 && TractionForceRampDownNpS <= 0 && TractionForceRampDownToZeroNpS <= 0)
-            {
-                TractionForceRampUpNpS = MaxForceN / RunUpTimeToMaxForceS;
-                TractionForceRampDownNpS = 2.0f * TractionForceRampUpNpS;
-                TractionForceRampDownToZeroNpS = 10.0f * TractionForceRampUpNpS;
-            }
-            if (MaxDynamicBrakeForceN > 0 && RunUpTimeToMaxForceS > 0 &&
-                DynamicBrakeForceRampUpNpS <= 0 && DynamicBrakeForceRampDownNpS <= 0 && DynamicBrakeForceRampDownToZeroNpS <= 0)
-            {
-                DynamicBrakeForceRampUpNpS = MaxDynamicBrakeForceN / RunUpTimeToMaxForceS;
-                DynamicBrakeForceRampDownNpS = 2.0f * DynamicBrakeForceRampUpNpS;
-                DynamicBrakeForceRampDownToZeroNpS = 10.0f * DynamicBrakeForceRampUpNpS;
-            }
-
             CorrectBrakingParams();
             CheckCoherence();
             GetPressureUnit();
@@ -970,22 +936,12 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(cabview": CVFFileName = stf.ReadStringBlock(null); break;
                 case "engine(maxpower": MaxPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(maxforce": MaxForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(runuptimetomaxforce": RunUpTimeToMaxForceS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(maxcurrent": MaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(maxcontinuousforce": MaxContinuousForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(ortsspeedofmaxcontinuousforce": SpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(dieselenginespeedofmaxtractiveeffort": MSTSSpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(ortsunloadingspeed": UnloadingSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                case "engine(ortstransmissionefficiency":
-                    TransmissionEfficiency = stf.ReadFloatBlock(STFReader.UNITS.None, null);
-                    if (TransmissionEfficiency > 1.0f || TransmissionEfficiency < 0.001f)
-                    {
-                        // TransmissionEfficiency cannot be 0 to avoid some divide by 0 errors
-                        STFException.TraceWarning(stf, "Invalid ORTSTransmissionEfficiency " + TransmissionEfficiency + ", defaulting to 1.0");
-                        TransmissionEfficiency = 1.0f;
-                    }
-                    break;
                 case "engine(ortsslipcontrolsystem":
                     stf.MustMatch("(");
                     string slipControlType = stf.ReadString();
@@ -1297,8 +1253,6 @@ namespace Orts.Simulation.RollingStocks
             CabView3D = locoCopy.CabView3D;
             MaxPowerW = locoCopy.MaxPowerW;
             MaxForceN = locoCopy.MaxForceN;
-            RunUpTimeToMaxForceS = locoCopy.RunUpTimeToMaxForceS;
-            TransmissionEfficiency = locoCopy.TransmissionEfficiency;
             MaxCurrentA = locoCopy.MaxCurrentA;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
             UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
@@ -1678,6 +1632,11 @@ namespace Orts.Simulation.RollingStocks
             {
                 mpc.Initialize();
             }
+
+            if (TractionForceRampDownToZeroNpS < 0) TractionForceRampDownToZeroNpS = TractionForceRampDownNpS;
+            if (TractionPowerRampDownToZeroWpS < 0) TractionPowerRampDownToZeroWpS = TractionPowerRampDownWpS;
+            if (DynamicBrakeForceRampDownToZeroNpS < 0) DynamicBrakeForceRampDownToZeroNpS = DynamicBrakeForceRampDownNpS;
+            if (DynamicBrakePowerRampDownToZeroWpS < 0) DynamicBrakePowerRampDownToZeroWpS = DynamicBrakePowerRampDownWpS;
 
             if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
             {
@@ -2677,18 +2636,6 @@ namespace Orts.Simulation.RollingStocks
                     forceN = 0;
             }
             if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
-
-            // Dynamically evolving tractive force:
-            // Reduce max allowed tractive effort to continuous tractive effort after sustained high force output
-            if (MaxForceN > 0 && MaxContinuousForceN > 0 && MaxForceN != MaxContinuousForceN)
-            {
-                // Go from regular tractive effort limit at 75% average force, limit to continuous force at 100% average force
-                float heatFactor = MathHelper.Clamp((AverageForceN - 0.75f * MaxContinuousForceN) / ((1 - 0.75f) * MaxContinuousForceN), 0.0f, 1.0f);
-                float heatLimitedForce = MaxForceN * (1 - ((MaxForceN - MaxContinuousForceN) / MaxForceN) * heatFactor);
-                if (forceN > heatLimitedForce)
-                    forceN = heatLimitedForce;
-            }
-
             return forceN;
         }
         protected virtual void UpdateTractionForce(float elapsedClockSeconds)
@@ -2698,6 +2645,8 @@ namespace Orts.Simulation.RollingStocks
             // Ensure that throttle never exceeds the limits imposed by other subsystems
             float maxthrottle = MaxThrottlePercent / 100;
             if (DynamicBrake) maxthrottle = 0;
+            // For diesel locomotives, also take into account the throttle setting associated to the current engine RPM
+            if (IsPlayerTrain && this is MSTSDieselLocomotive diesel && !diesel.TractiveForcePowerLimited) maxthrottle = Math.Min(maxthrottle, diesel.DieselEngines.ApparentThrottleSetting / 100.0f);
             if (t > maxthrottle) t = maxthrottle;
             t = MathHelper.Clamp(t, 0, 1);
 
@@ -2715,7 +2664,7 @@ namespace Orts.Simulation.RollingStocks
                 // Ensure that power consumption never exceeds the power that is available for traction at the moment
                 if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
                 {
-                    float maxPowerW = supply.AvailableTractionPowerW * TransmissionEfficiency;
+                    float maxPowerW = supply.AvailableTractionPowerW;
                     if (maxForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
                 }
                 UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS, TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);
@@ -2724,14 +2673,15 @@ namespace Orts.Simulation.RollingStocks
             {
                 TractionForceN = 0f;
             }
-
-            // Dynamically evolving tractive force:
-            // Determine long-term average traction force as an estimate of motor/transmission heat
+            if (MaxForceN > 0 && MaxContinuousForceN > 0 && PowerReduction < 1)
+            {
+                TractionForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN * (1 - PowerReduction);
                 float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
                 if (w < 0)
                     w = 0;
                 AverageForceN = w * AverageForceN + (1 - w) * TractionForceN;
             }
+        }
         public float GetAvailableDynamicBrakeForceN(float d)
         {
             float forceN = 0;
@@ -5846,7 +5796,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         var mstsDieselLocomotive = this as MSTSDieselLocomotive;
                         if (mstsDieselLocomotive.DieselEngines[0] != null)
-                            data = mstsDieselLocomotive.DieselEngines[0].TemperatureDegC;
+                            data = mstsDieselLocomotive.DieselEngines[0].DieselTemperatureDeg;
                         break;
                     }
 

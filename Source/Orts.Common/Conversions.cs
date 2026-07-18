@@ -454,29 +454,6 @@ namespace ORTS.Common
         public static float FrompH(float revPerHour) { return revPerHour * (1.0f / 3600f); }
         /// <summary>Convert from per Second to per Hour</summary>
         public static float TopH(float revPerSecond) { return revPerSecond * 3600f; }
-        /// <summary>Convert from (Rotations) per Second to Radians per Second</summary>
-        public static float ToRadpS(float revPerSecond) { return revPerSecond * 2.0f * (float)Math.PI; }
-        /// <summary>Convert from Radians per Second to (Rotations) per Second</summary>
-        public static float FromRadpS(float radPerSecond) { return radPerSecond * (1.0f / (2.0f * (float)Math.PI)); }
-    }
-
-    /// <summary>
-    /// Frequency conversions from and to RPM (1/60th Hz)
-    /// </summary>
-    public static class RPM
-    {
-        /// <summary>Convert from Rotations per Second to per Minute</summary>
-        public static float FrompS(float revPerSecond) { return revPerSecond * 60f; }
-        /// <summary>Convert from Rotations per Minute to per Second</summary>
-        public static float TopS(float revPerMinute) { return revPerMinute * (1.0f / 60f); }
-        /// <summary>Convert from Rotations per Hour to per Minute</summary>
-        public static float FrompH(float revPerHour) { return revPerHour * (1.0f / 60f); }
-        /// <summary>Convert from Rotations per Minute to per Hour</summary>
-        public static float TopH(float revPerMinute) { return revPerMinute * 60f; }
-        /// <summary>Convert from Rotations per Minute to Radians per Second</summary>
-        public static float ToRadpS(float revPerMinute) { return revPerMinute * (2.0f * (float)Math.PI / 60f); }
-        /// <summary>Convert from Radians per Second to Rotations per Minute</summary>
-        public static float FromRadpS(float radPerSecond) { return radPerSecond * (60f / (2.0f * (float)Math.PI)); }
     }
 
     /// <summary>

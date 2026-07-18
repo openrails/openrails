@@ -584,8 +584,8 @@ public Gear NextGear
                                 tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
                                 if (CurrentSpeedMpS > 0)
                                 {
-                                    if (tractiveForceN > (DieselEngine.AvailablePowerW / CurrentSpeedMpS))
-                                        tractiveForceN = DieselEngine.AvailablePowerW / CurrentSpeedMpS;
+                                    if (tractiveForceN > (DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS))
+                                        tractiveForceN = DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS;
                                 }
                                 return tractiveForceN;
                             }
@@ -605,7 +605,20 @@ public Gear NextGear
                                 dieselRpM = DieselEngine.RealRPM;
                             }
 
-                            throttleFraction = DieselEngine.DemandedThrottlePercent * 0.01f;
+                            throttleFraction = 0;
+
+                            if (DieselEngine.ApparentThrottleSetting < DieselEngine.DemandedThrottlePercent)
+                            {
+                                // Use apparent throttle when accelerating so that time delays in rpm rise and fall are used, but use demanded throttle at other times
+                                //  throttleFraction = DieselEngine.ApparentThrottleSetting * 0.01f; // Convert from percentage to fraction, use the apparent throttle as this includes some delay for rpm increase
+
+                                throttleFraction = DieselEngine.DemandedThrottlePercent * 0.01f;
+
+                            }
+                            else // As apparent throttle is related to current rpm, limit throttle to the actual demanded throttle. 
+                            {
+                                throttleFraction = DieselEngine.DemandedThrottlePercent * 0.01f;
+                            }
 
                             // Limit tractive force if engine is governed, ie speed cannot exceed the governed speed or the throttled speed
                             // Diesel mechanical transmission are not "governed" at all engine speed settings, rather only at Idle and Max RpM. 
@@ -645,9 +658,7 @@ public Gear NextGear
 
                             if (CurrentSpeedMpS > 0)
                             {
-                                var tractiveEffortLimitN = (DieselEngine.DieselPowerTab[DieselEngine.RealRPM] *
-                                    CurrentGear.TractiveForceatMaxSpeedN * CurrentGear.MaxSpeedMpS /
-                                    (DieselEngine.DieselTorqueTab[DieselEngine.MaxRPM] * RPM.ToRadpS(DieselEngine.MaxRPM))) / CurrentSpeedMpS;
+                                var tractiveEffortLimitN = (DieselEngine.DieselPowerTab[DieselEngine.RealRPM] * (DieselEngine.LoadPercent / 100f)) / CurrentSpeedMpS;
 
                                 if (tractiveForceN > tractiveEffortLimitN )
                                 {
@@ -709,8 +720,8 @@ public Gear NextGear
                             float tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
                             if (CurrentSpeedMpS > 0)
                             {
-                                if (tractiveForceN > (DieselEngine.AvailablePowerW / CurrentSpeedMpS))
-                                    tractiveForceN = DieselEngine.AvailablePowerW / CurrentSpeedMpS;
+                                if (tractiveForceN > (DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS))
+                                    tractiveForceN = DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS;
                             }
                             return tractiveForceN;
                         }

@@ -45,6 +45,7 @@ using System.IO;
 using System.Text;
 using Event = Orts.Common.Event;
 using ORTS.Scripting.Api;
+using System.Linq;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 
 namespace Orts.Simulation.RollingStocks
@@ -66,7 +67,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxRPMChangeRate;
         public float PercentChangePerSec = .2f;
         public float InitialExhaust;
-        public float InitialMagnitude = 1.5f;
+        public float InitialMagnitude;
         public float MaxExhaust = 2.8f;
         public float MaxMagnitude = 1.5f;
         public float EngineRPMderivation;
@@ -102,7 +103,7 @@ namespace Orts.Simulation.RollingStocks
         public float DieselMinOilPressurePSI;
         public float DieselMaxOilPressurePSI;
         public float DieselTemperatureDeg = 40f;
-        public float DieselMaxTemperatureDegC;
+        public float DieselMaxTemperatureDeg;
         public DieselEngine.Cooling DieselEngineCooling = DieselEngine.Cooling.Proportional;
 
         public enum DieselTransmissionTypes
@@ -209,7 +210,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dieselusedperhouratidle": DieselUsedPerHourAtIdleL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(maxoilpressure": DieselMaxOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 120f); break;
                 case "engine(ortsminoilpressure": DieselMinOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 40f); break;
-                case "engine(maxtemperature": DieselMaxTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, 0); break;
+                case "engine(maxtemperature": DieselMaxTemperatureDeg = stf.ReadFloatBlock(STFReader.UNITS.Temperature, 0); break;
                 case "engine(ortsdieselcooling": DieselEngineCooling = (DieselEngine.Cooling)stf.ReadInt((int)DieselEngine.Cooling.Proportional); break;
                 default:
                     base.Parse(lowercasetoken, stf); break;
@@ -233,7 +234,7 @@ namespace Orts.Simulation.RollingStocks
 
             NormalizeParams();
 
-            // Check to see if Speed of Max Tractive Force has been set - use ORTS value as first priority, if not use MSTS, last resort use an arbitrary value.
+            // Check to see if Speed of Max Tractive Force has been set - use ORTS value as first priority, if not use MSTS, last resort use an arbitary value.
             if (SpeedOfMaxContinuousForceMpS == 0)
             {
                 if (MSTSSpeedOfMaxContinuousForceMpS != 0)
@@ -254,21 +255,30 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    SpeedOfMaxContinuousForceMpS = 10.0f; // If not defined then set at an arbitrary value of 22mph
+                    SpeedOfMaxContinuousForceMpS = 10.0f; // If not defined then set at an "arbitary" value of 22mph
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Speed Of Max Continuous Force: set to arbitrary value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+                        Trace.TraceInformation("Speed Of Max Continuous Force: set to 'arbitary' value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
 
                 }
             }
 
             // Create a diesel engine block if none exits, typically for a MSTS or BASIC configuration
             if (DieselEngines.Count == 0)
+            {
                 DieselEngines.Add(new DieselEngine(this));
 
-            // Complete set-up of diesel engines
-            DieselEngines.EstablishParameters();
-            DieselEngines.Initialize();
+                DieselEngines[0].InitFromMSTS();
+                DieselEngines[0].Initialize();
+            }
+
+
+            // Check initialization of power values for diesel engines
+            for (int i = 0; i < DieselEngines.Count; i++)
+            {
+                DieselEngines[i].InitDieselRailPowers(this);
+
+            }
 
             InitialMassKg = MassKG;
 
@@ -277,6 +287,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (MaxPowerW != 0)
                 {
+
                     LocomotiveMaxRailOutputPowerW = MaxPowerW;  // Set to default power value
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
@@ -286,40 +297,29 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    LocomotiveMaxRailOutputPowerW = 2500000.0f; // If no default value then set to arbitrary value
+                    LocomotiveMaxRailOutputPowerW = 2500000.0f; // If no default value then set to arbitary value
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                     {
-                        Trace.TraceInformation("MaxRailOutputPower (BASIC Config): set at arbitrary value = {0}", FormatStrings.FormatPower(LocomotiveMaxRailOutputPowerW, IsMetric, false, false));
+                        Trace.TraceInformation("MaxRailOutputPower (BASIC Config): set at arbitary value = {0}", FormatStrings.FormatPower(LocomotiveMaxRailOutputPowerW, IsMetric, false, false));
                     }
                 }
 
+
                 if (MaximumDieselEnginePowerW == 0)
                 {
-                    // Sum up the maximum power of all diesel engines
-                    float enginePowerW = DieselEngines.MaxPowerW;
+                    MaximumDieselEnginePowerW = LocomotiveMaxRailOutputPowerW;  // If no value set in ENG file, then set the Prime Mover power to same as RailOutputPower (typically the MaxPower value)
 
-                    if (enginePowerW <= 0)
-                    {
-                        // If power still couldn't be determined, then set the Prime Mover power to same as RailOutputPower (typically the MaxPower value)
-                        MaximumDieselEnginePowerW = LocomotiveMaxRailOutputPowerW;
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set the same as MaxRailOutputPower {0} value", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false));
 
-                        if (Simulator.Settings.VerboseConfigurationMessages)
-                            Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set the same as MaxRailOutputPower {0} value", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false));
-                    }
-                    else
-                    {
-                        MaximumDieselEnginePowerW = enginePowerW;
-
-                        if (Simulator.Settings.VerboseConfigurationMessages)
-                            Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set using diesel engine power = {0}", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false));
-                    }
                 }
             }
 
             // Check that maximum force value has been set
             if (MaxForceN == 0)
             {
+
                 if (TractiveForceCurves == null)  // Basic configuration - ie no force and Power tables, etc
                 {
                     float StartingSpeedMpS = 0.1f; // Assumed starting speed for diesel - can't be zero otherwise error will occurr
@@ -357,6 +357,7 @@ namespace Orts.Simulation.RollingStocks
                         Trace.TraceInformation("!!!! Warning: Starting Tractive force {0} is less then Calculated Continuous force {1}, please check !!!!", FormatStrings.FormatForce(MaxForceN, IsMetric), FormatStrings.FormatForce(CalculatedMaxContinuousForceN, IsMetric), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                     }
                 }
+
             }
             else // Advanced configuration - 
             {
@@ -413,23 +414,6 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("===================================================================================================================\n\n");
             }
 
-            // Estimate tractive power ramp rates if none were given, to give reasonable traction response
-            if (LocomotiveMaxRailOutputPowerW > 0 && TractionPowerRampUpWpS <= 0 && TractionPowerRampDownWpS <= 0 && TractionPowerRampDownToZeroWpS <= 0)
-            {
-                // Estimate that ramp up takes as long as engine takes to accelerate
-                // ramp down takes half as long as engine takes to decelerate
-                // And 1/10th as long to ramp down to zero
-                float engineRampUpS = DieselEngines[0].RPMRange / DieselEngines[0].ChangeUpRPMpS;
-                float engineRampDownS = DieselEngines[0].RPMRange / DieselEngines[0].ChangeDownRPMpS;
-
-                TractionPowerRampUpWpS = LocomotiveMaxRailOutputPowerW / engineRampUpS;
-                TractionPowerRampDownWpS = 2.0f * LocomotiveMaxRailOutputPowerW / engineRampDownS;
-                TractionPowerRampDownToZeroWpS = 5.0f * TractionPowerRampDownWpS;
-
-                // Determine if we should set tractive effort to be power limited, to avoid overloading engine
-                if (!TractiveForcePowerLimited && LocomotiveMaxRailOutputPowerW <= MaximumDieselEnginePowerW)
-                    TractiveForcePowerLimited = true;
-            }
         }
 
         /// <summary>
@@ -606,8 +590,8 @@ namespace Orts.Simulation.RollingStocks
             base.Update(elapsedClockSeconds);
 
             // Calculate fuel consumption will occur unless diesel engine is stopped
-            DieselFlowLps = DieselEngines.DieselFlowLpS;
-            partialFuelConsumption += DieselEngines.DieselFlowLpS * elapsedClockSeconds;
+            DieselFlowLps = DieselEngines.DieselFlowLps;
+            partialFuelConsumption += DieselEngines.DieselFlowLps * elapsedClockSeconds;
             if (partialFuelConsumption >= 0.1)
             {
                 DieselLevelL -= partialFuelConsumption;
@@ -616,7 +600,6 @@ namespace Orts.Simulation.RollingStocks
             // stall engine if fuel runs out
             if (DieselLevelL <= 0.0f)
             {
-                DieselLevelL = 0.0f; // Fuel may temporarily go negative
                 SignalEvent(Event.EnginePowerOff);
                 DieselEngines.HandleEvent(PowerSupplyEvent.StopEngine);
             }
@@ -669,19 +652,23 @@ namespace Orts.Simulation.RollingStocks
                 // Note: if this clause is fulfilled, this method is not used to calculate TractiveForceN, it just provides information for other subsystems about theoretical tractive force
                 return base.GetAvailableTractionForceN(t);
             }
-            float forceN;
+            float forceN = 0;
             float powerW = float.MaxValue;
             // If there is more then one diesel engine, and one or more engines is stopped, then the Fraction Power will give a fraction less then 1 depending upon power definitions of engines.
             float DieselEngineFractionPower = 1.0f;
 
             if (DieselEngines.Count > 1)
+            {
                 DieselEngineFractionPower = DieselEngines.RunningPowerFraction;
+            }
 
             DieselEngineFractionPower = MathHelper.Clamp(DieselEngineFractionPower, 0.0f, 1.0f);  // Clamp decay within bounds
 
-            if (!DieselEngines.HasGearBox && DieselPowerSupply.MaximumPowerW > 0)
-                powerW = DieselPowerSupply.AvailableTractionPowerW * TransmissionEfficiency;
 
+            if (!DieselEngines.HasGearBox && DieselPowerSupply.MaximumPowerW > 0)
+            {
+                powerW = DieselPowerSupply.MaximumPowerW * t;
+            }
             // This section calculates the traction force of the locomotive as follows:
             // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 
             // Advanced configuration (TF table) - use a user defined tractive force table
@@ -710,18 +697,6 @@ namespace Orts.Simulation.RollingStocks
                     forceN = 0;
             }
             if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
-
-            // Dynamically evolving tractive force:
-            // Reduce max allowed tractive effort to continuous tractive effort after sustained high force output
-            if (MaxForceN > 0 && MaxContinuousForceN > 0 && MaxForceN != MaxContinuousForceN)
-            {
-                // Go from regular tractive effort limit at 75% average force, limit to continuous force at 100% average force
-                float heatFactor = MathHelper.Clamp((AverageForceN - 0.75f * MaxContinuousForceN) / ((1 - 0.75f) * MaxContinuousForceN), 0.0f, 1.0f);
-                float heatLimitedForce = MaxForceN * (1 - ((MaxForceN - MaxContinuousForceN) / MaxForceN) * heatFactor);
-                if (forceN > heatLimitedForce)
-                    forceN = heatLimitedForce;
-            }
-
             return forceN;
         }
         protected override void UpdateTractionForce(float elapsedClockSeconds)
