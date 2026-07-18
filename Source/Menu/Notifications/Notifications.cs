@@ -72,6 +72,14 @@ namespace Menu.Notifications
     class Refresh : ValueItem
     {
     }
+    /// <summary>
+    /// This item indicates that the notification is missing an item type, and is silently ignored.
+    /// The item allows new types of notification elements to be introduced without breaking older versions of Open Rails.
+    /// Instead of BindToType() returning null and raising an exception, the notification is simply ignored and not displayed.
+    /// </summary>
+    class MissingItem : Item
+    {
+    }
     abstract class ValueItem : Item
     {
         public string Value { get; set; }
