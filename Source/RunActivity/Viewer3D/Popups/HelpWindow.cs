@@ -1226,7 +1226,7 @@ namespace Orts.Viewer3D.Popups
                 {
                     engCount++;
                     numAxles += eng.LocoNumDrvAxles + eng.GetWagonNumAxles();
-                    totPowerW += eng.MaxPowerW;
+                    totPowerW += eng.MaxPowerW / eng.TransmissionEfficiency;
                     totMaxTractiveEffortN += eng.MaxForceN;
                     totMaxContTractiveEffortN += eng.MaxContinuousForceN > 0 ? eng.MaxContinuousForceN : eng.MaxForceN;
                     engMaxContTractiveForceN += eng.MaxContinuousForceN > 0 ? eng.MaxContinuousForceN : eng.MaxForceN;

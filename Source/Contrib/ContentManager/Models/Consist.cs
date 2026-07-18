@@ -92,7 +92,7 @@ namespace ORTS.ContentManager.Models
                             if (engFile.MaxForceN > 25000)  // exclude legacy driving trailers / cab-cars
                             {
                                 EngCount++;
-                                MaxPowerW += engFile.MaxPowerW;
+                                MaxPowerW += engFile.MaxPowerW / engFile.TransmissionEfficiency;
                                 MaxTractiveForceN += engFile.MaxForceN;
                                 MaxContinuousTractiveForceN += engFile.MaxContinuousForceN > 0f ? engFile.MaxContinuousForceN : engFile.MaxForceN;
                                 MaxDynamicBrakeForceN += engFile.MaxDynamicBrakeForceN;
