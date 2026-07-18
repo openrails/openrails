@@ -32,6 +32,7 @@ using ORTS.Updater;
 using static ORTS.Common.SystemInfo;
 using static Menu.Notifications.NotificationPage;
 using Newtonsoft.Json.Serialization;
+using System.Diagnostics;
 
 // Behaviour
 // Notifications are read only once as a background task at start into Notifications.
@@ -250,7 +251,7 @@ namespace Menu.Notifications
                 // Check criteria for each item and add the successful items to the current page
                 foreach (var item in n.ItemList)
                 {
-                    if (AreItemChecksMet(item)) AddItemToPage(Page, item);
+                    if (AreItemChecksMet(item) && !(item is MissingItem)) AddItemToPage(Page, item);
                 }
             }
 
@@ -671,11 +672,24 @@ namespace Menu.Notifications
             {
                 if (assemblyName == "Menu")
                 {
-                    var ns = typeof(Notifications).Namespace;
+                    var @namespace = typeof(Notifications).Namespace;
                     var name = typeName.Split('.').Last();
-                    return typeof(Notifications).Assembly.GetType($"{ns}.{name}");
+                    var result = typeof(Notifications).Assembly.GetType($"{@namespace}.{name}");
+
+                    // Any errors are silenced, so write to the debug output instead.
+                    if (result == null)
+                    {
+                        Debug.WriteLine($"WARNING: {@namespace}.{name} not recognised item type");
+                    }
+
+                    return (result is null)
+                        ? typeof(Notifications).Assembly.GetType("Menu.Notifications.MissingItem")
+                        : typeof(Notifications).Assembly.GetType($"{@namespace}.{name}");
                 }
-                return null;
+                else
+                {
+                    throw new NotImplementedException();
+                }
             }
         }
     }
