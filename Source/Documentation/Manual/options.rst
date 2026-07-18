@@ -628,6 +628,7 @@ By default this is assigned to the backtick key (` )
 
 You can look up this function’s keybinding in-game by using the F1 help screen.
 
+.. _options-data-logger:
 
 Data Logger Options
 ===================
@@ -642,6 +643,12 @@ This file can be used for later analysis.
 A *Logging interval* of 0 (zero) dumps data for each frame (i.e. logs at the frame rate).
 This is intended for analyzing system and graphics performance.
 Larger intervals are better for looking at train performance.
+
+For physics data only, the data logger uses the units configured in the
+:ref:`general options <options-general>`,
+for example km/h for metric and mph for imperial units.
+This conversion can be disabled by checking the box *Use internal units*,
+in which case data is logged in the units used by the software (e.g. m/s).
 
 .. _verbose-configuration-messages:
 
@@ -868,9 +875,12 @@ Multi-gauge routes are not fully supported at the moment.
 Show shape warnings
 -------------------
 
-When this option is selected, when ORTS is loading the shape (.s) files it
-will report errors in syntax and structure (even if these don't cause
-runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop.
+When this option is selected, ORTS will:
+
+- when loading the shape (.s) files,
+  report errors in syntax and structure (even if these don't cause
+  runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop;
+- use high-visible magenta for missing textures (instead of grey).
 
 
 Correct questionable braking parameters

@@ -503,7 +503,8 @@ namespace Orts.Viewer3D.Popups
 
         internal override bool HandleUserInput(WindowMouseEvent e)
         {
-            foreach (var control in controls.Where(c => c.Position.Contains(e.MouseDownPosition)))
+            foreach (var control in controls.Where(c => c.Position.Contains(e.MousePosition)))
+                // mouse pointer within window (for instance the F1 help window)
                 if (control.HandleUserInput(e))
                     return true;
             return base.HandleUserInput(e);

@@ -1538,7 +1538,11 @@ namespace Orts.Viewer3D
             if (UserInput.IsMouseMoved || RenderProcess.IsMouseVisible && UserInput.IsMouseWheelChanged)
                 MouseVisibleTillRealTime = RealTime + 1;
 
-            RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime || !Game.IsActive;
+            // keep mouse pointer visible when mouse pointer is within a window (for instance the F1 help window)
+            Point mousePosition = new Point(UserInput.MouseX, UserInput.MouseY);
+            bool inWindow = WindowManager.VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mousePosition)) != null;
+
+            RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime || !Game.IsActive || inWindow;
 
             UserInput.Handled();
         }

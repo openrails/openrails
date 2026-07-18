@@ -54,11 +54,14 @@ namespace Orts.Viewer3D
         Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
         Dictionary<string, bool> TextureMarks = new Dictionary<string, bool>();
 
+        internal static bool HighlightMissingTextures = false;
+
         [CallOnThread("Render")]
         internal SharedTextureManager(Viewer viewer, GraphicsDevice graphicsDevice)
         {
             Viewer = viewer;
             GraphicsDevice = graphicsDevice;
+            if (Viewer.Settings?.SuppressShapeWarnings == false) HighlightMissingTextures = true;
         }
 
         /// <summary>
@@ -138,7 +141,8 @@ namespace Orts.Viewer3D
         internal static Texture2D GetInternalMissingTexture(GraphicsDevice graphicsDevice)
         {
             var texture = new Texture2D(graphicsDevice, 1, 1);
-            texture.SetData(new[] { Color.Magenta });
+            if (HighlightMissingTextures) texture.SetData(new[] { Color.Magenta });
+            else texture.SetData(new[] { Color.Gray });
             return texture;
         }
 
@@ -444,20 +448,16 @@ namespace Orts.Viewer3D
         public void Mark()
         {
             MaterialMarks.Clear();
-            foreach (var path in Materials.Keys)
-                MaterialMarks.Add(path, false);
+            foreach (var kvp in Materials)
+            {
+                kvp.Value.MarkKey = kvp.Key;
+                MaterialMarks.Add(kvp.Key, false);
+            }
         }
 
         public void Mark(Material material)
         {
-            foreach (var key in Materials.Keys)
-            {
-                if (Materials[key] == material)
-                {
-                    MaterialMarks[key] = true;
-                    break;
-                }
-            }
+            MaterialMarks[material.MarkKey] = true;
         }
 
         public void Sweep()
@@ -579,6 +579,7 @@ namespace Orts.Viewer3D
     {
         public readonly Viewer Viewer;
         public readonly string Key;
+        internal (string, string, int, float, Effect) MarkKey;
 
         protected Material(Viewer viewer, string key)
         {
