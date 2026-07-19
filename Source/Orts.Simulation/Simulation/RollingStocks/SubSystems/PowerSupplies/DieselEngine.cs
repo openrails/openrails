@@ -1093,8 +1093,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             ExhaustSteadyColor.A = 10;
             ExhaustDecelColor.A = 10;
             TemperatureDegC = IdleTemperatureDegC;
-
-            if (GearBoxParams.IsInitialized)
+            // Do not attach a gearbox to engines that do not provide traction
+            if (GearBoxParams.IsInitialized && ProvidesTraction)
             {
                 GearBox = new GearBox(this);
                 GearBox.Initialize();
@@ -1152,24 +1152,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     // links engine rpm and shaft rpm together when clutch is fully engaged
                     if (GearBox.GearBoxOperation == GearBoxOperation.Manual)
                     {
-                        if (GearBox != null)
-                        {
-                            // When clutch is engaged then ERPM = SRPM, engine runs at train speed
-                            if (RealRPM > IdleRPM && GearBox.IsClutchOn)
-                                RealRPM = GearBox.ShaftRPM;
+                        // When clutch is engaged then ERPM = SRPM, engine runs at train speed
+                        if (RealRPM > IdleRPM && GearBox.IsClutchOn)
+                            RealRPM = GearBox.ShaftRPM;
 
-                            // prevent engine from stalling if engine speed falls below idle speed
-                            var scoopActivationRPM = 1.05f * IdleRPM;
-                            if (RealRPM <= IdleRPM && GearBox.ClutchType == TypesClutch.Fluid)
-                            {
-                                RealRPM = IdleRPM;
-                                DemandedRPM = IdleRPM;
-                                GearBox.clutchOn = false;
-                            }
-                            else if (RealRPM <= scoopActivationRPM && GearBox.ClutchType == TypesClutch.Scoop)
-                            {
-                                GearBox.clutchOn = false;
-                            }
+                        // prevent engine from stalling if engine speed falls below idle speed
+                        var scoopActivationRPM = 1.05f * IdleRPM;
+                        if (RealRPM <= IdleRPM && GearBox.ClutchType == TypesClutch.Fluid)
+                        {
+                            RealRPM = IdleRPM;
+                            DemandedRPM = IdleRPM;
+                            GearBox.clutchOn = false;
+                        }
+                        else if (RealRPM <= scoopActivationRPM && GearBox.ClutchType == TypesClutch.Scoop)
+                        {
+                            GearBox.clutchOn = false;
                         }
 
                         // Governor limits engine rpm
@@ -1195,7 +1192,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
 
             // Update power output
-            CurrentMaximumPowerW = MathHelper.Clamp(DieselPowerTab[RealRPM], 0.0f, MaximumDieselPowerW) * (1 - Locomotive.PowerReduction);
+            // Use torque curves when operating in mechanical mode, power curves in govered mode (electric/hydraulic)
+            if (HasGearBox && Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+            {
+                CurrentMaximumPowerW = DieselTorqueTab[RealRPM] * RPM.ToRadpS(RealRPM) * (1 - Locomotive.PowerReduction);
+                // Consider rated power of gearbox
+                if (GearBox.CurrentGear != null)
+                    CurrentMaximumPowerW *= (GearBox.CurrentGear.TractiveForceatMaxSpeedN * GearBox.CurrentGear.MaxSpeedMpS) / (DieselTorqueTab[MaxRPM] * RPM.ToRadpS(MaxRPM));
+                // Clamp power within bounds, this may produce out of bounds values
+                CurrentMaximumPowerW = MathHelper.Clamp(CurrentMaximumPowerW, 0, MaximumDieselPowerW);
+            }
+            else
+            {
+                CurrentMaximumPowerW = MathHelper.Clamp(DieselPowerTab[RealRPM], 0.0f, MaximumDieselPowerW) * (1 - Locomotive.PowerReduction);
+            }
 
             if (ProvidesETS && Locomotive.LocomotivePowerSupply != null)
                 AuxiliaryPowerW = AuxPowerTab[RealRPM] + Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW * ETSPowerProportion;
@@ -1205,27 +1215,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AvailablePowerW = State == DieselEngineState.Running ? CurrentMaximumPowerW - AuxiliaryPowerW : 0.0f;
 
             if (ProvidesTraction)
-                TractionPowerW = Math.Max(Locomotive.TractionForceN * Locomotive.AbsTractionSpeedMpS / Locomotive.TransmissionEfficiency * TractionPowerProportion, 0.0f);
+                TractionPowerW = Math.Max(Locomotive.LocomotiveAxles.DrivePowerW / Locomotive.TransmissionEfficiency * TractionPowerProportion, 0.0f);
             else
                 TractionPowerW = 0.0f;
 
             OutputPowerW = State == DieselEngineState.Running ? TractionPowerW + AuxiliaryPowerW : 0.0f;
 
             OutputPowerW += InertiaKgM2 * RPM.ToRadpS(dRPM) * RPM.ToRadpS(RealRPM); // Power contributed by inertial torque
-
-            // For geared locomotives the engine RPM can be higher then the throttle demanded RPM, and this gives an inflated value of power
-            // so set output power based upon rail power
-            if (HasGearBox && Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
-            {
-                if (GearBox.CurrentGear != null)
-                    CurrentMaximumPowerW = TractionPowerW * DieselTorqueTab[MaxRPM] * RPM.ToRadpS(MaxRPM) / (GearBox.CurrentGear.TractiveForceatMaxSpeedN * GearBox.CurrentGear.MaxSpeedMpS);
-                else
-                    CurrentMaximumPowerW = 0;
-
-                CurrentMaximumPowerW += AuxiliaryPowerW;
-
-                CurrentMaximumPowerW = MathHelper.Clamp(CurrentMaximumPowerW, 0, MaximumDieselPowerW);  // Clamp power within bounds
-            }
 
             if (State == DieselEngineState.Starting)
             {
@@ -1265,11 +1261,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 ExhaustMagnitude = InitialMagnitude * 2;
             }
 
-            if (ExhaustParticles > 100f)
-                ExhaustParticles = 100f;
-
             UpdateCoolingSystem(elapsedClockSeconds);
 
+            // Update the selected gear
             if (GearBox != null)
             {
                 if (Locomotive.IsLeadLocomotive() || Locomotive.Train.HasControlCarWithGear)
@@ -2053,6 +2047,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
 
+            // Set power in locomotive if it wasn't set (might be the case if tractive force curves were used)
+            if (Locomotive.MaxPowerW <= 0)
+                Locomotive.MaxPowerW = MaximumRailOutputPowerW;
+            if (Locomotive.LocomotiveMaxRailOutputPowerW <= 0)
+                Locomotive.LocomotiveMaxRailOutputPowerW = MaximumRailOutputPowerW;
+
             // Set rail power vs RPM from calculated rail powers
             if (RailPowerTab == null)
             {
@@ -2105,7 +2105,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if (AuxPowerTab == null)
             {
                 // Assume auxiliary power is rated engine power minus rail power
-                float maxAuxPower = MaximumDieselPowerW - MaximumRailOutputPowerW;
+                float maxAuxPower = MaximumDieselPowerW - MaximumRailOutputPowerW / Locomotive.TransmissionEfficiency;
 
                 if (maxAuxPower > 0)
                 {
@@ -2114,11 +2114,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     float[] rpm = DieselPowerTab.X;
                     float[] auxPower = new float[size];
 
-                    for (int i = 0; i < size; i++)
+                    for (int i = size - 1; i >= 0; i--)
                     {
                         float tempAux = DieselPowerTab[rpm[i]] - RailPowerTab[rpm[i]] / Locomotive.TransmissionEfficiency;
                         // Prevent nonsensical negative auxiliary draw, as well as nonsensically high auxiliary draw
                         auxPower[i] = MathHelper.Clamp(tempAux, 0.0f, maxAuxPower);
+                        // Assume auxiliary draw is strictly increasing with engine RPM
+                        if (auxPower[i] < maxAuxPower)
+                            maxAuxPower = auxPower[i];
                     }
 
                     AuxPowerTab = new Interpolator(rpm, auxPower);
