@@ -427,7 +427,7 @@ namespace Orts.Simulation.RollingStocks
                 TractionPowerRampDownToZeroWpS = 5.0f * TractionPowerRampDownWpS;
 
                 // Determine if we should set tractive effort to be power limited, to avoid overloading engine
-                if (!TractiveForcePowerLimited && LocomotiveMaxRailOutputPowerW <= MaximumDieselEnginePowerW)
+                if (!TractiveForcePowerLimited && LocomotiveMaxRailOutputPowerW / TransmissionEfficiency <= MaximumDieselEnginePowerW)
                     TractiveForcePowerLimited = true;
             }
         }
