@@ -304,8 +304,8 @@ namespace Orts.Simulation.RollingStocks
                         // If power still couldn't be determined, then set the Prime Mover power to same as RailOutputPower (typically the MaxPower value)
                         MaximumDieselEnginePowerW = LocomotiveMaxRailOutputPowerW;
 
-                        if (Simulator.Settings.VerboseConfigurationMessages)
-                            Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set the same as MaxRailOutputPower {0} value", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false));
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set the same as MaxRailOutputPower {0} value", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false));
                     }
                     else
                     {
