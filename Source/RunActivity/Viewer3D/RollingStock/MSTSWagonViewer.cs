@@ -422,6 +422,18 @@ namespace Orts.Viewer3D.RollingStock
                     MatchMatrixToPart(car, i, 0);
             }
 
+            foreach (var runningGear in RunningGears.Values)
+            {
+                runningGear.SetMstsSpeed(8.0f, true);
+                runningGear.SetGltfSpeed(runningGear.MaxFrame);
+            }
+            BrakeCylinders.SetMstsSpeed(BrakeCylinders.MaxFrame, false);
+            BrakeRigging.SetMstsSpeed(BrakeRigging.MaxFrame, false);
+            Wipers.SetMstsSpeed(1.5f, true);
+            Bell.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true);
+            Item1Continuous.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true);
+            Item2Continuous.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true);
+
             // Precompute bogie positioning parameters for later
             if (car.Parts.Count > 1)
             {
@@ -441,8 +453,8 @@ namespace Orts.Viewer3D.RollingStock
             car.SetUpWheels();
 
             // If we have two pantographs, 2 is the forwards pantograph, unlike when there's only one.
-            if (!(car.Flipped ^ (car.Train.IsActualPlayerTrain && Viewer.PlayerLocomotive.Flipped)) && !Pantograph1.Empty() && !Pantograph2.Empty())
-                AnimatedPart.Swap(ref Pantograph1, ref Pantograph2);
+            if (!(car.Flipped ^ (car.Train.IsActualPlayerTrain && Viewer.PlayerLocomotive.Flipped)) && Pantograph1.IsAnimated() && Pantograph2.IsAnimated())
+                (Pantograph1, Pantograph2) = (Pantograph2, Pantograph1);
 
             Pantograph1.SetState(MSTSWagon.Pantographs[1].CommandUp);
             Pantograph2.SetState(MSTSWagon.Pantographs[2].CommandUp);
@@ -457,9 +469,9 @@ namespace Orts.Viewer3D.RollingStock
             RightWindowRear.SetState(MSTSWagon.WindowStates[MSTSWagon.RightWindowRearIndex] >= MSTSWagon.WindowState.Opening);
             Item1TwoState.SetState(MSTSWagon.GenericItem1);
             Item2TwoState.SetState(MSTSWagon.GenericItem2);
-            BrakeCylinders.SetFrameClamp(MSTSWagon.BrakeSystem.GetNormalizedCylTravel() * 10.0f);
+            BrakeCylinders.SetState(MSTSWagon.BrakeSystem.GetNormalizedCylTravel());
             Handbrakes.SetState(MSTSWagon.GetTrainHandbrakeStatus());
-            BrakeRigging.SetFrameClamp(Math.Max(MSTSWagon.BrakeSystem.GetNormalizedCylTravel(), MSTSWagon.GetTrainHandbrakeStatus() ? 1.0f : 0.0f) * 10.0f);
+            BrakeRigging.SetState(Math.Max(MSTSWagon.BrakeSystem.GetNormalizedCylTravel(), MSTSWagon.GetTrainHandbrakeStatus() ? 1.0f : 0.0f));
             UnloadingParts.SetState(MSTSWagon.UnloadingPartsOpen);
 
             InitializeUserInputCommands();
@@ -823,7 +835,7 @@ namespace Orts.Viewer3D.RollingStock
                 distanceTravelledM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
                 foreach (var kvp in RunningGears)
                 {
-                    if (!kvp.Value.Empty())
+                    if (kvp.Value.IsAnimated())
                     {
                         var axle = kvp.Key >= 0 && kvp.Key < loco.LocomotiveAxles.Count ? loco.LocomotiveAxles[kvp.Key] : null;
                         if (axle != null)
@@ -860,7 +872,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (Car.BrakeSkid) distanceTravelledM = 0;
                 foreach (var kvp in RunningGears)
                 {
-                    if (!kvp.Value.Empty() && AnimationDriveWheelRadiusM > 0.001)
+                    if (kvp.Value.IsAnimated() && AnimationDriveWheelRadiusM > 0.001)
                         kvp.Value.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
                 }
                 // Wheel rotation (animation) - for non-drive wheels in steam locomotives and all wheels in other stock

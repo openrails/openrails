@@ -479,7 +479,7 @@ namespace Orts.Viewer3D
 
         protected override void AnimateOneMatrix(int iMatrix, float key)
         {
-            if (SharedShape.Animations == null || SharedShape.Animations.Count == 0)
+            if (!SharedShape.HasAnimations())
             {
                 if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
                     Trace.TraceInformation("Ignored missing animations data in shape {0}", SharedShape.FilePath);
@@ -487,7 +487,7 @@ namespace Orts.Viewer3D
                 return;  // animation is missing
             }
 
-            if (iMatrix < 0 || iMatrix >= SharedShape.Animations[0].anim_nodes.Count || iMatrix >= XNAMatrices.Length)
+            if (!SharedShape.HasAnimation(iMatrix))
             {
                 if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
                     Trace.TraceInformation("Ignored out of bounds matrix {1} in shape {0}", SharedShape.FilePath, iMatrix);
@@ -496,8 +496,7 @@ namespace Orts.Viewer3D
             }
 
             var anim_node = SharedShape.Animations[0].anim_nodes[iMatrix];
-            if (anim_node.controllers.Count == 0)
-                    return;  // missing controllers
+            var animName = anim_node.Name.ToLowerInvariant();
 
             // Start with the intial pose in the shape file.
             var xnaPose = SharedShape.Matrices[iMatrix];
@@ -515,7 +514,6 @@ namespace Orts.Viewer3D
                         break;
 
                 //OR-Clock-hands Animation -------------------------------------------------------------------------------------------------------------
-                var animName = anim_node.Name.ToLowerInvariant();
                 if (animName.IndexOf("hand_clock") > -1)           //anim_node seems to be an OR-Clock-hand-matrix of an analog OR-Clock
                 {
                     int gameTimeInSec = Convert.ToInt32((long)TimeSpan.FromSeconds(Viewer.Simulator.ClockTime).Ticks / 100000); //Game time as integer in milliseconds
@@ -602,9 +600,8 @@ namespace Orts.Viewer3D
     public class SwitchTrackShape : PoseableShape
     {
         readonly AnimatedPart AnimatedPart;
-
-        TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
-        uint MainRoute;                  // 0 or 1 - which route is considered the main route
+        readonly TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
+        readonly uint MainRoute;                 // 0 or 1 - which route is considered the main route
 
         public SwitchTrackShape(Viewer viewer, string path, WorldPosition position, TrJunctionNode trj)
             : base(viewer, path, position, ShapeFlags.AutoZBias)
@@ -613,22 +610,22 @@ namespace Orts.Viewer3D
             TrackShape TS = viewer.Simulator.TSectionDat.TrackShapes.Get(TrJunctionNode.ShapeIndex);
             MainRoute = TS.MainRoute;
 
-            var animationsCount = SharedShape.GetAnimationNamesCount();
-            for (var i = 0; i < animationsCount; i++)
+            if (SharedShape.HasAnimations())
             {
-                if (SharedShape.HasAnimation(i))
-                {
-                    AnimatedPart = AnimatedPart ?? new AnimatedPart(this);
-                    AnimatedPart.AddMatrix(i);
-                }
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAllMatrices();
+                AnimatedPart.SetMstsSpeed(2.0f, false);
+
+                // MSTS junction animations are tricky, they consist of 3 animation nodes:
+                // 0 is main, 1 is diverging, 2 is main again. Go till frame 1 only.
+                if (!(SharedShape is GltfShape))
+                    AnimatedPart.MaxFrame = 1;
             }
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // MSTS junction animations are tricky, they consist of 3 animation nodes: 0 is main, 1 is diverging, 2 is main again.
-            // So the UpdateState(bool, elapsedTime) cannot be used here, that would switch between frames 0 and 2.
-            AnimatedPart?.UpdateState(TrJunctionNode.SelectedRoute == MainRoute ? 0 : 0.5f, elapsedTime);
+            AnimatedPart?.UpdateState(TrJunctionNode.SelectedRoute != MainRoute, elapsedTime);
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
@@ -829,11 +826,10 @@ namespace Orts.Viewer3D
         readonly LevelCrossingObj CrossingObj;
         readonly SoundSource Sound;
         readonly LevelCrossing Crossing;
+        readonly AnimatedPart AnimatedPart;
+        readonly bool Looped;
 
-        readonly float AnimationFrames;
-        readonly float AnimationSpeed;
         bool Opening = true;
-        float AnimationKey;
 
         public LevelCrossingShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj)
             : base(viewer, path, position, shapeFlags)
@@ -874,8 +870,8 @@ namespace Orts.Viewer3D
                 from tid in CrossingObj.trItemIDList where tid.db == 1 select tid.dbID,
                 CrossingObj.levelCrParameters.warningTime,
                 CrossingObj.levelCrParameters.minimumDistance);
-            // If there are no animations, we leave the frame count and speed at 0 and nothing will try to animate.
-            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0)
+
+            if (SharedShape.HasAnimations())
             {
                 // LOOPED COSSINGS (animTiming < 0)
                 //     MSTS plays through all the frames of the animation for "closed" and sits on frame 0 for "open". The
@@ -885,8 +881,14 @@ namespace Orts.Viewer3D
                 //     MSTS plays through the first 1.0 seconds of the animation forwards for closing and backwards for
                 //     opening. The number of frames defined doesn't matter; the animation is limited by time so the frame
                 //     rate (based on 30FPS) is what's needed.
-                AnimationFrames = CrossingObj.levelCrTiming.animTiming < 0 ? SharedShape.Animations[0].FrameCount : SharedShape.Animations[0].FrameRate / 30f;
-                AnimationSpeed = SharedShape.Animations[0].FrameRate / 30f / CrossingObj.levelCrTiming.animTiming;
+                Looped = CrossingObj.levelCrTiming.animTiming < 0;
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAllMatrices();
+                AnimatedPart.SetMstsSpeed(CrossingObj.levelCrTiming.animTiming, true);
+                AnimatedPart.SetGltfSpeed(Math.Abs(CrossingObj.levelCrTiming.animTiming));
+
+                if (!Looped && SharedShape?.Animations?.FirstOrDefault()?.FrameRate is int frameRate)
+                    AnimatedPart.MaxFrame = frameRate / 30f; // Clamped to max 1 s for shape format
             }
         }
 
@@ -908,25 +910,13 @@ namespace Orts.Viewer3D
             if (Opening == Crossing.HasTrain)
             {
                 Opening = !Crossing.HasTrain;
-                if (Sound != null) Sound.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
+                Sound?.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
             }
 
-            if (Opening)
-                AnimationKey -= elapsedTime.ClockSeconds * AnimationSpeed;
+            if (Looped)
+                AnimatedPart?.UpdateLoop(!Opening, elapsedTime);
             else
-                AnimationKey += elapsedTime.ClockSeconds * AnimationSpeed;
-
-            if (CrossingObj.levelCrTiming.animTiming < 0)
-            {
-                // Stick to frame 0 for "open" and loop for "closed".
-                if (Opening) AnimationKey = 0;
-                if (AnimationKey < 0) AnimationKey += AnimationFrames;
-            }
-            if (AnimationKey < 0) AnimationKey = 0;
-            if (AnimationKey > AnimationFrames) AnimationKey = AnimationFrames;
-
-            for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-                AnimateMatrix(i, AnimationKey);
+                AnimatedPart?.UpdateState(Opening ? 0f : 1f, elapsedTime);
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
@@ -936,9 +926,9 @@ namespace Orts.Viewer3D
     {
         readonly HazardObj HazardObj;
         readonly Hazzard Hazzard;
+        readonly AnimatedPart AnimatedPart;
 
         float Moved = 0f;
-        float AnimationKey;
         float DelayHazAnimation;
 
         public static HazzardShape CreateHazzard(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj)
@@ -954,6 +944,12 @@ namespace Orts.Viewer3D
         {
             HazardObj = hObj;
             Hazzard = h;
+            if (SharedShape.HasAnimations())
+            {
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAllMatrices();
+                AnimatedPart.SetMstsSpeed(24.0f, false);
+            }
         }
 
         public override void Unload()
@@ -966,21 +962,19 @@ namespace Orts.Viewer3D
         {
             if (Hazzard == null) return;
             Vector2 CurrentRange;
-            AnimationKey += elapsedTime.ClockSeconds * 24f;
-            DelayHazAnimation += elapsedTime.ClockSeconds;
             switch (Hazzard.state)
             {
                 case Hazzard.State.Idle1:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key; break;
+                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key / AnimatedPart.MaxFrame; break;
                 case Hazzard.State.Idle2:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key2; break;
+                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key2 / AnimatedPart.MaxFrame; break;
                 case Hazzard.State.LookLeft:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Left; break;
+                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Left / AnimatedPart.MaxFrame; break;
                 case Hazzard.State.LookRight:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Right; break;
+                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Right / AnimatedPart.MaxFrame; break;
                 case Hazzard.State.Scared:
                 default:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Success_Scarper_Key;
+                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Success_Scarper_Key / AnimatedPart.MaxFrame;
                     if (Moved < Hazzard.HazFile.Tr_HazardFile.Distance)
                     {
                         var m = Hazzard.HazFile.Tr_HazardFile.Speed * elapsedTime.ClockSeconds;
@@ -992,19 +986,20 @@ namespace Orts.Viewer3D
                     break;
             }
 
+            DelayHazAnimation += elapsedTime.ClockSeconds;
+
+            AnimatedPart.UpdateState(CurrentRange.Y, elapsedTime);
+
+            var currentKeyFraction = AnimatedPart.AnimationKeyFraction();
+            //AnimatedPart.SetState(MathHelper.Clamp(currentKeyFraction, CurrentRange.X, CurrentRange.Y));
+
             if (Hazzard.state == Hazzard.State.Idle1 || Hazzard.state == Hazzard.State.Idle2)
             {
                 if (DelayHazAnimation > 5f)
                 {
-                    if (AnimationKey < CurrentRange.X)
+                    if (currentKeyFraction < CurrentRange.X || currentKeyFraction > CurrentRange.Y)
                     {
-                        AnimationKey = CurrentRange.X;
-                        DelayHazAnimation = 0;
-                    }
-
-                    if (AnimationKey > CurrentRange.Y)
-                    {
-                        AnimationKey = CurrentRange.X;
+                        AnimatedPart.SetState(CurrentRange.X);
                         DelayHazAnimation = 0;
                     }
                 }
@@ -1012,21 +1007,14 @@ namespace Orts.Viewer3D
 
             if (Hazzard.state == Hazzard.State.LookLeft || Hazzard.state == Hazzard.State.LookRight)
             {
-                if (AnimationKey < CurrentRange.X) AnimationKey = CurrentRange.X;
-                if (AnimationKey > CurrentRange.Y) AnimationKey = CurrentRange.Y;
+                AnimatedPart.SetState(MathHelper.Clamp(currentKeyFraction, CurrentRange.X, CurrentRange.Y));
             }
 
             if (Hazzard.state == Hazzard.State.Scared)
             {
-                if (AnimationKey < CurrentRange.X) AnimationKey = CurrentRange.X;
-
-                if (AnimationKey > CurrentRange.Y) AnimationKey = CurrentRange.X;
+                if (currentKeyFraction < CurrentRange.X || currentKeyFraction > CurrentRange.Y)
+                    AnimatedPart.SetState(CurrentRange.X);
             }
-
-            for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-                AnimateMatrix(i, AnimationKey);
-
-            //var pos = this.HazardObj.Position;
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
@@ -1546,6 +1534,7 @@ namespace Orts.Viewer3D
 
     public class TurntableShape : PoseableShape
     {
+        readonly AnimatedPart AnimatedPart;
         protected float AnimationKey;  // advances with time
         protected Turntable Turntable; // linked turntable data
         readonly SoundSource Sound;
@@ -1595,6 +1584,10 @@ namespace Orts.Viewer3D
             for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
                 AnimateMatrix(matrix, AnimationKey);
 
+            AnimatedPart = new AnimatedPart(this);
+            AnimatedPart.AddAllMatrices();
+            AnimatedPart.SetMstsSpeed(30f, true); // Seems like the FrameRate is used directly here, unlike in other classes where it is a rated to 30.
+
             var absAnimationMatrix = XNAMatrices[IAnimationMatrix];
             Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
             Turntable.ReInitTrainPositions(absAnimationMatrix);
@@ -1606,6 +1599,9 @@ namespace Orts.Viewer3D
             var animation = SharedShape.Animations[0];
             if (Turntable.AlignToRemote)
             {
+                var desiredKey = ((Turntable.YAngle + MathHelper.TwoPi) % MathHelper.TwoPi) / MathHelper.TwoPi;
+                AnimatedPart.UpdateState(desiredKey, elapsedTime);
+
                 AnimationKey = (Turntable.YAngle / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
                 if (AnimationKey < 0)
                     AnimationKey += animation.FrameCount;
@@ -1615,10 +1611,23 @@ namespace Orts.Viewer3D
             {
                 if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
                 {
+                    AnimatedPart.SetFrameWrap(Turntable.YAngle / MathHelper.TwoPi * AnimatedPart.MaxFrame);
+
                     nextKey = Turntable.TargetY / (2 * (float)Math.PI) * animation.FrameCount;
                 }
                 else
                 {
+                    if (Turntable.Counterclockwise)
+                    {
+                        AnimatedPart.SetSpeedPositive();
+                        AnimatedPart.UpdateLoop(true, elapsedTime);
+                    }
+                    else if (Turntable.Clockwise)
+                    {
+                        AnimatedPart.SetSpeedNegative();
+                        AnimatedPart.UpdateLoop(true, elapsedTime);
+                    }
+
                     float moveFrames;
                     if (Turntable.Counterclockwise)
                         moveFrames = animation.FrameRate * elapsedTime.ClockSeconds;

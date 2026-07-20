@@ -350,9 +350,9 @@ namespace Orts.Viewer3D.RollingStock
 
             // Wipers and bell animation
             Wipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
-            Bell.UpdateLoop(Locomotive.Bell, elapsedTime, TrainCarShape.SharedShape.CustomAnimationFPS);
-            Item1Continuous.UpdateLoop(Locomotive.GenericItem1, elapsedTime, TrainCarShape.SharedShape.CustomAnimationFPS);
-            Item2Continuous.UpdateLoop(Locomotive.GenericItem2, elapsedTime, TrainCarShape.SharedShape.CustomAnimationFPS);
+            Bell.UpdateLoop(Locomotive.Bell, elapsedTime);
+            Item1Continuous.UpdateLoop(Locomotive.GenericItem1, elapsedTime);
+            Item2Continuous.UpdateLoop(Locomotive.GenericItem2, elapsedTime);
 
             // Draw 2D CAB View - by GeorgeS
             if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
@@ -3369,7 +3369,6 @@ namespace Orts.Viewer3D.RollingStock
         Dictionary<(CabViewControlType, int), ThreeDimCabDigit> DigitParts3D = null;
         Dictionary<(CabViewControlType, int), ThreeDimCabDPI> DPIDisplays3D = null;
         Dictionary<(CabViewControlType, int), ThreeDimCabScreen> ScreenDisplays3D = null;
-        AnimatedPart ExternalWipers = null; // setting to zero to prevent a warning. Probably this will be used later. TODO
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
         MSTSLocomotiveViewer LocoViewer;
         private SpriteBatchMaterial _Sprite2DCabView;
@@ -3508,6 +3507,12 @@ namespace Orts.Viewer3D.RollingStock
                         }
                         else tmpPart = AnimateParts[key];
                         tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
+
+                        if (key.cvcType.Type == CABViewControlTypes.EXTERNALWIPERS ||
+                            key.cvcType.Type == CABViewControlTypes.ORTS_ITEM1CONTINUOUS ||
+                            key.cvcType.Type == CABViewControlTypes.ORTS_ITEM2CONTINUOUS)
+                            tmpPart.SetMstsSpeed(1.5f, true);
+
                         if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
                             TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                     }
@@ -3634,8 +3639,6 @@ namespace Orts.Viewer3D.RollingStock
                 }
             }
 
-            if (ExternalWipers != null) ExternalWipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
-
             if (TrainCarShape != null)
                 TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisibleTargetNode);
 
@@ -3716,7 +3719,10 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (Locomotive.WindowStates[windowIndex] == MSTSWagon.WindowState.Closed) anim.SetState(false);
             else if (Locomotive.WindowStates[windowIndex] == MSTSWagon.WindowState.Open) anim.SetState(true);
-            var animationFraction =  anim.UpdateAndReturnState(Locomotive.WindowStates[windowIndex] >= MSTSWagon.WindowState.Opening, elapsedTime);
+
+            anim.UpdateState(Locomotive.WindowStates[windowIndex] >= MSTSWagon.WindowState.Opening, elapsedTime);
+
+            var animationFraction = anim.AnimationKeyFraction();
             if (animationFraction == 0 && Locomotive.WindowStates[windowIndex] < MSTSWagon.WindowState.Opening)
                 Locomotive.WindowStates[windowIndex] = MSTSWagon.WindowState.Closed;
             else if (animationFraction == 1 && Locomotive.WindowStates[windowIndex] >= MSTSWagon.WindowState.Opening)

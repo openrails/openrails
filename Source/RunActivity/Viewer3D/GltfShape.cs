@@ -1667,6 +1667,7 @@ namespace Orts.Viewer3D
             return nodeAnimation;
         }
 
+        public override Matrix GetMatrixProduct(int iNode) => base.GetMatrixProduct(iNode) * PlusZToForward;
         public override Matrix ForwardZDirection => PlusZToForward;
         public override bool IsAnimationArticulation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault()?.TimeArray == null;
         public override int GetAnimationTargetNode(int animationId) => GltfAnimations?.ElementAtOrDefault(animationId)?.Channels?.FirstOrDefault()?.TargetNode ?? 0;

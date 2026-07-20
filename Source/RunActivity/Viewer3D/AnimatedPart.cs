@@ -20,6 +20,7 @@ using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
 
 namespace Orts.Viewer3D
 {
@@ -44,6 +45,11 @@ namespace Orts.Viewer3D
         float AnimationKey;
 
         /// <summary>
+        /// Controls the speed of the animation.
+        /// </summary>
+        float Speed = 1.0f;
+
+        /// <summary>
         /// shape format: List of the matrices we're animating for this part.
         /// glTF format: The animation clip's numbers we are playing for this part.
         /// </summary>
@@ -62,7 +68,8 @@ namespace Orts.Viewer3D
         /// </summary>
         public void AddMatrix(int matrix)
         {
-            if (matrix < 0) return;
+            if (matrix < 0 || MatrixIndexes.Contains(matrix))
+                return;
             MatrixIndexes.Add(matrix);
             UpdateMaxFrame(matrix);
         }
@@ -79,13 +86,54 @@ namespace Orts.Viewer3D
             }
         }
 
+        public void AddAllMatrices()
+        {
+            var animationsCount = PoseableShape.SharedShape.GetAnimationNamesCount();
+            for (var i = 0; i < animationsCount; i++)
+                if (PoseableShape.SharedShape.HasAnimation(i))
+                    AddMatrix(i);
+        }
+
+        /// <summary>
+        /// Sets the speed only in case the of shape format.
+        /// </summary>
+        public void SetMstsSpeed(float mstsSpeed, bool useShapeFrameRate)
+        {
+            if (PoseableShape?.SharedShape?.Animations?.Count > 0)
+            {
+                Speed = mstsSpeed;
+
+                if (useShapeFrameRate)
+                    Speed *= (PoseableShape?.SharedShape?.Animations?.ElementAtOrDefault(0)?.FrameRate ?? 30f) / 30f;
+            }
+        }
+
+        public void SetSpeedPositive()
+        {
+            Speed = Math.Abs(Speed);
+        }
+
+        public void SetSpeedNegative()
+        {
+            Speed = -Math.Abs(Speed);
+        }
+
+        /// <summary>
+        /// Sets the speed only in case the of glTF format.
+        /// </summary>
+        public void SetGltfSpeed(float speed)
+        {
+            if (PoseableShape?.SharedShape is GltfShape)
+                Speed = speed;
+        }
+
         /// <summary>
         /// Ensure the shape file contained parts of this type 
         /// and those parts have an animation section.
         /// </summary>
-        public bool Empty()
+        public bool IsAnimated()
         {
-            return MatrixIndexes.Count == 0;
+            return MatrixIndexes.Count > 0;
         }
 
         void SetFrame(float frame)
@@ -100,31 +148,15 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetFrameClamp(float frame)
         {
-            if (frame > MaxFrame) frame = MaxFrame;
-            if (frame < 0) frame = 0;
-            SetFrame(frame);
-        }
-
-        /// <summary>
-        /// Smoothly changes the animation to a particular state between 0 and 1.
-        /// </summary>
-        public void UpdateState(float state, ElapsedTime elapsedTime)
-        {
-            var desiredKey = state * MaxFrame;
-            var speed = PoseableShape.SharedShape is GltfShape ? 1f : 10f; // shape format: 10 frames/sec, glTF format: realtime
-
-            if (Math.Abs(desiredKey - AnimationKey) > elapsedTime.ClockSeconds * speed)
-                SetFrameClamp(AnimationKey + Math.Sign(desiredKey - AnimationKey) * elapsedTime.ClockSeconds * speed);
-            else
-                SetFrameClamp(desiredKey);
+            SetFrame(MathHelper.Clamp(frame, 0, MaxFrame));
         }
 
         /// <summary>
         /// Sets the animation to a particular frame whilst cycling back to the start as input goes beyond the last frame.
+        /// Animates from 0-MaxFrame then MaxFrame-0 for values within [0 .. 2*MaxFrame].
         /// </summary>
         public void SetFrameCycle(float frame)
         {
-            // Animates from 0-MaxFrame then MaxFrame-0 for values of 0>=frame<=2*MaxFrame.
             SetFrameClamp(MaxFrame - Math.Abs(frame - MaxFrame));
         }
 
@@ -156,22 +188,32 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Updates an animated part that toggles between two states (e.g. pantograph, doors, mirrors),
-        /// with adjustable animation speed (default 1 animation frame/sec).
+        /// Bypass the normal slow transition and jump the part immediately to this new state
         /// </summary>
-        public void UpdateState(bool state, ElapsedTime elapsedTime, float fps = 1.0f)
+        public void SetState(float state)
         {
-            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds * fps);
+            SetFrame(MathHelper.Clamp(state, 0f, 1f) * MaxFrame);
         }
 
         /// <summary>
-        /// Updates an animated part that toggles between two states with adjustable animation speed (default 1 animation frame/sec)
-        /// and returns relative value of animation key (between 0 and 1).
+        /// Smoothly changes the animation to a particular state between 0 and 1.
         /// </summary>
-        public float UpdateAndReturnState(bool state, ElapsedTime elapsedTime, float fps = 1.0f)
+        public void UpdateState(float state, ElapsedTime elapsedTime)
         {
-            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds * fps);
-            return AnimationKey / MaxFrame;
+            var desiredKey = state * MaxFrame;
+
+            if (Math.Abs(desiredKey - AnimationKey) > elapsedTime.ClockSeconds * Speed)
+                SetFrameClamp(AnimationKey + Math.Sign(desiredKey - AnimationKey) * elapsedTime.ClockSeconds * Speed);
+            else
+                SetFrameClamp(desiredKey);
+        }
+
+        /// <summary>
+        /// Updates an animated part that toggles between two states.
+        /// </summary>
+        public void UpdateState(bool state, ElapsedTime elapsedTime)
+        {
+            UpdateState(state ? 1f : 0f, elapsedTime);
         }
 
         /// <summary>
@@ -187,55 +229,22 @@ namespace Orts.Viewer3D
         /// </summary>
         public void UpdateLoop(float change)
         {
-            if (PoseableShape.SharedShape.Animations?.Count > 0 && MaxFrame > 0)
-            {
-                // shape format
-                // The speed of rotation is set at 8 frames of animation per rotation at 30 FPS (so 16 frames = 60 FPS, etc.).
-                var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 8 / 30f;
-                SetFrameWrap(AnimationKey + change * frameRate);
-            }
-            else if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.GetAnimationLength(MatrixIndexes.FirstOrDefault()) > 0)
-            {
-                // glTF format
-                // Assume the animation is 1 loop long
-                var loopLength = MaxFrame;
-                SetFrameWrap(AnimationKey + change * loopLength);
-            }
+            SetFrameWrap(AnimationKey + change * Speed);
         }
 
         /// <summary>
         /// Updates an animated part that loops only when enabled (e.g. wipers).
         /// </summary>
-        public void UpdateLoop(bool running, ElapsedTime elapsedTime, float frameRateMultiplier = 1.5f)
+        public void UpdateLoop(bool running, ElapsedTime elapsedTime)
         {
-            if (PoseableShape.SharedShape.Animations?.Count > 0 && MaxFrame > 0)
+            if (running || (0 < AnimationKey && AnimationKey < MaxFrame))
             {
-                // shape format
-                // The speed of cycling is as default 1.5 frames of animation per second at 30 FPS.
-                var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * frameRateMultiplier / 30f;
-                if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds * frameRate < MaxFrame))
-                    SetFrameWrap(AnimationKey + elapsedTime.ClockSeconds * frameRate);
-                else
+                var resultKey = AnimationKey + elapsedTime.ClockSeconds * Speed;
+                if (!running && (resultKey < 0 || MaxFrame <= resultKey))
                     SetFrame(0);
+                else
+                    SetFrameWrap(resultKey);
             }
-            else if (PoseableShape.SharedShape is GltfShape gltfShape && gltfShape.GetAnimationLength(MatrixIndexes.FirstOrDefault()) > 0)
-            {
-                // glTF format
-                if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds < MaxFrame))
-                    SetFrameWrap(AnimationKey + elapsedTime.ClockSeconds); // * frameRateMultiplier: ignore it for glTF-s, that was probably for historical reasons
-                // In glTF multiple animations may target the same node, so we must not SetFrame(0) in the update,
-                // otherwise the lastly defined (non-running) animation will block the previously defined ones at keyframe 0.
-            }
-        }
-
-        /// <summary>
-        /// Swap the pointers around.
-        /// </summary>
-        public static void Swap(ref AnimatedPart a, ref AnimatedPart b)
-        {
-            AnimatedPart temp = a;
-            a = b;
-            b = temp;
         }
     }
 }
