@@ -349,10 +349,10 @@ namespace Orts.Viewer3D.RollingStock
             }
 
             // Wipers and bell animation
-            Wipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
-            Bell.UpdateLoop(Locomotive.Bell, elapsedTime);
-            Item1Continuous.UpdateLoop(Locomotive.GenericItem1, elapsedTime);
-            Item2Continuous.UpdateLoop(Locomotive.GenericItem2, elapsedTime);
+            Wipers.UpdateLoop(Locomotive.Wiper ? 1 : 0, elapsedTime);
+            Bell.UpdateLoop(Locomotive.Bell ? 1 : 0, elapsedTime);
+            Item1Continuous.UpdateLoop(Locomotive.GenericItem1 ? 1 : 0, elapsedTime);
+            Item2Continuous.UpdateLoop(Locomotive.GenericItem2 ? 1 : 0, elapsedTime);
 
             // Draw 2D CAB View - by GeorgeS
             if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
@@ -3571,7 +3571,7 @@ namespace Orts.Viewer3D.RollingStock
                     switch (p.Value.Type.Type)
                     {
                         case CABViewControlTypes.EXTERNALWIPERS:
-                            p.Value.UpdateLoop(Locomotive.Wiper, elapsedTime);
+                            p.Value.UpdateLoop(Locomotive.Wiper ? 1 : 0, elapsedTime);
                             break;
                         case CABViewControlTypes.LEFTDOOR:
                         case CABViewControlTypes.RIGHTDOOR:
@@ -3597,10 +3597,10 @@ namespace Orts.Viewer3D.RollingStock
                             PrepareFrameForWindow(MSTSWagon.RightWindowRearIndex, p.Value, elapsedTime);
                             break;
                         case CABViewControlTypes.ORTS_ITEM1CONTINUOUS:
-                            p.Value.UpdateLoop(Locomotive.GenericItem1, elapsedTime);
+                            p.Value.UpdateLoop(Locomotive.GenericItem1 ? 1 : 0, elapsedTime);
                             break;
                         case CABViewControlTypes.ORTS_ITEM2CONTINUOUS:
-                            p.Value.UpdateLoop(Locomotive.GenericItem2, elapsedTime);
+                            p.Value.UpdateLoop(Locomotive.GenericItem2 ? 1 : 0, elapsedTime);
                             break;
                         case CABViewControlTypes.ORTS_ITEM1TWOSTATE:
                             p.Value.UpdateState(Locomotive.GenericItem1, elapsedTime);

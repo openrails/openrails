@@ -108,16 +108,6 @@ namespace Orts.Viewer3D
             }
         }
 
-        public void SetSpeedPositive()
-        {
-            Speed = Math.Abs(Speed);
-        }
-
-        public void SetSpeedNegative()
-        {
-            Speed = -Math.Abs(Speed);
-        }
-
         /// <summary>
         /// Sets the speed only in case the of glTF format.
         /// </summary>
@@ -235,16 +225,18 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Updates an animated part that loops only when enabled (e.g. wipers).
         /// </summary>
-        public void UpdateLoop(bool running, ElapsedTime elapsedTime)
+        /// <param name="runningSign">1 for forward, -1 for reverse, 0 for stopped</param>
+        /// <param name="elapsedTime">The elapsed time since the last update</param>
+        public void UpdateLoop(float runningSign, ElapsedTime elapsedTime)
         {
-            if (running || (0 < AnimationKey && AnimationKey < MaxFrame))
-            {
-                var resultKey = AnimationKey + elapsedTime.ClockSeconds * Speed;
-                if (!running && (resultKey < 0 || MaxFrame <= resultKey))
-                    SetFrame(0);
-                else
-                    SetFrameWrap(resultKey);
-            }
+            if (runningSign == 0 && AnimationKey == 0)
+                return;
+
+            var resultKey = AnimationKey + elapsedTime.ClockSeconds * Speed * Math.Sign(runningSign);
+            if (runningSign == 0 && (resultKey < 0 || MaxFrame <= resultKey))
+                SetFrame(0);
+            else
+                SetFrameWrap(resultKey);
         }
     }
 }
