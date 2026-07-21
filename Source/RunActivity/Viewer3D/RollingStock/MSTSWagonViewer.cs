@@ -414,11 +414,12 @@ namespace Orts.Viewer3D.RollingStock
             }
 
             // Match up all the matrices with their parts.
-            // Exclude if the parent animation is a BOGIE, since those will be processed inside MatchMatrixToPart() when processing the bogie matrices.
+            // shape format: Using only animations not parented by other animations, thus wheels part of a bogie will be enumerated in another round.
+            // glTF format: Exclude only if the parent animation is a BOGIE, those will be processed inside MatchMatrixToPart() when processing the bogie matrices.
             for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
             {
                 var parentAnimation = TrainCarShape.SharedShape.GetAnimationParent(i);
-                if (parentAnimation == -1 || !TrainCarShape.SharedShape.MatrixNames[parentAnimation].ToUpper().StartsWith("BOGIE"))
+                if (parentAnimation == -1 || TrainCarShape.SharedShape is GltfShape && !TrainCarShape.SharedShape.MatrixNames[parentAnimation].ToUpper().StartsWith("BOGIE"))
                     MatchMatrixToPart(car, i, 0);
             }
 
