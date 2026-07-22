@@ -50,6 +50,11 @@ namespace Orts.Viewer3D
         float Speed = 1.0f;
 
         /// <summary>
+        /// The saved direction of the loop update.
+        /// </summary>
+        float LoopSign;
+
+        /// <summary>
         /// shape format: List of the matrices we're animating for this part.
         /// glTF format: The animation clip's numbers we are playing for this part.
         /// </summary>
@@ -86,20 +91,40 @@ namespace Orts.Viewer3D
             }
         }
 
-        public void AddAllMatrices()
+        public void AddAnimations() => AddAnimation(null);
+        public void AddAnimation(string pattern)
         {
             var animationsCount = PoseableShape.SharedShape.GetAnimationNamesCount();
             for (var i = 0; i < animationsCount; i++)
-                if (PoseableShape.SharedShape.HasAnimation(i))
+            {
+                if (!PoseableShape.SharedShape.HasAnimation(i))
+                    continue;
+                
+                if (IsNameMatches(PoseableShape.SharedShape.MatrixNames[i], pattern))
                     AddMatrix(i);
+            }
+        }
+
+        bool IsNameMatches(string name, string pattern)
+        {
+            if (string.IsNullOrEmpty(pattern) || pattern == "*")
+                return true;
+            else if (pattern.StartsWith("*") && pattern.EndsWith("*"))
+                return name.IndexOf(pattern.Replace("*", ""), StringComparison.OrdinalIgnoreCase) >= 0;
+            else if (pattern.StartsWith("*") && !(pattern.EndsWith("*")))
+                return name.EndsWith(pattern.Replace("*", ""), StringComparison.OrdinalIgnoreCase);
+            else if (!(pattern.StartsWith("*")) && pattern.EndsWith("*"))
+                return name.StartsWith(pattern.Replace("*", ""), StringComparison.OrdinalIgnoreCase);
+            else
+                return name.Equals(pattern.Replace("*", ""), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// Sets the speed only in case the of shape format.
+        /// Sets the speed only in case of shape format.
         /// </summary>
         public void SetMstsSpeed(float mstsSpeed, bool useShapeFrameRate)
         {
-            if (PoseableShape?.SharedShape?.Animations?.Count > 0)
+            if (PoseableShape?.SharedShape?.Animations?.Count > 0) // Must be true only if the shape format is used, not glTF
             {
                 Speed = mstsSpeed;
 
@@ -109,7 +134,7 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Sets the speed only in case the of glTF format.
+        /// Sets the speed only in case of glTF format.
         /// </summary>
         public void SetGltfSpeed(float speed)
         {
@@ -128,6 +153,9 @@ namespace Orts.Viewer3D
 
         void SetFrame(float frame)
         {
+            if (frame == AnimationKey)
+                return;
+
             AnimationKey = frame;
             foreach (var matrix in MatrixIndexes)
                 PoseableShape.AnimateMatrix(matrix, AnimationKey);
@@ -232,8 +260,11 @@ namespace Orts.Viewer3D
             if (runningSign == 0 && AnimationKey == 0)
                 return;
 
-            var resultKey = AnimationKey + elapsedTime.ClockSeconds * Speed * Math.Sign(runningSign);
-            if (runningSign == 0 && (resultKey < 0 || MaxFrame <= resultKey))
+            if (runningSign != 0)
+                LoopSign = Math.Sign(runningSign);
+
+            var resultKey = AnimationKey + elapsedTime.ClockSeconds * Speed * LoopSign;
+            if (runningSign == 0 && (resultKey <= 0 || MaxFrame <= resultKey))
                 SetFrame(0);
             else
                 SetFrameWrap(resultKey);

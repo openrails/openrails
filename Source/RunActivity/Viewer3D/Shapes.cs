@@ -441,31 +441,22 @@ namespace Orts.Viewer3D
     /// </summary>
     public class AnimatedShape : PoseableShape
     {
-        protected float AnimationKey;  // advances with time
-        protected float FrameRateMultiplier = 1; // e.g. in passenger view shapes MSTS divides by 30 the frame rate; this is the inverse
+        AnimatedPart AnimatedPart;
 
-        /// <summary>
-        /// Construct and initialize the class
-        /// </summary>
         public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
             : base(viewer, path, initialPosition, flags)
         {
-            FrameRateMultiplier = 1 / frameRateDivisor;
+            if (SharedShape.HasAnimations())
+            {
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAnimations();
+                AnimatedPart.SetMstsSpeed(30.0f / frameRateDivisor, true);
+            }
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // if the shape has animations
-            if (SharedShape.Animations?.Count > 0 && SharedShape.Animations[0].FrameCount > 0)
-            {
-                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds * FrameRateMultiplier;
-                while (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
-                while (AnimationKey < 0) AnimationKey += SharedShape.Animations[0].FrameCount;
-
-                // Update the pose for each matrix
-                for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
-                    AnimateMatrix(matrix, AnimationKey);
-            }
+            AnimatedPart?.UpdateLoop(1, elapsedTime);
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
@@ -614,11 +605,11 @@ namespace Orts.Viewer3D
             if (SharedShape.HasAnimations())
             {
                 AnimatedPart = new AnimatedPart(this);
-                AnimatedPart.AddAllMatrices();
+                AnimatedPart.AddAnimations();
                 AnimatedPart.SetMstsSpeed(2.0f, false);
 
-                // MSTS junction animations are tricky, they consist of 3 animation nodes:
-                // 0 is main, 1 is diverging, 2 is main again. Go till frame 1 only.
+                // MSTS shape format junction animations are tricky, they consist of 3 animation nodes.
+                // 0: main, 1: diverging, 2: main again. Go till frame 1 only.
                 if (!(SharedShape is GltfShape))
                     AnimatedPart.MaxFrame = 1;
             }
@@ -875,7 +866,7 @@ namespace Orts.Viewer3D
                 //     rate (based on 30FPS) is what's needed.
                 Looped = CrossingObj.levelCrTiming.animTiming < 0;
                 AnimatedPart = new AnimatedPart(this);
-                AnimatedPart.AddAllMatrices();
+                AnimatedPart.AddAnimations();
                 AnimatedPart.SetMstsSpeed(1.0f / CrossingObj.levelCrTiming.animTiming, true);
                 AnimatedPart.SetGltfSpeed(1.0f / Math.Abs(CrossingObj.levelCrTiming.animTiming));
 
@@ -939,7 +930,7 @@ namespace Orts.Viewer3D
             if (SharedShape.HasAnimations())
             {
                 AnimatedPart = new AnimatedPart(this);
-                AnimatedPart.AddAllMatrices();
+                AnimatedPart.AddAnimations();
                 AnimatedPart.SetMstsSpeed(24.0f, false);
             }
         }
@@ -1564,7 +1555,7 @@ namespace Orts.Viewer3D
             }
 
             AnimatedPart = new AnimatedPart(this);
-            AnimatedPart.AddAllMatrices();
+            AnimatedPart.AddAnimations();
             AnimatedPart.SetMstsSpeed(30f, true); // Seems like the FrameRate is used directly here, unlike in other classes where it is rated to 30.
             AnimatedPart.SetFrameWrap(Turntable.YAngle / MathHelper.TwoPi * AnimatedPart.MaxFrame);
 
@@ -1666,7 +1657,7 @@ namespace Orts.Viewer3D
             }
 
             AnimatedPart = new AnimatedPart(this);
-            AnimatedPart.AddAllMatrices();
+            AnimatedPart.AddAnimations();
             AnimatedPart.SetMstsSpeed(30f, true);
             AnimatedPart.SetFrameClamp((Transfertable.OffsetPos - Transfertable.CenterOffsetComponent) / Transfertable.Span * AnimatedPart.MaxFrame);
 
