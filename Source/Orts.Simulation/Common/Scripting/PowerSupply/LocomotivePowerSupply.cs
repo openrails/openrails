@@ -226,15 +226,27 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Power demanded by electric train supply
         /// </summary>
-        protected float ElectricTrainSupplyPowerW => LpsHost.ElectricTrainSupplyPowerW;
+        protected float ElectricTrainSupplyPowerW
+        {
+            get
+            {
+                return LpsHost.ElectricTrainSupplyPowerW;
+            }
+            set
+            {
+                LpsHost.ElectricTrainSupplyPowerW = value;
+            }
+        }
+
+        protected PowerSupplyDirection ElectricTrainSupplyMode => LpsHost.ElectricTrainSupplyDirection;
 
         /// <summary>
         /// Returns the index of the current locomotive in the train (taking into account only locomotives)
         /// </summary>
         public int IndexOfLocomotive()
         {
-            int count=0;
-            for (int i=0; i<Train.Cars.Count; i++)
+            int count = 0;
+            for (int i = 0; i < Train.Cars.Count; i++)
             {
                 if (Train.Cars[i] is MSTSLocomotive)
                 {
@@ -308,7 +320,10 @@ namespace ORTS.Scripting.Api
         /// Sets the current state of the electric train supply
         /// ETS is used by the systems of the cars (such as air conditionning)
         /// </summary>
-        protected virtual void SetCurrentElectricTrainSupplyState(PowerSupplyState state) => LpsHost.ElectricTrainSupplyState = state;
+        protected void SetCurrentElectricTrainSupplyState(PowerSupplyState state)
+        {
+            if (ElectricTrainSupplyMode == PowerSupplyDirection.Source) LpsHost.ElectricTrainSupplyState = state;
+        }
         /// <summary>
         /// Sets the current availability of the dynamic brake
         /// </summary>

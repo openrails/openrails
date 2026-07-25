@@ -27,8 +27,8 @@ namespace ORTS.Scripting.Api
     public abstract class CircuitBreaker : TractionCutOffSubsystem
     {
         internal ScriptedCircuitBreaker CbHost => Host as ScriptedCircuitBreaker;
-        internal ScriptedElectricPowerSupply ElectricPowerSupply => CbHost.LocomotivePowerSupply as ScriptedElectricPowerSupply;
-        internal ScriptedDualModePowerSupply DualModePowerSupply => CbHost.LocomotivePowerSupply as ScriptedDualModePowerSupply;
+        internal ScriptedElectricPowerSupply ElectricPowerSupply => CbHost.PowerSupply as ScriptedElectricPowerSupply;
+        internal ScriptedDualModePowerSupply DualModePowerSupply => CbHost.PowerSupply as ScriptedDualModePowerSupply;
 
         /// <summary>
         /// Current state of the circuit breaker
@@ -53,13 +53,13 @@ namespace ORTS.Scripting.Api
             CbHost.State = state;
 
             TCSEvent tcsEvent = state == CircuitBreakerState.Closed ? TCSEvent.CircuitBreakerClosed : TCSEvent.CircuitBreakerOpen;
-            Locomotive.TrainControlSystem.HandleEvent(tcsEvent);
+            Locomotive?.TrainControlSystem.HandleEvent(tcsEvent);
         }
 
         /// <summary>
         /// Current pantograph voltage
         /// </summary>
-        protected float PantographVoltageV => ElectricPowerSupply?.PantographVoltageV ?? (DualModePowerSupply?.PantographVoltageV ?? 0f);
+        protected float PantographVoltageV => ElectricPowerSupply?.PantographVoltageV ?? (DualModePowerSupply?.PantographVoltageV ?? (CurrentPantographState() == PantographState.Up ? (float)CbHost.Simulator.TRK.Tr_RouteFile.MaxLineVoltage : 0f));
     }
 
     public enum CircuitBreakerState

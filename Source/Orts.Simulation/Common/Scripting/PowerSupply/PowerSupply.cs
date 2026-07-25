@@ -236,4 +236,11 @@ namespace ORTS.Scripting.Api
         [GetParticularString("Engine", "Starting")] Starting,
         [GetParticularString("Engine", "Running")] Running
     }
+
+    public enum PowerSupplyDirection
+    {
+        [GetString("PowerOff")] PowerOff = -1,
+        [GetString("Sink")] Sink,
+        [GetString("Source")] Source,
+    }
 }

@@ -1412,7 +1412,6 @@ namespace Orts.Simulation.RollingStocks
             DPSyncEmergency = locoCopy.DPSyncEmergency;
             DPSyncIndependent = locoCopy.DPSyncIndependent;
 
-            LocomotivePowerSupply.Copy(locoCopy.LocomotivePowerSupply);
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
             VigilanceMonitor = locoCopy.VigilanceMonitor;
             LocomotiveName = locoCopy.LocomotiveName;
@@ -1483,7 +1482,6 @@ namespace Orts.Simulation.RollingStocks
 
             base.Save(outf);
 
-            LocomotivePowerSupply?.Save(outf);
             TrainControlSystem.Save(outf);
 
             CruiseControl?.Save(outf);
@@ -1543,7 +1541,6 @@ namespace Orts.Simulation.RollingStocks
 
             base.Restore(inf);
 
-            LocomotivePowerSupply?.Restore(inf);
             TrainControlSystem.Restore(inf);
 
             CruiseControl?.Restore(inf);
@@ -1645,7 +1642,6 @@ namespace Orts.Simulation.RollingStocks
                     BrakemanBrakeFitted = false;
                 }
             }
-            LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
             CruiseControl?.Initialize();
             foreach (MultiPositionController mpc in MultiPositionControllers)
@@ -2222,7 +2218,6 @@ namespace Orts.Simulation.RollingStocks
 
             TrainControlSystem.Update(elapsedClockSeconds);
 
-            LocomotivePowerSupply?.Update(elapsedClockSeconds);
             UpdateControllers(elapsedClockSeconds);
 
             // Train Heading - only check the lead locomotive otherwise flipped locomotives further in consist will overwrite the train direction

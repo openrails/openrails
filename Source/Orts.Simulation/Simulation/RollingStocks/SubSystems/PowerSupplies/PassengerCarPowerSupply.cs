@@ -43,11 +43,34 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         protected PassengerCarPowerSupply Script;
 
         // Variables
-        public List<MSTSLocomotive> ElectricTrainSupplyConnectedLocomotives = new List<MSTSLocomotive>();
+        public List<TrainCar> ElectricTrainSupplySourceCars { get; set; } = new List<TrainCar>();
         public PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
+        public PowerSupplyDirection ElectricTrainSupplyDirection { get; set; } = PowerSupplyDirection.Sink;
         public bool ElectricTrainSupplyOn => ElectricTrainSupplyState == PowerSupplyState.PowerOn;
         public bool FrontElectricTrainSupplyCableConnected { get; set; }
-        public float ElectricTrainSupplyPowerW { get; set; } = 0f;
+        private float electricTrainSupplyPowerW = 0;
+        public float ElectricTrainSupplyPowerW
+        {
+            get
+            {
+                if (ElectricTrainSupplyDirection == PowerSupplyDirection.Sink) return electricTrainSupplyPowerW;
+
+                float result = 0;
+                foreach (var car in Train.Cars)
+                {
+                    if (!(car is MSTSWagon wagon) || wagon.PowerSupply == null) continue;
+                    if (wagon.PowerSupply.ElectricTrainSupplyDirection == PowerSupplyDirection.Sink && wagon.PowerSupply.ElectricTrainSupplySourceCars.Contains(Car))
+                    {
+                        result += wagon.PowerSupply.ElectricTrainSupplyPowerW / wagon.PowerSupply.ElectricTrainSupplySourceCars.Count;
+                    }
+                }
+                return result;
+            }
+            set
+            {
+                if (ElectricTrainSupplyDirection == PowerSupplyDirection.Sink) electricTrainSupplyPowerW = value;
+            }
+        }
 
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
@@ -236,59 +259,63 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
 
-            ElectricTrainSupplyConnectedLocomotives.Clear();
-            foreach (TrainCar car in Train.Cars)
+            ElectricTrainSupplySourceCars.Clear();
+            if (ElectricTrainSupplyDirection == PowerSupplyDirection.Sink)
             {
-                if (car is MSTSLocomotive locomotive)
+                foreach (TrainCar car in Train.Cars)
                 {
-                    int locomotiveId = Train.Cars.IndexOf(locomotive);
-                    bool locomotiveInFront = locomotiveId < CarId;
+                    int carId = Train.Cars.IndexOf(car);
+                    bool carInFront = carId < CarId;
 
-                    bool connectedToLocomotive = true;
-                    if (locomotiveInFront)
+                    bool connectedToCar = true;
+                    if (carInFront)
                     {
-                        for (int i = locomotiveId; i < CarId; i++)
+                        for (int i = carId; i < CarId; i++)
                         {
                             if (Train.Cars[i + 1].PowerSupply == null)
                             {
-                                connectedToLocomotive = false;
+                                connectedToCar = false;
                                 break;
                             }
                             if (!Train.Cars[i + 1].PowerSupply.FrontElectricTrainSupplyCableConnected)
                             {
-                                connectedToLocomotive = false;
+                                connectedToCar = false;
                                 break;
                             }
                         }
                     }
                     else
                     {
-                        for (int i = locomotiveId; i > CarId; i--)
+                        for (int i = carId; i > CarId; i--)
                         {
                             if (Train.Cars[i].PowerSupply == null)
                             {
-                                connectedToLocomotive = false;
+                                connectedToCar = false;
                                 break;
                             }
                             if (!Train.Cars[i].PowerSupply.FrontElectricTrainSupplyCableConnected)
                             {
-                                connectedToLocomotive = false;
+                                connectedToCar = false;
                                 break;
                             }
                         }
                     }
-                    
-                    if (connectedToLocomotive && locomotive.LocomotivePowerSupply.Type != PowerSupplyType.ControlCar) ElectricTrainSupplyConnectedLocomotives.Add(locomotive);
+
+                    if (connectedToCar && car.PowerSupply.ElectricTrainSupplyDirection == PowerSupplyDirection.Source) ElectricTrainSupplySourceCars.Add(car);
+                }
+
+                ElectricTrainSupplyState = PowerSupplyState.PowerOff;
+                foreach (var car in ElectricTrainSupplySourceCars)
+                {
+                    if (car.PowerSupply.ElectricTrainSupplyState > ElectricTrainSupplyState)
+                    {
+                        ElectricTrainSupplyState = car.PowerSupply.ElectricTrainSupplyState;
+                    }
                 }
             }
-
-            ElectricTrainSupplyState = PowerSupplyState.PowerOff;
-            foreach (var locomotive in ElectricTrainSupplyConnectedLocomotives)
+            else
             {
-                if (locomotive.LocomotivePowerSupply.ElectricTrainSupplyState > ElectricTrainSupplyState)
-                {
-                    ElectricTrainSupplyState = locomotive.LocomotivePowerSupply.ElectricTrainSupplyState;
-                }
+                electricTrainSupplyPowerW = 0;
             }
 
             Battery.Update(elapsedClockSeconds);

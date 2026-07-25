@@ -20,6 +20,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Formats.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
@@ -863,6 +864,21 @@ namespace Orts.Viewer3D.Popups
                         electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
                         electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
                         electricTrainSupplyPower = FormatStrings.FormatPower(passengerCarPowerSupply.ElectricTrainSupplyPowerW, true, false, false);
+                    }
+                }
+                else if (powerSupply is ScriptedPowerVanPowerSupply powerVanPowerSupply)
+                {
+                    if ((car as MSTSWagon).Pantographs.CircuitBreaker != null)
+                    {
+                        pantographState = Viewer.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName((car as MSTSWagon).Pantographs.State));
+                        circuitBreakerState = Viewer.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName((car as MSTSWagon).Pantographs.CircuitBreaker.State));
+                    }
+                    if (powerVanPowerSupply.DieselEngines != null) dieselEngineState = Viewer.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(powerVanPowerSupply.DieselEngines.State));
+                    if (powerVanPowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
+                    {
+                        electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
+                        electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
+                        electricTrainSupplyPower = FormatStrings.FormatPower(powerVanPowerSupply.ElectricTrainSupplyPowerW, true, false, false);
                     }
                 }
                 // If power supply is steam power supply, do nothing.

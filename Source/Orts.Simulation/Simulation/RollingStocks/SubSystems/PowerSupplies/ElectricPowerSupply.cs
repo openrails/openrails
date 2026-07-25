@@ -29,7 +29,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public class ScriptedElectricPowerSupply : ScriptedLocomotivePowerSupply
     {
         public MSTSElectricLocomotive ElectricLocomotive => Locomotive as MSTSElectricLocomotive;
-        public ScriptedCircuitBreaker CircuitBreaker { get; protected set; }
+        public ScriptedCircuitBreaker CircuitBreaker => Pantographs.CircuitBreaker;
         public ScriptedVoltageSelector VoltageSelector { get; protected set; }
         public ScriptedPantographSelector PantographSelector { get; protected set; }
         public ScriptedPowerLimitationSelector PowerLimitationSelector { get; protected set; }
@@ -46,7 +46,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public ScriptedElectricPowerSupply(MSTSLocomotive locomotive) :
             base(locomotive)
         {
-            CircuitBreaker = new ScriptedCircuitBreaker(this);
             VoltageSelector = new ScriptedVoltageSelector(this);
             PantographSelector = new ScriptedPantographSelector(this);
             PowerLimitationSelector = new ScriptedPowerLimitationSelector(this);
@@ -56,11 +55,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             switch (lowercasetoken)
             {
-                case "engine(ortscircuitbreaker":
-                case "engine(ortscircuitbreakerclosingdelay":
-                    CircuitBreaker.Parse(lowercasetoken, stf);
-                    break;
-
                 case "engine(ortsvoltageselector":
                     VoltageSelector.Parse(stf);
                     break;
@@ -85,7 +79,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (other is ScriptedElectricPowerSupply scriptedOther)
             {
-                CircuitBreaker.Copy(scriptedOther.CircuitBreaker);
                 VoltageSelector.Copy(scriptedOther.VoltageSelector);
                 PantographSelector.Copy(scriptedOther.PantographSelector);
                 PowerLimitationSelector.Copy(scriptedOther.PowerLimitationSelector);
@@ -120,7 +113,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Script.Initialize();
             }
 
-            CircuitBreaker.Initialize();
             VoltageSelector.Initialize();
             PantographSelector.Initialize();
             PowerLimitationSelector.Initialize();
@@ -133,7 +125,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             base.InitializeMoving();
 
-            CircuitBreaker.InitializeMoving();
             VoltageSelector.InitializeMoving();
             PantographSelector.InitializeMoving();
             PowerLimitationSelector.InitializeMoving();
@@ -142,7 +133,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public override void Save(BinaryWriter outf)
         {
             base.Save(outf);
-            CircuitBreaker.Save(outf);
             VoltageSelector.Save(outf);
             PantographSelector.Save(outf);
             PowerLimitationSelector.Save(outf);
@@ -151,7 +141,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public override void Restore(BinaryReader inf)
         {
             base.Restore(inf);
-            CircuitBreaker.Restore(inf);
             VoltageSelector.Restore(inf);
             PantographSelector.Restore(inf);
             PowerLimitationSelector.Restore(inf);
@@ -161,7 +150,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             base.Update(elapsedClockSeconds);
 
-            CircuitBreaker.Update(elapsedClockSeconds);
             VoltageSelector.Update(elapsedClockSeconds);
             PantographSelector.Update(elapsedClockSeconds);
             PowerLimitationSelector.Update(elapsedClockSeconds);
