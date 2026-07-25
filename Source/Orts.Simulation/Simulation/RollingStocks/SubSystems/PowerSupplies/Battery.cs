@@ -22,10 +22,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float VoltageV { get; protected set; }
         public float CurrentCapacityJ { get; protected set; }
         public float MaxCapacityJ = 3.6e7f;
-        protected float PowerW; // Power demanded by the power supply, not implemented
+        public float ChargingPowerW { get; protected set; } // Power drawn from the auxiliary/ETS supply
+        protected float LowVoltageSupplyPowerW => Car.PowerSupply.LowVoltageSupplyPowerW;
+        protected float PowerFlowW; // Charging (positive) or discharging (negative) power to the battery
         protected float MaxChargingPowerW = 10000;
         protected float ChargingVoltageV;
-        protected bool IsCharging
+        protected bool AuxiliaryPowerSupplyOn
         {
             get
             {
@@ -96,7 +98,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
         public virtual void Initialize()
         {
-            CurrentCapacityJ = 0.7f * MaxCapacityJ;
+            CurrentCapacityJ = MaxCapacityJ;
             if (ChargingVoltageV == 0) ChargingVoltageV = NominalVoltageV * 1.15f;
             if (ChargeVoltageCurve == null)
             {
@@ -125,32 +127,40 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             BatterySwitch.Update(elapsedClockSeconds);
 
-            if (IsCharging)
+            if (AuxiliaryPowerSupplyOn)
             {
                 if (ChargeVoltageCurve[CurrentCapacityJ] < ChargingVoltageV && CurrentCapacityJ < MaxCapacityJ)
                 {
-                    // Charge the battery
-                    float energyJ = MaxChargingPowerW * elapsedClockSeconds;
-                    if (CurrentCapacityJ + energyJ > MaxCapacityJ)
-                        energyJ = MaxCapacityJ - CurrentCapacityJ;
-                    CurrentCapacityJ += energyJ;
+                    PowerFlowW = MaxChargingPowerW;
                 }
-                // When charging, voltage is that of the battery charger
+                else
+                {
+                    PowerFlowW = 0;
+                }
                 VoltageV = ChargingVoltageV;
+                ChargingPowerW = PowerFlowW + LowVoltageSupplyPowerW;
             }
             else
             {
-                if (PowerW > 0 && State == PowerSupplyState.PowerOn)
+                if (State == PowerSupplyState.PowerOn)
                 {
-                    // Discharge the battery
-                    float energyJ = PowerW * elapsedClockSeconds;
-                    if (CurrentCapacityJ - energyJ > 0)
-                        energyJ = CurrentCapacityJ;
-                    CurrentCapacityJ -= energyJ;
+                    PowerFlowW = -LowVoltageSupplyPowerW;
                 }
-                // If battery is draining, voltage will depend on the total charge
-                // Voltage also depends on power drawn, not implemented
+                else
+                {
+                    PowerFlowW = 0;
+                }
                 VoltageV = ChargeVoltageCurve[CurrentCapacityJ];
+                ChargingPowerW = 0;
+            }
+            if (PowerFlowW != 0)
+            {
+                float energyJ = PowerFlowW * elapsedClockSeconds;
+                if (CurrentCapacityJ + energyJ > MaxCapacityJ)
+                    energyJ = MaxCapacityJ - CurrentCapacityJ;
+                else if (CurrentCapacityJ + energyJ < 0)
+                    energyJ = -CurrentCapacityJ;
+                CurrentCapacityJ += energyJ;
             }
         }
     }

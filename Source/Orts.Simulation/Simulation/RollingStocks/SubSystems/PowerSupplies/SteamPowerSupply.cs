@@ -85,6 +85,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOn);
             SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
 
+            AuxiliarySupplyPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() + BatteryChargingPowerW : 0;
+
             if (ElectricTrainSupplyUnfitted())
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.Unavailable);

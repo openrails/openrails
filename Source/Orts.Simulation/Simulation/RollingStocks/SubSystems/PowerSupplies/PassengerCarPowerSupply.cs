@@ -51,6 +51,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
+        public float LowVoltageSupplyPowerW { get; set; } = 0f;
 
         public PowerSupplyState BatteryState
         {
@@ -447,7 +448,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     float airConditioningElectricPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? AirConditioningPowerW() : 0f;
                     float airConditioningThermalPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? - AirConditioningPowerW() * AirConditioningYield() : 0f;
 
-                    SetCurrentElectricTrainSupplyPowerW(ContinuousPowerW() + heatingPowerW + airConditioningElectricPowerW);
+                    SetCurrentElectricTrainSupplyPowerW(ContinuousPowerW() + heatingPowerW + airConditioningElectricPowerW + BatteryChargingPowerW);
                     SetCurrentHeatFlowRateW(heatingPowerW + airConditioningThermalPowerW);
                     break;
             }

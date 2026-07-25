@@ -36,6 +36,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         PowerSupplyState LowVoltagePowerSupplyState { get; set; }
         bool LowVoltagePowerSupplyOn { get; }
+        float LowVoltageSupplyPowerW { get; set; }
 
         PowerSupplyState BatteryState { get; set; }
         bool BatteryOn { get; }

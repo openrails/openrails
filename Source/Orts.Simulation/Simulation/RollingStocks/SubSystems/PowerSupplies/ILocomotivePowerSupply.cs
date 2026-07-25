@@ -39,6 +39,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         PowerSupplyState AuxiliaryPowerSupplyState { get; set; }
         bool AuxiliaryPowerSupplyOn { get; }
+        float AuxiliarySupplyPowerW { get; }
 
         PowerSupplyState CabPowerSupplyState { get; set; }
         bool CabPowerSupplyOn { get; }

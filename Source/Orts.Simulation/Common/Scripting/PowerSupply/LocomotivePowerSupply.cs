@@ -89,7 +89,7 @@ namespace ORTS.Scripting.Api
         }
 
         /// <summary>
-        /// Power limit for traction motors
+        /// Power limit (target) for traction motors
         /// </summary>
         protected float MaximumPowerW
         {
@@ -98,7 +98,7 @@ namespace ORTS.Scripting.Api
         }
 
         /// <summary>
-        /// Power limit for traction motors
+        /// Power limit (instantaneous) for traction motors
         /// </summary>
         protected float AvailableTractionPowerW
         {
@@ -185,6 +185,27 @@ namespace ORTS.Scripting.Api
         /// Auxiliary supply power on delay
         /// </summary>
         protected float AuxPowerOnDelayS() => LpsHost.AuxPowerOnDelayS;
+
+        /// <summary>
+        /// Power consumed all the time from the auxiliary power supply
+        /// </summary>
+        public float AuxContinuousPowerW() => LpsHost.AuxContinuousPowerW;
+
+        /// <summary>
+        /// Auxiliary power consumption
+        /// </summary>
+        protected float AuxiliarySupplyPowerW
+        {
+            get
+            {
+                return LpsHost.AuxiliarySupplyPowerW;
+            }
+            set
+            {
+                LpsHost.AuxiliarySupplyPowerW = value;
+            }
+        }
+
 
         /// <summary>
         /// True if the master key is switched on

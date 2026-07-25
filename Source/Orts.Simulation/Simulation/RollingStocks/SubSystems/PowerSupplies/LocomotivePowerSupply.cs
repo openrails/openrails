@@ -57,6 +57,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public PowerSupplyState AuxiliaryPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool AuxiliaryPowerSupplyOn => AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
+        public float AuxiliarySupplyPowerW { get; set; } = 0f;
 
         public virtual PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool ElectricTrainSupplyOn => ElectricTrainSupplyState == PowerSupplyState.PowerOn;
@@ -87,6 +88,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
+        public float LowVoltageSupplyPowerW { get; set; } = 0f;
 
         public PowerSupplyState BatteryState
         {
@@ -107,6 +109,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public float PowerOnDelayS { get; protected set; } = 0f;
         public float AuxPowerOnDelayS { get; protected set; } = 0f;
+        public float AuxContinuousPowerW { get; protected set; } = 0f;
 
         public bool ServiceRetentionButton { get; set; } = false;
         public bool ServiceRetentionCancellationButton { get; set; } = false;

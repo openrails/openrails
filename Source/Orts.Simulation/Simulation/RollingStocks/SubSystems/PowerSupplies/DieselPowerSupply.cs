@@ -241,6 +241,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             // By default, on diesel locomotives, dynamic brake is available only if main power is available.
             SetCurrentDynamicBrakeAvailability(CurrentMainPowerSupplyState() == PowerSupplyState.PowerOn);
 
+            AuxiliarySupplyPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() + BatteryChargingPowerW : 0;
+
             PowerSupplyState generatorState = CurrentElectricTrainSupplyGeneratorState();
 
             if (generatorState == PowerSupplyState.Unavailable)

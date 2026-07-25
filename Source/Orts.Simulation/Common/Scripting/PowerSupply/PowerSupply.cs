@@ -47,10 +47,26 @@ namespace ORTS.Scripting.Api
         public PowerSupplyState CurrentLowVoltagePowerSupplyState() => Host.LowVoltagePowerSupplyState;
 
         /// <summary>
+        /// Low voltage supply power consumption
+        /// </summary>
+        protected float LowVoltageSupplyPowerW
+        {
+            get
+            {
+                return Host.LowVoltageSupplyPowerW;
+            }
+            set
+            {
+                Host.LowVoltageSupplyPowerW = value;
+            }
+        }
+
+        /// <summary>
         /// Current state of the battery
         /// </summary>
         public PowerSupplyState CurrentBatteryState() => Host.BatteryState;
         public float BatteryVoltageV => Host.Battery.VoltageV;
+        public float BatteryChargingPowerW => Host.Battery.ChargingPowerW;
 
         /// <summary>
         /// True if the battery is switched on
