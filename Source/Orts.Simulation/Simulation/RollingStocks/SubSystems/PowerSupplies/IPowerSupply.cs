@@ -37,6 +37,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         bool FrontElectricTrainSupplyCableConnected { get; set; }
         float ElectricTrainSupplyPowerW { get; }
 
+        PowerSupplyState AuxiliaryPowerSupplyState { get; set; }
+        bool AuxiliaryPowerSupplyOn { get; }
+        float AuxiliarySupplyPowerW { get; set; }
+
         PowerSupplyState LowVoltagePowerSupplyState { get; set; }
         bool LowVoltagePowerSupplyOn { get; }
         float LowVoltageSupplyPowerW { get; set; }

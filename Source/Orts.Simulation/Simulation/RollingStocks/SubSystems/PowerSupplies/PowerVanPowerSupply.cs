@@ -74,6 +74,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
+        public PowerSupplyState AuxiliaryPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
+        public bool AuxiliaryPowerSupplyOn => AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
+        public float AuxiliarySupplyPowerW { get; set; } = 0f;
+
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
         public float LowVoltageSupplyPowerW { get; set; } = 0f;
@@ -296,25 +300,30 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 || CurrentDieselEnginesState() == DieselEngineState.Running)
             {
                 if (!PowerOnTimer.Started)
-                    PowerOnTimer.Start();
-
-                if (PowerOnTimer.Triggered && CurrentElectricTrainSupplyState() == PowerSupplyState.PowerOff)
                 {
+                    PowerOnTimer.Start();
                     SignalEvent(Event.PowerConverterOn);
-                    SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOn);
+                    SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOnOngoing);
+                }
+
+                if (PowerOnTimer.Triggered && CurrentAuxiliaryPowerSupplyState() != PowerSupplyState.PowerOn)
+                {
+                    SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
                 }
             }
             else
             {
                 if (PowerOnTimer.Started)
                     PowerOnTimer.Stop();
-                if (CurrentElectricTrainSupplyState() != PowerSupplyState.PowerOff)
+                if (CurrentAuxiliaryPowerSupplyState() != PowerSupplyState.PowerOff)
                 {
                     SignalEvent(Event.PowerConverterOff);
-                    SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
+                    SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
                     PowerOnTimer.Stop();
                 }
             }
+            SetCurrentElectricTrainSupplyState(CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
+            AuxiliarySupplyPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? BatteryChargingPowerW : 0;
         }
         public override void HandleEvent(PowerSupplyEvent evt)
         {

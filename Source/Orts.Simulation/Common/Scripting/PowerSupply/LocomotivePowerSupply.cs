@@ -45,12 +45,6 @@ namespace ORTS.Scripting.Api
         protected PowerSupplyState CurrentMainPowerSupplyState() => LpsHost.MainPowerSupplyState;
 
         /// <summary>
-        /// Current state of the auxiliary power supply
-        /// Auxiliary power is used by auxiliary systems of a locomotive (such as ventilation or air compressor) and by systems of the cars (such as air conditionning)
-        /// </summary>
-        protected PowerSupplyState CurrentAuxiliaryPowerSupplyState() => LpsHost.AuxiliaryPowerSupplyState;
-
-        /// <summary>
         /// Current state of the cab power supply
         /// </summary>
         protected PowerSupplyState CurrentCabPowerSupplyState() => LpsHost.CabPowerSupplyState;
@@ -192,22 +186,6 @@ namespace ORTS.Scripting.Api
         public float AuxContinuousPowerW() => LpsHost.AuxContinuousPowerW;
 
         /// <summary>
-        /// Auxiliary power consumption
-        /// </summary>
-        protected float AuxiliarySupplyPowerW
-        {
-            get
-            {
-                return LpsHost.AuxiliarySupplyPowerW;
-            }
-            set
-            {
-                LpsHost.AuxiliarySupplyPowerW = value;
-            }
-        }
-
-
-        /// <summary>
         /// True if the master key is switched on
         /// </summary>
         protected bool MasterKeyOn() => LpsHost.MasterKey.On;
@@ -304,12 +282,6 @@ namespace ORTS.Scripting.Api
         /// Main power comes from the pantograph or the diesel generator
         /// </summary>
         protected virtual void SetCurrentMainPowerSupplyState(PowerSupplyState state) => LpsHost.MainPowerSupplyState = state;
-
-        /// <summary>
-        /// Sets the current state of the auxiliary power supply
-        /// Auxiliary power is used by auxiliary systems of a locomotive (such as ventilation or air compressor) and by systems of the cars (such as air conditionning)
-        /// </summary>
-        protected virtual void SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState state) => LpsHost.AuxiliaryPowerSupplyState = state;
 
         /// <summary>
         /// Sets the current state of the cab power supply

@@ -22,6 +22,7 @@ using System.Linq;
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
@@ -71,6 +72,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 if (ElectricTrainSupplyDirection == PowerSupplyDirection.Sink) electricTrainSupplyPowerW = value;
             }
         }
+
+        public PowerSupplyState AuxiliaryPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
+        public bool AuxiliaryPowerSupplyOn => AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
+        public float AuxiliarySupplyPowerW { get; set; } = 0f;
 
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
@@ -360,14 +365,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public class DefaultPassengerCarPowerSupply : PassengerCarPowerSupply
     {
         private Timer PowerOnTimer;
-        PowerSupplyState PassengerPowerSupplyState;
 
         public override void Initialize()
         {
             PowerOnTimer = new Timer(this);
             PowerOnTimer.Setup(PowerOnDelayS());
 
-            PassengerPowerSupplyState = PowerSupplyState.PowerOff;
             SetCurrentVentilationState(PowerSupplyState.PowerOff);
             SetCurrentHeatingState(PowerSupplyState.PowerOff);
             SetCurrentAirConditioningState(PowerSupplyState.PowerOff);
@@ -387,9 +390,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case PowerSupplyState.PowerOff:
                     if (PowerOnTimer.Started)
                         PowerOnTimer.Stop();
-                    if (PassengerPowerSupplyState != PowerSupplyState.PowerOff)
+                    if (CurrentAuxiliaryPowerSupplyState() != PowerSupplyState.PowerOff)
                     {
-                        PassengerPowerSupplyState = PowerSupplyState.PowerOff;
+                        SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
                         SignalEvent(Event.PowerConverterOff);
                     }
                     break;
@@ -397,25 +400,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case PowerSupplyState.PowerOn:
                     if (!PowerOnTimer.Started)
                         PowerOnTimer.Start();
-                    switch (PassengerPowerSupplyState)
+                    switch (CurrentAuxiliaryPowerSupplyState())
                     {
                         case PowerSupplyState.PowerOff:
-                            PassengerPowerSupplyState = PowerSupplyState.PowerOnOngoing;
+                            SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOnOngoing);
+                            SignalEvent(Event.PowerConverterOn);
                             break;
                         case PowerSupplyState.PowerOnOngoing:
                             if (PowerOnTimer.Triggered)
                             {
-                                PassengerPowerSupplyState = PowerSupplyState.PowerOn;
-                                SignalEvent(Event.PowerConverterOn);
+                                SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
                             }
                             break;
                     }
                     break;
             }
 
-            switch (PassengerPowerSupplyState)
+            switch (CurrentAuxiliaryPowerSupplyState())
             {
-                case PowerSupplyState.PowerOff:
+                default:
                     if (CurrentVentilationState() == PowerSupplyState.PowerOn)
                     {
                         SetCurrentVentilationState(PowerSupplyState.PowerOff);
@@ -434,6 +437,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         SignalEvent(Event.AirConditioningOff);
                     }
 
+                    AuxiliarySupplyPowerW = 0;
                     SetCurrentElectricTrainSupplyPowerW(0f);
                     SetCurrentHeatFlowRateW(0f);
                     break;
@@ -475,7 +479,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     float airConditioningElectricPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? AirConditioningPowerW() : 0f;
                     float airConditioningThermalPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? - AirConditioningPowerW() * AirConditioningYield() : 0f;
 
-                    SetCurrentElectricTrainSupplyPowerW(ContinuousPowerW() + heatingPowerW + airConditioningElectricPowerW + BatteryChargingPowerW);
+                    AuxiliarySupplyPowerW = ContinuousPowerW() + heatingPowerW + airConditioningElectricPowerW + BatteryChargingPowerW;
+                    SetCurrentElectricTrainSupplyPowerW(AuxiliarySupplyPowerW);
                     SetCurrentHeatFlowRateW(heatingPowerW + airConditioningThermalPowerW);
                     break;
             }

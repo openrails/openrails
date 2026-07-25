@@ -37,10 +37,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         float MaxThrottlePercent { get; set; }
         float ThrottleReductionPercent { get; set; }
 
-        PowerSupplyState AuxiliaryPowerSupplyState { get; set; }
-        bool AuxiliaryPowerSupplyOn { get; }
-        float AuxiliarySupplyPowerW { get; }
-
         PowerSupplyState CabPowerSupplyState { get; set; }
         bool CabPowerSupplyOn { get; }
 

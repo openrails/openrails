@@ -27,21 +27,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         protected float PowerFlowW; // Charging (positive) or discharging (negative) power to the battery
         protected float MaxChargingPowerW = 10000;
         protected float ChargingVoltageV;
-        protected bool AuxiliaryPowerSupplyOn
-        {
-            get
-            {
-                if (Car is MSTSLocomotive locomotive)
-                {
-                    return locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn;
-                }
-                else if (Car.PowerSupply != null)
-                {
-                    return Car.PowerSupply.ElectricTrainSupplyOn;
-                }
-                return false;
-            }
-        }
+        protected bool AuxiliaryPowerSupplyOn => Car.PowerSupply?.AuxiliaryPowerSupplyOn ?? false;
         public Interpolator ChargeVoltageCurve;
         public PowerSupplyState State;
         public Battery(MSTSWagon wagon)

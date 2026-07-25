@@ -41,6 +41,28 @@ namespace ORTS.Scripting.Api
         public PowerSupplyState CurrentElectricTrainSupplyState() => Host.ElectricTrainSupplyState;
 
         /// <summary>
+        /// Current state of the auxiliary power supply
+        /// Auxiliary power is used by auxiliary systems of a locomotive (such as ventilation or air compressor) and by systems of the cars (such as air conditionning)
+        /// </summary>
+        protected PowerSupplyState CurrentAuxiliaryPowerSupplyState() => Host.AuxiliaryPowerSupplyState;
+
+        /// <summary>
+        /// Auxiliary power consumption
+        /// </summary>
+        protected float AuxiliarySupplyPowerW
+        {
+            get
+            {
+                return Host.AuxiliarySupplyPowerW;
+            }
+            set
+            {
+                Host.AuxiliarySupplyPowerW = value;
+            }
+        }
+
+
+        /// <summary>
         /// Current state of the low voltage power supply
         /// Low voltage power is used by safety systems (such as TCS) or lights
         /// </summary>
@@ -72,6 +94,12 @@ namespace ORTS.Scripting.Api
         /// True if the battery is switched on
         /// </summary>
         public bool BatterySwitchOn() => Host.BatterySwitch.On;
+
+        /// <summary>
+        /// Sets the current state of the auxiliary power supply
+        /// Auxiliary power is used by auxiliary systems of a locomotive (such as ventilation or air compressor) and by systems of the cars (such as air conditionning)
+        /// </summary>
+        protected virtual void SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState state) => Host.AuxiliaryPowerSupplyState = state;
 
         /// <summary>
         /// Sets the current state of the low voltage power supply
