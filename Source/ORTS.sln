@@ -59,6 +59,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiPlayerServer", "MultiP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableEditor", "Contrib\TimetableEditor\TimetableEditor.csproj", "{C3CC640C-80F5-4A69-9467-7F17CC0C6B41}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivitySelect", "ActivitySelect\ActivitySelect.csproj", "{14E593C0-FACB-49CE-A143-CC11E18AB738}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -177,6 +179,10 @@ Global
 		{C3CC640C-80F5-4A69-9467-7F17CC0C6B41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3CC640C-80F5-4A69-9467-7F17CC0C6B41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3CC640C-80F5-4A69-9467-7F17CC0C6B41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14E593C0-FACB-49CE-A143-CC11E18AB738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14E593C0-FACB-49CE-A143-CC11E18AB738}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14E593C0-FACB-49CE-A143-CC11E18AB738}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14E593C0-FACB-49CE-A143-CC11E18AB738}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
