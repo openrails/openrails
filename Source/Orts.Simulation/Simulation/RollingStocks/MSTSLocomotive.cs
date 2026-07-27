@@ -622,12 +622,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Estimate tractive and braking ramp rates if none were given
             if (RunUpTimeToMaxForceS < 0 && this is MSTSDieselLocomotive)
-            {
-                if (this is MSTSDieselLocomotive)
-                    RunUpTimeToMaxForceS = 10.0f; // Use 10 second ramp up as default for diesels
-                else
-                    RunUpTimeToMaxForceS = 5.0f; // Use 5 second ramp up as default for electrics
-            }
+                RunUpTimeToMaxForceS = 10.0f; // Use 10 second ramp up as default for diesels
 
             // Estimate that ramp up takes as long as specified in "RunUpTimeToMaxForce"
             // Half as long to ramp down
