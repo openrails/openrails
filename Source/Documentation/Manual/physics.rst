@@ -784,7 +784,7 @@ Types of Governors
 By default, OpenRails assumes engine speed control is fully
 analog and the engine can maintain any arbitrary speed, including
 speeds in-between the values defined in ``ThrottleRPMTab``. This
-is appropriate for locomotives with penumatic controlled governors,
+is appropriate for locomotives with pneumatic controlled governors,
 but many locomotives use electrically (solenoid) controlled governors.
 Electronic governors can only produce engine speed changes in discrete
 steps, even if the throttle handle is analog.
@@ -820,7 +820,7 @@ To round the throttle setting *up* to the next greatest
 value defined, use ``SpeedControl ( "RoundUp" )``,
 while ``SpeedControl ( "RoundNearest" )`` would round up
 or down to whichever defined value is closest. The default
-behavior, as for a penumatic governor, can be achieved with
+behavior, as for a pneumatic governor, can be achieved with
 ``SpeedControl ( "Continuous" )``.
 
 Note that an engine with an electronic governor can still
