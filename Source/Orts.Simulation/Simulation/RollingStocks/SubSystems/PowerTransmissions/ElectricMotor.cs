@@ -36,7 +36,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Positive nonzero transmission ratio, given by n1:n2 ratio
         /// </summary>
-        public float TransmissionRatio { get; protected set; }
+        public float TransmissionRatio { get; protected set; } = 1.0f;
 
         /// <summary>
         /// Transmission efficiency, relative to 1.0, within range of 0.0 to 1.0 (1.0 means 100%, 0.5 means 50%)
