@@ -425,15 +425,15 @@ namespace Orts.Viewer3D.RollingStock
 
             foreach (var runningGear in RunningGears.Values)
             {
-                runningGear.SetMstsSpeed(8.0f, true);
+                runningGear.SetMstsSpeed(8.0f, true, false);
                 runningGear.SetGltfSpeed(runningGear.MaxFrame);
             }
-            BrakeCylinders.SetMstsSpeed(BrakeCylinders.MaxFrame, false);
-            BrakeRigging.SetMstsSpeed(BrakeRigging.MaxFrame, false);
-            Wipers.SetMstsSpeed(1.5f, true);
-            Bell.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true);
-            Item1Continuous.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true);
-            Item2Continuous.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true);
+            BrakeCylinders.SetMstsSpeed(BrakeCylinders.MaxFrame, false, false);
+            BrakeRigging.SetMstsSpeed(BrakeRigging.MaxFrame, false, false);
+            Wipers.SetMstsSpeed(1.5f, true, false);
+            Bell.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true, false);
+            Item1Continuous.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true, false);
+            Item2Continuous.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true, false);
 
             // Precompute bogie positioning parameters for later
             if (car.Parts.Count > 1)

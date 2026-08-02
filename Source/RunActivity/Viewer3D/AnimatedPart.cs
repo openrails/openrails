@@ -49,16 +49,28 @@ namespace Orts.Viewer3D
         /// </summary>
         float Speed = 1.0f;
 
+        public float SlowDownFactor = 1.0f;
+
         /// <summary>
         /// The saved direction of the loop update.
         /// </summary>
-        float LoopSign;
+        float LoopSign = 1.0f;
 
         /// <summary>
         /// shape format: List of the matrices we're animating for this part.
         /// glTF format: The animation clip's numbers we are playing for this part.
         /// </summary>
         public List<int> MatrixIndexes = new List<int>();
+
+        MstsAnimationOptions MstsOptions;
+
+        [Flags]
+        public enum MstsAnimationOptions
+        {
+            None = 0,
+            SkipChildrenAnimations = 1 << 0,
+            MaxFrameFromKeyframeOne = 1 << 1,
+        }
 
         /// <summary>
         /// Construct with a link to the shape that contains the animated parts 
@@ -81,12 +93,12 @@ namespace Orts.Viewer3D
 
         void UpdateMaxFrame(int matrix)
         {
-            MaxFrame = PoseableShape.SharedShape.GetAnimationLength(matrix);
+            MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.GetAnimationLength(matrix));
 
             if (!(PoseableShape.SharedShape is GltfShape))
             {
                 for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
-                    if (PoseableShape.Hierarchy[i] == matrix)
+                    if (PoseableShape.Hierarchy[i] == matrix && PoseableShape.SharedShape.HasAnimation(i))
                         UpdateMaxFrame(i);
             }
         }
@@ -122,7 +134,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Sets the speed only in case of shape format.
         /// </summary>
-        public void SetMstsSpeed(float mstsSpeed, bool useShapeFrameRate)
+        public void SetMstsSpeed(float mstsSpeed, bool useShapeFrameRate, bool useShapeFrameCount)
         {
             if (PoseableShape?.SharedShape?.Animations?.Count > 0) // Must be true only if the shape format is used, not glTF
             {
@@ -130,7 +142,22 @@ namespace Orts.Viewer3D
 
                 if (useShapeFrameRate)
                     Speed *= (PoseableShape?.SharedShape?.Animations?.ElementAtOrDefault(0)?.FrameRate ?? 30f) / 30f;
+
+                if (useShapeFrameCount)
+                    Speed *= PoseableShape?.SharedShape?.Animations?.ElementAtOrDefault(0)?.FrameCount ?? 1;
             }
+        }
+
+        /// <summary>
+        /// Sets the special animation options for various MSTS shape usages.
+        /// </summary>
+        /// <param name="options"></param>
+        public void SetMstsAnimationOptions(MstsAnimationOptions options)
+        {
+            MstsOptions = options;
+
+            if ((MstsOptions & MstsAnimationOptions.MaxFrameFromKeyframeOne) != 0)
+                MaxFrame = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?.controllers?.FirstOrDefault()?.ElementAtOrDefault(1)?.Frame ?? MaxFrame;
         }
 
         /// <summary>
@@ -140,6 +167,11 @@ namespace Orts.Viewer3D
         {
             if (PoseableShape?.SharedShape is GltfShape)
                 Speed = speed;
+        }
+
+        public int GetFirstTargetNode()
+        {
+            return PoseableShape.SharedShape.GetAnimationTargetNode(MatrixIndexes.FirstOrDefault());
         }
 
         /// <summary>
@@ -158,7 +190,7 @@ namespace Orts.Viewer3D
 
             AnimationKey = frame;
             foreach (var matrix in MatrixIndexes)
-                PoseableShape.AnimateMatrix(matrix, AnimationKey);
+                PoseableShape.AnimateMatrix(matrix, AnimationKey, (MstsOptions & MstsAnimationOptions.SkipChildrenAnimations) != 0);
         }
 
         /// <summary>
@@ -183,18 +215,33 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetFrameWrap(float frame)
         {
-            // Wrap the frame around 0-MaxFrame without hanging when MaxFrame=0.
-            if (MaxFrame > 0)
+            CalculateFrameWrap(ref frame, 0, MaxFrame);
+            SetFrame(frame);
+        }
+
+        /// <summary>
+        /// Pre-calculates the frame wrapping around the frame count range.
+        /// </summary>
+        bool CalculateFrameWrap(ref float frame, float minFrame, float maxFrame)
+        {
+            if (minFrame < 0) minFrame = 0;
+            if (maxFrame > MaxFrame) maxFrame = MaxFrame;
+
+            if (minFrame <= frame && frame <= MaxFrame)
+                return false;
+
+            if (maxFrame - minFrame != 0)
             {
-                frame %= MaxFrame;
+                frame = minFrame + (frame - minFrame) % (maxFrame - minFrame);
                 // If frame was negative (eg: animation run in reverse), it will still be negative
                 // and needs one additional offset by MaxFrame to be in the correct range
                 if (frame < 0)
-                    frame += MaxFrame;
+                    frame += maxFrame;
             }
-            else if (frame < 0)
-                frame = 0;
-            SetFrame(frame);
+            else
+                frame = minFrame;
+            
+            return true;
         }
 
         /// <summary>
@@ -220,8 +267,8 @@ namespace Orts.Viewer3D
         {
             var desiredKey = state * MaxFrame;
 
-            if (Math.Abs(desiredKey - AnimationKey) > elapsedTime.ClockSeconds * Speed)
-                SetFrameClamp(AnimationKey + Math.Sign(desiredKey - AnimationKey) * elapsedTime.ClockSeconds * Speed);
+            if (Math.Abs(desiredKey - AnimationKey) > elapsedTime.ClockSeconds * Speed * SlowDownFactor)
+                SetFrameClamp(AnimationKey + Math.Sign(desiredKey - AnimationKey) * elapsedTime.ClockSeconds * Speed * SlowDownFactor);
             else
                 SetFrameClamp(desiredKey);
         }
@@ -247,7 +294,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void UpdateLoop(float change)
         {
-            SetFrameWrap(AnimationKey + change * Speed);
+            SetFrameWrap(AnimationKey + change * Speed * SlowDownFactor);
         }
 
         /// <summary>
@@ -255,17 +302,25 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="runningSign">1 for forward, -1 for reverse, 0 for stopped</param>
         /// <param name="elapsedTime">The elapsed time since the last update</param>
-        public void UpdateLoop(float runningSign, ElapsedTime elapsedTime)
+        public void UpdateLoop(float runningSign, ElapsedTime elapsedTime, float targetKey = 0, float minFrame = 0, float maxFrame = float.MaxValue)
         {
-            if (runningSign == 0 && AnimationKey == 0)
+            if (runningSign == 0 && AnimationKey == targetKey)
                 return;
 
             if (runningSign != 0)
                 LoopSign = Math.Sign(runningSign);
 
-            var resultKey = AnimationKey + elapsedTime.ClockSeconds * Speed * LoopSign;
-            if (runningSign == 0 && (resultKey <= 0 || MaxFrame <= resultKey))
-                SetFrame(0);
+            var resultKey = AnimationKey + elapsedTime.ClockSeconds * Speed * SlowDownFactor * LoopSign;
+            var wrapped = CalculateFrameWrap(ref resultKey, minFrame, maxFrame);
+
+            bool targetReached = LoopSign < 0
+                ? (wrapped ? (AnimationKey > targetKey || targetKey >= resultKey)
+                           : (AnimationKey > targetKey && targetKey >= resultKey))
+                : (wrapped ? (AnimationKey < targetKey || targetKey <= resultKey)
+                           : (AnimationKey < targetKey && targetKey <= resultKey));
+
+            if (runningSign == 0 && targetReached)
+                SetFrame(targetKey);
             else
                 SetFrameWrap(resultKey);
         }

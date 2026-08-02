@@ -43,6 +43,7 @@ using System.Linq;
 using System.Threading;
 using Event = Orts.Common.Event;
 using Events = Orts.Common.Events;
+using System.Collections;
 
 namespace Orts.Viewer3D
 {
@@ -325,7 +326,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Adjust the pose of the specified node to the frame position specifed by key.
         /// </summary>
-        public void AnimateMatrix(int iMatrix, float key)
+        public void AnimateMatrix(int iMatrix, float key, bool skipChildrenAnimations = false)
         {
             if (SharedShape is GltfShape gltfShape)
             {
@@ -334,6 +335,7 @@ namespace Orts.Viewer3D
                     if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
                         Trace.TraceInformation("No animation number {1} in shape {0}", SharedShape.FilePath, iMatrix);
                     SeenShapeAnimationError[SharedShape.FilePath] = true;
+                    return;
                 }
                 else
                 {
@@ -347,10 +349,13 @@ namespace Orts.Viewer3D
             // Animate the given matrix.
             AnimateOneMatrix(iMatrix, key);
 
+            if (skipChildrenAnimations)
+                return;
+
             // Animate all child nodes in the hierarchy too.
             for (var i = 0; i < Hierarchy.Length; i++)
                 if (Hierarchy[i] == iMatrix)
-                    AnimateMatrix(i, key);
+                    AnimateMatrix(i, key, false);
         }
 
         protected virtual void AnimateOneMatrix(int iMatrix, float key)
@@ -450,7 +455,7 @@ namespace Orts.Viewer3D
             {
                 AnimatedPart = new AnimatedPart(this);
                 AnimatedPart.AddAnimations();
-                AnimatedPart.SetMstsSpeed(30.0f / frameRateDivisor, true);
+                AnimatedPart.SetMstsSpeed(30.0f / frameRateDivisor, true, false);
             }
         }
 
@@ -606,7 +611,7 @@ namespace Orts.Viewer3D
             {
                 AnimatedPart = new AnimatedPart(this);
                 AnimatedPart.AddAnimations();
-                AnimatedPart.SetMstsSpeed(2.0f, false);
+                AnimatedPart.SetMstsSpeed(2.0f, false, false);
 
                 // MSTS shape format junction animations are tricky, they consist of 3 animation nodes.
                 // 0: main, 1: diverging, 2: main again. Go till frame 1 only.
@@ -867,7 +872,7 @@ namespace Orts.Viewer3D
                 Looped = CrossingObj.levelCrTiming.animTiming < 0;
                 AnimatedPart = new AnimatedPart(this);
                 AnimatedPart.AddAnimations();
-                AnimatedPart.SetMstsSpeed(1.0f / CrossingObj.levelCrTiming.animTiming, true);
+                AnimatedPart.SetMstsSpeed(1.0f / CrossingObj.levelCrTiming.animTiming, true, false);
                 AnimatedPart.SetGltfSpeed(1.0f / Math.Abs(CrossingObj.levelCrTiming.animTiming));
 
                 if (!Looped && SharedShape?.Animations?.FirstOrDefault()?.FrameRate is int frameRate)
@@ -931,7 +936,7 @@ namespace Orts.Viewer3D
             {
                 AnimatedPart = new AnimatedPart(this);
                 AnimatedPart.AddAnimations();
-                AnimatedPart.SetMstsSpeed(24.0f, false);
+                AnimatedPart.SetMstsSpeed(24.0f, false, false);
             }
         }
 
@@ -1156,22 +1161,22 @@ namespace Orts.Viewer3D
 
     public class ContainerHandlingItemShape : FuelPickupItemShape
     {
-        protected float AnimationKeyX;
-        protected float AnimationKeyY;
-        protected float AnimationKeyZ;
-        protected float AnimationKeyGrabber01;
-        protected float AnimationKeyGrabber02;
-        protected int IAnimationMatrixX;
-        protected int IAnimationMatrixY;
-        protected int IAnimationMatrixZ;
-        protected int IGrabber01;
-        protected int IGrabber02;
-        protected controller controllerX;
-        protected controller controllerY;
-        protected controller controllerZ;
-        protected controller controllerGrabber01;
-        protected controller controllerGrabber02;
+        AnimatedPart AnimatedPartX;
+        AnimatedPart AnimatedPartY;
+        AnimatedPart AnimatedPartZ;
+        AnimatedPart AnimatedPartCable;
+        AnimatedPart AnimatedPartGrabber01;
+        AnimatedPart AnimatedPartGrabber02;
+
+        Vector3 AnimationXYZSpan;
+        Vector3 AnimationGrabber01Span;
+        Vector3 AnimationGrabber02Span;
+        Vector3 AnimationXYZStart;
+        Vector3 AnimationGrabber01Start;
+        Vector3 AnimationGrabber02Start;
+
         protected float slowDownThreshold = 0.03f;
+
         // To detect transitions that trigger sounds
         protected bool OldMoveX;
         protected bool OldMoveY;
@@ -1186,28 +1191,6 @@ namespace Orts.Viewer3D
 
         public override void Initialize()
         {
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
-            {
-                if (SharedShape.MatrixNames[imatrix].ToLower() == "zaxis")
-                    IAnimationMatrixZ = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "xaxis")
-                    IAnimationMatrixX = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "yaxis")
-                    IAnimationMatrixY = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "grabber01")
-                    IGrabber01 = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "grabber02")
-                    IGrabber02 = imatrix;
-            }
-
-            controllerX = SharedShape.Animations[0].anim_nodes[IAnimationMatrixX].controllers[0];
-            controllerY = SharedShape.Animations[0].anim_nodes[IAnimationMatrixY].controllers[0];
-            controllerZ = SharedShape.Animations[0].anim_nodes[IAnimationMatrixZ].controllers[0];
-            controllerGrabber01 = SharedShape.Animations[0].anim_nodes[IGrabber01].controllers[0];
-            controllerGrabber02 = SharedShape.Animations[0].anim_nodes[IGrabber02].controllers[0];
-            AnimationKeyX = Math.Abs((0 - ((linear_key)controllerX[0]).X) / (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X)) * controllerX[1].Frame;
-            AnimationKeyY = Math.Abs((0 - ((linear_key)controllerY[0]).Y) / (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y)) * controllerY[1].Frame;
-            AnimationKeyZ = Math.Abs((0 - ((linear_key)controllerZ[0]).Z) / (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z)) * controllerZ[1].Frame;
             if (FuelPickupItemObj.CraneSound != null)
             {
                 var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + FuelPickupItemObj.CraneSound;
@@ -1243,245 +1226,115 @@ namespace Orts.Viewer3D
                     Trace.TraceWarning("Cannot find sound file {0}", soundPath);
                 }
             }
-            ContainerHandlingItem = Viewer.Simulator.ContainerManager.ContainerHandlingItems[FuelPickupItemObj.TrItemIDList[0].dbID];
-            AnimationFrames = 1;
-            FrameRate = 1;
-            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].anim_nodes != null && SharedShape.Animations[0].anim_nodes.Count > 0)
-            {
-                FrameRate = SharedShape.Animations[0].FrameCount / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
-                foreach (var anim_node in SharedShape.Animations[0].anim_nodes)
-                    if (anim_node.Name == "ANIMATED_PARTS")
-                    {
-                        AnimationFrames = SharedShape.Animations[0].FrameCount;
-                        break;
-                    }
-            }
-            AnimateOneMatrix(IAnimationMatrixX, AnimationKeyX);
-            AnimateOneMatrix(IAnimationMatrixY, AnimationKeyY);
-            AnimateOneMatrix(IAnimationMatrixZ, AnimationKeyZ);
 
-            var absAnimationMatrix = XNAMatrices[IAnimationMatrixY];
-            Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixX], out absAnimationMatrix);
-            Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixZ], out absAnimationMatrix);
+            AnimatedPartX = new AnimatedPart(this);
+            AnimatedPartY = new AnimatedPart(this);
+            AnimatedPartZ = new AnimatedPart(this);
+            AnimatedPartCable = new AnimatedPart(this);
+            AnimatedPartGrabber01 = new AnimatedPart(this);
+            AnimatedPartGrabber02 = new AnimatedPart(this);
+
+            AnimatedPartX.AddAnimation("XAXIS");
+            AnimatedPartY.AddAnimation("YAXIS");
+            AnimatedPartZ.AddAnimation("ZAXIS");
+            AnimatedPartCable.AddAnimation("CABLE*");
+            AnimatedPartGrabber01.AddAnimation("GRABBER01");
+            AnimatedPartGrabber02.AddAnimation("GRABBER02");
+
+            AnimatedPartX.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
+            AnimatedPartY.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
+            AnimatedPartZ.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
+            AnimatedPartCable.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
+            AnimatedPartGrabber01.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
+            AnimatedPartGrabber02.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
+
+            AnimatedPartX.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
+            AnimatedPartY.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
+            AnimatedPartZ.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
+            AnimatedPartCable.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
+            AnimatedPartGrabber01.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
+            AnimatedPartGrabber02.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
+
+            SharedShape.GetAnimationOutputMinMax(AnimatedPartX.MatrixIndexes.FirstOrDefault(), out var minX, out var maxX, out var startX);
+            SharedShape.GetAnimationOutputMinMax(AnimatedPartY.MatrixIndexes.FirstOrDefault(), out var minY, out var maxY, out var startY);
+            SharedShape.GetAnimationOutputMinMax(AnimatedPartZ.MatrixIndexes.FirstOrDefault(), out var minZ, out var maxZ, out var startZ);
+            SharedShape.GetAnimationOutputMinMax(AnimatedPartGrabber01.MatrixIndexes.FirstOrDefault(), out var minG01, out var maxG01, out AnimationGrabber01Start);
+            SharedShape.GetAnimationOutputMinMax(AnimatedPartGrabber02.MatrixIndexes.FirstOrDefault(), out var minG02, out var maxG02, out AnimationGrabber02Start);
+
+            AnimationXYZStart = new Vector3(startX.X, startY.Y, startZ.Z);
+            AnimationXYZSpan = new Vector3(maxX.X - minX.X, maxY.Y - minY.Y, maxZ.Z - minZ.Z);
+            AnimationGrabber01Span = maxG01 - minG01;
+            AnimationGrabber02Span = maxG02 - minG02;
+
+            var key = GetStateFromPosition(Vector3.Zero);
+
+            AnimatedPartX.SetState(key.X);
+            AnimatedPartY.SetState(key.Y);
+            AnimatedPartZ.SetState(key.Z);
+
+            var absAnimationMatrix = XNAMatrices[AnimatedPartY.GetFirstTargetNode()];
+            Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[AnimatedPartX.GetFirstTargetNode()], out absAnimationMatrix);
+            Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[AnimatedPartZ.GetFirstTargetNode()], out absAnimationMatrix);
             Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
-            ContainerHandlingItem.PassSpanParameters(((linear_key)controllerZ[0]).Z, ((linear_key)controllerZ[1]).Z,
-                ((linear_key)controllerGrabber01[0]).Z - ((linear_key)controllerGrabber01[1]).Z, ((linear_key)controllerGrabber02[0]).Z - ((linear_key)controllerGrabber02[1]).Z);
+
+            ContainerHandlingItem = Viewer.Simulator.ContainerManager.ContainerHandlingItems[FuelPickupItemObj.TrItemIDList[0].dbID];
+            ContainerHandlingItem.PassSpanParameters(maxZ.Z, minZ.Z, minG01.Z - maxG01.Z, minG02.Z - maxG02.Z);
             ContainerHandlingItem.ReInitPositionOffset(absAnimationMatrix);
 
-            AnimationKeyX = Math.Abs((ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.X - ((linear_key)controllerX[0]).X) / (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X)) * controllerX[1].Frame;
-            AnimationKeyY = Math.Abs((ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.Y - ((linear_key)controllerY[0]).Y) / (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y)) * controllerY[1].Frame;
-            AnimationKeyZ = Math.Abs((ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.Z - ((linear_key)controllerZ[0]).Z) / (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z)) * controllerZ[1].Frame;
-            AnimateOneMatrix(IAnimationMatrixX, AnimationKeyX);
-            AnimateOneMatrix(IAnimationMatrixY, AnimationKeyY);
-            AnimateOneMatrix(IAnimationMatrixZ, AnimationKeyZ);
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
-            {
-                if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("cable"))
-                    AnimateOneMatrix(imatrix, AnimationKeyY);
-                if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("grabber"))
-                    AnimateOneMatrix(imatrix, 0);
-            }
+            key = GetStateFromPosition(ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition);
+
+            AnimatedPartX.SetState(key.X);
+            AnimatedPartY.SetState(key.Y);
+            AnimatedPartZ.SetState(key.Z);
+            AnimatedPartCable.SetState(key.Y);
+            AnimatedPartGrabber01.SetState(0);
+            AnimatedPartGrabber02.SetState(0);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-
-            // 0 can be used as a setting for instant animation.
-            /*           if (ContainerHandlingItem.ReFill() && FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
-                       {
-                           if (AnimationKey == 0 && Sound != null) Sound.HandleEvent(Event.FuelTowerDown);
-                           if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimationKey = 1.0f;
-                           else if (AnimationKey < AnimationFrames)
-                               AnimationKey += elapsedTime.ClockSeconds * FrameRate;
-                       }
-
-                       if (!ContainerHandlingItem.ReFill() && AnimationKey > 0)
-                       {
-                           if (AnimationKey == AnimationFrames && Sound != null)
-                           {
-                               Sound.HandleEvent(Event.FuelTowerTransferEnd);
-                               Sound.HandleEvent(Event.FuelTowerUp);
-                           }
-                           AnimationKey -= elapsedTime.ClockSeconds * FrameRate;
-                       }
-
-                       if (AnimationKey < 0)
-                       {
-                           AnimationKey = 0;
-                       }
-                       if (AnimationKey > AnimationFrames)
-                       {
-                           AnimationKey = AnimationFrames;
-                           if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferStart);
-                       }
-
-                       for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-                           AnimateMatrix(i, AnimationKey);
-            */
             if (FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
             {
-                float tempFrameRate;
-                if (ContainerHandlingItem.MoveX)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetX - ((linear_key)controllerX[0]).X) / (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X)) * controllerX[1].Frame;
-                    //                    if (AnimationKey == 0 && Sound != null) Sound.HandleEvent(Event.FuelTowerDown);
-                    tempFrameRate = Math.Abs(AnimationKeyX - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyX < animationTarget)
-                    {
-                        AnimationKeyX += elapsedTime.ClockSeconds * tempFrameRate;
-                        // don't oscillate!
-                        if (AnimationKeyX >= animationTarget)
-                        {
-                            AnimationKeyX = animationTarget;
-                            ContainerHandlingItem.MoveX = false;
-                        }
-                    }
-                    else if (AnimationKeyX > animationTarget)
-                    {
-                        AnimationKeyX -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyX <= animationTarget)
-                        {
-                            AnimationKeyX = animationTarget;
-                            ContainerHandlingItem.MoveX = false;
-                        }
-                    }
-                    else
-                        ContainerHandlingItem.MoveX = false;
-                    if (AnimationKeyX < 0)
-                        AnimationKeyX = 0;
-                }
+                var key = GetStateFromPosition(new Vector3(ContainerHandlingItem.TargetX, ContainerHandlingItem.TargetY, ContainerHandlingItem.TargetZ));
+                var keyGrabber01 = GetStateFromPosition(ContainerHandlingItem.TargetGrabber01, AnimationGrabber01Start.Z, AnimationGrabber01Span.Z);
+                var keyGrabber02 = GetStateFromPosition(ContainerHandlingItem.TargetGrabber02, AnimationGrabber02Start.Z, AnimationGrabber02Span.Z);
 
-                if (ContainerHandlingItem.MoveY)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetY - ((linear_key)controllerY[0]).Y) / (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y)) * controllerY[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyY - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyY < animationTarget)
-                    {
-                        AnimationKeyY += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyY >= animationTarget)
-                        {
-                            AnimationKeyY = animationTarget;
-                            ContainerHandlingItem.MoveY = false;
-                        }
-                    }
-                    else if (AnimationKeyY > animationTarget)
-                    {
-                        AnimationKeyY -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyY <= animationTarget)
-                        {
-                            AnimationKeyY = animationTarget;
-                            ContainerHandlingItem.MoveY = false;
-                        }
-                    }
-                    else
-                        ContainerHandlingItem.MoveY = false;
-                    if (AnimationKeyY < 0)
-                        AnimationKeyY = 0;
-                }
+                AnimatedPartX.SlowDownFactor = Math.Abs(AnimatedPartX.AnimationKeyFraction() - key.X) > slowDownThreshold / AnimatedPartX.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartY.SlowDownFactor = Math.Abs(AnimatedPartY.AnimationKeyFraction() - key.Y) > slowDownThreshold / AnimatedPartY.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartZ.SlowDownFactor = Math.Abs(AnimatedPartZ.AnimationKeyFraction() - key.Z) > slowDownThreshold / AnimatedPartZ.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartCable.SlowDownFactor = Math.Abs(AnimatedPartCable.AnimationKeyFraction() - key.Y) > slowDownThreshold / AnimatedPartCable.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartGrabber01.SlowDownFactor = Math.Abs(AnimatedPartGrabber01.AnimationKeyFraction() - keyGrabber01) > slowDownThreshold / AnimatedPartGrabber01.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartGrabber02.SlowDownFactor = Math.Abs(AnimatedPartGrabber02.AnimationKeyFraction() - keyGrabber02) > slowDownThreshold / AnimatedPartGrabber02.MaxFrame ? 1.0f : 0.25f;
 
-                if (ContainerHandlingItem.MoveZ)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetZ - ((linear_key)controllerZ[0]).Z) / (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z)) * controllerZ[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyZ - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyZ < animationTarget)
-                    {
-                        AnimationKeyZ += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyZ >= animationTarget)
-                        {
-                            AnimationKeyZ = animationTarget;
-                            ContainerHandlingItem.MoveZ = false;
-                        }
-                    }
-                    else if (AnimationKeyZ > animationTarget)
-                    {
-                        AnimationKeyZ -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyZ <= animationTarget)
-                        {
-                            AnimationKeyZ = animationTarget;
-                            ContainerHandlingItem.MoveZ = false;
-                        }
-                    }
-                    else
-                        ContainerHandlingItem.MoveZ = false;
-                    if (AnimationKeyZ < 0)
-                        AnimationKeyZ = 0;
-                }
+                AnimatedPartX.UpdateState(key.X, elapsedTime);
+                AnimatedPartY.UpdateState(key.Y, elapsedTime);
+                AnimatedPartZ.UpdateState(key.Z, elapsedTime);
+                AnimatedPartCable.UpdateState(key.Y, elapsedTime);
+                AnimatedPartGrabber01.UpdateState(keyGrabber01, elapsedTime);
+                AnimatedPartGrabber02.UpdateState(keyGrabber02, elapsedTime);
 
-                if (ContainerHandlingItem.MoveGrabber)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetGrabber01 - ((linear_key)controllerGrabber01[0]).Z + ((linear_key)controllerGrabber01[1]).Z) / (((linear_key)controllerGrabber01[1]).Z - ((linear_key)controllerGrabber01[0]).Z)) * controllerGrabber01[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyGrabber01 - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyGrabber01 < animationTarget)
-                    {
-                        AnimationKeyGrabber01 += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber01 >= animationTarget)
-                        {
-                            AnimationKeyGrabber01 = animationTarget;
-                        }
-                    }
-                    else if (AnimationKeyGrabber01 > animationTarget)
-                    {
-                        AnimationKeyGrabber01 -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber01 <= animationTarget)
-                        {
-                            AnimationKeyGrabber01 = animationTarget;
-                        }
-                    }
-                    if (AnimationKeyGrabber01 < 0)
-                        AnimationKeyGrabber01 = 0;
-                    var animationTarget2 = Math.Abs((ContainerHandlingItem.TargetGrabber02 - ((linear_key)controllerGrabber02[0]).Z + ((linear_key)controllerGrabber02[1]).Z) / (((linear_key)controllerGrabber02[1]).Z - ((linear_key)controllerGrabber02[0]).Z)) * controllerGrabber02[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyGrabber01 - animationTarget2) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyGrabber02 < animationTarget2)
-                    {
-                        AnimationKeyGrabber02 += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber02 >= animationTarget2)
-                        {
-                            AnimationKeyGrabber02 = animationTarget2;
-                        }
-                    }
-                    else if (AnimationKeyGrabber02 > animationTarget2)
-                    {
-                        AnimationKeyGrabber02 -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber02 <= animationTarget2)
-                        {
-                            AnimationKeyGrabber02 = animationTarget2;
-                        }
-                    }
-                    if (animationTarget == AnimationKeyGrabber01 && animationTarget2 == AnimationKeyGrabber02)
-                        ContainerHandlingItem.MoveGrabber = false;
-                    if (AnimationKeyGrabber02 < 0)
-                        AnimationKeyGrabber02 = 0;
-                }
+                if (AnimatedPartX.AnimationKeyFraction() == key.X) ContainerHandlingItem.MoveX = false;
+                if (AnimatedPartY.AnimationKeyFraction() == key.Y) ContainerHandlingItem.MoveY = false;
+                if (AnimatedPartZ.AnimationKeyFraction() == key.Z) ContainerHandlingItem.MoveZ = false;
+                if (AnimatedPartGrabber01.AnimationKeyFraction() == keyGrabber01 && AnimatedPartGrabber02 .AnimationKeyFraction() == keyGrabber02) ContainerHandlingItem.MoveGrabber = false;
             }
-            ContainerHandlingItem.ActualX = (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X) * AnimationKeyX / controllerX[1].Frame + ((linear_key)controllerX[0]).X;
-            ContainerHandlingItem.ActualY = (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y) * AnimationKeyY / controllerY[1].Frame + ((linear_key)controllerY[0]).Y;
-            ContainerHandlingItem.ActualZ = (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z) * AnimationKeyZ / controllerZ[1].Frame + ((linear_key)controllerZ[0]).Z;
-            ContainerHandlingItem.ActualGrabber01 = (((linear_key)controllerGrabber01[1]).Z - ((linear_key)controllerGrabber01[0]).Z) * AnimationKeyGrabber01 / controllerGrabber01[1].Frame + ((linear_key)controllerGrabber01[0]).Z;
-            ContainerHandlingItem.ActualGrabber02 = (((linear_key)controllerGrabber02[1]).Z - ((linear_key)controllerGrabber02[0]).Z) * AnimationKeyGrabber02 / controllerGrabber02[1].Frame + ((linear_key)controllerGrabber02[0]).Z;
 
-            AnimateOneMatrix(IAnimationMatrixX, AnimationKeyX);
-            AnimateOneMatrix(IAnimationMatrixY, AnimationKeyY);
-            AnimateOneMatrix(IAnimationMatrixZ, AnimationKeyZ);
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
-            {
-                if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("cable"))
-                    AnimateOneMatrix(imatrix, AnimationKeyY);
-                else if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("grabber01"))
-                    AnimateOneMatrix(imatrix, AnimationKeyGrabber01);
-                else if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("grabber02"))
-                    AnimateOneMatrix(imatrix, AnimationKeyGrabber02);
-            }
+            ContainerHandlingItem.ActualX = AnimatedPartX.AnimationKeyFraction() * AnimationXYZSpan.X + AnimationXYZStart.X;
+            ContainerHandlingItem.ActualY = AnimatedPartY.AnimationKeyFraction() * AnimationXYZSpan.Y + AnimationXYZStart.Y;
+            ContainerHandlingItem.ActualZ = AnimatedPartZ.AnimationKeyFraction() * AnimationXYZSpan.Z + AnimationXYZStart.Z;
+            ContainerHandlingItem.ActualGrabber01 = AnimatedPartGrabber01.AnimationKeyFraction() * AnimationGrabber01Span.Z + AnimationGrabber01Start.Z;
+            ContainerHandlingItem.ActualGrabber02 = AnimatedPartGrabber02.AnimationKeyFraction() * AnimationGrabber02Span.Z + AnimationGrabber02Start.Z;
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+
             if (ContainerHandlingItem.ContainerAttached)
             {
-                var absAnimationMatrix = XNAMatrices[IAnimationMatrixY];
-                Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixX], out absAnimationMatrix);
-                Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixZ], out absAnimationMatrix);
+                var absAnimationMatrix = XNAMatrices[AnimatedPartY.GetFirstTargetNode()];
+                Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[AnimatedPartX.GetFirstTargetNode()], out absAnimationMatrix);
+                Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[AnimatedPartZ.GetFirstTargetNode()], out absAnimationMatrix);
                 Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
                 ContainerHandlingItem.TransferContainer(absAnimationMatrix);
             }
-
 
             // let's make some noise
 
@@ -1504,6 +1357,21 @@ namespace Orts.Viewer3D
             OldMoveZ = ContainerHandlingItem.MoveZ;
         }
 
+        Vector3 GetStateFromPosition(Vector3 input)
+        {
+            var output = (input - AnimationXYZStart) / AnimationXYZSpan;
+
+            output.X = Math.Abs(output.X);
+            output.Y = Math.Abs(output.Y);
+            output.Z = Math.Abs(output.Z);
+
+            return output;
+        }
+
+        float GetStateFromPosition(float input, float start, float span)
+        {
+            return Math.Abs((input - start) / span);
+        }
     }
 
 
@@ -1556,7 +1424,7 @@ namespace Orts.Viewer3D
 
             AnimatedPart = new AnimatedPart(this);
             AnimatedPart.AddAnimations();
-            AnimatedPart.SetMstsSpeed(30f, true); // Seems like the FrameRate is used directly here, unlike in other classes where it is rated to 30.
+            AnimatedPart.SetMstsSpeed(30f, true, false); // Seems like the FrameRate is used directly here, unlike in other classes where it is rated to 30.
             AnimatedPart.SetFrameWrap(Turntable.YAngle / MathHelper.TwoPi * AnimatedPart.MaxFrame);
 
             var absAnimationMatrix = XNAMatrices.ElementAtOrDefault(SharedShape.GetAnimationTargetNode(IAnimationMatrix));
@@ -1658,7 +1526,7 @@ namespace Orts.Viewer3D
 
             AnimatedPart = new AnimatedPart(this);
             AnimatedPart.AddAnimations();
-            AnimatedPart.SetMstsSpeed(30f, true);
+            AnimatedPart.SetMstsSpeed(30f, true, false);
             AnimatedPart.SetFrameClamp((Transfertable.OffsetPos - Transfertable.CenterOffsetComponent) / Transfertable.Span * AnimatedPart.MaxFrame);
 
             var absAnimationMatrix = XNAMatrices.ElementAtOrDefault(SharedShape.GetAnimationTargetNode(IAnimationMatrix));
@@ -2743,6 +2611,30 @@ namespace Orts.Viewer3D
 
         public virtual float GetAnimationLength(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?
             .Select(c => c.LastOrDefault()?.Frame ?? 0).DefaultIfEmpty(0).Max() ?? 0;
+
+        public virtual void GetAnimationOutputMinMax(int animationId, out Vector3 min, out Vector3 max, out Vector3 start)
+        {
+            min = max = start = Vector3.Zero;
+
+            if (!(Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?.FirstOrDefault() is IList keys) || keys.Count == 0)
+                return;
+
+            var v = (linear_key)keys[0];
+            min = max = start = new Vector3(v.X, v.Y, v.Z);
+
+            for (int i = 1; i < keys.Count; i++)
+            {
+                v = (linear_key)keys[i];
+
+                if (v.X < min.X) min.X = v.X;
+                if (v.Y < min.Y) min.Y = v.Y;
+                if (v.Z < min.Z) min.Z = v.Z;
+
+                if (v.X > max.X) max.X = v.X;
+                if (v.Y > max.Y) max.Y = v.Y;
+                if (v.Z > max.Z) max.Z = v.Z;
+            }
+        }
 
         [CallOnThread("Loader")]
         internal void Mark()
