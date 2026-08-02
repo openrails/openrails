@@ -1678,6 +1678,31 @@ namespace Orts.Viewer3D
         public override bool HasAnimation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
         public override float GetAnimationLength(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TimeMax).Max() ?? 0;
 
+        public override void GetAnimationOutputMinMax(int animationId, out Vector3 min, out Vector3 max, out Vector3 start)
+        {
+            min = max = start = Vector3.Zero;
+
+            var outputVector3 = GltfAnimations?.ElementAtOrDefault(animationId)?.Channels?.FirstOrDefault()?.OutputVector3;
+
+            if (outputVector3 == null || outputVector3.Length == 0)
+                return;
+
+            min = max = start = outputVector3[0];
+
+            for (int i = 1; i < outputVector3.Length; i++)
+            {
+                var v = outputVector3[i];
+
+                if (v.X < min.X) min.X = v.X;
+                if (v.Y < min.Y) min.Y = v.Y;
+                if (v.Z < min.Z) min.Z = v.Z;
+
+                if (v.X > max.X) max.X = v.X;
+                if (v.Y > max.Y) max.Y = v.Y;
+                if (v.Z > max.Z) max.Z = v.Z;
+            }
+        }
+
         /// <summary>
         /// Calculate the animation matrices of a glTF animation.
         /// </summary>
