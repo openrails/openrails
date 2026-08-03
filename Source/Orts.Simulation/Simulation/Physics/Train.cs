@@ -199,7 +199,7 @@ namespace Orts.Simulation.Physics
         public float MaxAuxTenderWaterMassKG;
         public bool IsAuxTenderCoupled = false;
         bool AuxTenderFound = false;
-        string PrevWagonType;
+        TrainCar PrevWagonType;
 
         public bool HasControlCarWithGear = false;
 
@@ -2349,8 +2349,12 @@ namespace Orts.Simulation.Physics
 
                     if (Cars[i].AuxWagonType == "AuxiliaryTender" && i > LeadLocomotiveIndex && IsPlayerDriven)  // If value has been entered for auxiliary tender & AuxTender car value is greater then the lead locomotive & and it is player driven
                     {
-                        PrevWagonType = Cars[i - 1].AuxWagonType;
-                        if (PrevWagonType == "Tender" || PrevWagonType == "Engine")  // Aux tender found in consist
+                        PrevWagonType = i > 0 ? Cars[i - 1] : null;
+
+                        if (PrevWagonType != null)
+                        {
+                            // Aux tender found in consist, either behind a tank locomotive, so no tender required, or behind a tender, so tender is already present. Aux tender can be used to supplement water supply.
+                            if (PrevWagonType.WagonType == TrainCar.WagonTypes.Tender || (PrevWagonType.WagonType == TrainCar.WagonTypes.Engine && mstsSteamLocomotive.IsTenderRequired == 0))
                         {
                             if (Simulator.Activity != null) // If an activity check to see if fuel presets are used.
                             {
@@ -2376,10 +2380,7 @@ namespace Orts.Simulation.Physics
                                 mstsSteamLocomotive.CurrentAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG;
                                 IsAuxTenderCoupled = true;
                                 AuxTenderFound = true;      // Auxililary tender found in consist.
-
                             }
-
-
                         }
                         else // Aux tender not found in consist
                         {
@@ -2388,13 +2389,15 @@ namespace Orts.Simulation.Physics
                         }
 
                     }
-
 #if DEBUG_AUXTENDER
                     Trace.TraceInformation("=============================== DEBUG_AUXTENDER (Train.cs) ==============================================================");
                    // Trace.TraceInformation("Activity Fuel Value {0}", ActivityFuelLevel);
                     Trace.TraceInformation("CarID {0} AuxWagonType {1} LeadLocomotive {2} Max WaterMass {3} Current Water Mass {4}", i, Cars[i].AuxWagonType, LeadLocomotiveIndex, MaxAuxTenderWaterMassKG, mstsSteamLocomotive.CurrentAuxTenderWaterMassKG);
-                    Trace.TraceInformation("Prev {0} Coupled {1}", PrevWagonType, IsAuxTenderCoupled);
+                        Trace.TraceInformation("Prev {0} AuxCoupled {1}", PrevWagonType.WagonType, IsAuxTenderCoupled);
 #endif
+                    }
+
+
 
                 }
 
