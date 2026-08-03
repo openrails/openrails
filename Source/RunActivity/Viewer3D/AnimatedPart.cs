@@ -70,6 +70,7 @@ namespace Orts.Viewer3D
             None = 0,
             SkipChildrenAnimations = 1 << 0,
             MaxFrameFromKeyframeOne = 1 << 1,
+            MaxFrameFromFrameRate = 1 << 2,
         }
 
         /// <summary>
@@ -158,6 +159,9 @@ namespace Orts.Viewer3D
 
             if ((MstsOptions & MstsAnimationOptions.MaxFrameFromKeyframeOne) != 0)
                 MaxFrame = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?.controllers?.FirstOrDefault()?.ElementAtOrDefault(1)?.Frame ?? MaxFrame;
+            if ((MstsOptions & MstsAnimationOptions.MaxFrameFromFrameRate) != 0
+                && PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.FrameRate is int frameRate)
+                    MaxFrame = frameRate / 30.0f;
         }
 
         /// <summary>

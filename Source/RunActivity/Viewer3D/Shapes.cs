@@ -635,7 +635,7 @@ namespace Orts.Viewer3D
         int NumIndices;
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
 
-        protected float AnimationKey;  // tracks position of points as they move left and right
+        AnimatedPart AnimatedPart; // An old comment from the code: "tracks position of points as they move left and right". But seems to always on 0.
         ShapePrimitive shapePrimitive;
         public SpeedPostShape(Viewer viewer, string path, WorldPosition position, SpeedPostObj spo)
             : base(viewer, path, position)
@@ -762,6 +762,13 @@ namespace Orts.Viewer3D
             IndexBuffer.SetData(newTList);
             shapePrimitive = new ShapePrimitive(material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, NumIndices / 3, new[] { -1 }, 0);
 
+            if (SharedShape.HasAnimations())
+            {
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAnimations();
+                AnimatedPart.SetState(0);
+            }
+
         }
 
         static float GetTextureCoordX(char c)
@@ -798,15 +805,8 @@ namespace Orts.Viewer3D
             // TODO: Make this use AddAutoPrimitive instead.
             frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
 
-            // if there is no animation, that's normal and so no animation missing error is displayed
-            if (SharedShape.Animations == null || SharedShape.Animations.Count == 0)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
-                    SeenShapeAnimationError[SharedShape.FilePath] = true;
-            }
             // Update the pose
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-                AnimateMatrix(iMatrix, AnimationKey);
+            //AnimatedPart?.SetState(0); // Currently it seems to be always zero. Unfinished development in the original code?
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
@@ -823,8 +823,10 @@ namespace Orts.Viewer3D
         readonly LevelCrossingObj CrossingObj;
         readonly SoundSource Sound;
         readonly LevelCrossing Crossing;
-        readonly AnimatedPart AnimatedPart;
-        readonly bool Looped;
+
+        readonly AnimatedPart AnimatedPartOpenLoop;
+        readonly AnimatedPart AnimatedPartClosing;
+        readonly AnimatedPart AnimatedPartClosedLoop;
 
         bool Opening = true;
 
@@ -861,6 +863,27 @@ namespace Orts.Viewer3D
 
             if (SharedShape.HasAnimations())
             {
+                AnimatedPartOpenLoop = new AnimatedPart(this);
+                AnimatedPartClosing = new AnimatedPart(this);
+                AnimatedPartClosedLoop = new AnimatedPart(this);
+
+                var speed = 1.0f / CrossingObj.levelCrTiming.animTiming;
+
+                AnimatedPartOpenLoop.SetMstsSpeed(speed, true, false);
+                AnimatedPartClosing.SetMstsSpeed(speed, false, false);
+                AnimatedPartClosedLoop.SetMstsSpeed(speed, true, false);
+
+                AnimatedPartOpenLoop.SetGltfSpeed(speed);
+                AnimatedPartClosing.SetGltfSpeed(speed);
+                AnimatedPartClosedLoop.SetGltfSpeed(speed);
+
+                // The original MSTS crossing shapes don't have the animations named, but having names allows all three types to be in a single shape/glTF file.
+                AnimatedPartOpenLoop.AddAnimation("ORTS_LEVELCROSSING_OPEN_LOOP");
+                AnimatedPartClosing.AddAnimation("ORTS_LEVELCROSSING_CLOSING");
+                AnimatedPartClosedLoop.AddAnimation("ORTS_LEVELCROSSING_CLOSED_LOOP");
+
+                // If no names in the shape file, fall back to the original behaviour.
+                //
                 // LOOPED COSSINGS (animTiming < 0)
                 //     MSTS plays through all the frames of the animation for "closed" and sits on frame 0 for "open". The
                 //     speed of animation is the normal speed (frame rate at 30FPS) scaled by the timing value. Since the
@@ -869,14 +892,16 @@ namespace Orts.Viewer3D
                 //     MSTS plays through the first 1.0 seconds of the animation forwards for closing and backwards for
                 //     opening. The number of frames defined doesn't matter; the animation is limited by time so the frame
                 //     rate (based on 30FPS) is what's needed.
-                Looped = CrossingObj.levelCrTiming.animTiming < 0;
-                AnimatedPart = new AnimatedPart(this);
-                AnimatedPart.AddAnimations();
-                AnimatedPart.SetMstsSpeed(1.0f / CrossingObj.levelCrTiming.animTiming, true, false);
-                AnimatedPart.SetGltfSpeed(1.0f / Math.Abs(CrossingObj.levelCrTiming.animTiming));
-
-                if (!Looped && SharedShape?.Animations?.FirstOrDefault()?.FrameRate is int frameRate)
-                    AnimatedPart.MaxFrame = frameRate / 30f; // Clamped to max 1 s for shape format
+                if (AnimatedPartOpenLoop.MatrixIndexes.Count + AnimatedPartClosing.MatrixIndexes.Count + AnimatedPartClosedLoop.MatrixIndexes.Count == 0)
+                {
+                    if (speed < 0)
+                        AnimatedPartClosedLoop.AddAnimations();
+                    else
+                    {
+                        AnimatedPartClosing.AddAnimations();
+                        AnimatedPartClosing.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.MaxFrameFromFrameRate);
+                    }
+                }
             }
         }
 
@@ -901,10 +926,17 @@ namespace Orts.Viewer3D
                 Sound?.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
             }
 
-            if (Looped)
-                AnimatedPart?.UpdateLoop(Opening ? 0f : 1f, elapsedTime);
+            AnimatedPartClosing?.UpdateState(Opening ? 0f : 1f, elapsedTime);
+            if (AnimatedPartClosing?.AnimationKeyFraction() > 0)
+            {
+                AnimatedPartOpenLoop.SetState(0);
+                AnimatedPartClosedLoop.UpdateLoop(1, elapsedTime);
+            }
             else
-                AnimatedPart?.UpdateState(Opening ? 0f : 1f, elapsedTime);
+            {
+                AnimatedPartClosedLoop.SetState(0);
+                AnimatedPartOpenLoop.UpdateLoop(1, elapsedTime);
+            }
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
@@ -1175,13 +1207,12 @@ namespace Orts.Viewer3D
         Vector3 AnimationGrabber01Start;
         Vector3 AnimationGrabber02Start;
 
-        protected float slowDownThreshold = 0.03f;
+        float SlowDownThreshold = 0.03f;
 
         // To detect transitions that trigger sounds
-        protected bool OldMoveX;
-        protected bool OldMoveY;
-        protected bool OldMoveZ;
-
+        bool OldMoveX;
+        bool OldMoveY;
+        bool OldMoveZ;
 
         protected ContainerHandlingItem ContainerHandlingItem;
         public ContainerHandlingItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj)
@@ -1191,17 +1222,7 @@ namespace Orts.Viewer3D
 
         public override void Initialize()
         {
-            if (FuelPickupItemObj.CraneSound != null)
-            {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + FuelPickupItemObj.CraneSound;
-                try
-                {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                }
-                catch
-                {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\containercrane.sms";
+            var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath + @"\\sound\\" + (FuelPickupItemObj.CraneSound ?? "containercrane.sms"), Viewer.Simulator.BasePath + @"\\sound\\containercrane.sms" }, "");
                     try
                     {
                         Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
@@ -1211,21 +1232,6 @@ namespace Orts.Viewer3D
                     {
                         Trace.TraceWarning("Cannot find sound file {0}", soundPath);
                     }
-                }
-            }
-            else
-            {
-                var soundPath = Viewer.Simulator.BasePath + @"\\sound\\containercrane.sms";
-                try
-                {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                }
-                catch
-                {
-                    Trace.TraceWarning("Cannot find sound file {0}", soundPath);
-                }
-            }
 
             AnimatedPartX = new AnimatedPart(this);
             AnimatedPartY = new AnimatedPart(this);
@@ -1241,12 +1247,14 @@ namespace Orts.Viewer3D
             AnimatedPartGrabber01.AddAnimation("GRABBER01");
             AnimatedPartGrabber02.AddAnimation("GRABBER02");
 
-            AnimatedPartX.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
-            AnimatedPartY.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
-            AnimatedPartZ.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
-            AnimatedPartCable.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
-            AnimatedPartGrabber01.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
-            AnimatedPartGrabber02.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
+            var mstsSpeed = 1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
+
+            AnimatedPartX.SetMstsSpeed(mstsSpeed, false, true);
+            AnimatedPartY.SetMstsSpeed(mstsSpeed, false, true);
+            AnimatedPartZ.SetMstsSpeed(mstsSpeed, false, true);
+            AnimatedPartCable.SetMstsSpeed(mstsSpeed, false, true);
+            AnimatedPartGrabber01.SetMstsSpeed(mstsSpeed, false, true);
+            AnimatedPartGrabber02.SetMstsSpeed(mstsSpeed, false, true);
 
             AnimatedPartX.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
             AnimatedPartY.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
@@ -1299,12 +1307,12 @@ namespace Orts.Viewer3D
                 var keyGrabber01 = GetStateFromPosition(ContainerHandlingItem.TargetGrabber01, AnimationGrabber01Start.Z, AnimationGrabber01Span.Z);
                 var keyGrabber02 = GetStateFromPosition(ContainerHandlingItem.TargetGrabber02, AnimationGrabber02Start.Z, AnimationGrabber02Span.Z);
 
-                AnimatedPartX.SlowDownFactor = Math.Abs(AnimatedPartX.AnimationKeyFraction() - key.X) > slowDownThreshold / AnimatedPartX.MaxFrame ? 1.0f : 0.25f;
-                AnimatedPartY.SlowDownFactor = Math.Abs(AnimatedPartY.AnimationKeyFraction() - key.Y) > slowDownThreshold / AnimatedPartY.MaxFrame ? 1.0f : 0.25f;
-                AnimatedPartZ.SlowDownFactor = Math.Abs(AnimatedPartZ.AnimationKeyFraction() - key.Z) > slowDownThreshold / AnimatedPartZ.MaxFrame ? 1.0f : 0.25f;
-                AnimatedPartCable.SlowDownFactor = Math.Abs(AnimatedPartCable.AnimationKeyFraction() - key.Y) > slowDownThreshold / AnimatedPartCable.MaxFrame ? 1.0f : 0.25f;
-                AnimatedPartGrabber01.SlowDownFactor = Math.Abs(AnimatedPartGrabber01.AnimationKeyFraction() - keyGrabber01) > slowDownThreshold / AnimatedPartGrabber01.MaxFrame ? 1.0f : 0.25f;
-                AnimatedPartGrabber02.SlowDownFactor = Math.Abs(AnimatedPartGrabber02.AnimationKeyFraction() - keyGrabber02) > slowDownThreshold / AnimatedPartGrabber02.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartX.SlowDownFactor = Math.Abs(AnimatedPartX.AnimationKeyFraction() - key.X) > SlowDownThreshold / AnimatedPartX.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartY.SlowDownFactor = Math.Abs(AnimatedPartY.AnimationKeyFraction() - key.Y) > SlowDownThreshold / AnimatedPartY.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartZ.SlowDownFactor = Math.Abs(AnimatedPartZ.AnimationKeyFraction() - key.Z) > SlowDownThreshold / AnimatedPartZ.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartCable.SlowDownFactor = Math.Abs(AnimatedPartCable.AnimationKeyFraction() - key.Y) > SlowDownThreshold / AnimatedPartCable.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartGrabber01.SlowDownFactor = Math.Abs(AnimatedPartGrabber01.AnimationKeyFraction() - keyGrabber01) > SlowDownThreshold / AnimatedPartGrabber01.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartGrabber02.SlowDownFactor = Math.Abs(AnimatedPartGrabber02.AnimationKeyFraction() - keyGrabber02) > SlowDownThreshold / AnimatedPartGrabber02.MaxFrame ? 1.0f : 0.25f;
 
                 AnimatedPartX.UpdateState(key.X, elapsedTime);
                 AnimatedPartY.UpdateState(key.Y, elapsedTime);
@@ -1357,6 +1365,8 @@ namespace Orts.Viewer3D
             OldMoveZ = ContainerHandlingItem.MoveZ;
         }
 
+        float GetStateFromPosition(float input, float start, float span) => MathHelper.Clamp(Math.Abs((input - start) / span), 0.0f, 1.0f);
+
         Vector3 GetStateFromPosition(Vector3 input)
         {
             var output = (input - AnimationXYZStart) / AnimationXYZSpan;
@@ -1365,12 +1375,7 @@ namespace Orts.Viewer3D
             output.Y = Math.Abs(output.Y);
             output.Z = Math.Abs(output.Z);
 
-            return output;
-        }
-
-        float GetStateFromPosition(float input, float start, float span)
-        {
-            return Math.Abs((input - start) / span);
+            return Vector3.Clamp(output, Vector3.Zero, Vector3.One);
         }
     }
 
