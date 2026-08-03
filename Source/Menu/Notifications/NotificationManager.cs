@@ -676,14 +676,14 @@ namespace Menu.Notifications
                     var name = typeName.Split('.').Last();
                     var result = typeof(Notifications).Assembly.GetType($"{@namespace}.{name}");
 
-                    // Any errors are silenced, so write to the debug output instead.
-                    if (result == null)
+                    // Any errors are silenced so, for debugging, write a message instead.
+                    if (result is null)
                     {
                         Debug.WriteLine($"WARNING: {@namespace}.{name} not recognised item type");
                     }
 
                     return (result is null)
-                        ? typeof(Notifications).Assembly.GetType("Menu.Notifications.MissingItem")
+                        ? typeof(MissingItem)
                         : typeof(Notifications).Assembly.GetType($"{@namespace}.{name}");
                 }
                 else
