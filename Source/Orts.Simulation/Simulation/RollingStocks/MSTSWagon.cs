@@ -3371,16 +3371,11 @@ namespace Orts.Simulation.RollingStocks
                     // Find the associated steam locomotive for this tender
                     if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
 
-                    // If no locomotive is found to be associated with this tender, then OR crashes, ie TendersSteamLocomotive is still null
-                    // (only one tender can be associated with a steam locomotive). 
+                    // If no locomotive is found to be associated with this tender, then OR crashes, ie TendersSteamLocomotive is still null. 
                     // This message will provide the user with information to correct the problem
                     if (TendersSteamLocomotive == null)
                     {
-                        if (Simulator.Settings.VerboseConfigurationMessages)
-                        {
-                            Trace.TraceInformation("Tender @ position {0} does not have a locomotive associated with. Check that it is preceeded by a steam locomotive.", CarID);
-                        }
-                        return;
+                        Trace.TraceInformation("Tender @ position {0} does not have a locomotive associated with. Check that it is preceeded by a steam locomotive.", CarID);
                     }
 
                     MassKG = FreightAnimations.WagonEmptyWeight + TendersSteamLocomotive.TenderFuelMassKG + Kg.FromLb( (TendersSteamLocomotive.CurrentLocoTenderWaterVolumeUKG * WaterLBpUKG));
