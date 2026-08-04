@@ -334,110 +334,7 @@ namespace Orts.Viewer3D
     public class TRPFile
     {
         public TrProfile TrackProfile; // Represents the track profile
-        public string FileName { get; private set; }
-        static readonly HashSet<string> ProfileWarnings =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         //public RenderProcess RenderProcess; // TODO: Pass this along in function calls
-
-        static TRPFile FindNamedProfile(List<TRPFile> profiles, string name)
-        {
-            TRPFile fileMatch = profiles.FirstOrDefault(profile =>
-                string.Equals(profile.FileName, name,
-                    StringComparison.OrdinalIgnoreCase));
-            if (fileMatch != null)
-                return fileMatch;
-
-            List<TRPFile> declaredNameMatches = profiles.Where(profile =>
-                profile.TrackProfile != null &&
-                string.Equals(profile.TrackProfile.Name, name,
-                    StringComparison.OrdinalIgnoreCase)).ToList();
-            return declaredNameMatches.Count == 1 ? declaredNameMatches[0] : null;
-        }
-
-        static void WarnProfileOnce(string key, string message)
-        {
-            lock (ProfileWarnings)
-            {
-                if (ProfileWarnings.Add(key))
-                    Trace.TraceWarning(message);
-            }
-        }
-
-        public static TrProfile ResolveDynamicTrackProfile(List<TRPFile> profiles,
-            string shapeTemplate, bool isRoad)
-        {
-            if (profiles == null || profiles.Count == 0)
-                return null;
-
-            TrProfile defaultProfile = profiles[0].TrackProfile;
-            string requestedName = shapeTemplate?.Trim();
-
-            if (string.IsNullOrEmpty(requestedName))
-            {
-                if (!isRoad)
-                    return defaultProfile;
-
-                TRPFile roadProfile = FindNamedProfile(profiles, "default_road")
-                    ?? FindNamedProfile(profiles, "TrProfileRoad");
-                if (roadProfile != null)
-                    return roadProfile.TrackProfile;
-
-                WarnProfileOnce("missing-road-profile",
-                    "Road DynTrack profile default_road or TrProfileRoad was " +
-                    "not found; using the default track profile.");
-                return defaultProfile;
-            }
-
-            if (string.Equals(requestedName, "DEFAULT",
-                    StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(requestedName, "DISABLED",
-                    StringComparison.OrdinalIgnoreCase))
-                return defaultProfile;
-
-            TRPFile selectedProfile = FindNamedProfile(profiles, requestedName);
-            if (selectedProfile != null)
-                return selectedProfile.TrackProfile;
-
-            WarnProfileOnce("missing-profile:" + requestedName,
-                "DynTrack ShapeTemplate '" + requestedName +
-                "' was not found or its declared profile name is ambiguous; " +
-                "using the default track profile.");
-            return defaultProfile;
-        }
-
-        public static bool TryResolveStaticTrackProfile(List<TRPFile> profiles,
-            string shapeTemplate, out TrProfile trackProfile)
-        {
-            trackProfile = null;
-            if (profiles == null || profiles.Count == 0)
-                return false;
-
-            string requestedName = shapeTemplate?.Trim();
-            if (string.IsNullOrEmpty(requestedName) ||
-                string.Equals(requestedName, "DISABLED",
-                    StringComparison.OrdinalIgnoreCase))
-                return false;
-
-            if (string.Equals(requestedName, "DEFAULT",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                trackProfile = profiles[0].TrackProfile;
-                return trackProfile != null;
-            }
-
-            TRPFile selectedProfile = FindNamedProfile(profiles, requestedName);
-            if (selectedProfile != null)
-            {
-                trackProfile = selectedProfile.TrackProfile;
-                return trackProfile != null;
-            }
-
-            WarnProfileOnce("missing-static-profile:" + requestedName,
-                "TrackObj ShapeTemplate '" + requestedName +
-                "' was not found or its declared profile name is ambiguous; " +
-                "using the original static shape.");
-            return false;
-        }
 
         /// <summary>
         /// Creates a List<TRPFile></TRPFile> instance from a set of track profile file(s)
@@ -472,12 +369,9 @@ namespace Orts.Viewer3D
                 else // Add the canned (Kuju) track profile if no default is given
                     trpFiles.Add(new TRPFile(viewer, ""));
 
-                // ORTS profiles traditionally start with "TrProfile".
-                // TSRE reserves "default_*" for portable built-in profile IDs.
-                string[] xmlProfiles = Directory.GetFiles(path, "TrProfile*.xml")
-                    .Concat(Directory.GetFiles(path, "default_*.xml")).ToArray();
-                string[] stfProfiles = Directory.GetFiles(path, "TrProfile*.stf")
-                    .Concat(Directory.GetFiles(path, "default_*.stf")).ToArray();
+                // Get all .xml/.stf files that start with "TrProfile"
+                string[] xmlProfiles = Directory.GetFiles(path, "TrProfile*.xml");
+                string[] stfProfiles = Directory.GetFiles(path, "TrProfile*.stf");
 
                 foreach (string xmlProfile in xmlProfiles)
                 {
@@ -522,8 +416,6 @@ namespace Orts.Viewer3D
         /// <param name="filespec">Complete filepath string to track profile file.</param>
         public TRPFile(Viewer viewer, string filespec)
         {
-            FileName = string.IsNullOrEmpty(filespec)
-                ? "TrProfile" : Path.GetFileNameWithoutExtension(filespec);
             if (filespec == "")
             {
                 // No track profile provided, use default

@@ -1720,8 +1720,7 @@ namespace Orts.Parsers.Msts
         Flipped,
 
         // TSRE specific
-        Ruler,
-        ShapeTemplate
+        Ruler
     }
 
 }
