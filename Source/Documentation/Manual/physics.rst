@@ -1101,7 +1101,7 @@ diesel engine rated power.
 .. index::
    single: ORTSTractionCharacteristics
    single: ORTSMaxTractiveForceCurves
-   single: ORTSTransmissionEfficiency
+   single: ORTSDieselTransmissionEfficiency
    single: MaxForce
    single: MaxPower
    single: MaxVelocity
@@ -1111,11 +1111,14 @@ diesel engine rated power.
 In ORTS, the diesel-electric locomotive can use
 ``ORTSTractionCharacteristics`` or tables of ``ORTSMaxTractiveForceCurves``
 to provide a better approximation to real world performance.
-``ORTSTransmissionEfficiency`` can also be added to consider the
-efficiency of all transmission components between the engine and
-wheels (generator, cabling, motors, gearboxes, etc.) and increase the
+``ORTSDieselTransmissionEfficiency`` can also be added to consider the
+efficiency of the main generator and increase the
 power required by the diesel engine accordingly. Efficiency should be
-entered as a number between 0 and 1, like ``ORTSTransmissionEfficiency ( 0.91 )``
+entered as a number between 0 and 1, like ``ORTSDieselTransmissionEfficiency ( 0.91 )``.
+Alternatively, the efficiency can be estimated automatically by setting MaxPower
+to the traction power, with the rail power (and efficiency) determined from the
+tractive force curves.
+
 If a table is not used, the tractive force is limited by MaxForce, MaxPower and
 MaxVelocity. The throttle setting is passed to the ThrottleRPMTab, where
 the RPM demand is selected. The output force increases with the Throttle
@@ -1128,7 +1131,7 @@ Diesel-Hydraulic Locomotives
 Diesel-hydraulic locomotives are not implemented in ORTS. However, by
 using either ``ORTSTractionCharacteristics`` or ``ORTSMaxTractiveForceCurves``
 tables, the desired performance can be achieved, when no gearbox is in use
-and the ``DieselEngineType`` is *electric*. ``ORTSTransmissionEfficiency``
+and the ``DieselEngineType`` is *electric*. ``ORTSDieselTransmissionEfficiency``
 is also applicable here to consider the efficiency of the torque converters
 and gearboxes between the engine and the wheels.
 
@@ -1222,7 +1225,7 @@ gear selector to display gears in the correct order for this type of gearbox arr
 above example that ``GearBoxMaxSpeedForGears`` and ``ORTSGearBoxTractiveForceatSpeed`` need to list the gears in the order 4-3-2-1 
 rather than in ascending order.
 
-And, as with the other transmission types, ``ORTSTransmissionEfficiency`` can be entered in the
+And, as with the other transmission types, ``ORTSDieselTransmissionEfficiency`` can be entered in the
 Engine section to simulate the power lost in the clutch and gearbox, increasing the power
 demand on the engine to compensate.
 

@@ -258,13 +258,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// A summary of instantaneous power output available for traction of all the diesel engines
         /// </summary>
-        public float AvailablePowerW
+        public float AvailableTractionPowerW
         {
             get
             {
                 float temp = 0f;
                 foreach (DieselEngine de in DEList)
-                    temp += de.ProvidesTraction ? de.AvailablePowerW : 0.0f;
+                    temp += de.ProvidesTraction ? de.AvailableTractionPowerW : 0.0f;
                 return temp;
             }
         }
@@ -691,7 +691,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Instantaneous power capacity of the engine that's not consumed by auxiliary loads or ETS
         /// </summary>
-        public float AvailablePowerW;
+        public float AvailableTractionPowerW;
 
         /// <summary>
         /// Fuel consumed at idle, for reference
@@ -725,9 +725,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     if (Locomotive.DieselEngines.Count > 1)
                     {
-                        float availableTractionW = Locomotive.DieselEngines.AvailablePowerW;
+                        float availableTractionW = Locomotive.DieselEngines.AvailableTractionPowerW;
                         if (availableTractionW > 0)
-                            return AvailablePowerW / availableTractionW;
+                            return AvailableTractionPowerW / availableTractionW;
                         else
                             return 0;
                     }
@@ -953,8 +953,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                if (AvailablePowerW > 0)
-                    return TractionPowerW / AvailablePowerW * 100.0f;
+                if (AvailableTractionPowerW > 0)
+                    return TractionPowerW / AvailableTractionPowerW * 100.0f;
                 else
                     return 0;
             }
@@ -1212,10 +1212,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             else
                 AuxiliaryPowerW = AuxPowerTab[RealRPM];
 
-            AvailablePowerW = State == DieselEngineState.Running ? CurrentMaximumPowerW - AuxiliaryPowerW : 0.0f;
+            AvailableTractionPowerW = State == DieselEngineState.Running ? CurrentMaximumPowerW - AuxiliaryPowerW : 0.0f;
 
             if (ProvidesTraction)
-                TractionPowerW = Math.Max(Locomotive.LocomotiveAxles.DrivePowerW / Locomotive.TransmissionEfficiency * TractionPowerProportion, 0.0f);
+                TractionPowerW = Math.Max(Locomotive.LocomotiveAxles.DrivePowerW / Locomotive.DieselTransmissionEfficiency * TractionPowerProportion, 0.0f);
             else
                 TractionPowerW = 0.0f;
 
@@ -1308,7 +1308,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 // Use ETS tables if available and ETS is active
                 // Use dynamic brake table if available, locomotive has dynamic braking, and dynamic braking is active
                 // Else use throttle table
-                bool etsEnabled = Locomotive.DieselPowerSupply?.ElectricTrainSupplyOn ?? false;
+                bool etsEnabled = Locomotive.DieselPowerSupply?.ElectricTrainSupplySwitch?.On ?? false;
                 bool dynamicBraking = demandedDynamicsPercent >= 0 && Locomotive.DynamicBrakeAvailable;
 
                 if (etsEnabled && dynamicBraking && ETSDynamicsRPMTab != null)
@@ -1775,6 +1775,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             SetValueFromLoco(ref MaxTemperatureDegC, ref Locomotive.DieselMaxTemperatureDegC, "MaxTemperature", true, 100.0f);
 
+            if (MaxTemperatureDegC < IdleTemperatureDegC)
+            {
+                MaxTemperatureDegC = IdleTemperatureDegC + 20.0f;
+                if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Diesel max temperature must be higher than diesel idle temperature, max temperature corrected to arbitrary value = {0} C", MaxTemperatureDegC);
+            }    
+
             if (EngineCooling == Cooling.Undefined)
             {
                 EngineCooling = Locomotive.DieselEngineCooling;
@@ -1790,6 +1797,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 if (DieselEngineConfigured && Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("ThrottleRPMTab not found in Diesel Engine Config, set to default values");
             }
+            // If DieselEngineMinRPM has been defined, force the engine to that RPM when ETS is enabled (unless custom ETS table is defined)
+            if (ETSThrottleRPMTab == null && ProvidesETS && Locomotive.DieselPowerSupply?.DieselEngineMinRpmForElectricTrainSupply > 0)
+            {
+                float etsRPM = Locomotive.DieselPowerSupply.DieselEngineMinRpmForElectricTrainSupply;
+                ETSThrottleRPMTab = new Interpolator(new float[] { 0, 100 }, new float[] { etsRPM, etsRPM });
+            }
+
             // Set rounding mode for RPM tables to the engine's rounding mode
             ThrottleRPMTab.XRounding = SpeedControl;
             if (DynamicsRPMTab != null)
@@ -1890,13 +1904,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
 
-            if (Locomotive.MaximumDieselEnginePowerW == 0 && DieselPowerTab != null)
-            {
-                Locomotive.MaximumDieselEnginePowerW = DieselPowerTab[MaxRPM];
-                if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set by DieselPowerTab {0} value", FormatStrings.FormatPower(DieselPowerTab[MaxRPM], Locomotive.IsMetric, false, false));
-            }
-
             // Set idle fuel use reference if it is not set (for more accurate estimation of low-load fuel use)
             if (DieselUsedPerHourAtIdleL < 0)
             {
@@ -1992,8 +1999,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <param name="totalETSPower">Total power available for electric train supply from all engines</param>
         public void InitRailPower(float totalTractionPower, float totalETSPower)
         {
-            float maxTractionPowerProportion = MaximumDieselPowerW / totalTractionPower;
-            float maxETSPowerProportion = MaximumDieselPowerW / totalETSPower;
+            float maxTractionPowerProportion = ProvidesTraction ? MaximumDieselPowerW / totalTractionPower : 0.0f;
+            float maxETSPowerProportion = ProvidesETS ? MaximumDieselPowerW / totalETSPower : 0.0f;
 
             // Set rail power parameters if not already set
             (float, float)[] throttleRailPower; // Pairs of throttle settings and corresponding rail power
@@ -2019,18 +2026,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 // Set max rail power from force curves
                 if (MaximumRailOutputPowerW < 0)
-                {
                     MaximumRailOutputPowerW = throttleRailPower.Max(throttlePower => throttlePower.Item2);
-                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Maximum Rail Output Power set by Diesel Traction Curves {0} value", FormatStrings.FormatPower(MaximumRailOutputPowerW, Locomotive.IsMetric, false, false));
-                }
             }
             else
             {
                 if (MaximumRailOutputPowerW < 0)
                 {
                     if (Locomotive.MaxPowerW > 0) // set rail power to a default value on the basis that of the value specified in the MaxPowerW parameter
-                        MaximumRailOutputPowerW = Locomotive.MaxPowerW;
+                        MaximumRailOutputPowerW = Locomotive.MaxPowerW * maxTractionPowerProportion;
                     else // Set rail power to a default value on the basis that it is about 80% of the prime mover output power
                         MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW;
                 }
@@ -2043,15 +2046,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     // Throttle must be a 0-1 value for this calculation
                     float normThrottle = ThrottleRPMTab.X[i] / 100.0f;
-                    throttleRailPower[i] = (normThrottle, MaximumRailOutputPowerW * normThrottle * maxTractionPowerProportion);
+                    throttleRailPower[i] = (normThrottle, MaximumRailOutputPowerW * normThrottle);
                 }
             }
-
-            // Set power in locomotive if it wasn't set (might be the case if tractive force curves were used)
-            if (Locomotive.MaxPowerW <= 0)
-                Locomotive.MaxPowerW = MaximumRailOutputPowerW;
-            if (Locomotive.LocomotiveMaxRailOutputPowerW <= 0)
-                Locomotive.LocomotiveMaxRailOutputPowerW = MaximumRailOutputPowerW;
 
             // Set rail power vs RPM from calculated rail powers
             if (RailPowerTab == null)
@@ -2105,7 +2102,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if (AuxPowerTab == null)
             {
                 // Assume auxiliary power is rated engine power minus rail power
-                float maxAuxPower = MaximumDieselPowerW - MaximumRailOutputPowerW / Locomotive.TransmissionEfficiency;
+                float maxAuxPower = MaximumDieselPowerW - MaximumRailOutputPowerW / Locomotive.DieselTransmissionEfficiency;
+
+                // Keep default calculation of auxiliary power reasonable, limit it to 20% of max power
+                if (maxAuxPower > MaximumDieselPowerW * 0.2f)
+                    maxAuxPower = MaximumDieselPowerW * 0.2f;
 
                 if (maxAuxPower > 0)
                 {
@@ -2116,7 +2117,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     for (int i = size - 1; i >= 0; i--)
                     {
-                        float tempAux = DieselPowerTab[rpm[i]] - RailPowerTab[rpm[i]] / Locomotive.TransmissionEfficiency;
+                        float tempAux = DieselPowerTab[rpm[i]] - RailPowerTab[rpm[i]] / Locomotive.DieselTransmissionEfficiency;
                         // Prevent nonsensical negative auxiliary draw, as well as nonsensically high auxiliary draw
                         auxPower[i] = MathHelper.Clamp(tempAux, 0.0f, maxAuxPower);
                         // Assume auxiliary draw is strictly increasing with engine RPM

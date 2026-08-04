@@ -50,22 +50,47 @@ namespace ORTS.Scripting.Api
                 return DieselEngineState.Unavailable;
             }
         }
+        /// <summary>
+        /// True if at least 1 engine can provide ETS power
+        /// </summary>
+        public bool ElectricTrainSupplyEquipped()
+        {
+            bool equipped = false;
+
+            foreach (DieselEngine de in DieselEngines)
+            {
+                if (de.ProvidesETS)
+                {
+                    equipped = true;
+                    break;
+                }
+            }
+
+            return equipped;
+        }
+        /// <summary>
+        /// True if at least 1 engine that can provide ETS is running at sufficient RPM
+        /// </summary>
+        public bool ElectricTrainSupplyAvailable()
+        {
+            bool available = false;
+
+            foreach (DieselEngine de in DieselEngines)
+            {
+                if (de.State == DieselEngineState.Running && de.ProvidesETS
+                    && de.RealRPM >= DieselEngineMinRpmForElectricTrainSupply)
+                {
+                    available = true;
+                    break;
+                }
+            }
+
+            return available;
+        }
         protected float DieselEngineOutputPowerW => DieselEngines.MaxOutputPowerW;
-        protected float DieselEngineAvailablePowerW => DieselEngines.AvailablePowerW;
+        protected float DieselEngineAvailableTractionPowerW => DieselEngines.AvailableTractionPowerW;
 
         public float DieselEngineMinRpmForElectricTrainSupply => DpsHost.DieselEngineMinRpmForElectricTrainSupply;
-
-        public float DieselEngineMinRpm
-        {
-            get
-            {
-                return DpsHost.DieselEngineMinRpm;
-            }
-            set
-            {
-                DpsHost.DieselEngineMinRpm = value;
-            }
-        }
 
         /// <summary>
         /// Current state of the circuit breaker

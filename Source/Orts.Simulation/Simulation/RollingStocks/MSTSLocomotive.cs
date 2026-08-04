@@ -141,7 +141,6 @@ namespace Orts.Simulation.RollingStocks
         public float MaxPowerW;
         public float MaxForceN;
         public float RunUpTimeToMaxForceS = -1;
-        public float TransmissionEfficiency = 1.0f;
         public float AbsTractionSpeedMpS;
         public float PrevAbsTractionSpeedMpS;
         public float MaxCurrentA = 0;
@@ -972,15 +971,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dieselenginespeedofmaxtractiveeffort": MSTSSpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(ortsunloadingspeed": UnloadingSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                case "engine(ortstransmissionefficiency":
-                    TransmissionEfficiency = stf.ReadFloatBlock(STFReader.UNITS.None, null);
-                    if (TransmissionEfficiency > 1.0f || TransmissionEfficiency < 0.001f)
-                    {
-                        // TransmissionEfficiency cannot be 0 to avoid some divide by 0 errors
-                        STFException.TraceWarning(stf, "Invalid ORTSTransmissionEfficiency " + TransmissionEfficiency + ", defaulting to 1.0");
-                        TransmissionEfficiency = 1.0f;
-                    }
-                    break;
                 case "engine(ortsslipcontrolsystem":
                     stf.MustMatch("(");
                     string slipControlType = stf.ReadString();
@@ -1293,7 +1283,6 @@ namespace Orts.Simulation.RollingStocks
             MaxPowerW = locoCopy.MaxPowerW;
             MaxForceN = locoCopy.MaxForceN;
             RunUpTimeToMaxForceS = locoCopy.RunUpTimeToMaxForceS;
-            TransmissionEfficiency = locoCopy.TransmissionEfficiency;
             MaxCurrentA = locoCopy.MaxCurrentA;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
             UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
@@ -2710,7 +2699,9 @@ namespace Orts.Simulation.RollingStocks
                 // Ensure that power consumption never exceeds the power that is available for traction at the moment
                 if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
                 {
-                    float maxPowerW = supply.AvailableTractionPowerW * TransmissionEfficiency;
+                    float maxPowerW = supply.AvailableTractionPowerW;
+                    if (this is MSTSDieselLocomotive dL)
+                        maxPowerW *= dL.DieselTransmissionEfficiency;
                     if (maxForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
                 }
                 UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS, TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);

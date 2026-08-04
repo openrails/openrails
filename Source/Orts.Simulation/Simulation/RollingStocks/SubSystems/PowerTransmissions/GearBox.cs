@@ -584,8 +584,8 @@ public Gear NextGear
                                 tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
                                 if (CurrentSpeedMpS > 0)
                                 {
-                                    if (tractiveForceN > (DieselEngine.AvailablePowerW / CurrentSpeedMpS))
-                                        tractiveForceN = DieselEngine.AvailablePowerW / CurrentSpeedMpS;
+                                    if (tractiveForceN > (DieselEngine.AvailableTractionPowerW / CurrentSpeedMpS))
+                                        tractiveForceN = DieselEngine.AvailableTractionPowerW / CurrentSpeedMpS;
                                 }
                                 return tractiveForceN;
                             }
@@ -709,8 +709,8 @@ public Gear NextGear
                             float tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
                             if (CurrentSpeedMpS > 0)
                             {
-                                if (tractiveForceN > (DieselEngine.AvailablePowerW / CurrentSpeedMpS))
-                                    tractiveForceN = DieselEngine.AvailablePowerW / CurrentSpeedMpS;
+                                if (tractiveForceN > (DieselEngine.AvailableTractionPowerW / CurrentSpeedMpS))
+                                    tractiveForceN = DieselEngine.AvailableTractionPowerW / CurrentSpeedMpS;
                             }
                             return tractiveForceN;
                         }
