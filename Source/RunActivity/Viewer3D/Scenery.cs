@@ -52,7 +52,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Orts.Viewer3D
 {
@@ -489,11 +488,20 @@ namespace Orts.Viewer3D
                         // preTestShape for lookup if it is an animated clock shape with subobjects named as clock hands 
                         StaticShape preTestShape = (new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
 
-                        // FirstOrDefault() checks for "animations( 0 )" as this is a valid entry in *.s files
-                        // and is included by MSTSexporter for Blender 2.8+ Release V4.0 or older
-                        var animNodes = preTestShape.SharedShape.Animations?.FirstOrDefault()?.anim_nodes ?? new List<anim_node>();
+                        var isAnimatedClock = false;
+                        var animationsCount = preTestShape.SharedShape.HasAnimations() ? preTestShape.SharedShape.GetAnimationNamesCount() : 0;
+                        for (var i = 0; i < animationsCount; i++)
+                        {
+                            if (!preTestShape.SharedShape.HasAnimation(i))
+                                continue;
+                            var animationName = preTestShape.SharedShape.MatrixNames[i];
+                            if (animationName.StartsWith("orts_", StringComparison.OrdinalIgnoreCase) && animationName.Substring(6, 10).Equals("hand_clock", StringComparison.OrdinalIgnoreCase))
+                            {
+                                isAnimatedClock = true;
+                                break;
+                            }
+                        }
 
-                        var isAnimatedClock = animNodes.Exists(node => Regex.IsMatch(node.Name, @"^orts_[hmsc]hand_clock", RegexOptions.IgnoreCase));
                         if (isAnimatedClock)
                         {
                             sceneryObjects.Add(new AnalogClockShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));

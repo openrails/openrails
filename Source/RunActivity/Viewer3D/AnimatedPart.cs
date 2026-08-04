@@ -71,6 +71,7 @@ namespace Orts.Viewer3D
             SkipChildrenAnimations = 1 << 0,
             MaxFrameFromKeyframeOne = 1 << 1,
             MaxFrameFromFrameRate = 1 << 2,
+            MaxFrameIsFour = 1 << 3,
         }
 
         /// <summary>
@@ -137,7 +138,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetMstsSpeed(float mstsSpeed, bool useShapeFrameRate, bool useShapeFrameCount)
         {
-            if (PoseableShape?.SharedShape?.Animations?.Count > 0) // Must be true only if the shape format is used, not glTF
+            if (PoseableShape?.SharedShape?.Animations?.Count > 0) // Must be true only if the MSTS shape format is used, not glTF
             {
                 Speed = mstsSpeed;
 
@@ -155,13 +156,18 @@ namespace Orts.Viewer3D
         /// <param name="options"></param>
         public void SetMstsAnimationOptions(MstsAnimationOptions options)
         {
-            MstsOptions = options;
+            if (PoseableShape?.SharedShape?.Animations?.Count > 0) // Must be true only if the MSTS shape format is used, not glTF
+            {
+                MstsOptions = options;
 
-            if ((MstsOptions & MstsAnimationOptions.MaxFrameFromKeyframeOne) != 0)
-                MaxFrame = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?.controllers?.FirstOrDefault()?.ElementAtOrDefault(1)?.Frame ?? MaxFrame;
-            if ((MstsOptions & MstsAnimationOptions.MaxFrameFromFrameRate) != 0
-                && PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.FrameRate is int frameRate)
+                if ((MstsOptions & MstsAnimationOptions.MaxFrameFromKeyframeOne) != 0)
+                    MaxFrame = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?.controllers?.FirstOrDefault()?.ElementAtOrDefault(1)?.Frame ?? MaxFrame;
+                if ((MstsOptions & MstsAnimationOptions.MaxFrameFromFrameRate) != 0
+                    && PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.FrameRate is int frameRate)
                     MaxFrame = frameRate / 30.0f;
+                if ((MstsOptions & MstsAnimationOptions.MaxFrameIsFour) != 0)
+                    MaxFrame = 4.0f;
+            }
         }
 
         /// <summary>
