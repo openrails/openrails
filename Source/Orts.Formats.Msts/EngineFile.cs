@@ -55,7 +55,7 @@ namespace Orts.Formats.Msts
                             new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                             new STFReader.TokenProcessor("type", ()=>{ EngineType = stf.ReadStringBlock(null); }),
                             new STFReader.TokenProcessor("maxpower", ()=>{ MaxPowerW = stf.ReadFloatBlock( STFReader.UNITS.Power, null); }),
-                            new STFReader.TokenProcessor("ortstransmissionefficiency", ()=>{ TransmissionEfficiency = MathHelper.Clamp(stf.ReadFloatBlock(STFReader.UNITS.None, null), 0.001f, 1.0f); }),
+                            new STFReader.TokenProcessor("ortsdieseltransmissionefficiency", ()=>{ TransmissionEfficiency = MathHelper.Clamp(stf.ReadFloatBlock(STFReader.UNITS.None, null), 0.001f, 1.0f); }),
                             new STFReader.TokenProcessor("maxforce", ()=>{ MaxForceN = stf.ReadFloatBlock( STFReader.UNITS.Force, null); }),
                             new STFReader.TokenProcessor("maxcontinuousforce", ()=>{ MaxContinuousForceN = stf.ReadFloatBlock( STFReader.UNITS.Force, null); }),
                             new STFReader.TokenProcessor("dynamicbrakesmaximumforce", ()=>{ MaxDynamicBrakeForceN = stf.ReadFloatBlock( STFReader.UNITS.Force, null); }),
