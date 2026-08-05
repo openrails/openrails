@@ -718,9 +718,9 @@ namespace Orts.Viewer3D
                 AnimatedPartClosedLoop.SetGltfSpeed(speed);
 
                 // The original MSTS crossing shapes don't have the animations named, but having names allows all three types to be in a single shape/glTF file.
-                AnimatedPartOpenLoop.AddAnimation("ORTS_LEVELCROSSING_OPEN_LOOP");
-                AnimatedPartClosing.AddAnimation("ORTS_LEVELCROSSING_CLOSING");
-                AnimatedPartClosedLoop.AddAnimation("ORTS_LEVELCROSSING_CLOSED_LOOP");
+                AnimatedPartOpenLoop.AddAnimation("ORTS_LEVELCROSSING_OPEN_LOOP*");
+                AnimatedPartClosing.AddAnimation("ORTS_LEVELCROSSING_CLOSING*");
+                AnimatedPartClosedLoop.AddAnimation("ORTS_LEVELCROSSING_CLOSED_LOOP*");
 
                 // If no names in the shape file, fall back to the original behaviour.
                 //
@@ -885,11 +885,12 @@ namespace Orts.Viewer3D
         protected PickupObj FuelPickupItemObj;
         protected FuelPickupItem FuelPickupItem;
         protected SoundSource Sound;
-        protected float FrameRate;
         protected WorldPosition Position;
 
+        AnimatedPart AnimatedPart;
         protected int AnimationFrames;
         protected float AnimationKey;
+        protected float FrameRate;
 
         public FuelPickupItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj)
             : base(viewer, path, position, shapeFlags)
@@ -903,71 +904,53 @@ namespace Orts.Viewer3D
         {
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS != null && FuelPickupItemObj.PickupType == 7) // Testing for Diesel PickupType
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS);
                 try
                 {
                     Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
                     Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch
+                catch (Exception error)
                 {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                    Trace.WriteLine(new FileLoadException(Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS, error));
                 }
             }
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS != null && FuelPickupItemObj.PickupType == 5) // Testing for Water PickupType
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS);
                 try
                 {
                     Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
                     Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch
+                catch (Exception error)
                 {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                    Trace.WriteLine(new FileLoadException(soundPath, error));
                 }
             }
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS != null && (FuelPickupItemObj.PickupType == 6 || FuelPickupItemObj.PickupType == 2))
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS);
                 try
                 {
                     Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
                     Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch
+                catch (Exception error)
                 {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                    Trace.WriteLine(new FileLoadException(soundPath, error));
                 }
             }
             FuelPickupItem = Viewer.Simulator.FuelManager.CreateFuelStation(Position, from tid in FuelPickupItemObj.TrItemIDList where tid.db == 0 select tid.dbID);
+
+            if (SharedShape.HasAnimations())
+            {
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAnimations();
+                AnimatedPart.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
+                AnimatedPart.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.MaxFrameFromFrameCount);
+            }
+
             AnimationFrames = 1;
             FrameRate = 1;
             if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].anim_nodes != null && SharedShape.Animations[0].anim_nodes.Count > 0)
@@ -994,38 +977,28 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var prevKey = AnimatedPart?.AnimationKeyFraction() ?? 1;
 
             // 0 can be used as a setting for instant animation.
             if (FuelPickupItem.ReFill() && FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
             {
-                if (AnimationKey == 0 && Sound != null) Sound.HandleEvent(Event.FuelTowerDown);
-                if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimationKey = 1.0f;
-                else if (AnimationKey < AnimationFrames)
-                    AnimationKey += elapsedTime.ClockSeconds * FrameRate;
+                if (AnimatedPart?.AnimationKeyFraction() == 0) Sound?.HandleEvent(Event.FuelTowerDown);
+                if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimatedPart?.SetState(1.0f);
+                else AnimatedPart?.UpdateState(1.0f, elapsedTime);
             }
 
-            if (!FuelPickupItem.ReFill() && AnimationKey > 0)
+            if (!FuelPickupItem.ReFill() && AnimatedPart?.AnimationKeyFraction() > 0)
             {
-                if (AnimationKey == AnimationFrames && Sound != null)
+                if (AnimatedPart?.AnimationKeyFraction() == 1)
                 {
-                    Sound.HandleEvent(Event.FuelTowerTransferEnd);
-                    Sound.HandleEvent(Event.FuelTowerUp);
+                    Sound?.HandleEvent(Event.FuelTowerTransferEnd);
+                    Sound?.HandleEvent(Event.FuelTowerUp);
                 }
-                AnimationKey -= elapsedTime.ClockSeconds * FrameRate;
+                AnimatedPart?.UpdateState(0.0f, elapsedTime);
             }
 
-            if (AnimationKey < 0)
-            {
-                AnimationKey = 0;
-            }
-            if (AnimationKey > AnimationFrames)
-            {
-                AnimationKey = AnimationFrames;
-                if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferStart);
-            }
-
-            for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-                AnimateMatrix(i, AnimationKey);
+            if (prevKey < 1 && AnimatedPart?.AnimationKeyFraction() == 1)
+                Sound?.HandleEvent(Event.FuelTowerTransferStart);
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }

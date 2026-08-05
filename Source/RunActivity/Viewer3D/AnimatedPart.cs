@@ -68,10 +68,11 @@ namespace Orts.Viewer3D
         public enum MstsAnimationOptions
         {
             None = 0,
-            SkipChildrenAnimations = 1 << 0,
+            SkipChildrenAnimations  = 1 << 0,
             MaxFrameFromKeyframeOne = 1 << 1,
-            MaxFrameFromFrameRate = 1 << 2,
-            MaxFrameIsFour = 1 << 3,
+            MaxFrameFromFrameRate   = 1 << 2,
+            MaxFrameFromFrameCount  = 1 << 3,
+            MaxFrameIsFour          = 1 << 4,
         }
 
         /// <summary>
