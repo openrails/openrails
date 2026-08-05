@@ -2334,6 +2334,11 @@ namespace Orts.Simulation.Physics
         //================================================================================================//
         /// <summary>
         /// Update Auxiliary Tenders added to train
+        /// NOTE TODO:  It has been reported that setting the WagonType to "Tender for an AuxTender will cause a crash.
+        /// To overcome this in MSTSWagon.cs in FindAuxTendersSteamLocomotive() set the following line.
+        /// if (TendersSteamLocomotive == null) ignore, and return (break out of the loop) with an appropriate error message.
+        /// Note, ideally this AuxTender function should be expanded to allow more then one AuxTender to be added to a consist and,  
+        /// also multiple steam locomotives in the smae consist, each with an AuxTendershould also be catered for.
         /// <\summary>
 
         public void UpdateAuxTender()
