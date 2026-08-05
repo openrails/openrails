@@ -326,7 +326,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Adjust the pose of the specified node to the frame position specifed by key.
         /// </summary>
-        public void AnimateMatrix(int iMatrix, float key, bool skipChildrenAnimations = false)
+        public void AnimateMatrix(int iMatrix, float key, bool mstsChildrenAnimation = true)
         {
             if (SharedShape is GltfShape gltfShape)
             {
@@ -349,7 +349,7 @@ namespace Orts.Viewer3D
             // Animate the given matrix.
             AnimateOneMatrix(iMatrix, key);
 
-            if (skipChildrenAnimations)
+            if (!mstsChildrenAnimation)
                 return;
 
             // Animate all child nodes in the hierarchy too.
@@ -1353,7 +1353,7 @@ namespace Orts.Viewer3D
 
             AnimatedPart = new AnimatedPart(this);
             AnimatedPart.AddAnimations();
-            AnimatedPart.SetMstsSpeed(30f, true, false); // Seems like the FrameRate is used directly here, unlike in other classes where it is rated to 30.
+            AnimatedPart.SetMstsSpeed(30f, true, false);
             AnimatedPart.SetFrameWrap(Turntable.YAngle / MathHelper.TwoPi * AnimatedPart.MaxFrame);
 
             var absAnimationMatrix = XNAMatrices.ElementAtOrDefault(SharedShape.GetAnimationTargetNode(IAnimationMatrix));
@@ -1371,7 +1371,15 @@ namespace Orts.Viewer3D
             else
             {
                 if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
-                    AnimatedPart.SetFrameWrap(Turntable.TargetY / MathHelper.TwoPi * AnimatedPart.MaxFrame);
+                {
+                    if (Math.Abs(Turntable.YAngle - Turntable.TargetY) < 0.01)
+                        AnimatedPart.SlowDownFactor = 0.25f;
+                    else if (Math.Abs(Turntable.YAngle - Turntable.TargetY) < 0.03)
+                        AnimatedPart.SlowDownFactor = 0.5f;
+
+                    AnimatedPart.UpdateLoop(0, elapsedTime, Turntable.TargetY);
+                    AnimatedPart.SlowDownFactor = 1.0f;
+                }
                 else if (Turntable.Counterclockwise)
                     AnimatedPart.UpdateLoop(1, elapsedTime);
                 else if (Turntable.Clockwise)
