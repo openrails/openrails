@@ -326,39 +326,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Adjust the pose of the specified node to the frame position specifed by key.
         /// </summary>
-        public void AnimateMatrix(int iMatrix, float key, bool skipChildrenAnimations = false)
-        {
-            if (SharedShape is GltfShape gltfShape)
-            {
-                if (!gltfShape.HasAnimation(iMatrix))
-                {
-                    if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
-                        Trace.TraceInformation("No animation number {1} in shape {0}", SharedShape.FilePath, iMatrix);
-                    SeenShapeAnimationError[SharedShape.FilePath] = true;
-                    return;
-                }
-                else
-                {
-                    // iMatrix is the number of the animation, not the number of the node,
-                    // key is the time, not the number of the frame.
-                    gltfShape.Animate(iMatrix, key, XNAMatrices);
-                }
-                return;
-            }
-
-            // Animate the given matrix.
-            AnimateOneMatrix(iMatrix, key);
-
-            if (skipChildrenAnimations)
-                return;
-
-            // Animate all child nodes in the hierarchy too.
-            for (var i = 0; i < Hierarchy.Length; i++)
-                if (Hierarchy[i] == iMatrix)
-                    AnimateMatrix(i, key, false);
-        }
-
-        void AnimateOneMatrix(int iMatrix, float key)
+        public void AnimateMatrix(int iMatrix, float key, bool mstsChildrenAnimation = true)
         {
             if (!SharedShape.HasAnimations())
             {
@@ -371,72 +339,20 @@ namespace Orts.Viewer3D
             if (!SharedShape.HasAnimation(iMatrix))
             {
                 if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
-                    Trace.TraceInformation("Ignored out of bounds matrix {1} in shape {0}", SharedShape.FilePath, iMatrix);
+                    Trace.TraceInformation("No animation number {1} in shape {0}", SharedShape.FilePath, iMatrix);
                 SeenShapeAnimationError[SharedShape.FilePath] = true;
                 return;  // mismatched matricies
             }
 
-            var anim_node = SharedShape.Animations[0].anim_nodes[iMatrix];
-            if (anim_node.controllers.Count == 0)
-                return;  // missing controllers
+            SharedShape.Animate(iMatrix, key, XNAMatrices);
 
-            // Start with the intial pose in the shape file.
-            var xnaPose = SharedShape.Matrices[iMatrix];
+            if (SharedShape is GltfShape || !mstsChildrenAnimation)
+                return;
 
-            foreach (controller controller in anim_node.controllers)
-            {
-                // Determine the frame index from the current frame ('key'). We will be interpolating between two key
-                // frames (the items in 'controller') so we need to find the last one LESS than the current frame
-                // and interpolate with the one after it.
-                var index = 0;
-                for (var i = 0; i < controller.Count; i++)
-                    if (controller[i].Frame <= key)
-                        index = i;
-                    else if (controller[i].Frame > key) // Optimisation, not required for algorithm.
-                        break;
-
-                var position1 = controller[index];
-                var position2 = index + 1 < controller.Count ? controller[index + 1] : controller[index];
-                var frame1 = position1.Frame;
-                var frame2 = position2.Frame;
-
-                // Make sure to clamp the amount, as we can fall outside the frame range. Also ensure there's a
-                // difference between frame1 and frame2 or we'll crash.
-                var amount = frame1 < frame2 ? MathHelper.Clamp((key - frame1) / (frame2 - frame1), 0, 1) : 0;
-
-                if (position1.GetType() == typeof(slerp_rot))  // rotate the existing matrix
-                {
-                    slerp_rot MSTS1 = (slerp_rot)position1;
-                    slerp_rot MSTS2 = (slerp_rot)position2;
-                    Quaternion XNA1 = new Quaternion(MSTS1.X, MSTS1.Y, -MSTS1.Z, MSTS1.W);
-                    Quaternion XNA2 = new Quaternion(MSTS2.X, MSTS2.Y, -MSTS2.Z, MSTS2.W);
-                    Quaternion q = Quaternion.Slerp(XNA1, XNA2, amount);
-                    Vector3 location = xnaPose.Translation;
-                    xnaPose = Matrix.CreateFromQuaternion(q);
-                    xnaPose.Translation = location;
-                }
-                else if (position1.GetType() == typeof(linear_key))  // a key sets an absolute position, vs shifting the existing matrix
-                {
-                    linear_key MSTS1 = (linear_key)position1;
-                    linear_key MSTS2 = (linear_key)position2;
-                    Vector3 XNA1 = new Vector3(MSTS1.X, MSTS1.Y, -MSTS1.Z);
-                    Vector3 XNA2 = new Vector3(MSTS2.X, MSTS2.Y, -MSTS2.Z);
-                    Vector3 v = Vector3.Lerp(XNA1, XNA2, amount);
-                    xnaPose.Translation = v;
-                }
-                else if (position1.GetType() == typeof(tcb_key)) // a tcb_key sets an absolute rotation, vs rotating the existing matrix
-                {
-                    tcb_key MSTS1 = (tcb_key)position1;
-                    tcb_key MSTS2 = (tcb_key)position2;
-                    Quaternion XNA1 = new Quaternion(MSTS1.X, MSTS1.Y, -MSTS1.Z, MSTS1.W);
-                    Quaternion XNA2 = new Quaternion(MSTS2.X, MSTS2.Y, -MSTS2.Z, MSTS2.W);
-                    Quaternion q = Quaternion.Slerp(XNA1, XNA2, amount);
-                    Vector3 location = xnaPose.Translation;
-                    xnaPose = Matrix.CreateFromQuaternion(q);
-                    xnaPose.Translation = location;
-                }
-            }
-            XNAMatrices[iMatrix] = xnaPose;  // update the matrix
+            // Animate all child nodes in the hierarchy too.
+            for (var i = 0; i < Hierarchy.Length; i++)
+                if (Hierarchy[i] == iMatrix)
+                    AnimateMatrix(i, key, false);
         }
     }
 
@@ -802,9 +718,9 @@ namespace Orts.Viewer3D
                 AnimatedPartClosedLoop.SetGltfSpeed(speed);
 
                 // The original MSTS crossing shapes don't have the animations named, but having names allows all three types to be in a single shape/glTF file.
-                AnimatedPartOpenLoop.AddAnimation("ORTS_LEVELCROSSING_OPEN_LOOP");
-                AnimatedPartClosing.AddAnimation("ORTS_LEVELCROSSING_CLOSING");
-                AnimatedPartClosedLoop.AddAnimation("ORTS_LEVELCROSSING_CLOSED_LOOP");
+                AnimatedPartOpenLoop.AddAnimation("ORTS_LEVELCROSSING_OPEN_LOOP*");
+                AnimatedPartClosing.AddAnimation("ORTS_LEVELCROSSING_CLOSING*");
+                AnimatedPartClosedLoop.AddAnimation("ORTS_LEVELCROSSING_CLOSED_LOOP*");
 
                 // If no names in the shape file, fall back to the original behaviour.
                 //
@@ -969,11 +885,12 @@ namespace Orts.Viewer3D
         protected PickupObj FuelPickupItemObj;
         protected FuelPickupItem FuelPickupItem;
         protected SoundSource Sound;
-        protected float FrameRate;
         protected WorldPosition Position;
 
+        AnimatedPart AnimatedPart;
         protected int AnimationFrames;
         protected float AnimationKey;
+        protected float FrameRate;
 
         public FuelPickupItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj)
             : base(viewer, path, position, shapeFlags)
@@ -987,15 +904,7 @@ namespace Orts.Viewer3D
         {
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS != null && FuelPickupItemObj.PickupType == 7) // Testing for Diesel PickupType
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
-                try
-                {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                }
-                catch
-                {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS);
                     try
                     {
                         Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
@@ -1003,21 +912,12 @@ namespace Orts.Viewer3D
                     }
                     catch (Exception error)
                     {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                    Trace.WriteLine(new FileLoadException(Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS, error));
                 }
             }
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS != null && FuelPickupItemObj.PickupType == 5) // Testing for Water PickupType
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
-                try
-                {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                }
-                catch
-                {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS);
                     try
                     {
                         Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
@@ -1028,18 +928,9 @@ namespace Orts.Viewer3D
                         Trace.WriteLine(new FileLoadException(soundPath, error));
                     }
                 }
-            }
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS != null && (FuelPickupItemObj.PickupType == 6 || FuelPickupItemObj.PickupType == 2))
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
-                try
-                {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                }
-                catch
-                {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS);
                     try
                     {
                         Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
@@ -1050,8 +941,16 @@ namespace Orts.Viewer3D
                         Trace.WriteLine(new FileLoadException(soundPath, error));
                     }
                 }
-            }
             FuelPickupItem = Viewer.Simulator.FuelManager.CreateFuelStation(Position, from tid in FuelPickupItemObj.TrItemIDList where tid.db == 0 select tid.dbID);
+
+            if (SharedShape.HasAnimations())
+            {
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAnimations();
+                AnimatedPart.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
+                AnimatedPart.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.MaxFrameFromFrameCount);
+            }
+
             AnimationFrames = 1;
             FrameRate = 1;
             if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].anim_nodes != null && SharedShape.Animations[0].anim_nodes.Count > 0)
@@ -1078,38 +977,28 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var prevKey = AnimatedPart?.AnimationKeyFraction() ?? 1;
 
             // 0 can be used as a setting for instant animation.
             if (FuelPickupItem.ReFill() && FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
             {
-                if (AnimationKey == 0 && Sound != null) Sound.HandleEvent(Event.FuelTowerDown);
-                if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimationKey = 1.0f;
-                else if (AnimationKey < AnimationFrames)
-                    AnimationKey += elapsedTime.ClockSeconds * FrameRate;
+                if (AnimatedPart?.AnimationKeyFraction() == 0) Sound?.HandleEvent(Event.FuelTowerDown);
+                if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimatedPart?.SetState(1.0f);
+                else AnimatedPart?.UpdateState(1.0f, elapsedTime);
             }
 
-            if (!FuelPickupItem.ReFill() && AnimationKey > 0)
+            if (!FuelPickupItem.ReFill() && AnimatedPart?.AnimationKeyFraction() > 0)
             {
-                if (AnimationKey == AnimationFrames && Sound != null)
+                if (AnimatedPart?.AnimationKeyFraction() == 1)
                 {
-                    Sound.HandleEvent(Event.FuelTowerTransferEnd);
-                    Sound.HandleEvent(Event.FuelTowerUp);
+                    Sound?.HandleEvent(Event.FuelTowerTransferEnd);
+                    Sound?.HandleEvent(Event.FuelTowerUp);
                 }
-                AnimationKey -= elapsedTime.ClockSeconds * FrameRate;
+                AnimatedPart?.UpdateState(0.0f, elapsedTime);
             }
 
-            if (AnimationKey < 0)
-            {
-                AnimationKey = 0;
-            }
-            if (AnimationKey > AnimationFrames)
-            {
-                AnimationKey = AnimationFrames;
-                if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferStart);
-            }
-
-            for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-                AnimateMatrix(i, AnimationKey);
+            if (prevKey < 1 && AnimatedPart?.AnimationKeyFraction() == 1)
+                Sound?.HandleEvent(Event.FuelTowerTransferStart);
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
@@ -1353,7 +1242,7 @@ namespace Orts.Viewer3D
 
             AnimatedPart = new AnimatedPart(this);
             AnimatedPart.AddAnimations();
-            AnimatedPart.SetMstsSpeed(30f, true, false); // Seems like the FrameRate is used directly here, unlike in other classes where it is rated to 30.
+            AnimatedPart.SetMstsSpeed(30f, true, false);
             AnimatedPart.SetFrameWrap(Turntable.YAngle / MathHelper.TwoPi * AnimatedPart.MaxFrame);
 
             var absAnimationMatrix = XNAMatrices.ElementAtOrDefault(SharedShape.GetAnimationTargetNode(IAnimationMatrix));
@@ -1371,7 +1260,15 @@ namespace Orts.Viewer3D
             else
             {
                 if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
-                    AnimatedPart.SetFrameWrap(Turntable.TargetY / MathHelper.TwoPi * AnimatedPart.MaxFrame);
+                {
+                    if (Math.Abs(Turntable.YAngle - Turntable.TargetY) < 0.01)
+                        AnimatedPart.SlowDownFactor = 0.25f;
+                    else if (Math.Abs(Turntable.YAngle - Turntable.TargetY) < 0.03)
+                        AnimatedPart.SlowDownFactor = 0.5f;
+
+                    AnimatedPart.UpdateLoop(0, elapsedTime, Turntable.TargetY);
+                    AnimatedPart.SlowDownFactor = 1.0f;
+                }
                 else if (Turntable.Counterclockwise)
                     AnimatedPart.UpdateLoop(1, elapsedTime);
                     else if (Turntable.Clockwise)
@@ -1786,6 +1683,67 @@ namespace Orts.Viewer3D
                 ReferencePath = parts[1];
             }
             LoadContent();
+        }
+
+        public virtual void Animate(int iMatrix, float key, Matrix[] animatedMatrices)
+        {
+            // Start with the intial pose in the shape file.
+            var xnaPose = Matrices[iMatrix];
+
+            foreach (controller controller in Animations[0].anim_nodes[iMatrix].controllers)
+            {
+                // Determine the frame index from the current frame ('key'). We will be interpolating between two key
+                // frames (the items in 'controller') so we need to find the last one LESS than the current frame
+                // and interpolate with the one after it.
+                var index = 0;
+                for (var i = 0; i < controller.Count; i++)
+                    if (controller[i].Frame <= key)
+                        index = i;
+                    else if (controller[i].Frame > key) // Optimisation, not required for algorithm.
+                        break;
+
+                var position1 = controller[index];
+                var position2 = index + 1 < controller.Count ? controller[index + 1] : controller[index];
+                var frame1 = position1.Frame;
+                var frame2 = position2.Frame;
+
+                // Make sure to clamp the amount, as we can fall outside the frame range. Also ensure there's a
+                // difference between frame1 and frame2 or we'll crash.
+                var amount = frame1 < frame2 ? MathHelper.Clamp((key - frame1) / (frame2 - frame1), 0, 1) : 0;
+
+                if (position1.GetType() == typeof(slerp_rot))  // rotate the existing matrix
+                {
+                    slerp_rot MSTS1 = (slerp_rot)position1;
+                    slerp_rot MSTS2 = (slerp_rot)position2;
+                    Quaternion XNA1 = new Quaternion(MSTS1.X, MSTS1.Y, -MSTS1.Z, MSTS1.W);
+                    Quaternion XNA2 = new Quaternion(MSTS2.X, MSTS2.Y, -MSTS2.Z, MSTS2.W);
+                    Quaternion q = Quaternion.Slerp(XNA1, XNA2, amount);
+                    Vector3 location = xnaPose.Translation;
+                    xnaPose = Matrix.CreateFromQuaternion(q);
+                    xnaPose.Translation = location;
+                }
+                else if (position1.GetType() == typeof(linear_key))  // a key sets an absolute position, vs shifting the existing matrix
+                {
+                    linear_key MSTS1 = (linear_key)position1;
+                    linear_key MSTS2 = (linear_key)position2;
+                    Vector3 XNA1 = new Vector3(MSTS1.X, MSTS1.Y, -MSTS1.Z);
+                    Vector3 XNA2 = new Vector3(MSTS2.X, MSTS2.Y, -MSTS2.Z);
+                    Vector3 v = Vector3.Lerp(XNA1, XNA2, amount);
+                    xnaPose.Translation = v;
+                }
+                else if (position1.GetType() == typeof(tcb_key)) // a tcb_key sets an absolute rotation, vs rotating the existing matrix
+                {
+                    tcb_key MSTS1 = (tcb_key)position1;
+                    tcb_key MSTS2 = (tcb_key)position2;
+                    Quaternion XNA1 = new Quaternion(MSTS1.X, MSTS1.Y, -MSTS1.Z, MSTS1.W);
+                    Quaternion XNA2 = new Quaternion(MSTS2.X, MSTS2.Y, -MSTS2.Z, MSTS2.W);
+                    Quaternion q = Quaternion.Slerp(XNA1, XNA2, amount);
+                    Vector3 location = xnaPose.Translation;
+                    xnaPose = Matrix.CreateFromQuaternion(q);
+                    xnaPose.Translation = location;
+                }
+            }
+            animatedMatrices[iMatrix] = xnaPose;  // update the matrix
         }
 
         /// <summary>

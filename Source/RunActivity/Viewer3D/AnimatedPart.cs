@@ -51,6 +51,8 @@ namespace Orts.Viewer3D
 
         public float SlowDownFactor = 1.0f;
 
+        bool MstsChildrenAnimation = true;
+
         /// <summary>
         /// The saved direction of the loop update.
         /// </summary>
@@ -62,16 +64,15 @@ namespace Orts.Viewer3D
         /// </summary>
         public List<int> MatrixIndexes = new List<int>();
 
-        MstsAnimationOptions MstsOptions;
-
         [Flags]
         public enum MstsAnimationOptions
         {
             None = 0,
-            SkipChildrenAnimations = 1 << 0,
+            SkipChildrenAnimations  = 1 << 0,
             MaxFrameFromKeyframeOne = 1 << 1,
-            MaxFrameFromFrameRate = 1 << 2,
-            MaxFrameIsFour = 1 << 3,
+            MaxFrameFromFrameRate   = 1 << 2,
+            MaxFrameFromFrameCount  = 1 << 3,
+            MaxFrameIsFour          = 1 << 4,
         }
 
         /// <summary>
@@ -138,16 +139,16 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetMstsSpeed(float mstsSpeed, bool useShapeFrameRate, bool useShapeFrameCount)
         {
-            if (PoseableShape?.SharedShape?.Animations?.Count > 0) // Must be true only if the MSTS shape format is used, not glTF
-            {
-                Speed = mstsSpeed;
+            if (PoseableShape?.SharedShape is GltfShape)
+                return;
 
-                if (useShapeFrameRate)
-                    Speed *= (PoseableShape?.SharedShape?.Animations?.ElementAtOrDefault(0)?.FrameRate ?? 30f) / 30f;
+            Speed *= mstsSpeed;
 
-                if (useShapeFrameCount)
-                    Speed *= PoseableShape?.SharedShape?.Animations?.ElementAtOrDefault(0)?.FrameCount ?? 1;
-            }
+            if (useShapeFrameRate)
+                Speed *= (PoseableShape?.SharedShape?.Animations?.ElementAtOrDefault(0)?.FrameRate ?? 30f) / 30f;
+
+            if (useShapeFrameCount)
+                Speed *= PoseableShape?.SharedShape?.Animations?.ElementAtOrDefault(0)?.FrameCount ?? 1;
         }
 
         /// <summary>
@@ -156,18 +157,18 @@ namespace Orts.Viewer3D
         /// <param name="options"></param>
         public void SetMstsAnimationOptions(MstsAnimationOptions options)
         {
-            if (PoseableShape?.SharedShape?.Animations?.Count > 0) // Must be true only if the MSTS shape format is used, not glTF
-            {
-                MstsOptions = options;
+            if (PoseableShape?.SharedShape is GltfShape)
+                return;
 
-                if ((MstsOptions & MstsAnimationOptions.MaxFrameFromKeyframeOne) != 0)
-                    MaxFrame = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?.controllers?.FirstOrDefault()?.ElementAtOrDefault(1)?.Frame ?? MaxFrame;
-                if ((MstsOptions & MstsAnimationOptions.MaxFrameFromFrameRate) != 0
-                    && PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.FrameRate is int frameRate)
-                    MaxFrame = frameRate / 30.0f;
-                if ((MstsOptions & MstsAnimationOptions.MaxFrameIsFour) != 0)
-                    MaxFrame = 4.0f;
-            }
+            if ((options & MstsAnimationOptions.SkipChildrenAnimations) != 0)
+                MstsChildrenAnimation = false;
+            if ((options & MstsAnimationOptions.MaxFrameFromKeyframeOne) != 0)
+                MaxFrame = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?.controllers?.FirstOrDefault()?.ElementAtOrDefault(1)?.Frame ?? MaxFrame;
+            if ((options & MstsAnimationOptions.MaxFrameFromFrameRate) != 0
+                && PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.FrameRate is int frameRate)
+                MaxFrame = frameRate / 30.0f;
+            if ((options & MstsAnimationOptions.MaxFrameIsFour) != 0)
+                MaxFrame = 4.0f;
         }
 
         /// <summary>
@@ -176,7 +177,7 @@ namespace Orts.Viewer3D
         public void SetGltfSpeed(float speed)
         {
             if (PoseableShape?.SharedShape is GltfShape)
-                Speed = speed;
+                Speed *= speed;
         }
 
         public int GetFirstTargetNode()
@@ -199,8 +200,9 @@ namespace Orts.Viewer3D
                 return;
 
             AnimationKey = frame;
+
             foreach (var matrix in MatrixIndexes)
-                PoseableShape.AnimateMatrix(matrix, AnimationKey, (MstsOptions & MstsAnimationOptions.SkipChildrenAnimations) != 0);
+                PoseableShape.AnimateMatrix(matrix, AnimationKey, MstsChildrenAnimation);
         }
 
         /// <summary>

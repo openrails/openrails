@@ -1708,7 +1708,7 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="animationNumber">The number of the animation to advance.</param>
         /// <param name="time">Actual time in the animation clip in seconds.</param>
-        public void Animate(int animationNumber, float time, Matrix[] animatedMatrices)
+        public override void Animate(int animationNumber, float time, Matrix[] animatedMatrices)
         {
             if (!Viewer.Game.Settings.GltfAnimations && !ConsistGenerator.GltfVisualTestRun)
                 return;
