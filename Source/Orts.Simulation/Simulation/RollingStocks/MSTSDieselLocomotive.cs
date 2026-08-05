@@ -261,8 +261,8 @@ namespace Orts.Simulation.RollingStocks
 
                         if (pointPower > maxPower)
                             maxPower = pointPower;
-                        if (forceCurve.Y[i] > maxForce)
-                            maxForce = forceCurve.Y[i];
+                        if (forceCurve.Y[j] > maxForce)
+                            maxForce = forceCurve.Y[j];
                 }
                 }
 
