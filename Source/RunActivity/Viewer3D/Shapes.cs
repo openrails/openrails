@@ -769,13 +769,13 @@ namespace Orts.Viewer3D
             AnimatedPartClosing?.UpdateState(Opening ? 0f : 1f, elapsedTime);
             if (AnimatedPartClosing?.AnimationKeyFraction() > 0)
             {
-                AnimatedPartOpenLoop.SetState(0);
-                AnimatedPartClosedLoop.UpdateLoop(1, elapsedTime);
+                AnimatedPartOpenLoop?.SetState(0);
+                AnimatedPartClosedLoop?.UpdateLoop(1, elapsedTime);
             }
             else
             {
-                AnimatedPartClosedLoop.SetState(0);
-                AnimatedPartOpenLoop.UpdateLoop(1, elapsedTime);
+                AnimatedPartClosedLoop?.SetState(0);
+                AnimatedPartOpenLoop?.UpdateLoop(1, elapsedTime);
             }
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
