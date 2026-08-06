@@ -241,12 +241,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             // By default, on diesel locomotives, dynamic brake is available only if main power is available.
             SetCurrentDynamicBrakeAvailability(CurrentMainPowerSupplyState() == PowerSupplyState.PowerOn);
 
-            if (ElectricTrainSupplyUnfitted())
+            PowerSupplyState generatorState = CurrentElectricTrainSupplyGeneratorState();
+
+            if (generatorState == PowerSupplyState.Unavailable)
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.Unavailable);
             }
             else if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn
-                    && ElectricTrainSupplySwitchOn() && ElectricTrainSupplyAvailable())
+                    && ElectricTrainSupplySwitchOn()
+                    && generatorState == PowerSupplyState.PowerOn)
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOn);
             }
@@ -256,7 +259,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
 
             if (DieselLocomotive.TractiveForcePowerLimited)
-                AvailableTractionPowerW = Math.Max(DieselEngineAvailableTractionPowerW, 0);
+                AvailableTractionPowerW = Math.Max(DieselEnginesAvailableTractionPowerW, 0);
 
             UpdateSounds();
         }
