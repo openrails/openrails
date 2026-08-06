@@ -425,15 +425,15 @@ namespace Orts.Viewer3D.RollingStock
 
             foreach (var runningGear in RunningGears.Values)
             {
-                runningGear.SetMstsSpeed(8.0f, true, false);
+                runningGear.SetMstsSpeed(8.0f, AnimatedPart.MstsOptions.MaxFrameFromFrameRatePer30);
                 runningGear.SetGltfSpeed(runningGear.MaxFrame);
             }
-            BrakeCylinders.SetMstsSpeed(BrakeCylinders.MaxFrame, false, false);
-            BrakeRigging.SetMstsSpeed(BrakeRigging.MaxFrame, false, false);
-            Wipers.SetMstsSpeed(1.5f, true, false);
-            Bell.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true, false);
-            Item1Continuous.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true, false);
-            Item2Continuous.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, true, false);
+            BrakeCylinders.SetMstsSpeed(BrakeCylinders.MaxFrame);
+            BrakeRigging.SetMstsSpeed(BrakeRigging.MaxFrame);
+            Wipers.SetMstsSpeed(1.5f, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
+            Bell.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
+            Item1Continuous.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
+            Item2Continuous.SetMstsSpeed(TrainCarShape.SharedShape.CustomAnimationFPS, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
 
             // Precompute bogie positioning parameters for later
             if (car.Parts.Count > 1)
