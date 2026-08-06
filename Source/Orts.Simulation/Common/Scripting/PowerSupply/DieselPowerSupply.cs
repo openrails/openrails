@@ -51,44 +51,39 @@ namespace ORTS.Scripting.Api
             }
         }
         /// <summary>
-        /// True if at least 1 engine can provide ETS power
+        /// The status of the diesel generator that provides electric train supply power
         /// </summary>
-        public bool ElectricTrainSupplyEquipped()
+        /// <returns>
+        /// PowerSupplyState.Unavailable if no engines can provide ETS.
+        /// PowerSupplyState.PowerOff if an engine can provide ETS, but is not running or is at insufficient RPM.
+        /// PowerSupplyState.PowerOn if an engine can provide ETS, and is running at sufficient RPM to do so.
+        /// </returns>
+        public PowerSupplyState CurrentElectricTrainSupplyGeneratorState()
         {
-            bool equipped = false;
+            PowerSupplyState state = PowerSupplyState.Unavailable;
 
             foreach (DieselEngine de in DieselEngines)
             {
                 if (de.ProvidesETS)
                 {
-                    equipped = true;
-                    break;
+                    if (de.State == DieselEngineState.Running && de.RealRPM >= DieselEngineMinRpmForElectricTrainSupply)
+                    {
+                        // At least one engine is ready to provide ETS, skip checking others
+                        state = PowerSupplyState.PowerOn;
+                        break;
+                    }
+                    else if (state == PowerSupplyState.Unavailable)
+                    {
+                        // This engine could provide ETS, but isn't ready
+                        state = PowerSupplyState.PowerOff;
+                    }
                 }
             }
 
-            return equipped;
+            return state;
         }
-        /// <summary>
-        /// True if at least 1 engine that can provide ETS is running at sufficient RPM
-        /// </summary>
-        public bool ElectricTrainSupplyAvailable()
-        {
-            bool available = false;
-
-            foreach (DieselEngine de in DieselEngines)
-            {
-                if (de.State == DieselEngineState.Running && de.ProvidesETS
-                    && de.RealRPM >= DieselEngineMinRpmForElectricTrainSupply)
-                {
-                    available = true;
-                    break;
-                }
-            }
-
-            return available;
-        }
-        protected float DieselEngineOutputPowerW => DieselEngines.MaxOutputPowerW;
-        protected float DieselEngineAvailableTractionPowerW => DieselEngines.AvailableTractionPowerW;
+        protected float DieselEnginesOutputPowerW => DieselEngines.MaxOutputPowerW;
+        protected float DieselEnginesAvailableTractionPowerW => DieselEngines.AvailableTractionPowerW;
 
         public float DieselEngineMinRpmForElectricTrainSupply => DpsHost.DieselEngineMinRpmForElectricTrainSupply;
 
