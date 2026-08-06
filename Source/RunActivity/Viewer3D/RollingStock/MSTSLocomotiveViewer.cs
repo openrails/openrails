@@ -3511,7 +3511,7 @@ namespace Orts.Viewer3D.RollingStock
                         if (key.cvcType.Type == CABViewControlTypes.EXTERNALWIPERS ||
                             key.cvcType.Type == CABViewControlTypes.ORTS_ITEM1CONTINUOUS ||
                             key.cvcType.Type == CABViewControlTypes.ORTS_ITEM2CONTINUOUS)
-                            tmpPart.SetMstsSpeed(1.5f, true, false);
+                            tmpPart.SetMstsSpeed(1.5f, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
 
                         if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
                             TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);

@@ -328,14 +328,6 @@ namespace Orts.Viewer3D
         /// </summary>
         public void AnimateMatrix(int iMatrix, float key, bool mstsChildrenAnimation = true)
         {
-            if (!SharedShape.HasAnimations())
-            {
-                if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
-                    Trace.TraceInformation("Ignored missing animations data in shape {0}", SharedShape.FilePath);
-                SeenShapeAnimationError[SharedShape.FilePath] = true;
-                return;  // animation is missing
-            }
-
             if (!SharedShape.HasAnimation(iMatrix))
             {
                 if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
@@ -352,7 +344,7 @@ namespace Orts.Viewer3D
             // Animate all child nodes in the hierarchy too.
             for (var i = 0; i < Hierarchy.Length; i++)
                 if (Hierarchy[i] == iMatrix)
-                    AnimateMatrix(i, key, false);
+                    AnimateMatrix(i, key, true);
         }
     }
 
@@ -362,16 +354,19 @@ namespace Orts.Viewer3D
     /// </summary>
     public class AnimatedShape : PoseableShape
     {
-        AnimatedPart AnimatedPart;
+        readonly AnimatedPart AnimatedPart;
 
         public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
             : base(viewer, path, initialPosition, flags)
         {
+            if (frameRateDivisor == 0)
+                frameRateDivisor = 1.0f;
+
             if (SharedShape.HasAnimations())
             {
                 AnimatedPart = new AnimatedPart(this);
                 AnimatedPart.AddAnimations();
-                AnimatedPart.SetMstsSpeed(30.0f / frameRateDivisor, true, false);
+                AnimatedPart.SetMstsSpeed(1.0f / frameRateDivisor, AnimatedPart.MstsOptions.SpeedFromFrameRate);
             }
         }
 
@@ -384,10 +379,10 @@ namespace Orts.Viewer3D
 
     public class AnalogClockShape : PoseableShape
     {
-        AnimatedPart CentiSecondHand;
-        AnimatedPart SecondHand;
-        AnimatedPart MinuteHand;
-        AnimatedPart HourHand;
+        readonly AnimatedPart CentiSecondHand;
+        readonly AnimatedPart SecondHand;
+        readonly AnimatedPart MinuteHand;
+        readonly AnimatedPart HourHand;
 
         public AnalogClockShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
             : base(viewer, path, initialPosition, flags)
@@ -405,10 +400,10 @@ namespace Orts.Viewer3D
             MinuteHand.AddAnimation("orts_mhand_clock*");
             HourHand.AddAnimation("orts_hhand_clock*");
 
-            CentiSecondHand.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.MaxFrameIsFour);
-            SecondHand.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.MaxFrameIsFour);
-            MinuteHand.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.MaxFrameIsFour);
-            HourHand.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.MaxFrameIsFour);
+            CentiSecondHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
+            SecondHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
+            MinuteHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
+            HourHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -451,12 +446,9 @@ namespace Orts.Viewer3D
             {
                 AnimatedPart = new AnimatedPart(this);
                 AnimatedPart.AddAnimations();
-                AnimatedPart.SetMstsSpeed(2.0f, false, false);
-
+                AnimatedPart.SetMstsSpeed(2.0f, AnimatedPart.MstsOptions.MaxFrameIsOne);
                 // MSTS shape format junction animations are tricky, they consist of 3 animation nodes.
                 // 0: main, 1: diverging, 2: main again. Go till frame 1 only.
-                if (!(SharedShape is GltfShape))
-                    AnimatedPart.MaxFrame = 1;
             }
         }
 
@@ -475,7 +467,7 @@ namespace Orts.Viewer3D
         int NumIndices;
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
 
-        AnimatedPart AnimatedPart; // An old comment from the code: "tracks position of points as they move left and right". But seems to always on 0.
+        readonly AnimatedPart AnimatedPart; // An old comment from the code: "tracks position of points as they move left and right". But seems to always on 0.
         ShapePrimitive shapePrimitive;
         public SpeedPostShape(Viewer viewer, string path, WorldPosition position, SpeedPostObj spo)
             : base(viewer, path, position)
@@ -704,23 +696,15 @@ namespace Orts.Viewer3D
             if (SharedShape.HasAnimations())
             {
                 AnimatedPartOpenLoop = new AnimatedPart(this);
-                AnimatedPartClosing = new AnimatedPart(this);
                 AnimatedPartClosedLoop = new AnimatedPart(this);
-
-                var speed = 1.0f / CrossingObj.levelCrTiming.animTiming;
-
-                AnimatedPartOpenLoop.SetMstsSpeed(speed, true, false);
-                AnimatedPartClosing.SetMstsSpeed(speed, false, false);
-                AnimatedPartClosedLoop.SetMstsSpeed(speed, true, false);
-
-                AnimatedPartOpenLoop.SetGltfSpeed(speed);
-                AnimatedPartClosing.SetGltfSpeed(speed);
-                AnimatedPartClosedLoop.SetGltfSpeed(speed);
+                AnimatedPartClosing = new AnimatedPart(this);
 
                 // The original MSTS crossing shapes don't have the animations named, but having names allows all three types to be in a single shape/glTF file.
                 AnimatedPartOpenLoop.AddAnimation("ORTS_LEVELCROSSING_OPEN_LOOP*");
-                AnimatedPartClosing.AddAnimation("ORTS_LEVELCROSSING_CLOSING*");
                 AnimatedPartClosedLoop.AddAnimation("ORTS_LEVELCROSSING_CLOSED_LOOP*");
+                AnimatedPartClosing.AddAnimation("ORTS_LEVELCROSSING_CLOSING*");
+
+                var speed = 1.0f / CrossingObj.levelCrTiming.animTiming;
 
                 // If no names in the shape file, fall back to the original behaviour.
                 //
@@ -739,9 +723,17 @@ namespace Orts.Viewer3D
                     else
                     {
                         AnimatedPartClosing.AddAnimations();
-                        AnimatedPartClosing.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.MaxFrameFromFrameRate);
+                        AnimatedPartClosing.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameFromFrameRatePer30);
                     }
                 }
+
+                AnimatedPartOpenLoop.SetMstsSpeed(speed, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
+                AnimatedPartClosedLoop.SetMstsSpeed(speed, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
+                AnimatedPartClosing.SetMstsSpeed(speed);
+
+                AnimatedPartOpenLoop.SetGltfSpeed(speed);
+                AnimatedPartClosedLoop.SetGltfSpeed(speed);
+                AnimatedPartClosing.SetGltfSpeed(speed);
             }
         }
 
@@ -757,7 +749,7 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (CrossingObj.visible != true)
+            if (!CrossingObj.visible)
                 return;
 
             if (Opening == Crossing.HasTrain)
@@ -787,8 +779,9 @@ namespace Orts.Viewer3D
         readonly HazardObj HazardObj;
         readonly Hazzard Hazzard;
         readonly AnimatedPart AnimatedPart;
+        readonly Dictionary<Hazzard.State, Vector2> StateRanges;
 
-        float Moved = 0f;
+        float Moved;
         float DelayHazAnimation;
 
         public static HazzardShape CreateHazzard(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj)
@@ -804,11 +797,20 @@ namespace Orts.Viewer3D
         {
             HazardObj = hObj;
             Hazzard = h;
+
             if (SharedShape.HasAnimations())
             {
                 AnimatedPart = new AnimatedPart(this);
                 AnimatedPart.AddAnimations();
-                AnimatedPart.SetMstsSpeed(24.0f, false, false);
+                AnimatedPart.SetMstsSpeed(24.0f);
+                StateRanges = new Dictionary<Hazzard.State, Vector2>()
+                {
+                    { Hazzard.State.Idle1, Hazzard.HazFile.Tr_HazardFile.Idle_Key / AnimatedPart.MaxFrame },
+                    { Hazzard.State.Idle2, Hazzard.HazFile.Tr_HazardFile.Idle_Key2 / AnimatedPart.MaxFrame },
+                    { Hazzard.State.LookLeft, Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Left / AnimatedPart.MaxFrame },
+                    { Hazzard.State.LookRight, Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Right / AnimatedPart.MaxFrame },
+                    { Hazzard.State.Scared, Hazzard.HazFile.Tr_HazardFile.Success_Scarper_Key / AnimatedPart.MaxFrame }
+                };
             }
         }
 
@@ -821,59 +823,38 @@ namespace Orts.Viewer3D
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             if (Hazzard == null) return;
-            Vector2 CurrentRange;
+
+            var currentRange = StateRanges?[Hazzard.state] ?? Vector2.Zero;
+            AnimatedPart?.UpdateState(currentRange.Y, elapsedTime);
+            var currentKeyFraction = AnimatedPart?.AnimationKeyFraction() ?? 0;
+            DelayHazAnimation += elapsedTime.ClockSeconds;
+
             switch (Hazzard.state)
             {
                 case Hazzard.State.Idle1:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key / AnimatedPart.MaxFrame; break;
                 case Hazzard.State.Idle2:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key2 / AnimatedPart.MaxFrame; break;
+                    if (DelayHazAnimation > 5f && (currentKeyFraction < currentRange.X || currentKeyFraction >= currentRange.Y))
+                    {
+                        AnimatedPart?.SetState(currentRange.X);
+                        DelayHazAnimation = 0;
+                    }
+                    break;
                 case Hazzard.State.LookLeft:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Left / AnimatedPart.MaxFrame; break;
                 case Hazzard.State.LookRight:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Right / AnimatedPart.MaxFrame; break;
+                    AnimatedPart?.SetState(MathHelper.Clamp(currentKeyFraction, currentRange.X, currentRange.Y));
+                    break;
                 case Hazzard.State.Scared:
-                default:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Success_Scarper_Key / AnimatedPart.MaxFrame;
+                    if (currentKeyFraction < currentRange.X || currentKeyFraction >= currentRange.Y)
+                        AnimatedPart?.SetState(currentRange.X);
                     if (Moved < Hazzard.HazFile.Tr_HazardFile.Distance)
                     {
                         var m = Hazzard.HazFile.Tr_HazardFile.Speed * elapsedTime.ClockSeconds;
                         Moved += m;
-                        this.HazardObj.Position.Move(this.HazardObj.QDirection, m);
-                        Location.Location = new Vector3(this.HazardObj.Position.X, this.HazardObj.Position.Y, this.HazardObj.Position.Z);
+                        HazardObj.Position.Move(HazardObj.QDirection, m);
+                        Location.Location = new Vector3(HazardObj.Position.X, HazardObj.Position.Y, HazardObj.Position.Z);
                     }
                     else { Moved = 0; Hazzard.state = Hazzard.State.Idle1; }
                     break;
-            }
-
-            DelayHazAnimation += elapsedTime.ClockSeconds;
-
-            AnimatedPart.UpdateState(CurrentRange.Y, elapsedTime);
-
-            var currentKeyFraction = AnimatedPart.AnimationKeyFraction();
-            //AnimatedPart.SetState(MathHelper.Clamp(currentKeyFraction, CurrentRange.X, CurrentRange.Y));
-
-            if (Hazzard.state == Hazzard.State.Idle1 || Hazzard.state == Hazzard.State.Idle2)
-            {
-                if (DelayHazAnimation > 5f)
-                {
-                    if (currentKeyFraction < CurrentRange.X || currentKeyFraction > CurrentRange.Y)
-                    {
-                        AnimatedPart.SetState(CurrentRange.X);
-                        DelayHazAnimation = 0;
-                    }
-                }
-            }
-
-            if (Hazzard.state == Hazzard.State.LookLeft || Hazzard.state == Hazzard.State.LookRight)
-            {
-                AnimatedPart.SetState(MathHelper.Clamp(currentKeyFraction, CurrentRange.X, CurrentRange.Y));
-            }
-
-            if (Hazzard.state == Hazzard.State.Scared)
-            {
-                if (currentKeyFraction < CurrentRange.X || currentKeyFraction > CurrentRange.Y)
-                    AnimatedPart.SetState(CurrentRange.X);
             }
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
@@ -888,9 +869,6 @@ namespace Orts.Viewer3D
         protected WorldPosition Position;
 
         AnimatedPart AnimatedPart;
-        protected int AnimationFrames;
-        protected float AnimationKey;
-        protected float FrameRate;
 
         public FuelPickupItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj)
             : base(viewer, path, position, shapeFlags)
@@ -925,7 +903,7 @@ namespace Orts.Viewer3D
                 }
                 catch (Exception error)
                 {
-                    Trace.WriteLine(new FileLoadException(soundPath, error));
+                    Trace.WriteLine(new FileLoadException(Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS, error));
                 }
             }
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS != null && (FuelPickupItemObj.PickupType == 6 || FuelPickupItemObj.PickupType == 2))
@@ -938,7 +916,7 @@ namespace Orts.Viewer3D
                 }
                 catch (Exception error)
                 {
-                    Trace.WriteLine(new FileLoadException(soundPath, error));
+                    Trace.WriteLine(new FileLoadException(Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS, error));
                 }
             }
             FuelPickupItem = Viewer.Simulator.FuelManager.CreateFuelStation(Position, from tid in FuelPickupItemObj.TrItemIDList where tid.db == 0 select tid.dbID);
@@ -947,21 +925,9 @@ namespace Orts.Viewer3D
             {
                 AnimatedPart = new AnimatedPart(this);
                 AnimatedPart.AddAnimations();
-                AnimatedPart.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed, false, true);
-                AnimatedPart.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.MaxFrameFromFrameCount);
-            }
-
-            AnimationFrames = 1;
-            FrameRate = 1;
-            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].anim_nodes != null && SharedShape.Animations[0].anim_nodes.Count > 0)
-            {
-                FrameRate = SharedShape.Animations[0].FrameCount / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
-                foreach (var anim_node in SharedShape.Animations[0].anim_nodes)
-                    if (anim_node.Name == "ANIMATED_PARTS")
-                    {
-                        AnimationFrames = SharedShape.Animations[0].FrameCount;
-                        break;
-                    }
+                AnimatedPart.SetGltfSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed);
+                AnimatedPart.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed,
+                    AnimatedPart.MstsOptions.SpeedFromFrameCount | AnimatedPart.MstsOptions.MaxFrameFromFrameCount);
             }
         }
 
@@ -1020,7 +986,7 @@ namespace Orts.Viewer3D
         Vector3 AnimationGrabber01Start;
         Vector3 AnimationGrabber02Start;
 
-        float SlowDownThreshold = 0.03f;
+        readonly float SlowDownThreshold = 0.03f;
 
         // To detect transitions that trigger sounds
         bool OldMoveX;
@@ -1060,21 +1026,24 @@ namespace Orts.Viewer3D
             AnimatedPartGrabber01.AddAnimation("GRABBER01");
             AnimatedPartGrabber02.AddAnimation("GRABBER02");
 
-            var mstsSpeed = 1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
+            var speed = 1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
+            var mstsOptions = AnimatedPart.MstsOptions.SkipChildrenAnimations
+                | AnimatedPart.MstsOptions.MaxFrameFromFrameOne
+                | AnimatedPart.MstsOptions.SpeedFromFrameCount;
 
-            AnimatedPartX.SetMstsSpeed(mstsSpeed, false, true);
-            AnimatedPartY.SetMstsSpeed(mstsSpeed, false, true);
-            AnimatedPartZ.SetMstsSpeed(mstsSpeed, false, true);
-            AnimatedPartCable.SetMstsSpeed(mstsSpeed, false, true);
-            AnimatedPartGrabber01.SetMstsSpeed(mstsSpeed, false, true);
-            AnimatedPartGrabber02.SetMstsSpeed(mstsSpeed, false, true);
+            AnimatedPartX.SetMstsSpeed(speed, mstsOptions);
+            AnimatedPartY.SetMstsSpeed(speed, mstsOptions);
+            AnimatedPartZ.SetMstsSpeed(speed, mstsOptions);
+            AnimatedPartCable.SetMstsSpeed(speed, mstsOptions);
+            AnimatedPartGrabber01.SetMstsSpeed(speed, mstsOptions);
+            AnimatedPartGrabber02.SetMstsSpeed(speed, mstsOptions);
 
-            AnimatedPartX.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
-            AnimatedPartY.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
-            AnimatedPartZ.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
-            AnimatedPartCable.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
-            AnimatedPartGrabber01.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
-            AnimatedPartGrabber02.SetMstsAnimationOptions(AnimatedPart.MstsAnimationOptions.SkipChildrenAnimations | AnimatedPart.MstsAnimationOptions.MaxFrameFromKeyframeOne);
+            AnimatedPartX.SetGltfSpeed(speed);
+            AnimatedPartY.SetGltfSpeed(speed);
+            AnimatedPartZ.SetGltfSpeed(speed);
+            AnimatedPartCable.SetGltfSpeed(speed);
+            AnimatedPartGrabber01.SetGltfSpeed(speed);
+            AnimatedPartGrabber02.SetGltfSpeed(speed);
 
             SharedShape.GetAnimationOutputMinMax(AnimatedPartX.MatrixIndexes.FirstOrDefault(), out var minX, out var maxX, out var startX);
             SharedShape.GetAnimationOutputMinMax(AnimatedPartY.MatrixIndexes.FirstOrDefault(), out var minY, out var maxY, out var startY);
@@ -1242,7 +1211,7 @@ namespace Orts.Viewer3D
 
             AnimatedPart = new AnimatedPart(this);
             AnimatedPart.AddAnimations();
-            AnimatedPart.SetMstsSpeed(30f, true, false);
+            AnimatedPart.SetMstsSpeed(1.0f, AnimatedPart.MstsOptions.SpeedFromFrameRate);
             AnimatedPart.SetFrameWrap(Turntable.YAngle / MathHelper.TwoPi * AnimatedPart.MaxFrame);
 
             var absAnimationMatrix = XNAMatrices.ElementAtOrDefault(SharedShape.GetAnimationTargetNode(IAnimationMatrix));
@@ -1352,7 +1321,7 @@ namespace Orts.Viewer3D
 
             AnimatedPart = new AnimatedPart(this);
             AnimatedPart.AddAnimations();
-            AnimatedPart.SetMstsSpeed(30f, true, false);
+            AnimatedPart.SetMstsSpeed(1.0f, AnimatedPart.MstsOptions.SpeedFromFrameRate);
             AnimatedPart.SetFrameClamp((Transfertable.OffsetPos - Transfertable.CenterOffsetComponent) / Transfertable.Span * AnimatedPart.MaxFrame);
 
             var absAnimationMatrix = XNAMatrices.ElementAtOrDefault(SharedShape.GetAnimationTargetNode(IAnimationMatrix));

@@ -65,14 +65,18 @@ namespace Orts.Viewer3D
         public List<int> MatrixIndexes = new List<int>();
 
         [Flags]
-        public enum MstsAnimationOptions
+        public enum MstsOptions
         {
             None = 0,
-            SkipChildrenAnimations  = 1 << 0,
-            MaxFrameFromKeyframeOne = 1 << 1,
-            MaxFrameFromFrameRate   = 1 << 2,
-            MaxFrameFromFrameCount  = 1 << 3,
-            MaxFrameIsFour          = 1 << 4,
+            SkipChildrenAnimations      = 1 << 0,
+            MaxFrameFromFrameOne        = 1 << 1,
+            MaxFrameFromFrameRatePer30  = 1 << 2,
+            MaxFrameFromFrameCount      = 1 << 3,
+            MaxFrameIsOne               = 1 << 4,
+            MaxFrameIsFour              = 1 << 5,
+            SpeedFromFrameCount         = 1 << 6,
+            SpeedFromFrameRate          = 1 << 7,
+            SpeedFromFrameRatePer30     = 1 << 8,
         }
 
         /// <summary>
@@ -137,38 +141,42 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Sets the speed only in case of shape format.
         /// </summary>
-        public void SetMstsSpeed(float mstsSpeed, bool useShapeFrameRate, bool useShapeFrameCount)
+        public void SetMstsSpeed(float mstsSpeed, MstsOptions mstsOptions = MstsOptions.None)
         {
             if (PoseableShape?.SharedShape is GltfShape)
                 return;
 
             Speed *= mstsSpeed;
-
-            if (useShapeFrameRate)
-                Speed *= (PoseableShape?.SharedShape?.Animations?.ElementAtOrDefault(0)?.FrameRate ?? 30f) / 30f;
-
-            if (useShapeFrameCount)
-                Speed *= PoseableShape?.SharedShape?.Animations?.ElementAtOrDefault(0)?.FrameCount ?? 1;
+            SetMstsAnimationOptions(mstsOptions);
         }
 
         /// <summary>
         /// Sets the special animation options for various MSTS shape usages.
         /// </summary>
         /// <param name="options"></param>
-        public void SetMstsAnimationOptions(MstsAnimationOptions options)
+        public void SetMstsAnimationOptions(MstsOptions options)
         {
             if (PoseableShape?.SharedShape is GltfShape)
                 return;
 
-            if ((options & MstsAnimationOptions.SkipChildrenAnimations) != 0)
+            if ((options & MstsOptions.SkipChildrenAnimations) != 0)
                 MstsChildrenAnimation = false;
-            if ((options & MstsAnimationOptions.MaxFrameFromKeyframeOne) != 0)
-                MaxFrame = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?.controllers?.FirstOrDefault()?.ElementAtOrDefault(1)?.Frame ?? MaxFrame;
-            if ((options & MstsAnimationOptions.MaxFrameFromFrameRate) != 0
+            if ((options & MstsOptions.MaxFrameFromFrameOne) != 0)
+                MaxFrame = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?
+                    .controllers?.FirstOrDefault()?.ElementAtOrDefault(1)?.Frame ?? MaxFrame;
+            if ((options & MstsOptions.MaxFrameFromFrameRatePer30) != 0
                 && PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.FrameRate is int frameRate)
                 MaxFrame = frameRate / 30.0f;
-            if ((options & MstsAnimationOptions.MaxFrameIsFour) != 0)
+            if ((options & MstsOptions.MaxFrameIsOne) != 0)
+                MaxFrame = 1.0f;
+            if ((options & MstsOptions.MaxFrameIsFour) != 0)
                 MaxFrame = 4.0f;
+            if ((options & MstsOptions.SpeedFromFrameCount) != 0)
+                Speed *= PoseableShape?.SharedShape?.Animations?.FirstOrDefault()?.FrameCount ?? 1;
+            if ((options & MstsOptions.SpeedFromFrameRate) != 0)
+                Speed *= PoseableShape?.SharedShape?.Animations?.FirstOrDefault()?.FrameRate ?? 30f;
+            if ((options & MstsOptions.SpeedFromFrameRatePer30) != 0)
+                Speed *= (PoseableShape?.SharedShape?.Animations?.FirstOrDefault()?.FrameRate ?? 30f) / 30f;
         }
 
         /// <summary>
