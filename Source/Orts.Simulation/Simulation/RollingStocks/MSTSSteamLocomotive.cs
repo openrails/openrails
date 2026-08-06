@@ -67,47 +67,21 @@
  * 
  */
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Runtime.Remoting.Lifetime;
-using System.Runtime.Remoting.Messaging;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using System.Security.Cryptography;
 using System.Text;
-using LibGit2Sharp;
-using Microsoft.CodeAnalysis;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics.PackedVector;
-using Microsoft.Xna.Framework.Media;
-using Newtonsoft.Json.Linq;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using Orts.Simulation;
-using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
-using ORTS.Scripting.Api.ETCS;
-using SharpDX.Direct2D1;
-using SharpDX.Direct2D1.Effects;
-using SharpDX.Direct3D11;
-using SharpDX.Direct3D9;
-using SharpDX.DXGI;
-using SharpDX.MediaFoundation;
-using SharpDX.Win32;
-using static System.Net.WebRequestMethods;
-using static Orts.Simulation.RollingStocks.MSTSSteamLocomotive;
 using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
 using Event = Orts.Common.Event;
 

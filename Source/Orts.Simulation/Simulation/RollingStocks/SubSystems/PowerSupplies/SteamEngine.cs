@@ -16,39 +16,18 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.IO.Pipelines;
-using System.Reflection.Metadata;
-using System.Runtime.Remoting.Lifetime;
 using System.Text;
-using LibGit2Sharp;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Graphics.PackedVector;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using Orts.Simulation.AIs;
-using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
 using ORTS.Scripting.Api;
-using SharpDX.Direct2D1;
-using SharpDX.Direct2D1.Effects;
-using SharpDX.Direct3D9;
-using SharpDX.DXGI;
-using SharpDX.X3DAudio;
-using static Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine;
-using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
 using static Orts.Simulation.RollingStocks.TrainCar;
-using static Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies.SteamEngine;
 
 namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
