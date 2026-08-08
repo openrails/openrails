@@ -2177,6 +2177,15 @@ namespace Orts.Simulation.RollingStocks
             Trace.TraceInformation("Car ID {0} Aux Tender Water Mass {1} Wagon Type {2}", CarID, AuxTenderWaterMassKG, AuxWagonType);
 #endif
 
+            if (WagonType != WagonTypes.Engine)
+            {
+                // Calculate wheel speed for wagons, locomotives use axle speed
+                if (BrakeSkid)
+                    WheelSpeedMpS = 0.0f;
+                else
+                    WheelSpeedMpS = SpeedMpS;
+            }
+
             AbsWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
 
             UpdateTrainBaseResistance();
