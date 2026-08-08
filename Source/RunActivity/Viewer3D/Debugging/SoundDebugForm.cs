@@ -332,7 +332,7 @@ namespace Orts.Viewer3D.Debugging
             if (selectedCar != null)
             {
                 speed.Text = Math.Abs(selectedCar.SpeedMpS).ToString("0.0");
-                wheelRPM.Text = pS.TopM((float)(selectedCar.AbsSpeedMpS / (2 * Math.PI * selectedCar.WheelRadiusM))).ToString("0.0");
+                wheelRPM.Text = pS.TopM((float)(selectedCar.AbsWheelSpeedMpS / (2 * Math.PI * selectedCar.WheelRadiusM))).ToString("0.0");
 
                 tractiveEffort.Text = (selectedCar.LocomotiveAxles.DriveForceN * Math.Sign(selectedCar.WheelSpeedMpS)).ToString("0"); // ensure positive for traction, negative for dynamics
                 tractivePower.Text = (selectedCar.LocomotiveAxles.DriveForceN * selectedCar.WheelSpeedMpS).ToString("0");
