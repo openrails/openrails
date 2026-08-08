@@ -14873,14 +14873,20 @@ namespace Orts.Simulation.Physics
                             PlayerTrainSignals[dir][SignalFunction.NORMAL].Add(thisItem);
                             signalProcessed = true;
                         }
-                        else if (signalObjectItem.ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit && signalObjectItem.actual_speed > 0)
+                        else if (signalObjectItem.ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit)
                         {
-                            thisItem = new TrainObjectItem(thisSpeedMpS: signalObjectItem.actual_speed,
-                                isWarning: signalObjectItem.speed_isWarning,
-                                thisDistanceM: signalObjectItem.distance_to_train,
-                                signalObject: signalObjectItem.ObjectDetails,
-                                speedObjectType: (TrainObjectItem.SpeedItemType)signalObjectItem.speed_noSpeedReductionOrIsTempSpeedReduction);
-                            PlayerTrainSpeedposts[dir].Add(thisItem);
+                            float validSpeed = Math.Min(TrainMaxSpeedMpS, IsFreight ? signalObjectItem.speed_freight : signalObjectItem.speed_passenger);
+
+                            if (validSpeed > 0)
+                            {
+                                thisItem = new TrainObjectItem(
+                                    validSpeed,
+                                    signalObjectItem.speed_isWarning,
+                                    signalObjectItem.distance_to_train,
+                                    signalObjectItem.ObjectDetails,
+                                    (TrainObjectItem.SpeedItemType)signalObjectItem.speed_noSpeedReductionOrIsTempSpeedReduction);
+                                PlayerTrainSpeedposts[dir].Add(thisItem);
+                            }
                         }
                     }
                     if (!signalProcessed && NextSignalObject[0] != null && NextSignalObject[0].enabledTrain != null && NextSignalObject[0].enabledTrain.Train == this)
@@ -14995,7 +15001,7 @@ namespace Orts.Simulation.Physics
                                     }
                                     else
                                     {
-                                        validSpeed = IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass;
+                                        validSpeed = Math.Min(TrainMaxSpeedMpS, IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
 
                                         if (!thisSpeedInfo.speed_isWarning && validSpeed > 0f)
                                         {
