@@ -425,7 +425,7 @@ namespace Orts.Viewer3D.RollingStock
 
             foreach (var runningGear in RunningGears.Values)
             {
-                runningGear.SetMstsSpeed(8.0f, AnimatedPart.MstsOptions.MaxFrameFromFrameRatePer30);
+                runningGear.SetMstsSpeed(8.0f, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
                 runningGear.SetGltfSpeed(runningGear.MaxFrame);
             }
             BrakeCylinders.SetMstsSpeed(BrakeCylinders.MaxFrame);
