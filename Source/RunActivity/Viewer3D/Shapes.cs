@@ -655,12 +655,14 @@ namespace Orts.Viewer3D
         readonly LevelCrossingObj CrossingObj;
         readonly SoundSource Sound;
         readonly LevelCrossing Crossing;
+        readonly float ClosingDelay;
 
         readonly AnimatedPart AnimatedPartOpenLoop;
         readonly AnimatedPart AnimatedPartClosing;
         readonly AnimatedPart AnimatedPartClosedLoop;
 
         bool Opening = true;
+        float ActualDelay;
 
         public LevelCrossingShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj)
             : base(viewer, path, position, shapeFlags)
@@ -692,6 +694,9 @@ namespace Orts.Viewer3D
                 from tid in CrossingObj.trItemIDList where tid.db == 1 select tid.dbID,
                 CrossingObj.levelCrParameters.warningTime,
                 CrossingObj.levelCrParameters.minimumDistance);
+
+            // MSTS objects come with initialTiming = 60, so we must rule that value out as if it was 0.
+            ClosingDelay = crossingObj.levelCrTiming.initialTiming < 30 ? crossingObj.levelCrTiming.initialTiming : 0;
 
             if (SharedShape.HasAnimations())
             {
@@ -758,8 +763,15 @@ namespace Orts.Viewer3D
                 Sound?.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
             }
 
-            AnimatedPartClosing?.UpdateState(Opening ? 0f : 1f, elapsedTime);
-            if (AnimatedPartClosing?.AnimationKeyFraction() > 0)
+            if (Crossing.HasTrain)
+                ActualDelay += elapsedTime.ClockSeconds;
+            else
+                ActualDelay = 0;
+
+            var openingTarget = Opening || ActualDelay < ClosingDelay ? 0 : 1;
+
+            AnimatedPartClosing?.UpdateState(openingTarget, elapsedTime);
+            if (Crossing.HasTrain || AnimatedPartClosing.AnimationKeyFraction() > 0)
             {
                 AnimatedPartOpenLoop?.SetState(0);
                 AnimatedPartClosedLoop?.UpdateLoop(1, elapsedTime);
