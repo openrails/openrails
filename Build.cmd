@@ -91,6 +91,9 @@ SET BuildConfiguration=Release
 IF "%Mode%" == "Unstable" SET BuildConfiguration=Debug
 MSBuild Source\ORTS.sln /t:Clean;Build /p:Configuration=%BuildConfiguration% /p:NoWarn=1591 || GOTO :error
 
+REM Remove `testhost` files which cannot be signed.
+DEL Program\testhost.*
+
 REM Set update channel.
 >>Program\Updater.ini ECHO Channel=string:%Mode% || GOTO :error
 ECHO Set update channel to "%Mode%".
