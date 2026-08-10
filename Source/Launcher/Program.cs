@@ -20,7 +20,7 @@
  * This is the program which users launch. Its purpose is to check for the
  * required dependencies and Open Rails files before launching the menu.
  *
- * .NET 6 checks for itself on launch
+ * .NET checks for itself on launch
  */
 
 using System;
