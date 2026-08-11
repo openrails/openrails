@@ -272,8 +272,6 @@ namespace Orts.Viewer3D
     /// </summary>
     public class PoseableShape : StaticShape
     {
-        protected static Dictionary<string, bool> SeenShapeAnimationError = new Dictionary<string, bool>();
-
         public Matrix[] XNAMatrices = new Matrix[0];  // the positions of the subobjects
 
         public readonly int[] Hierarchy;
@@ -298,14 +296,10 @@ namespace Orts.Viewer3D
                     Trace.TraceWarning("Couldn't load shape {0} file may be corrupt", location);
                 }
                 // The 0th matrix should always be the identity matrix
-                XNAMatrices = new Matrix[1];
-                XNAMatrices[0] = Matrix.Identity;
+                XNAMatrices = new[] { Matrix.Identity };
             }
 
-            if (SharedShape.LodControls.Length > 0 && SharedShape.LodControls[0].DistanceLevels.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0)
-                Hierarchy = SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
-            else
-                Hierarchy = new int[0];
+            Hierarchy = SharedShape.LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.FirstOrDefault()?.Hierarchy ?? new int[0];
         }
 
         public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition)
@@ -321,30 +315,6 @@ namespace Orts.Viewer3D
         public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Dictionary<int, bool> matrixVisible = null)
         {
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
-        }
-
-        /// <summary>
-        /// Adjust the pose of the specified node to the frame position specifed by key.
-        /// </summary>
-        public void AnimateMatrix(int iMatrix, float key, bool mstsChildrenAnimation = true)
-        {
-            if (!SharedShape.HasAnimation(iMatrix))
-            {
-                if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
-                    Trace.TraceInformation("No animation number {1} in shape {0}", SharedShape.FilePath, iMatrix);
-                SeenShapeAnimationError[SharedShape.FilePath] = true;
-                return;  // mismatched matricies
-            }
-
-            SharedShape.Animate(iMatrix, key, XNAMatrices);
-
-            if (SharedShape is GltfShape || !mstsChildrenAnimation)
-                return;
-
-            // Animate all child nodes in the hierarchy too.
-            for (var i = 0; i < Hierarchy.Length; i++)
-                if (Hierarchy[i] == iMatrix)
-                    AnimateMatrix(i, key, true);
         }
     }
 
@@ -771,7 +741,7 @@ namespace Orts.Viewer3D
             var openingTarget = Opening || ActualDelay < ClosingDelay ? 0 : 1;
 
             AnimatedPartClosing?.UpdateState(openingTarget, elapsedTime);
-            if (Crossing.HasTrain || AnimatedPartClosing.AnimationKeyFraction() > 0)
+            if (Crossing.HasTrain || AnimatedPartClosing?.AnimationKeyFraction() > 0)
             {
                 AnimatedPartOpenLoop?.SetState(0);
                 AnimatedPartClosedLoop?.UpdateLoop(1, elapsedTime);
@@ -1031,17 +1001,15 @@ namespace Orts.Viewer3D
             AnimatedPartGrabber01 = new AnimatedPart(this);
             AnimatedPartGrabber02 = new AnimatedPart(this);
 
-            AnimatedPartX.AddAnimation("XAXIS");
-            AnimatedPartY.AddAnimation("YAXIS");
-            AnimatedPartZ.AddAnimation("ZAXIS");
-            AnimatedPartCable.AddAnimation("CABLE*");
-            AnimatedPartGrabber01.AddAnimation("GRABBER01");
-            AnimatedPartGrabber02.AddAnimation("GRABBER02");
+            AnimatedPartX.AddAnimation("XAXIS", false);
+            AnimatedPartY.AddAnimation("YAXIS", false);
+            AnimatedPartZ.AddAnimation("ZAXIS", false);
+            AnimatedPartCable.AddAnimation("CABLE*", false);
+            AnimatedPartGrabber01.AddAnimation("GRABBER01", false);
+            AnimatedPartGrabber02.AddAnimation("GRABBER02", false);
 
             var speed = 1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
-            var mstsOptions = AnimatedPart.MstsOptions.SkipChildrenAnimations
-                | AnimatedPart.MstsOptions.MaxFrameFromFrameOne
-                | AnimatedPart.MstsOptions.SpeedFromFrameCount;
+            var mstsOptions = AnimatedPart.MstsOptions.MaxFrameFromFrameOne | AnimatedPart.MstsOptions.SpeedFromFrameCount;
 
             AnimatedPartX.SetMstsSpeed(speed, mstsOptions);
             AnimatedPartY.SetMstsSpeed(speed, mstsOptions);

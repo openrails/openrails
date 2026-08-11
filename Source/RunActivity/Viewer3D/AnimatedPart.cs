@@ -68,15 +68,14 @@ namespace Orts.Viewer3D
         public enum MstsOptions
         {
             None = 0,
-            SkipChildrenAnimations      = 1 << 0,
-            MaxFrameFromFrameOne        = 1 << 1,
-            MaxFrameFromFrameRatePer30  = 1 << 2,
-            MaxFrameFromFrameCount      = 1 << 3,
-            MaxFrameIsOne               = 1 << 4,
-            MaxFrameIsFour              = 1 << 5,
-            SpeedFromFrameCount         = 1 << 6,
-            SpeedFromFrameRate          = 1 << 7,
-            SpeedFromFrameRatePer30     = 1 << 8,
+            MaxFrameFromFrameOne        = 1 << 0,
+            MaxFrameFromFrameRatePer30  = 1 << 1,
+            MaxFrameFromFrameCount      = 1 << 2,
+            MaxFrameIsOne               = 1 << 3,
+            MaxFrameIsFour              = 1 << 4,
+            SpeedFromFrameCount         = 1 << 5,
+            SpeedFromFrameRate          = 1 << 6,
+            SpeedFromFrameRatePer30     = 1 << 7,
         }
 
         /// <summary>
@@ -94,34 +93,28 @@ namespace Orts.Viewer3D
         {
             if (matrix < 0 || MatrixIndexes.Contains(matrix))
                 return;
-            MatrixIndexes.Add(matrix);
-            UpdateMaxFrame(matrix);
-        }
 
-        void UpdateMaxFrame(int matrix)
-        {
-            MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.GetAnimationLength(matrix));
-
-            if (!(PoseableShape.SharedShape is GltfShape))
+            if (PoseableShape.SharedShape.HasAnimation(matrix))
             {
-                for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
-                    if (PoseableShape.Hierarchy[i] == matrix && PoseableShape.SharedShape.HasAnimation(i))
-                        UpdateMaxFrame(i);
+                MatrixIndexes.Add(matrix);
+                MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.GetAnimationLength(matrix));
             }
+
+            if (MstsChildrenAnimation && !(PoseableShape.SharedShape is GltfShape))
+                for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
+                    if (PoseableShape.Hierarchy[i] == matrix)
+                        AddMatrix(i);
         }
 
-        public void AddAnimations() => AddAnimation(null);
-        public void AddAnimation(string pattern)
+        public void AddAnimations(bool mstsChildrenAnimation = true) => AddAnimation(null, mstsChildrenAnimation);
+        public void AddAnimation(string pattern, bool mstsChildrenAnimation = true)
         {
+            MstsChildrenAnimation = !(PoseableShape.SharedShape is GltfShape) && mstsChildrenAnimation;
+
             var animationsCount = PoseableShape.SharedShape.GetAnimationNamesCount();
             for (var i = 0; i < animationsCount; i++)
-            {
-                if (!PoseableShape.SharedShape.HasAnimation(i))
-                    continue;
-                
-                if (IsNameMatches(PoseableShape.SharedShape.MatrixNames[i], pattern))
+                if (PoseableShape.SharedShape.HasAnimation(i) && IsNameMatches(PoseableShape.SharedShape.MatrixNames[i], pattern))
                     AddMatrix(i);
-            }
         }
 
         bool IsNameMatches(string name, string pattern)
@@ -159,8 +152,6 @@ namespace Orts.Viewer3D
             if (PoseableShape?.SharedShape is GltfShape)
                 return;
 
-            if ((options & MstsOptions.SkipChildrenAnimations) != 0)
-                MstsChildrenAnimation = false;
             if ((options & MstsOptions.MaxFrameFromFrameOne) != 0)
                 MaxFrame = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?
                     .controllers?.FirstOrDefault()?.ElementAtOrDefault(1)?.Frame ?? MaxFrame;
@@ -210,7 +201,7 @@ namespace Orts.Viewer3D
             AnimationKey = frame;
 
             foreach (var matrix in MatrixIndexes)
-                PoseableShape.AnimateMatrix(matrix, AnimationKey, MstsChildrenAnimation);
+                PoseableShape.SharedShape.Animate(matrix, AnimationKey, PoseableShape.XNAMatrices);
         }
 
         /// <summary>
