@@ -49,6 +49,33 @@ sound is called, MSTS will play the sound at double speed. In order to have it
 play at the correct speed, a frequency curve halving the speed has to be 
 inserted. OR behaves the same as MSTS in this case.
 
+Additional .sms Files
+---------------------
+
+OR also offers some additional audio features beyond what was possible in MSTS.
+One of the simplest to use is the ability to define more than one .sms file
+in a few locations where MSTS only allowed one. Each extra .sms file will be added
+as a separate sound source and behaves independently of any other .sms files.
+This can be used to make sounds in a modular manner, such as using one .sms file
+for a locomotive's engine sounds and a second .sms file for the horn, allowing
+locomotives with different engine sounds to reuse the same horn sound implementation.
+There is a slight increase in computational load for each additional sound source,
+but minimizing the number of simulatenous active streams is more impactful than this.
+
+Currently, additional .sms files are allowed in train external sounds,
+cab/passenger view sounds, (TODO: more places?).
+
+To use this, simply list off multiple .sms files in a `Sound` parameter, each
+separated by a space::
+
+    Sound ( "..\\..\\Common.Snd\\Engine_16-645E3.sms" "..\\..\\Common.Snd\\Horn_K3LA.sms" )
+
+It should also be noted that :ref:`"include" files <physics-inclusions>` can be
+used inside .sms files to faciliate modular sounds, such as having the horn sound
+stream inside a dedicated include file referenced by multiple sound sets. This
+does not add additional sound sources, which can be more computationally efficient,
+but requires more careful implementation than using multiple .sms files.
+
 Discrete Triggers
 -----------------
 
