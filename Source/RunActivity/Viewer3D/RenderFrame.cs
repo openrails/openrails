@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -778,7 +778,6 @@ namespace Orts.Viewer3D
 
             // Render terrain shadow items now, with their magic.
             if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (normal)", RenderShadowTerrainItems[shadowMapIndex].Count);
-            graphicsDevice.Indices = TerrainPrimitive.SharedPatchIndexBuffer;
             ShadowMapMaterial.Render(graphicsDevice, RenderShadowTerrainItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for blocking rendering of terrain.
@@ -905,7 +904,7 @@ namespace Orts.Viewer3D
                     }
                     else
                     {
-                        if (Game.Settings.DistantMountains && (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial
+                        if (Game.Settings.DistantMountains && (sequenceMaterial.Key is TerrainDistantMountain || sequenceMaterial.Key is SkyMaterial
                             || sequenceMaterial.Key is MSTSSkyMaterial))
                             continue;
                         // Opaque: single material, render in one go.
@@ -935,7 +934,7 @@ namespace Orts.Viewer3D
                 {
                     if (sequenceMaterial.Value.Count == 0)
                         continue;
-                    if (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial || sequenceMaterial.Key is MSTSSkyMaterial)
+                    if (sequenceMaterial.Key is TerrainDistantMountain || sequenceMaterial.Key is SkyMaterial || sequenceMaterial.Key is MSTSSkyMaterial)
                     {
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
