@@ -203,7 +203,7 @@ namespace Orts.Viewer3D
         readonly VertexBufferBinding[] VertexBufferBindings;
 
         // These can be shared since they are the same for all patches
-        static readonly Dictionary<int, IndexBuffer> SharedPatchIndexBuffers = new();
+        static readonly Dictionary<int, IndexBuffer> SharedPatchIndexBuffers = new Dictionary<int, IndexBuffer>();
 
         // These are only used while the contructor runs and are discarded after.
         readonly TileManager TileManager;
