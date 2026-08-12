@@ -3197,14 +3197,17 @@ namespace Orts.Viewer3D
                 var ls = new List<SoundSourceBase>();
                 foreach (var fss in wf.TR_WorldSoundFile.SoundSources)
                 {
-                    WorldLocation wl = new WorldLocation(TileX, TileZ, fss.X, fss.Y, fss.Z);
-                    var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"Sound\" + fss.SoundSourceFileName);
+                    WorldLocation wl = new WorldLocation(TileX, TileZ, fss.Position);
+                    foreach (string sms in fss.SoundSourceFileNames)
+                    {
+                        var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"Sound\" + sms);
                     if (fullPath != null)
                     {
                         ss = new SoundSource(Viewer, wl, Events.Source.None, fullPath, true);
                         if (ss != null)
                             ls.Add(ss);
                     }
+                }
                 }
                 Viewer.SoundProcess.AddSoundSources(name, ls);
 
