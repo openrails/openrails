@@ -373,10 +373,13 @@ namespace Orts.Viewer3D
                         Materials[materialKey] = new SpriteBatchMaterial(Viewer, effect: effect);
                         break;
                     case "Terrain":
-                        Materials[materialKey] = new TerrainMaterial(Viewer, textureName, MissingTexture);
+                        Materials[materialKey] = new TerrainMaterial(Viewer, textureName, SharedMaterialManager.MissingTexture);
                         break;
-                    case "TerrainDistantMountain":
-                        Materials[materialKey] = new TerrainDistantMountain(Viewer, textureName);
+                    case "TerrainShared":
+                        Materials[materialKey] = new TerrainSharedMaterial(Viewer, textureName);
+                        break;
+                    case "TerrainSharedDistantMountain":
+                        Materials[materialKey] = new TerrainSharedDistantMountain(Viewer, textureName);
                         break;
                     case "Transfer":
                         Materials[materialKey] = new TransferMaterial(Viewer, textureName);
