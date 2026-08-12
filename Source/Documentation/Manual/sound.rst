@@ -63,12 +63,13 @@ There is a slight increase in computational load for each additional sound sourc
 but minimizing the number of simulatenous active streams is more impactful than this.
 
 Currently, additional .sms files are allowed in train external sounds,
-cab/passenger view sounds, (TODO: more places?).
+cab/passenger view sounds, and world sounds.
 
-To use this, simply list off multiple .sms files in a `Sound` parameter, each
+To use this, simply list off multiple .sms files in a parameter, each
 separated by a space::
 
-    Sound ( "..\\..\\Common.Snd\\Engine_16-645E3.sms" "..\\..\\Common.Snd\\Horn_K3LA.sms" )
+    Sound ( "..\\..\\Common.Snd\\Engine_16-645E3.sms" "..\\..\\Common.Snd\\Horn_K3LA.sms" ) [in .eng/.wag files]
+    FileName ( "ForestSurroundings.sms" "WideRagingRiver.sms" ) [in .ws files]
 
 It should also be noted that :ref:`"include" files <physics-inclusions>` can be
 used inside .sms files to faciliate modular sounds, such as having the horn sound
