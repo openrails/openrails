@@ -86,7 +86,7 @@ IF "%Mode%" == "Unstable" SET BuildConfiguration=Debug
 PUSHD Source && dotnet build -p:Configuration=%BuildConfiguration% && POPD || GOTO :error
 
 REM Run unit tests.
-PUSHD Source && dotnet test --logger "trx;LogFileName=Tests.trx" && POPD || GOTO :error
+PUSHD Source && dotnet test --no-restore --no-build --logger "trx;LogFileName=Tests.trx" && POPD || GOTO :error
 
 REM Remove `testhost` files which cannot be signed.
 DEL Program\testhost.*
