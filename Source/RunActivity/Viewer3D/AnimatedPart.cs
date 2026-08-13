@@ -113,7 +113,7 @@ namespace Orts.Viewer3D
 
             var animationsCount = PoseableShape.SharedShape.GetAnimationNamesCount();
             for (var i = 0; i < animationsCount; i++)
-                if (PoseableShape.SharedShape.HasAnimation(i) && IsNameMatches(PoseableShape.SharedShape.MatrixNames[i], pattern))
+                if (IsNameMatches(PoseableShape.SharedShape.MatrixNames[i], pattern))
                     AddMatrix(i);
         }
 
@@ -297,7 +297,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public float AnimationKeyFraction()
         {
-            return AnimationKey / MaxFrame;
+            return MaxFrame == 0 ? 0 : AnimationKey / MaxFrame;
         }
 
         /// <summary>
