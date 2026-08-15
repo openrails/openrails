@@ -164,6 +164,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         private IIRFilter VoltageFilter;
         private Timer PowerOnTimer;
         private Timer AuxPowerOnTimer;
+        PowerSupplyLoad AuxContinuousLoads = new PowerSupplyLoad(PowerSupplyLoadType.Other);
 
         private bool QuickPowerOn = false;
 
@@ -177,6 +178,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             AuxPowerOnTimer = new Timer(this);
             AuxPowerOnTimer.Setup(AuxPowerOnDelayS());
+            AuxiliaryPowerSupplyLoads.Add(AuxContinuousLoads);
         }
 
         public override void Update(float elapsedClockSeconds)
@@ -265,12 +267,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
             }
 
-            AuxiliarySupplyPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() + BatteryChargingPowerW : 0;
+            AuxContinuousLoads.CurrentPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() : 0;
 
             if (PowerLimitationSelector.Position != null)
             {
                 MaximumPowerW = PowerLimitationSelector.Position.PowerW;
-                AvailableTractionPowerW = MaximumPowerW - AuxiliarySupplyPowerW - Math.Max(ElectricTrainSupplyPowerW, 0);
+                AvailableTractionPowerW = MaximumPowerW - AuxiliaryPowerSupplyPowerW - Math.Max(ElectricTrainSupplyPowerW, 0);
             }
 
             // By default, on electric locomotives, dynamic brake is always available (rheostatic brake is always available).

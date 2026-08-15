@@ -75,11 +75,37 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public PowerSupplyState AuxiliaryPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool AuxiliaryPowerSupplyOn => AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
-        public float AuxiliarySupplyPowerW { get; set; } = 0f;
+        public float AuxiliaryPowerSupplyPowerW
+        {
+            get
+            {
+                if (!AuxiliaryPowerSupplyOn) return 0;
+                float powerW = 0;
+                foreach (var load in AuxiliaryPowerSupplyLoads)
+                {
+                    powerW += load.CurrentPowerW;
+                }
+                return powerW;
+            }
+        }
+        public List<PowerSupplyLoad> AuxiliaryPowerSupplyLoads { get; protected set; } = new List<PowerSupplyLoad>();
 
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
-        public float LowVoltageSupplyPowerW { get; set; } = 0f;
+        public float LowVoltagePowerSupplyPowerW
+        {
+            get
+            {
+                if (!LowVoltagePowerSupplyOn) return 0;
+                float powerW = 0;
+                foreach (var load in LowVoltagePowerSupplyLoads)
+                {
+                    powerW += load.CurrentPowerW;
+                }
+                return powerW;
+            }
+        }
+        public List<PowerSupplyLoad> LowVoltagePowerSupplyLoads { get; protected set; } = new List<PowerSupplyLoad>();
 
         public PowerSupplyState BatteryState
         {
@@ -365,6 +391,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public class DefaultPassengerCarPowerSupply : PassengerCarPowerSupply
     {
         private Timer PowerOnTimer;
+        PowerSupplyLoad ContinuousLoads = new PowerSupplyLoad(PowerSupplyLoadType.Other);
+        PowerSupplyLoad AirConditioning = new PowerSupplyLoad(PowerSupplyLoadType.AirConditioning);
+        PowerSupplyLoad Heating = new PowerSupplyLoad(PowerSupplyLoadType.CarHeating);
 
         public override void Initialize()
         {
@@ -374,6 +403,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             SetCurrentVentilationState(PowerSupplyState.PowerOff);
             SetCurrentHeatingState(PowerSupplyState.PowerOff);
             SetCurrentAirConditioningState(PowerSupplyState.PowerOff);
+
+            AuxiliaryPowerSupplyLoads.Add(ContinuousLoads);
+            AuxiliaryPowerSupplyLoads.Add(AirConditioning);
+            AuxiliaryPowerSupplyLoads.Add(Heating);
         }
 
         public override void InitializeMoving()
@@ -437,7 +470,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         SignalEvent(Event.AirConditioningOff);
                     }
 
-                    AuxiliarySupplyPowerW = 0;
+                    AirConditioning.CurrentPowerW = 0;
+                    Heating.CurrentPowerW = 0;
+                    ContinuousLoads.CurrentPowerW = 0;
+
                     SetCurrentElectricTrainSupplyPowerW(0f);
                     SetCurrentHeatFlowRateW(0f);
                     break;
@@ -479,8 +515,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     float airConditioningElectricPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? AirConditioningPowerW() : 0f;
                     float airConditioningThermalPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? - AirConditioningPowerW() * AirConditioningYield() : 0f;
 
-                    AuxiliarySupplyPowerW = ContinuousPowerW() + heatingPowerW + airConditioningElectricPowerW + BatteryChargingPowerW;
-                    SetCurrentElectricTrainSupplyPowerW(AuxiliarySupplyPowerW);
+                    AirConditioning.CurrentPowerW = airConditioningElectricPowerW;
+                    Heating.CurrentPowerW = heatingPowerW;
+                    ContinuousLoads.CurrentPowerW = ContinuousPowerW();
+
+                    SetCurrentElectricTrainSupplyPowerW(AuxiliaryPowerSupplyPowerW);
                     SetCurrentHeatFlowRateW(heatingPowerW + airConditioningThermalPowerW);
                     break;
             }

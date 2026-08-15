@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 
@@ -49,18 +50,11 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Auxiliary power consumption
         /// </summary>
-        protected float AuxiliarySupplyPowerW
-        {
-            get
-            {
-                return Host.AuxiliarySupplyPowerW;
-            }
-            set
-            {
-                Host.AuxiliarySupplyPowerW = value;
-            }
-        }
-
+        protected float AuxiliaryPowerSupplyPowerW => Host.AuxiliaryPowerSupplyPowerW;
+        /// <summary>
+        /// Loads connected to the auxiliary supply
+        /// </summary>
+        protected List<PowerSupplyLoad> AuxiliaryPowerSupplyLoads => Host.AuxiliaryPowerSupplyLoads;
 
         /// <summary>
         /// Current state of the low voltage power supply
@@ -71,24 +65,17 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Low voltage supply power consumption
         /// </summary>
-        protected float LowVoltageSupplyPowerW
-        {
-            get
-            {
-                return Host.LowVoltageSupplyPowerW;
-            }
-            set
-            {
-                Host.LowVoltageSupplyPowerW = value;
-            }
-        }
+        protected float LowVoltagePowerSupplyPowerW => Host.LowVoltagePowerSupplyPowerW;
+        /// <summary>
+        /// Loads connected to the low voltage supply
+        /// </summary>
+        protected List<PowerSupplyLoad> LowVoltagePowerSupplyLoads => Host.LowVoltagePowerSupplyLoads;
 
         /// <summary>
         /// Current state of the battery
         /// </summary>
         public PowerSupplyState CurrentBatteryState() => Host.BatteryState;
         public float BatteryVoltageV => Host.Battery.VoltageV;
-        public float BatteryChargingPowerW => Host.Battery.ChargingPowerW;
 
         /// <summary>
         /// True if the battery is switched on
@@ -270,5 +257,38 @@ namespace ORTS.Scripting.Api
         [GetString("PowerOff")] PowerOff = -1,
         [GetString("Sink")] Sink,
         [GetString("Source")] Source,
+    }
+    public enum PowerSupplyLoadType
+    {
+        Other,
+        PowerConverter,
+        BatteryCharger,
+        Compressor,
+        EngineCooling,
+        CarHeating,
+        CarVentilation,
+        AirConditioning,
+        Light,
+        InteriorLighting,
+        CabInstrument,
+        Tilting
+    }
+    public class PowerSupplyLoad
+    {
+        public readonly PowerSupplyLoadType Type;
+        public readonly string Description;
+        public float CurrentPowerW;
+        public float MaxPowerW;
+        /// <summary>
+        /// Reduction of the total power consumption requested by the power supply
+        /// 0 means the load can run at full power
+        /// 1 means that the power supply forbids the load being activated
+        /// </summary>
+        public float PowerReduction;
+        public PowerSupplyLoad(PowerSupplyLoadType type, string description = "")
+        {
+            Type = type;
+            Description = description;
+        }
     }
 }

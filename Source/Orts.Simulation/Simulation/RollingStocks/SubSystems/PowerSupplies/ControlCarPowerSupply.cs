@@ -135,10 +135,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public class DefaultControlCarPowerSupply : ControlCarPowerSupply
     {
         private Timer AuxPowerOnTimer;
+        PowerSupplyLoad AuxContinuousLoads = new PowerSupplyLoad(PowerSupplyLoadType.Other);
         public override void Initialize()
         {
             AuxPowerOnTimer = new Timer(this);
             AuxPowerOnTimer.Setup(AuxPowerOnDelayS());
+            AuxiliaryPowerSupplyLoads.Add(AuxContinuousLoads);
         }
         public override void Update(float elapsedClockSeconds)
         {
@@ -176,8 +178,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     break;
             }
-            AuxiliarySupplyPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() + BatteryChargingPowerW : 0;
-            ElectricTrainSupplyPowerW = AuxiliarySupplyPowerW;
+            AuxContinuousLoads.CurrentPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() : 0;
+            ElectricTrainSupplyPowerW = AuxiliaryPowerSupplyPowerW;
         }
         public override void HandleEvent(PowerSupplyEvent evt)
         {

@@ -22,18 +22,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float VoltageV { get; protected set; }
         public float CurrentCapacityJ { get; protected set; }
         public float MaxCapacityJ = 3.6e7f;
-        public float ChargingPowerW { get; protected set; } // Power drawn from the auxiliary/ETS supply
-        protected float LowVoltageSupplyPowerW => Car.PowerSupply.LowVoltageSupplyPowerW;
+        public PowerSupplyLoad BatteryCharger;
+        protected float LowVoltageSupplyPowerW => Car.PowerSupply.LowVoltagePowerSupplyPowerW;
         protected float PowerFlowW; // Charging (positive) or discharging (negative) power to the battery
-        protected float MaxChargingPowerW = 10000;
         protected float ChargingVoltageV;
-        protected bool AuxiliaryPowerSupplyOn => Car.PowerSupply?.AuxiliaryPowerSupplyOn ?? false;
+        protected bool IsChargerOn => (Car.PowerSupply?.AuxiliaryPowerSupplyOn ?? false) && BatteryCharger.PowerReduction < 1;
         public Interpolator ChargeVoltageCurve;
         public PowerSupplyState State;
         public Battery(MSTSWagon wagon)
         {
             Car = wagon;
             BatterySwitch = new BatterySwitch(wagon);
+            BatteryCharger = new PowerSupplyLoad(PowerSupplyLoadType.BatteryCharger);
         }
         public virtual void Parse(string lowercasetoken, STFReader stf)
         {
@@ -54,7 +54,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                 MaxCapacityJ = stf.ReadFloatBlock(STFReader.UNITS.Energy, MaxCapacityJ);
                                 break;
                             case "chargerpower":
-                                MaxChargingPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, MaxChargingPowerW);
+                                BatteryCharger.MaxPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 0);
                                 break;
                             case "chargervoltage":
                                 ChargingVoltageV = stf.ReadFloatBlock(STFReader.UNITS.Voltage, 0);
@@ -80,10 +80,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             BatterySwitch.Copy(other.BatterySwitch);
             NominalVoltageV = other.NominalVoltageV;
             MaxCapacityJ = other.MaxCapacityJ;
-            ChargeVoltageCurve = other?.ChargeVoltageCurve;
+            ChargeVoltageCurve = other.ChargeVoltageCurve;
+            BatteryCharger.MaxPowerW = other.BatteryCharger.MaxPowerW;
         }
         public virtual void Initialize()
         {
+            Car.PowerSupply.AuxiliaryPowerSupplyLoads.Add(BatteryCharger);
             CurrentCapacityJ = MaxCapacityJ;
             if (ChargingVoltageV == 0) ChargingVoltageV = NominalVoltageV * 1.15f;
             if (ChargeVoltageCurve == null)
@@ -92,6 +94,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     new float[] {0, MaxCapacityJ * 0.1f, MaxCapacityJ}, 
                     new float[] {0, 0.95f * NominalVoltageV, 1.05f * NominalVoltageV});
             }
+            if (BatteryCharger.MaxPowerW == 0) BatteryCharger.MaxPowerW = 10000;
 
             BatterySwitch.Initialize();
         }
@@ -113,39 +116,46 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             BatterySwitch.Update(elapsedClockSeconds);
 
-            if (AuxiliaryPowerSupplyOn)
+            if (State != PowerSupplyState.PowerOn)
             {
-                if (ChargeVoltageCurve[CurrentCapacityJ] < ChargingVoltageV && CurrentCapacityJ < MaxCapacityJ)
+                PowerFlowW = 0;
+                VoltageV = ChargeVoltageCurve[CurrentCapacityJ];
+                BatteryCharger.CurrentPowerW = 0;
+            }
+            else if (IsChargerOn)
+            {
+                float chargerPowerW = BatteryCharger.MaxPowerW * (1 - BatteryCharger.PowerReduction);
+                if ((ChargeVoltageCurve[CurrentCapacityJ] < ChargingVoltageV && CurrentCapacityJ < MaxCapacityJ) || LowVoltageSupplyPowerW > chargerPowerW)
                 {
-                    PowerFlowW = MaxChargingPowerW;
+                    PowerFlowW = chargerPowerW - LowVoltageSupplyPowerW;
                 }
                 else
                 {
                     PowerFlowW = 0;
+                    chargerPowerW = LowVoltageSupplyPowerW;
                 }
+                BatteryCharger.CurrentPowerW = chargerPowerW;
                 VoltageV = ChargingVoltageV;
-                ChargingPowerW = PowerFlowW + LowVoltageSupplyPowerW;
             }
             else
             {
-                if (State == PowerSupplyState.PowerOn)
-                {
-                    PowerFlowW = -LowVoltageSupplyPowerW;
-                }
-                else
-                {
-                    PowerFlowW = 0;
-                }
+                PowerFlowW = -LowVoltageSupplyPowerW;
                 VoltageV = ChargeVoltageCurve[CurrentCapacityJ];
-                ChargingPowerW = 0;
+                BatteryCharger.CurrentPowerW = 0;
             }
             if (PowerFlowW != 0)
             {
                 float energyJ = PowerFlowW * elapsedClockSeconds;
                 if (CurrentCapacityJ + energyJ > MaxCapacityJ)
+                {
                     energyJ = MaxCapacityJ - CurrentCapacityJ;
+                    PowerFlowW = energyJ / elapsedClockSeconds;
+                }
                 else if (CurrentCapacityJ + energyJ < 0)
+                {
                     energyJ = -CurrentCapacityJ;
+                    PowerFlowW = energyJ / elapsedClockSeconds;
+                }
                 CurrentCapacityJ += energyJ;
             }
         }

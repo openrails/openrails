@@ -139,6 +139,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     {
         private Timer PowerOnTimer;
         private Timer AuxPowerOnTimer;
+        PowerSupplyLoad AuxContinuousLoads = new PowerSupplyLoad(PowerSupplyLoadType.Other);
 
         /// <remarks>
         /// Used for the corresponding first engine on/off sound triggers.
@@ -158,6 +159,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             AuxPowerOnTimer = new Timer(this);
             AuxPowerOnTimer.Setup(AuxPowerOnDelayS());
+            AuxiliaryPowerSupplyLoads.Add(AuxContinuousLoads);
 
             PreviousFirstEngineState = CurrentDieselEngineState(0);
             PreviousSecondEngineState = CurrentDieselEngineState(1);
@@ -241,8 +243,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             // By default, on diesel locomotives, dynamic brake is available only if main power is available.
             SetCurrentDynamicBrakeAvailability(CurrentMainPowerSupplyState() == PowerSupplyState.PowerOn);
 
-            AuxiliarySupplyPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() + BatteryChargingPowerW : 0;
-
             PowerSupplyState generatorState = CurrentElectricTrainSupplyGeneratorState();
 
             if (generatorState == PowerSupplyState.Unavailable)
@@ -259,6 +259,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
             }
+
+            AuxContinuousLoads.CurrentPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() : 0;
 
             if (DieselLocomotive.TractiveForcePowerLimited)
                 AvailableTractionPowerW = Math.Max(DieselEnginesAvailableTractionPowerW, 0);

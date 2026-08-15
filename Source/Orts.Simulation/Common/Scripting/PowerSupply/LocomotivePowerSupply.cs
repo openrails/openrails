@@ -181,7 +181,7 @@ namespace ORTS.Scripting.Api
         protected float AuxPowerOnDelayS() => LpsHost.AuxPowerOnDelayS;
 
         /// <summary>
-        /// Power consumed all the time from the auxiliary power supply
+        /// Power consumed all the time from the auxiliary power supply, not included elsewhere
         /// </summary>
         public float AuxContinuousPowerW() => LpsHost.AuxContinuousPowerW;
 

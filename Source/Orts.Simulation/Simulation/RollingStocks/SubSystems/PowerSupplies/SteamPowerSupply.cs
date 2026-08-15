@@ -72,8 +72,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     }
     public class DefaultSteamPowerSupply : LocomotivePowerSupply
     {
+        PowerSupplyLoad AuxContinuousLoads = new PowerSupplyLoad(PowerSupplyLoadType.Other);
         public override void Initialize()
         {
+            AuxiliaryPowerSupplyLoads.Add(AuxContinuousLoads);
         }
 
         public override void Update(float elapsedClockSeconds)
@@ -85,7 +87,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOn);
             SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
 
-            AuxiliarySupplyPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() + BatteryChargingPowerW : 0;
+            AuxContinuousLoads.CurrentPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() : 0;
 
             if (ElectricTrainSupplyUnfitted())
             {

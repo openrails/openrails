@@ -57,7 +57,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public PowerSupplyState AuxiliaryPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool AuxiliaryPowerSupplyOn => AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
-        public float AuxiliarySupplyPowerW { get; set; } = 0f;
+        public float AuxiliaryPowerSupplyPowerW
+        {
+            get
+            {
+                if (!AuxiliaryPowerSupplyOn) return 0;
+                float powerW = 0;
+                foreach (var load in AuxiliaryPowerSupplyLoads)
+                {
+                    powerW += load.CurrentPowerW;
+                }
+                return powerW;
+            }
+        }
+        public List<PowerSupplyLoad> AuxiliaryPowerSupplyLoads { get; protected set; } = new List<PowerSupplyLoad>();
 
         public virtual PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public virtual PowerSupplyDirection ElectricTrainSupplyDirection { get; set; } = PowerSupplyDirection.Source;
@@ -97,7 +110,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
-        public float LowVoltageSupplyPowerW { get; set; } = 0f;
+        public float LowVoltagePowerSupplyPowerW
+        {
+            get
+            {
+                if (!LowVoltagePowerSupplyOn) return 0;
+                float powerW = 0;
+                foreach (var load in LowVoltagePowerSupplyLoads)
+                {
+                    powerW += load.CurrentPowerW;
+                }
+                return powerW;
+            }
+        }
+        public List<PowerSupplyLoad> LowVoltagePowerSupplyLoads { get; protected set; } = new List<PowerSupplyLoad>();
 
         public PowerSupplyState BatteryState
         {
@@ -166,6 +192,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case "engine(ortsauxpowerondelay":
                     AuxPowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
                     break;
+                
+                case "engine(ortsauxcontinuouspower":
+                    AuxContinuousPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
+                    break;
 
                 case "engine(ortsbattery":
                     Battery.Parse(lowercasetoken, stf);
@@ -195,6 +225,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 PowerOnDelayS = scriptedOther.PowerOnDelayS;
                 AuxPowerOnDelayS = scriptedOther.AuxPowerOnDelayS;
+                AuxContinuousPowerW = scriptedOther.AuxContinuousPowerW;
             }
         }
 

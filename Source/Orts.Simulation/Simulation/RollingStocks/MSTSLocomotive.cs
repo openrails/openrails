@@ -396,6 +396,8 @@ namespace Orts.Simulation.RollingStocks
         public float TrainBrakePipeLeakPSIorInHgpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
+        public float CompressorMaxPowerW = 0;
+        public PowerSupplyLoad CompressorLoad;
         public bool CompressorIsMUControlled = false;
         public float MainResChargingRatePSIpS = -1.0f;
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
@@ -1089,6 +1091,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(airbrakemaxmainrespipepressure": MaximumMainReservoirPipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakesaircompressorpowerrating": CompressorChargingRateM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
+                case "engine(airbrakesaircompressorwattage": CompressorMaxPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 1e5f); break;
                 case "engine(airbrakesiscompressorelectricormechanical":
                     var compressorMechanical = stf.ReadIntBlock(null);
                     if (compressorMechanical == 1)
@@ -1355,6 +1358,8 @@ namespace Orts.Simulation.RollingStocks
             CompressorIsMechanical = locoCopy.CompressorIsMechanical;
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
             CompressorIsMUControlled = locoCopy.CompressorIsMUControlled;
+            CompressorChargingRateM3pS = locoCopy.CompressorChargingRateM3pS;
+            CompressorMaxPowerW = locoCopy.CompressorMaxPowerW;
             TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
             BrakePipeTimeFactorS = locoCopy.BrakePipeTimeFactorS;
             BrakeServiceTimeFactorPSIpS = locoCopy.BrakeServiceTimeFactorPSIpS;
@@ -1747,6 +1752,15 @@ namespace Orts.Simulation.RollingStocks
             if (MainResVolumeM3 == 0)
             {
                 MainResVolumeM3 = 0.3f;
+            }
+
+            if (!CompressorIsMechanical)
+            {
+                CompressorLoad = new PowerSupplyLoad(PowerSupplyLoadType.Compressor)
+                {
+                    MaxPowerW = CompressorMaxPowerW
+                };
+                LocomotivePowerSupply.AuxiliaryPowerSupplyLoads.Add(CompressorLoad);
             }
 
             // Initialise Brake Pipe Charging Rate
@@ -3156,13 +3170,20 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            bool compressorPowered = LocomotivePowerSupply.AuxiliaryPowerSupplyOn && (CompressorLoad == null || CompressorLoad.PowerReduction < 1);
+
             if ((MainResPressurePSI < CompressorRestartPressurePSI || (syncCompressor && MainResPressurePSI < MaxMainResPressurePSI))
-                && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+                && compressorPowered && !CompressorIsOn)
                 SignalEvent(Event.CompressorOn);
             else if (((MainResPressurePSI >= MaxMainResPressurePSI && !syncCompressor)
-                || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
+                || !compressorPowered) && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
 
+            if (CompressorLoad != null)
+            {
+                reservoirChargingRate *= 1 - CompressorLoad.PowerReduction;
+                CompressorLoad.CurrentPowerW = CompressorIsOn ? (1 - CompressorLoad.PowerReduction) * CompressorMaxPowerW : 0;
+            }
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * reservoirChargingRate;
         }

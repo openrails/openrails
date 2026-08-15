@@ -39,11 +39,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         PowerSupplyState AuxiliaryPowerSupplyState { get; set; }
         bool AuxiliaryPowerSupplyOn { get; }
-        float AuxiliarySupplyPowerW { get; set; }
+        float AuxiliaryPowerSupplyPowerW { get; }
+        List<PowerSupplyLoad> AuxiliaryPowerSupplyLoads { get; }
 
         PowerSupplyState LowVoltagePowerSupplyState { get; set; }
         bool LowVoltagePowerSupplyOn { get; }
-        float LowVoltageSupplyPowerW { get; set; }
+        float LowVoltagePowerSupplyPowerW { get; }
+        List<PowerSupplyLoad> LowVoltagePowerSupplyLoads { get; }
 
         PowerSupplyState BatteryState { get; set; }
         bool BatteryOn { get; }
