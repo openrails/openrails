@@ -60,6 +60,32 @@ using Events = Orts.Common.Events;
 namespace Orts.Viewer3D
 {
 
+    // Helper: compute envelope volume (0..peakVolume)
+    static class WindEnvelope
+    {
+        public static float Compute(float speed, float left, float peak, float right, float peakVolume)
+        {
+            // Protect against degenerate ranges
+            if (peak <= left) peak = left + 0.0001f;
+            if (right <= peak) right = peak + 0.0001f;
+
+            if (speed <= left || speed >= right) return 0f;
+
+            float t;
+            if (speed <= peak)
+                t = (speed - left) / (peak - left); // rising 0..1
+            else
+                t = (right - speed) / (right - peak); // falling 0..1
+
+            // smoothstep using cosine for gentle ramp
+            var smooth = 0.5f - 0.5f * (float)Math.Cos(Math.PI * t);
+
+            // scale to peakVolume and clamp
+            var vol = smooth * peakVolume;
+            return Math.Max(0f, Math.Min(vol, peakVolume));
+        }
+    }
+
     /////////////////////////////////////////////////////////
     // SOUND SOURCE
     /////////////////////////////////////////////////////////
@@ -572,7 +598,7 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Initializes a SoundSource which has no specific location - like ingame.sms
+        /// Initializes a SoundSource which has no specific location - like ingame.sms wind.sms and Weather Files
         /// </summary>
         /// <param name="viewer"></param>
         /// <param name="eventSource"></param>
@@ -737,7 +763,6 @@ namespace Orts.Viewer3D
             SMSFolder = Path.GetDirectoryName(smsFilePath);
             SMSFileName = Path.GetFileName(smsFilePath);
             Orts.Formats.Msts.SoundManagmentFile smsFile = Orts.Formats.Msts.SharedSMSFileManager.Get(smsFilePath);
-
 
             // find correct ScalabiltyGroup
             int iSG = 0;
@@ -1025,7 +1050,7 @@ namespace Orts.Viewer3D
             }
             else
             {
-                foreach (SoundStream stream in SoundStreams)
+                foreach (SoundStream stream in SoundStreams) // Process streams in both ingame.sms and weather.sms
                 {
                     stream.Update();
                     needsFrequentUpdate |= stream.NeedsFrequentUpdate;
@@ -1095,7 +1120,7 @@ namespace Orts.Viewer3D
         {
             if (DeactivationConditions == null)
                 return false;
-         
+
             if (ConditionsMet(DeactivationConditions))
                 return true;
 
@@ -1137,7 +1162,7 @@ namespace Orts.Viewer3D
                     && Car != null && Viewer.Camera.AttachedCar != null && !(Car is MSTSLocomotive) && !Car.HasInsideView && Car.PassengerViewpoints.Count == 0
                     && (Car.Train == Viewer.Camera.AttachedCar.Train || Car.Train.TrainType == Train.TRAINTYPE.STATIC || Car.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED));
             }
-        }
+        } 
 
         /// <summary>
         /// Return true of the ViewPoint matches any of the ones specified in the conditions
@@ -1147,6 +1172,7 @@ namespace Orts.Viewer3D
         /// <returns></returns>
         private bool ConditionsMet(Orts.Formats.Msts.Activation conditions)
         {
+
             if (conditions == null)
                 return false;
 
@@ -1156,6 +1182,9 @@ namespace Orts.Viewer3D
             {
                 viewpoint = Camera.Styles.External;
             }
+
+        //    if (SMSFileName == "wind_ex.sms" && (viewpoint == Camera.Styles.Cab || viewpoint == Camera.Styles.Passenger))
+       //         return false;
 
             if (conditions.CabCam && (viewpoint == Camera.Styles.Cab || viewpoint == Camera.Styles.ThreeDimCab))
                 return true;
@@ -1324,6 +1353,28 @@ namespace Orts.Viewer3D
                     {
                         Triggers.Add(new ORTSXover8AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_8)trigger));
                     }
+
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Calm))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Calm(this, (Orts.Formats.Msts.Wind_Calm)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Light))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Light(this, (Orts.Formats.Msts.Wind_Light)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Moderate))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Moderate(this, (Orts.Formats.Msts.Wind_Moderate)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Gale))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Gale(this, (Orts.Formats.Msts.Wind_Gale)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Storm))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Storm(this, (Orts.Formats.Msts.Wind_Storm)trigger));
+                    }
+
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Initial_Trigger))
                     {
                         _InitialTrigger = new ORTSInitialTrigger(this, (Orts.Formats.Msts.Initial_Trigger)trigger);
@@ -1334,6 +1385,7 @@ namespace Orts.Viewer3D
                         Triggers.Add(new ORTSRandomTrigger(this, (Orts.Formats.Msts.Random_Trigger)trigger));
                     }
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Variable_Trigger) && (soundSource.Car != null || soundSource.IsEnvSound))
+               //     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Variable_Trigger) && soundSource.WeatherSound)
                     {
                         Triggers.Add(new ORTSVariableTrigger(this, (Orts.Formats.Msts.Variable_Trigger)trigger));
                     }
@@ -1379,7 +1431,6 @@ namespace Orts.Viewer3D
 
             _InitialTrigger = new ORTSInitialTrigger(this, wavFileName);
             Triggers.Add(_InitialTrigger);
-
         }
 
         /// <summary>
@@ -1405,6 +1456,7 @@ namespace Orts.Viewer3D
         {
             OpenAL.alSourcefv(ALSoundSource.SoundSourceID, OpenAL.AL_POSITION, position);
             Update();
+
         }
 
         /// <summary>
@@ -1418,8 +1470,11 @@ namespace Orts.Viewer3D
             }
 
             foreach (ORTSTrigger trigger in Triggers)
-                trigger.TryTrigger();
-            
+            {
+                trigger.TryTrigger();                     
+            }
+
+
             if (_InitialTrigger != null)
             {
                 // If no triggers active, Initialize the Initial
@@ -1435,6 +1490,7 @@ namespace Orts.Viewer3D
                         {
                             _InitialTrigger.Initialize();
                         }
+
                     }
                 }
                 // If triggers are active, reset the Initial
@@ -1547,6 +1603,7 @@ namespace Orts.Viewer3D
                 if (!MSTSStream.Weather[(int)(SoundSource.Viewer.Simulator.WeatherType)])
                     volume = 0;
             }
+
             ALSoundSource.Volume = volume;
         }
 
@@ -2452,7 +2509,260 @@ namespace Orts.Viewer3D
         }
     } // class ORTSXover8AxleTrigger
 
-    
+    /// <summary>
+    /// Play this sound controlled for Wind Speed - Beaufort Scale Calm - Level 0 - Speed = 0 m/s
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Calm : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Calm SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Calm(SoundStream soundStream, Orts.Formats.Msts.Wind_Calm smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+
+            // Calm: special-case near-zero wind
+            float vol;
+            if (windSpeed < 0.01f)
+                vol = 0.65f; // full peak for calm
+            else
+                vol = 0f;
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Calm: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Calm: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Calm
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed  - Beaufort Scale Light - Level 1 - 3 - Speed = 0 to 5 m/s
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Light : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Light SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Light(SoundStream soundStream, Orts.Formats.Msts.Wind_Light smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+
+            // envelope: left=0, peak=5, right=14, peakVolume=0.7
+            var vol = WindEnvelope.Compute(windSpeed, 0f, 5f, 14f, 0.7f);
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Light: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Light: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Light
+
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed - Beaufort Scale Moderate - Level 4 - 6 - Speed = 5 to 14 m/s
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Moderate : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Moderate SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Moderate(SoundStream soundStream, Orts.Formats.Msts.Wind_Moderate smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+
+            // envelope: left=5, peak=14, right=24, peakVolume=0.8
+            var vol = WindEnvelope.Compute(windSpeed, 5f, 14f, 24f, 0.8f);
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Moderate: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Moderate: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Moderate
+
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed  - Beaufort Scale Gale - Level 7 - 9 - Speed = 14 to 24 m/s
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Gale : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Gale SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Gale(SoundStream soundStream, Orts.Formats.Msts.Wind_Gale smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+
+            // envelope: left=14, peak=24, right=33, peakVolume=0.9
+            var vol = WindEnvelope.Compute(windSpeed, 14f, 24f, 33f, 0.9f);
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Gale: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Gale: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Gale
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed - Beaufort Scale Storm - Level 10 - 12 - Speed = 24 to 33+ m/s
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Storm : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Storm SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Storm(SoundStream soundStream, Orts.Formats.Msts.Wind_Storm smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+
+            // envelope: left=24, peak=33, right=50, peakVolume= 1.0
+            var vol = WindEnvelope.Compute(windSpeed, 24f, 33f, 50f, 1.0f);
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Storm: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Storm: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Storm
+
+
     /// <summary>
     /// Play this sound immediately when this SoundSource becomes active, or in case no other VariableTriggers are active
     /// </summary>
@@ -2599,8 +2909,8 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:                
-                    if (newValue < SMS.Threshold)
+                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
+                if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
                         if (SMS.Threshold <= StartValue)
@@ -2620,7 +2930,7 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.WheelRPM_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:                
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
