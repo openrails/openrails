@@ -1044,7 +1044,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
         public void InitializeMoving()
         {
-            AxleSpeedMpS = TrainSpeedMpS;
+            // Small amount of slip is required for adhesion, set axle speed just above true speed
+            AxleSpeedMpS = TrainSpeedMpS * 1.01f;
+
             motor?.InitializeMoving();
         }
         public void Parse(STFReader stf)

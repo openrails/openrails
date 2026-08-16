@@ -2038,10 +2038,26 @@ namespace Orts.Simulation.RollingStocks
         public override void InitializeMoving()
         {
             base.InitializeMoving();
+
+            // When starting in motion, some internal values for adhesion and friction must be updated preemptively
+            AdvancedAdhesionModel = Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control;
             AdhesionFilter.Reset(0.5f);
-            AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
-            float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
-            if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
+            UpdateFrictionCoefficient(0.0f);
+            UpdateAxles(0.0f);
+
+            // Estimate tractive effort, so locomotive doesn't spawn in without power
+            if (TractiveForceCurves != null)
+            {
+                TractionForceN = TractiveForceCurves.Get(Train.MUThrottlePercent / 100.0f, SpeedMpS);
+            }
+            else
+            {
+                TractionForceN = MaxForceN * Train.MUThrottlePercent / 100.0f;
+                float maxPowerW = MaxPowerW * Train.MUThrottlePercent / 100.0f;
+                if (TractionForceN * SpeedMpS > maxPowerW) TractionForceN = maxPowerW / SpeedMpS;
+            }
+            AverageForceN = TractionForceN;
+
             LocomotivePowerSupply?.InitializeMoving();
             if (Train.IsActualPlayerTrain)
             {

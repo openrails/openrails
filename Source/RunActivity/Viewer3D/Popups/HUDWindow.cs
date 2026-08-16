@@ -223,13 +223,13 @@ namespace Orts.Viewer3D.Popups
                 if (loco is MSTSElectricLocomotive)
                 {
                     LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
-                    LocomotiveGraphsOutputPower.AddSample(Math.Abs(loco.LocomotiveAxles.AxleMotivePowerW) / loco.MaxPowerW);
+                    LocomotiveGraphsOutputPower.AddSample(loco.LocomotiveAxles.DrivePowerW / loco.MaxPowerW);
                 }
                 //TODO: plot correct values
                 if (loco is MSTSSteamLocomotive)
                 {
                     LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
-                    LocomotiveGraphsOutputPower.AddSample(Math.Abs(loco.LocomotiveAxles.AxleMotivePowerW) / loco.MaxPowerW);
+                    LocomotiveGraphsOutputPower.AddSample(loco.LocomotiveAxles.DrivePowerW / loco.MaxPowerW);
                 }
 
                 LocomotiveGraphs.PrepareFrame(frame);

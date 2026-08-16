@@ -642,7 +642,7 @@ namespace Orts.Simulation.RollingStocks
                 GearBoxController.SetValue((float)GearBoxController.CurrentNotch);
             }
 
-            ThrottleController.SetValue(Train.MUThrottlePercent / 100);
+            ThrottleController.SetValue(Train.MUThrottlePercent / 100, true);
         }
 
 

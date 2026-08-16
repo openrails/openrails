@@ -144,7 +144,7 @@ namespace Orts.Simulation.RollingStocks
             base.InitializeMoving();
             WheelSpeedMpS = SpeedMpS;
             DynamicBrakePercent = -1;
-            ThrottleController.SetValue(Train.MUThrottlePercent / 100);
+            ThrottleController.SetValue(Train.MUThrottlePercent / 100, true);
 
             Pantographs.InitializeMoving();
         }
