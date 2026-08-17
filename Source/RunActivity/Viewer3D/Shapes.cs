@@ -628,6 +628,7 @@ namespace Orts.Viewer3D
         readonly float ClosingDelay;
 
         readonly AnimatedPart AnimatedPartOpenLoop;
+        readonly AnimatedPart AnimatedPartClearing;
         readonly AnimatedPart AnimatedPartClosing;
         readonly AnimatedPart AnimatedPartClosedLoop;
 
@@ -673,11 +674,13 @@ namespace Orts.Viewer3D
                 AnimatedPartOpenLoop = new AnimatedPart(this);
                 AnimatedPartClosedLoop = new AnimatedPart(this);
                 AnimatedPartClosing = new AnimatedPart(this);
+                AnimatedPartClearing = new AnimatedPart(this);
 
-                // The original MSTS crossing shapes don't have the animations named, but having names allows all three types to be in a single shape/glTF file.
-                AnimatedPartOpenLoop.AddAnimation("ORTS_LEVELCROSSING_OPEN_LOOP*");
+                // The original MSTS crossing shapes don't have the animations named, but having names allows all types to be in a single shape/glTF file.
                 AnimatedPartClosedLoop.AddAnimation("ORTS_LEVELCROSSING_CLOSED_LOOP*");
                 AnimatedPartClosing.AddAnimation("ORTS_LEVELCROSSING_CLOSING*");
+                AnimatedPartClearing.AddAnimation("ORTS_LEVELCROSSING_CLEARING*");
+                AnimatedPartOpenLoop.AddAnimation("ORTS_LEVELCROSSING_OPEN_LOOP*");
 
                 var speed = 1.0f / CrossingObj.levelCrTiming.animTiming;
 
@@ -694,21 +697,30 @@ namespace Orts.Viewer3D
                 if (AnimatedPartOpenLoop.MatrixIndexes.Count + AnimatedPartClosing.MatrixIndexes.Count + AnimatedPartClosedLoop.MatrixIndexes.Count == 0)
                 {
                     if (speed < 0)
+                    {
                         AnimatedPartClosedLoop.AddAnimations();
+                        AnimatedPartClosedLoop.SetMstsSpeed(speed, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
+                    }
                     else
                     {
                         AnimatedPartClosing.AddAnimations();
-                        AnimatedPartClosing.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameFromFrameRatePer30);
+                        AnimatedPartClosing.SetMstsSpeed(speed, AnimatedPart.MstsOptions.MaxFrameFromFrameRatePer30);
                     }
                 }
+                else
+                {
+                    // The speed of the loops is determined by the .s FrameRate. The non-loops need different timing, scaled by the animTiming value.
+                    AnimatedPartOpenLoop.SetMstsSpeed(1.0f, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+                    AnimatedPartClosedLoop.SetMstsSpeed(1.0f, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+                    AnimatedPartClosing.SetMstsSpeed(speed, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+                    AnimatedPartClearing.SetMstsSpeed(speed, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+                }
 
-                AnimatedPartOpenLoop.SetMstsSpeed(speed, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
-                AnimatedPartClosedLoop.SetMstsSpeed(speed, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
-                AnimatedPartClosing.SetMstsSpeed(speed);
-
+                // glTF animations are less restricted, they can be easily configured individually so the animTiming is used as an overally scale factor, normally left at 1.0
                 AnimatedPartOpenLoop.SetGltfSpeed(speed);
                 AnimatedPartClosedLoop.SetGltfSpeed(speed);
                 AnimatedPartClosing.SetGltfSpeed(speed);
+                AnimatedPartClearing.SetGltfSpeed(speed);
             }
         }
 
@@ -738,16 +750,22 @@ namespace Orts.Viewer3D
             else
                 ActualDelay = 0;
 
-            var openingTarget = Opening || ActualDelay < ClosingDelay ? 0 : 1;
+            // CLOSING: delayed by the initialTiming, at opening is played backwards.
+            AnimatedPartClosing?.UpdateState(Crossing.HasTrain && ActualDelay > ClosingDelay ? 1 : 0, elapsedTime);
 
-            AnimatedPartClosing?.UpdateState(openingTarget, elapsedTime);
-            if (Crossing.HasTrain || AnimatedPartClosing?.AnimationKeyFraction() > 0)
+            if (Crossing.HasTrain || AnimatedPartClosing?.AnimationKeyFraction() > 0.1f)
             {
                 AnimatedPartOpenLoop?.SetState(0);
-                AnimatedPartClosedLoop?.UpdateLoop(1, elapsedTime);
+                AnimatedPartClearing?.UpdateState(1, elapsedTime);
+
+                // CLOSED_LOOP: starts playing only when CLEARING is at its maxframe, stops playing only when CLOSING is already opened up to 10% closed state
+                if (!(AnimatedPartClearing?.MaxFrame > 0) || AnimatedPartClearing?.AnimationKeyFraction() == 1.0f)
+                    AnimatedPartClosedLoop?.UpdateLoop(1, elapsedTime);
             }
             else
             {
+                // CLEARING animation (amber or yellow + continuous red phase): similar to CLOSING, but at opening it is dropped immediately to 0.
+                AnimatedPartClearing?.SetState(0);
                 AnimatedPartClosedLoop?.SetState(0);
                 AnimatedPartOpenLoop?.UpdateLoop(1, elapsedTime);
             }
