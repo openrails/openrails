@@ -22,6 +22,7 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using ORTS.Common;
+using ORTS.Common.Lighting;
 using Orts.Viewer3D.RollingStock.SubSystems;
 using System.Collections.Generic;
 
@@ -41,6 +42,7 @@ namespace Orts.Viewer3D
         public readonly ContainersViewer Containers;
         public readonly SoundSource GameSounds;
         public readonly WorldSounds Sounds;
+        public LightManager LightManager;
 
         readonly int PerformanceInitialViewingDistance;
         readonly int PerformanceInitialLODBias;
@@ -58,6 +60,9 @@ namespace Orts.Viewer3D
             Viewer = viewer;
             PerformanceInitialViewingDistance = Viewer.Settings.ViewingDistance;
             PerformanceInitialLODBias = Viewer.Settings.LODBias;
+            
+            // Initialize LightManager for dynamic lighting
+            LightManager = new LightManager();
             // Control stuff first.
             // check if weather file is defined
             if (string.IsNullOrEmpty(viewer.Simulator.UserWeatherFile))

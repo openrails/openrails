@@ -1,0 +1,28 @@
+{
+  "lights": [
+    {
+      "color": [255, 255, 200],
+      "intensity": 1.5,
+      "radius": 25.0,
+      "type": "Point",
+      "schedule": "Night_Only"
+    },
+    {
+      "color": [255, 100, 100],
+      "intensity": 2.0,
+      "radius": 30.0,
+      "type": "Spot",
+      "direction": [0, -1, 0],
+      "spotAngle": 45.0,
+      "schedule": "Always"
+    },
+    {
+      "color": [100, 200, 255],
+      "intensity": 1.0,
+      "radius": 20.0,
+      "type": "Directional",
+      "direction": [1, 0, 0],
+      "schedule": "Day_Only"
+    }
+  ]
+}
