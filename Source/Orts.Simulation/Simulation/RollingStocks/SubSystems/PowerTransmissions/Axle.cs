@@ -895,15 +895,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double fa = SlipCharacteristicsPolach(a + dx) - SlipCharacteristicsPolach(a);
             double fb = SlipCharacteristicsPolach(b + dx) - SlipCharacteristicsPolach(b);
 
-            double SlipSpeedMpS = AxleSpeedMpS - TrainSpeedMpS;
-
-            if (SlipSpeedMpS == 0)
-            {
-                // For display purposes threshold = 0 when no slip speed
-                WheelSlipThresholdMpS = 0;
-                return;
-            }
-
             if (fa * fb > 0)
             {
                 // If sign does not change, bisection fails
@@ -1044,8 +1035,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
         public void InitializeMoving()
         {
-            // Small amount of slip is required for adhesion, set axle speed just above true speed
-            AxleSpeedMpS = TrainSpeedMpS * 1.01f;
+            AxleSpeedMpS = TrainSpeedMpS;
 
             motor?.InitializeMoving();
         }

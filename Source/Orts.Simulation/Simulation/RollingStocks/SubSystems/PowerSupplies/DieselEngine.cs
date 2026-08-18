@@ -613,7 +613,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// The RPM controller tries to reach this value
         /// </summary>
         public float DemandedRPM;
-        float ThrottleAcclerationFactor = 1.0f;
 
         /// <summary>
         /// Demanded throttle percent, usually taken from parent locomotive
@@ -663,6 +662,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Engine mass moment of inertia in kg * m^2
         /// </summary>
         public float InertiaKgM2;
+        /// <summary>
+        /// Multiplier applied to the acceleration of engine RPM
+        /// </summary>
+        float ThrottleAccelerationFactor = 1.0f;
 
         /// <summary>
         /// Maximum overall rated power output of the diesel engine
@@ -1428,14 +1431,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     else if (tempthrottle < 0.5 && tempthrottle > 0)
                         targetRPM = (2.0f * tempthrottle * (MaxRPM - IdleRPM)) + IdleRPM;
 
-                    ThrottleAcclerationFactor = (1.0f + tempthrottle) * 4.0f;
+                    ThrottleAccelerationFactor = (1.0f + tempthrottle) * 4.0f;
                 }
                 else if (!GearBox.IsClutchOn)
                 {
                     // When clutch is slipping, engine rpm will increase initially quickly (whilst clutch under no load) until clutch starts to engage, and then slow down as clutch engages.
                     var tempClutchFraction = GearBox.ClutchPercent / 100.0f; // 100% = clutch slipping, 0% = clutch engaged
                     tempClutchFraction = MathHelper.Clamp(tempClutchFraction, 0.1f, 1.0f);  // maintain a value between 0.1 (never want throttle increase value to be zero) and 1.0
-                    ThrottleAcclerationFactor = 1.0f + tempClutchFraction; // decreases as clutch engages, thus when clutch disengaged engine rpm change high, clutch engaged, engine rpm low
+                    ThrottleAccelerationFactor = 1.0f + tempClutchFraction; // decreases as clutch engages, thus when clutch disengaged engine rpm change high, clutch engaged, engine rpm low
 
                     // Whilst clutch slipping use a similar approach as above to set RPM for "unloaded" engine.
                     var tempthrottle = demandedThrottlePercent / 100.0f;
@@ -1447,7 +1450,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 else
                 {
                     // under "normal" circumstances
-                    ThrottleAcclerationFactor = 1.0f;
+                    ThrottleAccelerationFactor = 1.0f;
                 }
 
                 // brakes engine when doing gear change
@@ -1528,7 +1531,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             if (RealRPM < DemandedRPM)
             {
-                float maxJerk = RateOfChangeUpRPMpSS * ThrottleAcclerationFactor;
+                float maxJerk = RateOfChangeUpRPMpSS * ThrottleAccelerationFactor;
                 float maxInstantJerk = maxJerk * elapsedClockSeconds;
 
                 // RPM increase exponentially decays, but clamped between 1% and 100% of the linear rate of change
@@ -1549,7 +1552,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
             else if (RealRPM > DemandedRPM)
             {
-                float maxJerk = RateOfChangeDownRPMpSS * ThrottleAcclerationFactor;
+                float maxJerk = RateOfChangeDownRPMpSS * ThrottleAccelerationFactor;
                 float maxInstantJerk = maxJerk * elapsedClockSeconds;
 
                 // RPM decrease exponentially decays, but clamped between 1% and 100% of the linear rate of change
@@ -2048,8 +2051,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             // Determine rail power vs RPM, used for other calculations
             Interpolator railPowerTab = null;
 
-            if (railPowerTab == null)
-            {
+            { // Limit scope of temporary variables
                 int size = throttleRailPower.Length;
                 List<(float, float)> tempRailPowerPairs = new List<(float, float)>();
 
