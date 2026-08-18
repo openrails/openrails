@@ -638,7 +638,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 switch(DriveType)
                 {
                     case AxleDriveType.MotorDriven:
-                        totalInertiaKgm2 = inertiaKgm2 + transmissionRatio * transmissionRatio * motor.InertiaKgm2;
+                        totalInertiaKgm2 = inertiaKgm2 + motor.TransmissionRatio * motor.TransmissionRatio * motor.InertiaKgm2;
                         break;
                     default:
                         totalInertiaKgm2 = inertiaKgm2;
@@ -684,7 +684,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     case AxleDriveType.NotDriven:
                         break;
                     case AxleDriveType.MotorDriven:
-                        totalInertiaKgm2 = inertiaKgm2 + transmissionRatio * transmissionRatio * motor.InertiaKgm2;
+                        totalInertiaKgm2 = inertiaKgm2 + motor.TransmissionRatio * motor.TransmissionRatio * motor.InertiaKgm2;
                         break;
                     case AxleDriveType.ForceDriven:
                         totalInertiaKgm2 = inertiaKgm2;
@@ -709,54 +709,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// Pre-calculation of slip characteristics at 0 slip speed
         /// </summary>
         double axleStaticForceN;
-
-        /// <summary>
-        /// Transmission ratio on gearbox covered by TransmissionRatio interface
-        /// </summary>
-        float transmissionRatio;
-        /// <summary>
-        /// Read/Write positive nonzero transmission ratio, given by n1:n2 ratio
-        /// Throws an exception when negative or zero value is passed
-        /// </summary>
-        public float TransmissionRatio
-        {
-            set
-            {
-                if (value <= 0.0)
-                    throw new NotSupportedException("Transmission ratio must be greater than zero");
-                transmissionRatio = value;
-            }
-            get
-            {
-                return transmissionRatio;
-            }
-        }
-
-        /// <summary>
-        /// Transmission efficiency, relative to 1.0, covered by TransmissionEfficiency interface
-        /// </summary>
-        float transmissionEfficiency;
-        /// <summary>
-        /// Read/Write transmission efficiency, relative to 1.0, within range of 0.0 to 1.0 (1.0 means 100%, 0.5 means 50%)
-        /// Throws an exception when out of range value is passed
-        /// When 0.0 is set the value of 0.99 is used instead
-        /// </summary>
-        public float TransmissionEfficiency
-        {
-            set
-            {
-                if (value > 1.0f)
-                    throw new NotSupportedException("Value must be within the range of 0.0 and 1.0");
-                if (value <= 0.0f)
-                    transmissionEfficiency = 1.0f;
-                else
-                    transmissionEfficiency = value;
-            }
-            get
-            {
-                return transmissionEfficiency;
-            }
-        }
 
         /// <summary>
         /// Radius of wheels connected to axle
@@ -1081,7 +1033,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public Axle(TrainCar car)
         {
             Car = car;
-            transmissionEfficiency = 1.0f;
             SlipWarningTresholdPercent = 70.0f;
             DriveType = AxleDriveType.ForceDriven;
             totalInertiaKgm2 = inertiaKgm2;
@@ -1212,9 +1163,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // Compute force produced by the engine
             double axleInForceN = 0;
             if (DriveType == AxleDriveType.ForceDriven)
-                axleInForceN = DriveForceN * transmissionEfficiency;
+                axleInForceN = DriveForceN;
             else if (DriveType == AxleDriveType.MotorDriven)
-                axleInForceN = motor.GetDevelopedTorqueNm(axleSpeedMpS * transmissionRatio / WheelRadiusM) * transmissionEfficiency / WheelRadiusM;
+                axleInForceN = motor.GetAxleTorqueNm(axleSpeedMpS / WheelRadiusM) / WheelRadiusM;
 
             double frictionForceN = FrictionN + DampingNs * Math.Abs(slipSpeedMpS); // Rolling friction
             double totalFrictionForceN = BrakeRetardForceN + frictionForceN; // Dissipative forces: they will never increase wheel speed
@@ -1236,7 +1187,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (Math.Abs(slipSpeedMpS) < 0.1f)
                 {
                     axleBrakeForceN = Math.Min(BrakeRetardForceN, Math.Max(MaximumWheelAdhesion * AxleGradientForceN - frictionForceN + Math.Abs(axleInForceN), 0));
-                    return (accelerationMpSS, axleSpeedMpS / WheelRadiusM, axleInForceN / transmissionEfficiency, axleMotiveForceN, axleBrakeForceN, frictionForceN);
+                    return (accelerationMpSS, axleSpeedMpS / WheelRadiusM, axleInForceN, axleMotiveForceN, axleBrakeForceN, frictionForceN);
                 }
             }
             // In the static adhesion regime (low speeds for Polach formula), unless the static adhesion coefficient is exceeded,
@@ -1257,7 +1208,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 axleMotiveForceN = axleOutForceN + Math.Sign(TrainSpeedMpS) * totalFrictionForceN;
             }
-            return (accelerationMpSS, axleSpeedMpS / WheelRadiusM, axleInForceN / transmissionEfficiency, axleMotiveForceN, axleBrakeForceN, frictionForceN);
+            return (accelerationMpSS, axleSpeedMpS / WheelRadiusM, axleInForceN, axleMotiveForceN, axleBrakeForceN, frictionForceN);
         }
 
         /// <summary>
@@ -1527,10 +1478,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             float axleInForceN = 0;        
             if (DriveType == AxleDriveType.ForceDriven)
-                axleInForceN = DriveForceN * transmissionEfficiency;
+                axleInForceN = DriveForceN;
             else if (DriveType == AxleDriveType.MotorDriven)
-                axleInForceN = (float)motor.GetDevelopedTorqueNm(TrainSpeedMpS * transmissionRatio / WheelRadiusM) * transmissionEfficiency / WheelRadiusM;
-            DriveForceN = axleInForceN / transmissionEfficiency;
+                axleInForceN = (float)motor.GetAxleTorqueNm(TrainSpeedMpS / WheelRadiusM) / WheelRadiusM;
+            DriveForceN = axleInForceN;
 
             float frictionForceN = FrictionN;
             float totalFrictionForceN = BrakeRetardForceN + frictionForceN; // Dissipative forces: they will never increase wheel speed

@@ -557,7 +557,7 @@ New variables introduced by OR:
     indicate force opposite the direction of travel (either dynamic braking, or using the throttle in the wrong direction).
   - Similarly, ``TractivePowerControlled`` can be used on curves and ``TractivePower_Inc_Past`` or ``TractivePower_Dec_Past`` on triggers
     to vary sounds with the power, measured in *watts* by default, using other power units as specified in the SMS files, applied to the
-    rails. Like for tractive effort, a negative value indicates dynamic braking or traction against the motion of the train.
+    wheels. Like for tractive effort, a negative value indicates dynamic braking or traction against the motion of the train.
 - Diesel engine rotation speed (RPM), diesel engine power (default W), and diesel engine torque (Nm):
   - Curve control ``EngineXRPMControlled`` and variable triggers ``EngineXRPM_Inc_Past`` and ``EngineXRPM_Dec_Past`` can control sounds based
     on engine RPM (note: unlike Variable2, EngineRPM values are NOT scaled to a range of 0-1, the values used must correspond to the actual

@@ -198,15 +198,7 @@ namespace Menu
             comboDataLoggerSeparator.DisplayMember = "Value";
             comboDataLoggerSeparator.ValueMember = "Key";
             comboDataLoggerSeparator.Text = catalog.GetString(Settings.DataLoggerSeparator);
-            var dictionaryDataLogSpeedUnits = new Dictionary<string, string>();
-            dictionaryDataLogSpeedUnits.Add("route", catalog.GetString("route"));
-            dictionaryDataLogSpeedUnits.Add("mps", catalog.GetString("m/s"));
-            dictionaryDataLogSpeedUnits.Add("kmph", catalog.GetString("km/h"));
-            dictionaryDataLogSpeedUnits.Add("mph", catalog.GetString("mph"));
-            comboDataLogSpeedUnits.DataSource = new BindingSource(dictionaryDataLogSpeedUnits, null);
-            comboDataLogSpeedUnits.DisplayMember = "Value";
-            comboDataLogSpeedUnits.ValueMember = "Key";
-            comboDataLogSpeedUnits.Text = catalog.GetString(Settings.DataLogSpeedUnits);
+            checkDataLogUseInternalUnits.Checked = Settings.DataLogUseInternalUnits;
             checkDataLogger.Checked = Settings.DataLogger;
             checkDataLogPerformance.Checked = Settings.DataLogPerformance;
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
@@ -471,7 +463,7 @@ namespace Menu
 
             // DataLogger tab
             Settings.DataLoggerSeparator = comboDataLoggerSeparator.SelectedValue.ToString();
-            Settings.DataLogSpeedUnits = comboDataLogSpeedUnits.SelectedValue.ToString();
+            Settings.DataLogUseInternalUnits = checkDataLogUseInternalUnits.Checked;
             Settings.DataLogger = checkDataLogger.Checked;
             Settings.DataLogPerformance = checkDataLogPerformance.Checked;
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;

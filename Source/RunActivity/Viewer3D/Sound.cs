@@ -1614,7 +1614,7 @@ namespace Orts.Viewer3D
                 case SoundVariable.ControlType.CarTunnelDistance: return car.CarTunnelDistanceM;
                 case SoundVariable.ControlType.BackPressure: return car.BackPressurePSIG;
                 case SoundVariable.ControlType.TractiveEffort: return car.LocomotiveAxles.DriveForceN * Math.Sign(car.WheelSpeedMpS); // Ensure positive for traction, negative for dynamics
-                case SoundVariable.ControlType.TractivePower: return car.LocomotiveAxles.DriveForceN * car.WheelSpeedMpS;
+                case SoundVariable.ControlType.TractivePower: return car.LocomotiveAxles.DrivePowerW;
                 case SoundVariable.ControlType.EngineRPM: return car.EnginesRPM.ElementAtOrDefault(variable.SourceID);
                 case SoundVariable.ControlType.EnginePower: return car.EnginesPower.ElementAtOrDefault(variable.SourceID);
                 case SoundVariable.ControlType.EngineTorque: return car.EnginesTorque.ElementAtOrDefault(variable.SourceID);

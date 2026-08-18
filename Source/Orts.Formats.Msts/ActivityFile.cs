@@ -272,6 +272,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.IO;
+using System.Linq;
 using Orts.Parsers.Msts; // For class S (seconds)
 using ORTS.Common;
 
@@ -306,18 +307,20 @@ namespace Orts.Formats.Msts
     public class ActivityFile {
         public Tr_Activity Tr_Activity;
 
-        public ActivityFile(string filenamewithpath) {
-            Read(filenamewithpath, false);
+        public ActivityFile(string filenamewithpath, bool checkDuplicates = true)
+        {
+            Read(filenamewithpath, false, checkDuplicates);
         }
 
-        public ActivityFile(string filenamewithpath, bool headerOnly) {
-            Read(filenamewithpath, headerOnly);
+        public ActivityFile(string filenamewithpath, bool headerOnly, bool checkDuplicates = true)
+        {
+            Read(filenamewithpath, headerOnly, checkDuplicates);
         }
 
-        public void Read(string filenamewithpath, bool headerOnly) {
+        public void Read(string filenamewithpath, bool headerOnly, bool checkDuplicates = true) {
             using (STFReader stf = new STFReader(filenamewithpath, false)) {
                 stf.ParseFile(() => headerOnly && (Tr_Activity != null) && (Tr_Activity.Tr_Activity_Header != null), new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("tr_activity", ()=>{ Tr_Activity = new Tr_Activity(stf, headerOnly); }),
+                    new STFReader.TokenProcessor("tr_activity", ()=>{ Tr_Activity = new Tr_Activity(stf, headerOnly, checkDuplicates); }),
                 });
                 if (Tr_Activity == null)
                     STFException.TraceWarning(stf, "Missing Tr_Activity statement");
@@ -349,10 +352,10 @@ namespace Orts.Formats.Msts
         public Tr_Activity_Header Tr_Activity_Header;
         public Tr_Activity_File Tr_Activity_File;
 
-        public Tr_Activity(STFReader stf, bool headerOnly) {
+        public Tr_Activity(STFReader stf, bool headerOnly, bool checkDuplicates) {
             stf.MustMatch("(");
             stf.ParseBlock(() => headerOnly && (Tr_Activity_Header != null), new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("tr_activity_file", ()=>{ Tr_Activity_File = new Tr_Activity_File(stf); }),
+                new STFReader.TokenProcessor("tr_activity_file", ()=>{ Tr_Activity_File = new Tr_Activity_File(stf, checkDuplicates); }),
                 new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("tr_activity_header", ()=>{ Tr_Activity_Header = new Tr_Activity_Header(stf); }),
             });
@@ -511,7 +514,7 @@ namespace Orts.Formats.Msts
         public LevelCrossingHornPattern AILevelCrossingHornPattern { get; private set; } = LevelCrossingHornPattern.Single;
 
 
-        public Tr_Activity_File(STFReader stf) {
+        public Tr_Activity_File(STFReader stf, bool checkDuplicates) {
             stf.MustMatch("(");
             var parser = new List<STFReader.TokenProcessor> {
                 new STFReader.TokenProcessor("player_service_definition",()=>{ Player_Service_Definition = new Player_Service_Definition(stf); }),
@@ -519,7 +522,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("nextactivityobjectuid",()=>{ NextActivityObjectUID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("events",()=>{ Events = new Events(stf); }),
                 new STFReader.TokenProcessor("traffic_definition",()=>{ Traffic_Definition = new Traffic_Definition(stf); }),
-                new STFReader.TokenProcessor("activityobjects",()=>{ ActivityObjects = new ActivityObjects(stf); }),
+                new STFReader.TokenProcessor("activityobjects",()=>{ ActivityObjects = new ActivityObjects(stf, checkDuplicates); }),
                 new STFReader.TokenProcessor("platformnumpassengerswaiting",()=>{ PlatformNumPassengersWaiting = new PlatformNumPassengersWaiting(stf); }),  // 35 files. To test, use EUROPE1\ACTIVITIES\aftstorm.act
                 new STFReader.TokenProcessor("activityfailedsignals",()=>{ ActivityFailedSignals = new ActivityFailedSignals(stf); }),
                 new STFReader.TokenProcessor("activityrestrictedspeedzones",()=>{ ActivityRestrictedSpeedZones = new ActivityRestrictedSpeedZones(stf); }),   // 27 files. To test, use EUROPE1\ACTIVITIES\lclsrvce.act
@@ -1233,10 +1236,10 @@ namespace Orts.Formats.Msts
         //    set { base[i] = value; }
         //}
 
-        public ActivityObjects(STFReader stf) {
+        public ActivityObjects(STFReader stf, bool checkDuplicates) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("activityobject", ()=>{ ActivityObjectList.Add(new ActivityObject(stf)); }),
+                new STFReader.TokenProcessor("activityobject", ()=>{ ActivityObjectList.Add(new ActivityObject(stf, checkDuplicates)); }),
             });
         }
     }
@@ -1250,11 +1253,11 @@ namespace Orts.Formats.Msts
         public float X;
         public float Z;
 
-        public ActivityObject(STFReader stf) {
+        public ActivityObject(STFReader stf, bool checkDuplicates) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("objecttype", ()=>{ stf.MustMatch("("); stf.MustMatch("WagonsList"); stf.MustMatch(")"); }),
-                new STFReader.TokenProcessor("train_config", ()=>{ Train_Config = new Train_Config(stf); }),
+                new STFReader.TokenProcessor("train_config", ()=>{ Train_Config = new Train_Config(stf, checkDuplicates); }),
                 new STFReader.TokenProcessor("direction", ()=>{ Direction = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("tile", ()=>{
@@ -1272,10 +1275,10 @@ namespace Orts.Formats.Msts
     public class Train_Config {
         public TrainCfg TrainCfg;
 
-        public Train_Config(STFReader stf) {
+        public Train_Config(STFReader stf, bool checkDuplicates = true) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("traincfg", ()=>{ TrainCfg = new TrainCfg(stf); }),
+                new STFReader.TokenProcessor("traincfg", ()=>{ TrainCfg = new TrainCfg(stf, checkDuplicates); }),
             });
         }
     }
@@ -1303,7 +1306,7 @@ namespace Orts.Formats.Msts
 
         public List<Wagon> WagonList = new List<Wagon>();
 
-        public TrainCfg(STFReader stf) {
+        public TrainCfg(STFReader stf, bool checkDuplicates) {
             stf.MustMatch("(");
             Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -1317,6 +1320,18 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortseot", ()=>{ WagonList.Add(new Wagon(stf)); }),
                 new STFReader.TokenProcessor("ortstraincontrolsystemparameters", () => TcsParametersFileName = stf.ReadStringBlock(null)),
             });
+            if (checkDuplicates)
+            {
+                // Check if there are wagons with duplicate UiD
+                var query = WagonList.GroupBy(x => x.UiD)
+                  .Where(g => g.Count() > 1)
+                  .ToDictionary(x => x.Key, y => y.Count());
+                if (query.Count > 0)
+                {
+                    foreach (var duplicate in query)
+                        Trace.TraceWarning($"{duplicate.Value} occurrences of UiD {duplicate.Key} in consist with name {Name}. Any UiD value should appear only once in a consist");
+                }
+            }
         }
     }
 
