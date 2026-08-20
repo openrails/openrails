@@ -24,6 +24,8 @@ namespace Menu.Notifications
     {
         public List<Notification> NotificationList = new List<Notification>();
         public List<Check> CheckList = new List<Check>();
+
+        // Given a function that replaces parameters in a string, replace all parameters in the notifications and checks
         internal void ReplaceParameters(Func<string, string> replaceFunc)
         {
             NotificationList?.ForEach(item => item.ReplaceParameters(replaceFunc));

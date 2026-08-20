@@ -448,11 +448,21 @@ namespace Menu.Notifications
             return url;
         }
 
+        /// <summary>
+        /// Given a function that replaces a parameter with its value, this method replaces all parameters in the Notifications object.
+        /// </summary>
         void ReplaceParameters()
         {
             Notifications.ReplaceParameters(ReplaceParameterValues);
         }
 
+        /// <summary>
+        /// Given a string, replaces any parameters in the form {{parameter}} with their value from the ParameterDictionary.
+        /// If the ParameterDictionary is already loaded with override values, these are used first. Otherwise the program is queried for the value.
+        /// If a parameter is not recognised, it is not replaced.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         string ReplaceParameterValues(string value)
         {
             if (value == null) return value;
@@ -507,7 +517,7 @@ namespace Menu.Notifications
                         replacement = Runtime.ToString();
                         break;
                     case "system":
-                        replacement = SystemInfo.OperatingSystem.ToString();
+                        replacement = SystemInfo.OperatingSystem.Name;
                         break;
                     case "memory":
                         replacement = Direct3DFeatureLevels.ToString();
