@@ -107,9 +107,9 @@ namespace Orts.Simulation.RollingStocks
             base.Restore(inf);
         }
 
-        public override void Initialize()
+        public override void Initialize(bool reinitialize = false)
         {
-            base.Initialize();
+            base.Initialize(reinitialize);
 
             // If DrvWheelWeight is not in ENG file, then calculate drivewheel weight freom FoA
 
