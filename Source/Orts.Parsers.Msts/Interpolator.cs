@@ -137,22 +137,24 @@ namespace Orts.Parsers.Msts
                         lowIndex = Math.Max(highIndex - 1, 0);
                     }
                     // If given x value is exact, use that exact value regardless of rounding mode
-                    if (x == X[highIndex]) 
-                        lowIndex = highIndex;
+                    if (x == X[highIndex])
+                        y = Y[highIndex];
                     else if (x == X[lowIndex])
-                        highIndex = lowIndex;
-
-                    switch (XRounding)
+                        y = Y[lowIndex];
+                    else
                     {
-                        case RoundingMode.RoundDown: y = Y[lowIndex]; break;
-                        case RoundingMode.RoundUp: y = Y[highIndex]; break;
-                        case RoundingMode.RoundNearest:
-                            if (x - X[lowIndex] < X[highIndex] - x)
-                                y = Y[lowIndex]; // x is closer to the lower value
-                            else
-                                y = Y[highIndex]; // x is closer to the higher value (or equidistant)
-                            break;
-                        default: y = Y[0]; break;
+                        switch (XRounding)
+                        {
+                            case RoundingMode.RoundDown: y = Y[lowIndex]; break;
+                            case RoundingMode.RoundUp: y = Y[highIndex]; break;
+                            case RoundingMode.RoundNearest:
+                                if (x - X[lowIndex] < X[highIndex] - x)
+                                    y = Y[lowIndex]; // x is closer to the lower value
+                                else
+                                    y = Y[highIndex]; // x is closer to the higher value (or equidistant)
+                                break;
+                            default: y = Y[0]; break;
+                        }
                     }
                 }
                 return y;

@@ -583,26 +583,26 @@ ORTS Specific Diesel Engine Definition
 
 If no ORTS specific definition is found, a single diesel engine definition
 is created automatically based on the MSTS settings in the .eng file.
-Since MSTS introduces a model without any data crosscheck, the behavior
-of MSTS and ORTS diesel locomotives can be very different. In MSTS, ``MaxPower``
-is not considered in the same way and you can get much *better* performance
-than expected. In ORTS, diesel engines cannot be overloaded.
+Due to limitations of the original MSTS model and the wide variety of
+content made for MSTS, the default engine created may not give desireable
+or accurate performance. For best results, the ORTS specific method, as
+explained in this section, should be used instead.
 
 No matter which engine definition is used, the diesel engine is defined by
 its load characteristics (rated output power vs. RPM) for optimal fuel
 flow and/or mechanical characteristics (output torque vs. RPM) for
 maximum fuel flow. The model computes output power / torque according to
-these characteristics and the throttle settings. If the characteristics
+these characteristics and the throttle setting. If the characteristics
 are not defined as shown in the example ``ORTSDieselEngines`` block
 below, they are calculated based on the MSTS data and common normalized
 characteristics.
 
-In many cases the RPM vs. throttle and power vs. RPM curve should be
-customized based on locomotive specifications because RPM and power
-often do not have a linear response to the throttle setting.
+For example, in many cases the RPM vs. throttle and power vs. RPM curve
+should be customized based on locomotive specifications because RPM and
+power often do not have a linear response to the throttle setting.
 Nonetheless, a default linear RPM vs. throttle characteristic and generic
 power vs. RPM curve (shown in the figure below) are built in to provide
-functional diesel engines even when this data is missing.
+functional diesel engines even when this data is not defined manually.
 
 .. image:: images/physics-diesel-power.png
   :align: center
@@ -612,10 +612,10 @@ In ORTS, one locomotive may have any number of diesel engines, as opposed
 to MSTS which only considered one engine per locomotive. In case
 there is more than one engine, other engines act like *helper* engines
 (start/stop control for helpers is ``<Ctrl+Y>`` by default). The power of
-each active engine is added to the locomotive power. The number of such
-diesel engines is not limited. Depending on the settings of ``ProvidesTractionPower``
-and ``ProvidesETSPower``, various multi-engine locomotives can be constructed,
-from gensets to locomotives with separate engines for ETS power only.
+each active engine is added to the locomotive power. Depending on the settings
+of ``ProvidesTractionPower`` and ``ProvidesETSPower``, various multi-engine
+locomotives can be constructed, from gensets to locomotives with separate
+engines for ETS power only.
 
 If the ORTS specific definition is used, each parameter is tracked and if
 any are missing the lacking data is estimated from other diesel engine
@@ -888,6 +888,9 @@ speeds to save fuel in dynamic braking. When the dynamic brake is disabled,
 engine RPM returns to control by the throttle. Note that if a locomotive is not
 equipped with dynamic braking, then ``DynamicsRPMTab`` will have no effect.
 
+.. index::
+   single: DieselEngineMinRPM
+
 Some passenger locomotives also use diesel engines to provide power
 to the :ref:`electric train supply system <physics-electric-train-supply>`,
 but this usually requires modifying the engine RPM as the standard engine speeds
@@ -895,12 +898,19 @@ are inadequate for producing electric train supply power or would not
 produce the correct AC frequency of power. For this purpose, the
 engine RPM can be overridden using ``ETSThrottleRPMTab``, which behaves
 exactly like ``ThrottleRPMTab`` but is only used when ETS is enabled.
+Additionally, the parameter ``Engine ( ORTSElectricTrainSupply ( DieselEngineMinRPM ( X )``
+may be added to the ETS settings in order to prevent ETS from drawing engine
+power until the engine has accelerated to at least ``X`` rpm.
 
 For example, a modern passenger locomotive runs the engine at a higher
 RPM at low throttle settings to allow the engine to produce power for
 the coaches without bogging down::
 
     Engine (
+        ORTSElectricTrainSupply (
+            DieselEngineMinRPM ( 720 ) <- prevent ETS system from drawing
+        )                                 power until the engine is at the
+                                          proper RPM
         ORTSDieselEngines ( 1
             Diesel (
                 ...
@@ -1068,7 +1078,9 @@ performance, and the ambient temperature. The type of cooling system
 defined by the ``Cooling`` parameter changes exactly how the system behaves,
 but the overall performance of the cooling system is determined using
 ``TempTimeConstant``, ``IdleTemperature``, ``OptTemperature``, and
-``MaxTemperature``. Larger values of ``TempTimeConstant`` make the engine
+``MaxTemperature``.
+
+Larger values of ``TempTimeConstant`` make the engine
 take longer to change temperature, emulating an engine with lower heat
 generation or with a larger coolant capacity. ``IdleTemperature`` influences
 the minimum amount of cooling when the engine is idling on a cold day, with
@@ -1115,8 +1127,8 @@ to provide a better approximation to real world performance.
 efficiency of the main generator and increase the
 power required by the diesel engine accordingly. Efficiency should be
 entered as a number between 0 and 1, like ``ORTSDieselTransmissionEfficiency ( 0.91 )``.
-Alternatively, the efficiency can be estimated automatically by setting MaxPower
-to the traction power, with the rail power (and efficiency) determined from the
+Alternatively, the efficiency can be estimated automatically by setting ``Engine ( MaxPower``
+to the traction power, with the drivetrain power (and efficiency) determined from the
 tractive force curves.
 
 If a table is not used, the tractive force is limited by MaxForce, MaxPower and
@@ -1208,13 +1220,13 @@ In the above case the maximum permitted speed of the train is 70 mph; a small am
 in top gear. The fourth gear speed of 65.5 mph corresponds to the maximum engine rpm set in the eng file by 
 ``DieselEngineMaxRPM``. The diesel engine may continue to ‘runaway’ above its normal ‘maximum speed’ until it 
 reaches the maximum governed speed or ‘redline’ speed at which the engine governor will cut off the fuel 
-supply until the engine speed is reduced. This speed can be set in basic Open Rails eng files using ``ORTSDieselEngineGovernorRpM``. 
-In the case of the above train, then these would be
+supply until the engine speed is reduced. This speed can be set in basic Open Rails eng files using
+``ORTSDieselEngineGovernorRPM``. In the case of the above train, then these would be
 
 DieselEngineMaxRPM( 1800 )
-ORTSDieselEngineGovernorRpM ( 2000 )
+ORTSDieselEngineGovernorRPM ( 2000 )
 
-If under any circumstances the engine reaches ``ORTSDieselEngineGovernorRpM`` then the diesel engine will automatically be shut down.
+If under any circumstances the engine reaches ``ORTSDieselEngineGovernorRPM`` then the diesel engine will automatically be shut down.
 
 ``ORTSGearBoxTractiveForceAtSpeed`` - The tractive force available in each gear at the speed indicated in GearBoxMaxSpeedForGears. Units 
 by default are in N, however lbf, N or kN. Published values for tractive effort of geared locomotives and multiple units 

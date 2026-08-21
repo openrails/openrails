@@ -165,7 +165,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public void EstablishParameters()
         {
             float totalTractionPower = 0;
-            float totalETSPower = 0;
 
             foreach (DieselEngine de in DEList)
             {
@@ -173,13 +172,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 if (de.ProvidesTraction)
                     totalTractionPower += de.MaximumDieselPowerW;
-                if (de.ProvidesETS)
-                    totalETSPower += de.MaximumDieselPowerW;
             }
 
             // Can only determine some engine ratings after all parameters are established
             foreach (DieselEngine de in DEList)
-                de.InitRailPower(totalTractionPower, totalETSPower);
+                de.InitRailPower(totalTractionPower);
         }
 
         /// <summary>
@@ -278,7 +275,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 float temp = 0f;
                 foreach (DieselEngine de in DEList)
-                    temp += de.ProvidesETS ? de.CurrentMaximumPowerW - de.AuxPowerTab[de.RealRPM] : 0.0f;
+                    if (de.ProvidesETS && de.RealRPM >= Locomotive.DieselPowerSupply?.DieselEngineMinRpmForElectricTrainSupply)
+                        temp += de.CurrentMaximumPowerW - de.AuxPowerTab[de.RealRPM];
                 return temp;
             }
         }
@@ -327,7 +325,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         /// <summary>
-        /// Maximum rail output power for all deiesl engines
+        /// Maximum rail output power for all diesel engines
         /// </summary>
         public float MaximumRailOutputPowerW
         {
@@ -524,7 +522,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 foreach (DieselEngine eng in DEList)
                 {
                     if (eng.State == DieselEngineState.Running)
-                        percent += eng.CurrentMaximumPowerW / totalMaxPower;
+                        percent += eng.MaximumDieselPowerW / totalMaxPower;
                 }
                 return percent;
             }
@@ -752,7 +750,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                if (ProvidesETS)
+                if (ProvidesETS && RealRPM >= Locomotive.DieselPowerSupply?.DieselEngineMinRpmForElectricTrainSupply)
                 {
                     if (Locomotive.DieselEngines.Count > 1)
                     {
@@ -1322,7 +1320,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 targetRPM = MathHelper.Clamp(targetRPM, IdleRPM, MaxRPM);
             }
 
-            // TODO: Add processing for custom engine RPM overrides
+            // FUTURE: Add processing for custom engine RPM overrides
 
             if (GearBox != null)
                 targetRPM = GetGearboxRPM(elapsedClockSeconds, targetRPM);
@@ -1994,11 +1992,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// (if there are any others), particularly how much power at rail each engine is responsible for.
         /// </summary>
         /// <param name="totalTractionPower">Total power available for traction from all engines</param>
-        /// <param name="totalETSPower">Total power available for electric train supply from all engines</param>
-        public void InitRailPower(float totalTractionPower, float totalETSPower)
+        public void InitRailPower(float totalTractionPower)
         {
             float maxTractionPowerProportion = ProvidesTraction ? MaximumDieselPowerW / totalTractionPower : 0.0f;
-            float maxETSPowerProportion = ProvidesETS ? MaximumDieselPowerW / totalETSPower : 0.0f;
 
             // Set rail power parameters if not already set
             (float, float)[] throttleRailPower; // Pairs of throttle settings and corresponding rail power

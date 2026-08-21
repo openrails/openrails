@@ -357,7 +357,7 @@ namespace Orts.Simulation.RollingStocks
                 MaxForceN = 0.25f * DrvWheelWeightKg * GravitationalAccelerationMpS2;
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceInformation("Maximum Force set to {0} value, calculated from Rail Power Value.", FormatStrings.FormatForce(MaxForceN, IsMetric));
+                    Trace.TraceInformation("Maximum Force set to {0} value, calculated from locomotive mass.", FormatStrings.FormatForce(MaxForceN, IsMetric));
             }
 
             // Check to see if Speed of Max Tractive Force has been set - use ORTS value as first priority, if not use MSTS, last resort use an arbitrary value.
