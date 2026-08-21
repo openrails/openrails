@@ -315,13 +315,13 @@ namespace Orts.Simulation.RollingStocks
                 MaximumDieselEnginePowerW = DieselEngines.MaxPowerW;
 
                 if (MaximumDieselEnginePowerW <= 0)
-            {
+                {
                     // If power still couldn't be determined, then set the Prime Mover power to same as traction power (typically the MaxPower value)
                     MaximumDieselEnginePowerW = LocomotiveMaxTractionPowerW;
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set the same as MaxTractionPower = {0}", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false));
-                }
+            }
                 else
                 {
                     if (Simulator.Settings.VerboseConfigurationMessages)
@@ -341,8 +341,8 @@ namespace Orts.Simulation.RollingStocks
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Maximum Rail Power set to arbitrary value = {0}", FormatStrings.FormatPower(MaxPowerW, IsMetric, false, false));
-                    }
                 }
+            }
 
             // Also estimate traction power if not set
             if (LocomotiveMaxTractionPowerW <= 0.0f)
@@ -352,17 +352,17 @@ namespace Orts.Simulation.RollingStocks
 
             // Check that maximum force value has been set, this is required for proper operation
             if (MaxForceN <= 0)
-                {
+            {
                 // User should specify max force, but if it's missing then estimate 25% adhesion to avoid wheel slips
                 MaxForceN = 0.25f * DrvWheelWeightKg * GravitationalAccelerationMpS2;
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Maximum Force set to {0} value, calculated from Rail Power Value.", FormatStrings.FormatForce(MaxForceN, IsMetric));
-                }
+                    Trace.TraceInformation("Maximum Force set to {0} value, calculated from locomotive mass.", FormatStrings.FormatForce(MaxForceN, IsMetric));
+                    }
 
             // Check to see if Speed of Max Tractive Force has been set - use ORTS value as first priority, if not use MSTS, last resort use an arbitrary value.
             if (SpeedOfMaxContinuousForceMpS <= 0)
-                {
+            {
                 if (MSTSSpeedOfMaxContinuousForceMpS > 0)
                 {
                     SpeedOfMaxContinuousForceMpS = MSTSSpeedOfMaxContinuousForceMpS; // Use MSTS value if present
@@ -383,8 +383,8 @@ namespace Orts.Simulation.RollingStocks
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Speed Of Max Continuous Force set to arbitrary value = {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+                    }
                 }
-            }
 
             // Check that maximum continuous force value has been set
             float calculatedMaxContinuousForceN;

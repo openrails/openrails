@@ -1036,7 +1036,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public void InitializeMoving()
         {
             AxleSpeedMpS = TrainSpeedMpS;
-
             motor?.InitializeMoving();
         }
         public void Parse(STFReader stf)
