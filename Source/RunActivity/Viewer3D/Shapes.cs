@@ -648,17 +648,17 @@ namespace Orts.Viewer3D
                 if (soundFileName != "")
                 {
                     var soundPath = ORTSPaths.GetFileFromFolders(new[] { viewer.Simulator.RoutePath, viewer.Simulator.BasePath }, @"\\sound\\" + soundFileName);
-                        try
-                        {
-                            Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
-                            viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                        }
-                        catch (Exception error)
-                        {
-                            Trace.WriteLine(new FileLoadException(soundPath, error));
-                        }
+                    try
+                    {
+                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
+                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.WriteLine(new FileLoadException(soundPath, error));
                     }
                 }
+            }
             Crossing = viewer.Simulator.LevelCrossings.CreateLevelCrossing(
                 position,
                 from tid in CrossingObj.trItemIDList where tid.db == 0 select tid.dbID,
@@ -883,39 +883,39 @@ namespace Orts.Viewer3D
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS != null && FuelPickupItemObj.PickupType == 7) // Testing for Diesel PickupType
             {
                 var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS);
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
+                try
+                {
+                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                }
+                catch (Exception error)
+                {
                     Trace.WriteLine(new FileLoadException(Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS, error));
                 }
             }
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS != null && FuelPickupItemObj.PickupType == 5) // Testing for Water PickupType
             {
                 var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS);
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
+                try
+                {
+                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                }
+                catch (Exception error)
+                {
                     Trace.WriteLine(new FileLoadException(Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS, error));
                 }
             }
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS != null && (FuelPickupItemObj.PickupType == 6 || FuelPickupItemObj.PickupType == 2))
             {
                 var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS);
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
+                try
+                {
+                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
+                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                }
+                catch (Exception error)
+                {
                     Trace.WriteLine(new FileLoadException(Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS, error));
                 }
             }
@@ -1002,15 +1002,15 @@ namespace Orts.Viewer3D
         public override void Initialize()
         {
             var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath + @"\\sound\\" + (FuelPickupItemObj.CraneSound ?? "containercrane.sms"), Viewer.Simulator.BasePath + @"\\sound\\containercrane.sms" }, "");
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch
-                    {
-                        Trace.TraceWarning("Cannot find sound file {0}", soundPath);
-                    }
+            try
+            {
+                Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
+                Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+            }
+            catch
+            {
+                Trace.TraceWarning("Cannot find sound file {0}", soundPath);
+            }
 
             AnimatedPartX = new AnimatedPart(this);
             AnimatedPartY = new AnimatedPart(this);
@@ -1105,7 +1105,7 @@ namespace Orts.Viewer3D
                 if (AnimatedPartY.AnimationKeyFraction() == key.Y) ContainerHandlingItem.MoveY = false;
                 if (AnimatedPartZ.AnimationKeyFraction() == key.Z) ContainerHandlingItem.MoveZ = false;
                 if (AnimatedPartGrabber01.AnimationKeyFraction() == keyGrabber01 && AnimatedPartGrabber02 .AnimationKeyFraction() == keyGrabber02) ContainerHandlingItem.MoveGrabber = false;
-                }
+            }
 
             ContainerHandlingItem.ActualX = AnimatedPartX.AnimationKeyFraction() * AnimationXYZSpan.X + AnimationXYZStart.X;
             ContainerHandlingItem.ActualY = AnimatedPartY.AnimationKeyFraction() * AnimationXYZSpan.Y + AnimationXYZStart.Y;
@@ -1196,16 +1196,16 @@ namespace Orts.Viewer3D
             if (viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS != null)
             {
                 var soundPath = ORTSPaths.GetFileFromFolders(new[] { viewer.Simulator.RoutePath, viewer.Simulator.BasePath }, @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS);
-                    try
-                    {
-                        Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
-                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                try
+                {
+                    Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
+                    viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(new FileLoadException(soundPath, error));
+                }
+            }
 
             AnimatedPart = new AnimatedPart(this);
             AnimatedPart.AddAnimations();
@@ -1238,7 +1238,7 @@ namespace Orts.Viewer3D
                 }
                 else if (Turntable.Counterclockwise)
                     AnimatedPart.UpdateLoop(1, elapsedTime);
-                    else if (Turntable.Clockwise)
+                else if (Turntable.Clockwise)
                     AnimatedPart.UpdateLoop(-1, elapsedTime);
 
                 // Used if Turntable cannot turn 360 degrees, counting in minus rotation direction.
@@ -1306,16 +1306,16 @@ namespace Orts.Viewer3D
             if (viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS != null)
             {
                 var soundPath = ORTSPaths.GetFileFromFolders(new[] { viewer.Simulator.RoutePath, viewer.Simulator.BasePath }, @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS);
-                    try
-                    {
-                        Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
-                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                try
+                {
+                    Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
+                    viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(new FileLoadException(soundPath, error));
+                }
+            }
 
             AnimatedPart = new AnimatedPart(this);
             AnimatedPart.AddAnimations();
@@ -1419,7 +1419,7 @@ namespace Orts.Viewer3D
                 graphicsDevice.SetVertexBuffers(VertexBufferBindings);
                 if (IndexBuffer != null)
                 {
-                graphicsDevice.Indices = IndexBuffer;
+                    graphicsDevice.Indices = IndexBuffer;
                     graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: 0, startIndex: PrimitiveOffset, primitiveCount: PrimitiveCount);
                 }
                 else
@@ -2353,8 +2353,8 @@ namespace Orts.Viewer3D
                     else
                     {
                         // .s lod-ding is based on distance levels
-                    while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
-                        displayDetailLevel--;
+                        while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
+                            displayDetailLevel--;
                     }
                 }
 
@@ -2417,11 +2417,11 @@ namespace Orts.Viewer3D
             Matrix matrix = Matrix.Identity;
             if (h != null && h.Length > iNode)
             {
-            while (iNode != -1)
-            {
-                matrix *= Matrices[iNode];
-                iNode = h[iNode];
-            }
+                while (iNode != -1)
+                {
+                    matrix *= Matrices[iNode];
+                    iNode = h[iNode];
+                }
             }
             return matrix;
         }

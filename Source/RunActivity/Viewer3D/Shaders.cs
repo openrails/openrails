@@ -183,7 +183,7 @@ namespace Orts.Viewer3D
             vegetationAmbientModifier.SetValue(_imageTextureIsNight
                 ? FullBrightness
                 : MathHelper.Lerp(ShadowBrightness, FullBrightness, lightingDiffuse));
-            }
+        }
 
         public void SetShadowMap(Matrix[] shadowProjections, Texture2D textures, float[] limits)
         {
@@ -427,7 +427,7 @@ namespace Orts.Viewer3D
             view.SetValue(v);
             projection.SetValue(p);
         }
-
+        
         public void SetData(Matrix w, Texture2D texture)
         {
             world.SetValue(w);

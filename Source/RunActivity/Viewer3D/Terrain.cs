@@ -521,7 +521,7 @@ namespace Orts.Viewer3D
             PatchTexture = Viewer.TextureManager.Get(textures[0], defaultTexture);
             PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
             var converted = textures.Length > 2 && float.TryParse(textures[2], out OverlayScale);
-            OverlayScale = OverlayScale != 0 && converted ?  OverlayScale : 32; 
+            OverlayScale = OverlayScale != 0 && converted ?  OverlayScale : 32;
             Technique = Viewer.MaterialManager.SceneryShader.Techniques["Terrain"];
             PixelShaderOptions |= PixelShaderOptions.HasNormals;
 

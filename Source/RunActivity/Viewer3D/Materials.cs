@@ -592,9 +592,9 @@ namespace Orts.Viewer3D
             SetFrameSphericalHarmonics();
 
             if (EnvironmentMapSpecularDay == null)
-                    {
+            {
                 DDSLib.DDSFromFile(Path.Combine(Viewer.Game.ContentPath, "EnvMap/specular-day_bc6h.dds"), Viewer.GraphicsDevice, true, out EnvironmentMapSpecularDay, false);
-                    }
+            }
             if (EnvironmentMapSpecularNight == null)
             {
                 DDSLib.DDSFromFile(Path.Combine(Viewer.Game.ContentPath, "EnvMap/specular-night_bc6h.dds"), Viewer.GraphicsDevice, true, out EnvironmentMapSpecularNight, false);
