@@ -304,7 +304,7 @@ namespace Orts.Viewer3D.Popups
 		Point mouseDownPosition;
 		public Point MouseDownPosition { get { return mouseDownPosition; } }
 
-		Window mouseActiveWindow;
+        Window mouseActiveWindow;
 		public Window MouseActiveWindow { get { return mouseActiveWindow; } }
 
 		double LastUpdateRealTime;
@@ -321,8 +321,8 @@ namespace Orts.Viewer3D.Popups
 
             if (UserInput.IsMouseWheelChanged)
             {
-                mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mouseDownPosition));
-                
+                Point mousePosition = new Point(UserInput.MouseX, UserInput.MouseY);
+                mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mousePosition));
                 if (mouseActiveWindow != null)
                     mouseActiveWindow.HandleUserInput();
             }

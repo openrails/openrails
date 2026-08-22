@@ -37,6 +37,7 @@
 //#define DEBUG_VARIABLE_MASS
 
 using Microsoft.Xna.Framework;
+using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems;
@@ -394,11 +395,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public virtual void LoadFromWagFile(string wagFilePath)
         {
-            string dir = Path.GetDirectoryName(wagFilePath);
-            string file = Path.GetFileName(wagFilePath);
-            string orFile = dir + @"\openrails\" + file;
-            if (File.Exists(orFile))
-                wagFilePath = orFile;
+            wagFilePath = ORFileHelper.FindORTSFile(wagFilePath);
 
             // Get the path starting at the TRAINS folder, in order to produce a shorter, more legible, path
             string shortPath = wagFilePath.Remove(0, Simulator.BasePath.Length);

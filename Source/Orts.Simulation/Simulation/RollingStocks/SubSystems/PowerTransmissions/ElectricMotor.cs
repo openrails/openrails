@@ -33,6 +33,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float SurfaceM;
         public float WeightKg;
 
+        /// <summary>
+        /// Positive nonzero transmission ratio, given by n1:n2 ratio
+        /// </summary>
+        public float TransmissionRatio { get; protected set; } = 1.0f;
+
+        /// <summary>
+        /// Transmission efficiency, relative to 1.0, within range of 0.0 to 1.0 (1.0 means 100%, 0.5 means 50%)
+        /// </summary>
+        public float TransmissionEfficiency { get; protected set; } = 1.0f;
+
         protected float powerLossesW;
 
         public float CoolingPowerW;
@@ -54,17 +64,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             WeightKg = 5.0f;
             AxleConnected = axle;
             AxleConnected.Motor = this;
-            AxleConnected.TransmissionRatio = 1;
         }
 
-        public virtual double GetDevelopedTorqueNm(double motorSpeedRadpS)
+        public double GetAxleTorqueNm(double axleSpeedRadpS)
+        {
+            return GetTorqueNm(axleSpeedRadpS * TransmissionRatio) * TransmissionRatio * TransmissionEfficiency;
+        }
+        protected virtual double GetTorqueNm(double speedRadpS)
         {
             return 0;
         }
 
         public virtual void Update(float timeSpan)
         {
-            temperatureK = tempIntegrator.Integrate(timeSpan, (temperatureK) => 1.0f/(SpecificHeatCapacityJ_kg_C * WeightKg)*((powerLossesW - CoolingPowerW) / (ThermalCoeffJ_m2sC * SurfaceM) - temperatureK));
+            powerLossesW = AxleConnected.DriveForceN * AxleConnected.WheelRadiusM / TransmissionRatio * (1 - TransmissionEfficiency) / TransmissionEfficiency * (float)AxleConnected.AxleSpeedMpS / AxleConnected.WheelRadiusM / TransmissionRatio;
+            temperatureK = tempIntegrator.Integrate(timeSpan, (temperatureK) => 1.0f / (SpecificHeatCapacityJ_kg_C * WeightKg) * ((powerLossesW - CoolingPowerW) / (ThermalCoeffJ_m2sC * SurfaceM) - temperatureK));
         }
         public virtual void Initialize()
         {

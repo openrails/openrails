@@ -280,6 +280,15 @@ namespace Menu.Notifications
                 ButtonCount++;
             }
         }
+        public class NRefreshControl : NButtonControl
+        {
+            public NRefreshControl(NotificationPage page, string legend, int width, string description, MainForm mainForm)
+            : base(page.Panel, legend, width, description, mainForm)
+            {
+                page.ButtonDictionary.Add(ButtonCount, this);
+                ButtonCount++;
+            }
+        }
         public class NRetryControl : NButtonControl
         {
             public NRetryControl(NotificationPage page, string legend, int width, string description, MainForm mainForm)
@@ -298,32 +307,35 @@ namespace Menu.Notifications
                 dialogControl.Show();
             else if (button is NUpdateControl)
                 updateManager.Update();
+            else if (button is NRefreshControl)
+                MainForm.OnRefreshUpdates(EventArgs.Empty);
             else if (button is NRetryControl)
-            {
                 MainForm.OnCheckUpdatesAgain(EventArgs.Empty);
-            }
+            else throw new Exception("Unknown button type");
         }
 
         public class NRecordControl : NDetail
         {
             public Label Field;
 
-            public NRecordControl(Panel panel, string label, int width, string field)//: base(page)
+            public NRecordControl(Panel panel, string label, int legendWidth, string field)//: base(page)
             {
+                // Add the legend
                 Control = new Label
                 {
                     Text = label + ":",
                     UseMnemonic = false,
                     Font = new Font(panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomRight,
-                    Width = width,
+                    Width = legendWidth,
                     Height = RecordHeight,
                     Left = LeftPadding,
                     Top = TopPadding
                 };
                 panel.Controls.Add(Control);
 
-                var left = width + LeftPadding;
+                // Add field to the right of the legend
+                var left = LeftPadding + legendWidth;
                 Field = new Label
                 {
                     Text = field,
