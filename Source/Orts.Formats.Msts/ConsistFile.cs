@@ -39,6 +39,17 @@ namespace Orts.Formats.Msts
             Name = Train.TrainCfg.Name;
         }
 
+        /// <summary>
+        /// Allows to use a procedurally generated consist file.
+        /// </summary>
+        public ConsistFile(Stream inputStream, string filePath)
+        {
+            using (var stf = new STFReader(inputStream, filePath, System.Text.Encoding.UTF8, false))
+                stf.ParseFile(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("train", ()=>{ Train = new Train_Config(stf); }),
+                });
+        }
+
         public override string ToString()
         {
             return Name;

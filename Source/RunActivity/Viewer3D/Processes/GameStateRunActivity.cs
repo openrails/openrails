@@ -1554,7 +1554,7 @@ namespace Orts.Viewer3D.Processes
                 var path = Path.Combine(Simulator.RoutePath, loadingScreen);
                 if (Path.GetExtension(path) == ".dds" && File.Exists(path))
                 {
-                    DDSLib.DDSFromFile(path, gd, true, out texture);
+                    DDSLib.DDSFromFile(path, gd, true, out texture, false);
                 }
                 else if (Path.GetExtension(path) == ".ace")
                 {
@@ -1562,7 +1562,7 @@ namespace Orts.Viewer3D.Processes
 
                     if (File.Exists(alternativeTexture))
                     {
-                        DDSLib.DDSFromFile(alternativeTexture, gd, true, out texture);
+                        DDSLib.DDSFromFile(alternativeTexture, gd, true, out texture, false);
                     }
                     else if (File.Exists(path))
                     {
