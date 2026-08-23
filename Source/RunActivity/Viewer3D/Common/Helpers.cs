@@ -139,6 +139,8 @@ namespace Orts.Viewer3D.Common
             { "Tex", SceneryMaterialOptions.None },
             { "TexDiff", SceneryMaterialOptions.Diffuse },
             { "DetailMod2X", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.DetailMod2X },
+            { "NightLight", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.NightTexture | SceneryMaterialOptions.NightLight },
+            { "nightlight", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.NightTexture | SceneryMaterialOptions.NightLight },
             { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend },
             { "BlendATexDiff", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse },
             { "AddATex", SceneryMaterialOptions.AlphaBlendingAdd },
@@ -183,6 +185,9 @@ namespace Orts.Viewer3D.Common
                 options |= LightingModelNames[lod.LightModelName];
             else
                 Trace.TraceWarning("Skipped unknown lighting model index {1} in shape {0}", lod.Name, lod.LightModelName);
+
+            if ((options & SceneryMaterialOptions.NightLight) != 0)
+                options = (options & ~SceneryMaterialOptions.ShaderMask) | SceneryMaterialOptions.ShaderFullBright;
 
             if ((lod.ESD_Alternative_Texture & (int)TextureFlags.Night) != 0)
                 options |= SceneryMaterialOptions.NightTexture;

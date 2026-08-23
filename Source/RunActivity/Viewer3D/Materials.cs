@@ -719,6 +719,8 @@ namespace Orts.Viewer3D
         NightTexture = 0x800,
         // Modulate base texture with detail texture and double the result.
         DetailMod2X = 0x1000,
+        // Draw only when the night texture variant is active.
+        NightLight = 0x2000,
         // Texture to be shown in tunnels and underground (used for 3D cab night textures)
         UndergroundTexture = 0x40000000,
     }
@@ -932,8 +934,7 @@ namespace Orts.Viewer3D
                     throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.SpecularMask value.");
             }
 
-            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
-                (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f))
+            if (IsNightTextureActive())
             {
                 shader.ImageTexture = NightTexture;
                 shader.ImageTextureIsNight = true;
@@ -950,6 +951,9 @@ namespace Orts.Viewer3D
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
+            if ((Options & SceneryMaterialOptions.NightLight) != 0 && !IsNightTextureActive())
+                return;
+
             var shader = Viewer.MaterialManager.SceneryShader;
 
             ShaderPasses.Reset();
@@ -988,6 +992,9 @@ namespace Orts.Viewer3D
         /// <returns></returns>
         public override bool GetBlending()
         {
+            if ((Options & SceneryMaterialOptions.NightLight) != 0)
+                return true;
+
             bool alphaTestRequested = (Options & SceneryMaterialOptions.AlphaTest) != 0;            // the artist requested alpha testing for this material
             bool alphaBlendRequested = (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0;   // the artist specified a blend capable shader
 
@@ -1003,12 +1010,16 @@ namespace Orts.Viewer3D
 
         public override Texture2D GetShadowTexture()
         {
-            var timeOffset = ((float)KeyLengthRemainder()) / 5000f; // TODO for later use for pseudorandom texture switch time
-            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
-                (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f))
+            if (IsNightTextureActive())
                 return NightTexture;
 
             return Texture;
+        }
+
+        private bool IsNightTextureActive()
+        {
+            return NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
+                (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f);
         }
 
         public override SamplerState GetShadowTextureAddressMode()
