@@ -187,7 +187,7 @@ namespace Orts.Viewer3D.Common
                 Trace.TraceWarning("Skipped unknown lighting model index {1} in shape {0}", lod.Name, lod.LightModelName);
 
             if ((options & SceneryMaterialOptions.NightLight) != 0)
-                options = (options & ~SceneryMaterialOptions.ShaderMask) | SceneryMaterialOptions.ShaderFullBright;
+                options = (options & ~(SceneryMaterialOptions.ShaderMask | SceneryMaterialOptions.BakedVertexLighting)) | SceneryMaterialOptions.ShaderFullBright;
 
             if ((lod.ESD_Alternative_Texture & (int)TextureFlags.Night) != 0)
                 options |= SceneryMaterialOptions.NightTexture;

@@ -2297,7 +2297,7 @@ namespace Orts.Viewer3D
                     }
 
                     if ((options & SceneryMaterialOptions.NightLight) != 0)
-                        options = (options & ~SceneryMaterialOptions.ShaderMask) | SceneryMaterialOptions.ShaderFullBright;
+                        options = (options & ~(SceneryMaterialOptions.ShaderMask | SceneryMaterialOptions.BakedVertexLighting)) | SceneryMaterialOptions.ShaderFullBright;
 
                     if ((textureFlags & Helpers.TextureFlags.Night) != 0)
                         options |= SceneryMaterialOptions.NightTexture;
