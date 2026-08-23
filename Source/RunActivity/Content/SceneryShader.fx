@@ -53,6 +53,7 @@ float    SignalLightIntensity;
 float4   EyeVector;
 float3   SideVector;
 float    ReferenceAlpha;
+float2   UVScale;
 texture  ImageTexture;
 texture  OverlayTexture;
 float	 OverlayScale;
@@ -160,7 +161,7 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
 	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
-	Out.TexCoords.xy = In.TexCoords;
+	Out.TexCoords.xy = In.TexCoords * UVScale;
 	Out.Normal_Light.xyz = normalize(mul(In.Normal, (float3x3)World).xyz);
 	
 	// Normal lighting (range 0.0 - 1.0)

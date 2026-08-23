@@ -2338,7 +2338,11 @@ namespace Orts.Viewer3D
                         foreach (var index in new[] { vertex_idx.a, vertex_idx.b, vertex_idx.c })
                             indexData.Add((ushort)index);
 
+                    var uvOp = GetPrimaryUVOp(lightModelConfiguration);
+                    var uvScale = GetUVScale(uvOp);
+
                     ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
+                    ShapePrimitives[primitiveIndex].UVScale = uvScale;
                     ShapePrimitives[primitiveIndex].SortIndex = ++totalPrimitiveIndex;
                     ++primitiveIndex;
 #if DEBUG_SHAPE_NORMALS
@@ -2395,6 +2399,24 @@ namespace Orts.Viewer3D
 #if DEBUG_SHAPE_HIERARCHY
                 Console.Write(debugShapeHierarchy.ToString());
 #endif
+            }
+
+            static uv_op GetPrimaryUVOp(light_model_cfg lightModelConfiguration)
+            {
+                return lightModelConfiguration.uv_ops.Count > 0 ? lightModelConfiguration.uv_ops[0] : null;
+            }
+
+            static Vector2 GetUVScale(uv_op uvOp)
+            {
+                var uniformScale = uvOp as uv_op_uniformscale;
+                if (uniformScale != null)
+                    return new Vector2(uniformScale.Scale, uniformScale.Scale);
+
+                var nonUniformScale = uvOp as uv_op_nonuniformscale;
+                if (nonUniformScale != null)
+                    return new Vector2(nonUniformScale.ScaleU, nonUniformScale.ScaleV);
+
+                return Vector2.One;
             }
 
             [CallOnThread("Loader")]

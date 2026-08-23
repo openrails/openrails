@@ -940,6 +940,7 @@ namespace Orts.Viewer3D
                 {
                     shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
+                    shader.UVScale = item.RenderPrimitive.UVScale;
                     ShaderPasses.Current.Apply();
 
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
@@ -1087,7 +1088,7 @@ namespace Orts.Viewer3D
                 foreach (var item in renderItems)
                 {
                     var wvp = item.XNAMatrix * viewproj;
-                    shader.SetData(ref wvp, item.Material.GetShadowTexture());
+                    shader.SetData(ref wvp, item.Material.GetShadowTexture(), item.RenderPrimitive.UVScale);
                     ShaderPasses.Current.Apply();
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
                     graphicsDevice.SamplerStates[0] = item.Material.GetShadowTextureAddressMode();

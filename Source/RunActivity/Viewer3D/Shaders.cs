@@ -68,6 +68,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter imageTexture;
         readonly EffectParameter overlayTexture;
         readonly EffectParameter referenceAlpha;
+        readonly EffectParameter uvScale;
         readonly EffectParameter overlayScale;
 
         Vector3 _eyeVector;
@@ -187,6 +188,8 @@ namespace Orts.Viewer3D
 
         public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
 
+        public Vector2 UVScale { set { uvScale.SetValue(value); } }
+
         public float OverlayScale { set { overlayScale.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
@@ -222,7 +225,9 @@ namespace Orts.Viewer3D
             imageTexture = Parameters["ImageTexture"];
             overlayTexture = Parameters["OverlayTexture"];
             referenceAlpha = Parameters["ReferenceAlpha"];
+            uvScale = Parameters["UVScale"];
             overlayScale = Parameters["OverlayScale"];
+            UVScale = Vector2.One;
         }
     }
 
@@ -232,6 +237,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter worldViewProjection;
         readonly EffectParameter sideVector;
         readonly EffectParameter imageBlurStep;
+        readonly EffectParameter uvScale;
         readonly EffectParameter imageTexture;
 
         public void SetData(ref Matrix v)
@@ -240,9 +246,10 @@ namespace Orts.Viewer3D
             sideVector.SetValue(Vector3.Normalize(Vector3.Cross(eyeVector, Vector3.Down)));
         }
 
-        public void SetData(ref Matrix wvp, Texture2D texture)
+        public void SetData(ref Matrix wvp, Texture2D texture, Vector2 uvScale)
         {
             worldViewProjection.SetValue(wvp);
+            this.uvScale.SetValue(uvScale);
             imageTexture.SetValue(texture);
         }
 
@@ -263,7 +270,9 @@ namespace Orts.Viewer3D
             worldViewProjection = Parameters["WorldViewProjection"];
             sideVector = Parameters["SideVector"];
             imageBlurStep = Parameters["ImageBlurStep"];
+            uvScale = Parameters["UVScale"];
             imageTexture = Parameters["ImageTexture"];
+            uvScale.SetValue(Vector2.One);
         }
     }
 
