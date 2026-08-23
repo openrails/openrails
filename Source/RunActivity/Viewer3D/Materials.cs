@@ -953,7 +953,8 @@ namespace Orts.Viewer3D
             shader.VertexLightingEnabled = (Options & SceneryMaterialOptions.BakedVertexLighting) != 0;
             var daylight = GetDaylightFactor();
             shader.VertexLightingDay = daylight;
-            shader.NightLightModifier = (Options & SceneryMaterialOptions.NightLight) != 0 ? 1 - daylight : 1;
+            // multiply by 0.4f, it is a heuristics to match MSTS look
+            shader.NightLightModifier = (Options & SceneryMaterialOptions.NightLight) != 0 ? (1 - daylight) * 0.4f : 1;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
