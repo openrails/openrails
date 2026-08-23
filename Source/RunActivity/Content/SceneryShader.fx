@@ -56,6 +56,7 @@ float    ReferenceAlpha;
 float2   UVScale;
 float    VertexLightingEnabled;
 float    VertexLightingDay;
+float    NightLightModifier;
 texture  ImageTexture;
 texture  DetailTexture;
 texture  OverlayTexture;
@@ -676,6 +677,7 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
     clip(Color.a - ReferenceAlpha);
 	// Fixed ambient and shadow effects at brightest level.
 	float3 litColor = mad(Color.rgb, In.BakedColor.rgb, _PSGetVertexLitColor(Color.rgb, In));
+	litColor *= NightLightModifier;
 	// No specular effect for full-bright.
 	// No overcast effect for full-bright.
 	// No night-time effect for full-bright.

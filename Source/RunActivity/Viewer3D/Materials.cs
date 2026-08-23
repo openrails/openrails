@@ -951,14 +951,13 @@ namespace Orts.Viewer3D
                 shader.DetailTexture = DetailTexture;
 
             shader.VertexLightingEnabled = (Options & SceneryMaterialOptions.BakedVertexLighting) != 0;
-            shader.VertexLightingDay = Viewer.MaterialManager.sunDirection.Y >= 0;
+            var daylight = GetDaylightFactor();
+            shader.VertexLightingDay = daylight;
+            shader.NightLightModifier = (Options & SceneryMaterialOptions.NightLight) != 0 ? 1 - daylight : 1;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            if ((Options & SceneryMaterialOptions.NightLight) != 0 && !IsNightTextureActive())
-                return;
-
             var shader = Viewer.MaterialManager.SceneryShader;
 
             ShaderPasses.Reset();
@@ -987,7 +986,8 @@ namespace Orts.Viewer3D
             shader.LightingSpecular = 0;
             shader.ReferenceAlpha = 0;
             shader.VertexLightingEnabled = false;
-            shader.VertexLightingDay = true;
+            shader.VertexLightingDay = 1;
+            shader.NightLightModifier = 1;
 
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -1027,6 +1027,16 @@ namespace Orts.Viewer3D
         {
             return NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
                 (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f);
+        }
+
+        private float GetDaylightFactor()
+        {
+            if (Viewer.Camera.IsUnderground)
+                return 0;
+
+            const float startNightTrans = 0.1f;
+            const float finishNightTrans = -0.1f;
+            return MathHelper.Clamp((Viewer.MaterialManager.sunDirection.Y - finishNightTrans) / (startNightTrans - finishNightTrans), 0, 1);
         }
 
         public override SamplerState GetShadowTextureAddressMode()
