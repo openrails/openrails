@@ -70,6 +70,8 @@ namespace Orts.Viewer3D
         readonly EffectParameter overlayTexture;
         readonly EffectParameter referenceAlpha;
         readonly EffectParameter uvScale;
+        readonly EffectParameter vertexLightingEnabled;
+        readonly EffectParameter vertexLightingDay;
         readonly EffectParameter overlayScale;
 
         Vector3 _eyeVector;
@@ -193,6 +195,10 @@ namespace Orts.Viewer3D
 
         public Vector2 UVScale { set { uvScale.SetValue(value); } }
 
+        public bool VertexLightingEnabled { set { vertexLightingEnabled.SetValue(value ? 1f : 0f); } }
+
+        public bool VertexLightingDay { set { vertexLightingDay.SetValue(value ? 1f : 0f); } }
+
         public float OverlayScale { set { overlayScale.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
@@ -230,8 +236,12 @@ namespace Orts.Viewer3D
             overlayTexture = Parameters["OverlayTexture"];
             referenceAlpha = Parameters["ReferenceAlpha"];
             uvScale = Parameters["UVScale"];
+            vertexLightingEnabled = Parameters["VertexLightingEnabled"];
+            vertexLightingDay = Parameters["VertexLightingDay"];
             overlayScale = Parameters["OverlayScale"];
             UVScale = Vector2.One;
+            VertexLightingEnabled = false;
+            VertexLightingDay = true;
         }
     }
 

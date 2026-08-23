@@ -721,6 +721,8 @@ namespace Orts.Viewer3D
         DetailMod2X = 0x1000,
         // Draw only when the night texture variant is active.
         NightLight = 0x2000,
+        // Modulate scenery with baked MSTS per-vertex lighting.
+        BakedVertexLighting = 0x4000,
         // Texture to be shown in tunnels and underground (used for 3D cab night textures)
         UndergroundTexture = 0x40000000,
     }
@@ -947,6 +949,9 @@ namespace Orts.Viewer3D
 
             if ((Options & SceneryMaterialOptions.DetailMod2X) != 0)
                 shader.DetailTexture = DetailTexture;
+
+            shader.VertexLightingEnabled = (Options & SceneryMaterialOptions.BakedVertexLighting) != 0;
+            shader.VertexLightingDay = Viewer.MaterialManager.sunDirection.Y >= 0;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -981,6 +986,8 @@ namespace Orts.Viewer3D
             shader.LightingDiffuse = 1;
             shader.LightingSpecular = 0;
             shader.ReferenceAlpha = 0;
+            shader.VertexLightingEnabled = false;
+            shader.VertexLightingDay = true;
 
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;

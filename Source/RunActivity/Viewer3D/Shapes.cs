@@ -1846,7 +1846,7 @@ namespace Orts.Viewer3D
 
         public void SetVertexData(VertexPositionNormalTexture[] data, int minVertexIndex, int numVertices, int primitiveCount)
         {
-            VertexBuffer.SetData(data);
+            VertexBuffer.SetData(SharedShape.VertexBufferSet.CreateVertexData(data));
             PrimitiveCount = primitiveCount;
         }
 
@@ -2286,7 +2286,9 @@ namespace Orts.Viewer3D
                         ShapeWarnings.Add("shader_name:" + sFile.shape.shader_names[primitiveState.ishader]);
                     }
 
-                    if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
+                    if (vertexState.LightMatIdx == -1)
+                        options |= SceneryMaterialOptions.BakedVertexLighting;
+                    else if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
                         options |= VertexLightModeMap[12 + vertexState.LightMatIdx];
                     else if (!ShapeWarnings.Contains("lighting_model:" + vertexState.LightMatIdx))
                     {
@@ -2465,6 +2467,33 @@ namespace Orts.Viewer3D
 
         public class VertexBufferSet
         {
+            public struct ShapeVertex
+            {
+                public Vector3 Position;
+                public Vector3 Normal;
+                public Vector2 TextureCoordinate;
+                public Color Color1;
+                public Color Color2;
+
+                public ShapeVertex(Vector3 position, Vector3 normal, Vector2 textureCoordinate, Color color1, Color color2)
+                {
+                    Position = position;
+                    Normal = normal;
+                    TextureCoordinate = textureCoordinate;
+                    Color1 = color1;
+                    Color2 = color2;
+                }
+
+                public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(new[]
+                {
+                    new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
+                    new VertexElement(sizeof(float) * 3, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0),
+                    new VertexElement(sizeof(float) * 6, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0),
+                    new VertexElement(sizeof(float) * 8, VertexElementFormat.Color, VertexElementUsage.Color, 0),
+                    new VertexElement(sizeof(float) * 8 + sizeof(uint), VertexElementFormat.Color, VertexElementUsage.Color, 1),
+                });
+            }
+
             public VertexBuffer Buffer;
 
 #if DEBUG_SHAPE_NORMALS
@@ -2475,8 +2504,13 @@ namespace Orts.Viewer3D
 #endif
 
             public VertexBufferSet(VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice)
+                : this(CreateVertexData(vertexData), graphicsDevice)
             {
-                Buffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), vertexData.Length, BufferUsage.WriteOnly);
+            }
+
+            public VertexBufferSet(ShapeVertex[] vertexData, GraphicsDevice graphicsDevice)
+            {
+                Buffer = new VertexBuffer(graphicsDevice, ShapeVertex.VertexDeclaration, vertexData.Length, BufferUsage.WriteOnly);
                 Buffer.SetData(vertexData);
             }
 
@@ -2500,26 +2534,37 @@ namespace Orts.Viewer3D
             {
             }
 
-            static VertexPositionNormalTexture[] CreateVertexData(sub_object sub_object, shape shape)
+            public static ShapeVertex[] CreateVertexData(VertexPositionNormalTexture[] vertexData)
+            {
+                return (from vertex in vertexData
+                        select new ShapeVertex(vertex.Position, vertex.Normal, vertex.TextureCoordinate, Color.White, Color.Black)).ToArray();
+            }
+
+            static ShapeVertex[] CreateVertexData(sub_object sub_object, shape shape)
             {
                 // TODO - deal with vertex sets that have various numbers of texture coordinates - ie 0, 1, 2 etc
                 return (from vertex vertex in sub_object.vertices
-                        select XNAVertexPositionNormalTextureFromMSTS(vertex, shape)).ToArray();
+                        select XNAShapeVertexFromMSTS(vertex, shape)).ToArray();
             }
 
-            static VertexPositionNormalTexture XNAVertexPositionNormalTextureFromMSTS(vertex vertex, shape shape)
+            static ShapeVertex XNAShapeVertexFromMSTS(vertex vertex, shape shape)
             {
                 var position = shape.points[vertex.ipoint];
                 var normal = shape.normals[vertex.inormal];
                 // TODO use a simpler vertex description when no UV's in use
                 var texcoord = vertex.vertex_uvs.Length > 0 ? shape.uv_points[vertex.vertex_uvs[0]] : new uv_point(0, 0);
 
-                return new VertexPositionNormalTexture()
-                {
-                    Position = new Vector3(position.X, position.Y, -position.Z),
-                    Normal = new Vector3(normal.X, normal.Y, -normal.Z),
-                    TextureCoordinate = new Vector2(texcoord.U, texcoord.V),
-                };
+                return new ShapeVertex(
+                    new Vector3(position.X, position.Y, -position.Z),
+                    new Vector3(normal.X, normal.Y, -normal.Z),
+                    new Vector2(texcoord.U, texcoord.V),
+                    XNAColorFromMSTS(vertex.Color1),
+                    XNAColorFromMSTS(vertex.Color2));
+            }
+
+            static Color XNAColorFromMSTS(uint color)
+            {
+                return new Color((byte)(color >> 16), (byte)(color >> 8), (byte)color, (byte)(color >> 24));
             }
 
 #if DEBUG_SHAPE_NORMALS
