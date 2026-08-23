@@ -112,6 +112,7 @@ namespace Orts.Viewer3D
         public float ZBias;
 
         public Vector2 UVScale = Vector2.One;
+        public Vector2 DetailUVScaleRatio = Vector2.One;
 
         /// <summary>
         /// This is a sorting adjustment for primitives with similar/the same world location. Primitives with higher SortIndex values are rendered after others. Has no effect on non-blended primitives.

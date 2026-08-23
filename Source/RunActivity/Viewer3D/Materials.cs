@@ -969,6 +969,7 @@ namespace Orts.Viewer3D
                     shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     shader.UVScale = item.RenderPrimitive.UVScale;
+                    shader.DetailUVScaleRatio = item.RenderPrimitive.DetailUVScaleRatio;
                     ShaderPasses.Current.Apply();
 
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().

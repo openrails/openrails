@@ -54,6 +54,7 @@ float4   EyeVector;
 float3   SideVector;
 float    ReferenceAlpha;
 float2   UVScale;
+float2   DetailUVScaleRatio;
 float    VertexLightingEnabled;
 float    VertexLightingDay;
 float    NightLightModifier;
@@ -514,13 +515,15 @@ float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX
 	return float4(litColor, Color.a);
 }
 
-float4 PSDetailMod2X(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
+float4 PSDetailMod2X(uniform bool ShaderModel3, uniform bool DetailUVScaled, in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
 	const float ShadowBrightness = 0.5;
 
 	float4 Color = tex2D(Image, In.TexCoords.xy);
-	Color.rgb *= tex2D(Detail, In.TexCoords.xy).rgb * 2;
+	float2 detailTexCoords = In.TexCoords.xy;
+	if (DetailUVScaled) detailTexCoords *= DetailUVScaleRatio;
+	Color.rgb *= tex2D(Detail, detailTexCoords).rgb * 2;
 	// Alpha testing:
 	clip(Color.a - ReferenceAlpha);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
@@ -558,12 +561,12 @@ float4 PSImage9_1(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSDetailMod2X9_3(in VERTEX_OUTPUT In) : COLOR0
 {
-    return PSDetailMod2X(true, In);
+    return PSDetailMod2X(true, true, In);
 }
 
 float4 PSDetailMod2X9_1(in VERTEX_OUTPUT In) : COLOR0
 {
-    return PSDetailMod2X(false, In);
+    return PSDetailMod2X(false, false, In);
 }
 
 float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0

@@ -2366,11 +2366,12 @@ namespace Orts.Viewer3D
                         foreach (var index in new[] { vertex_idx.a, vertex_idx.b, vertex_idx.c })
                             indexData.Add((ushort)index);
 
-                    var uvOp = GetPrimaryUVOp(lightModelConfiguration);
-                    var uvScale = GetUVScale(uvOp);
+                    var uvScale = GetUVScale(GetUVOp(lightModelConfiguration, 0));
+                    var detailUVScale = GetUVScale(GetUVOp(lightModelConfiguration, 1) ?? GetUVOp(lightModelConfiguration, 0));
 
                     ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
                     ShapePrimitives[primitiveIndex].UVScale = uvScale;
+                    ShapePrimitives[primitiveIndex].DetailUVScaleRatio = GetUVScaleRatio(detailUVScale, uvScale);
                     ShapePrimitives[primitiveIndex].SortIndex = ++totalPrimitiveIndex;
                     ++primitiveIndex;
 #if DEBUG_SHAPE_NORMALS
@@ -2429,9 +2430,9 @@ namespace Orts.Viewer3D
 #endif
             }
 
-            static uv_op GetPrimaryUVOp(light_model_cfg lightModelConfiguration)
+            static uv_op GetUVOp(light_model_cfg lightModelConfiguration, int textureIndex)
             {
-                return lightModelConfiguration.uv_ops.Count > 0 ? lightModelConfiguration.uv_ops[0] : null;
+                return textureIndex < lightModelConfiguration.uv_ops.Count ? lightModelConfiguration.uv_ops[textureIndex] : null;
             }
 
             static Vector2 GetUVScale(uv_op uvOp)
@@ -2445,6 +2446,13 @@ namespace Orts.Viewer3D
                     return new Vector2(nonUniformScale.ScaleU, nonUniformScale.ScaleV);
 
                 return Vector2.One;
+            }
+
+            static Vector2 GetUVScaleRatio(Vector2 uvScale, Vector2 baseUVScale)
+            {
+                return new Vector2(
+                    baseUVScale.X != 0 ? uvScale.X / baseUVScale.X : uvScale.X,
+                    baseUVScale.Y != 0 ? uvScale.Y / baseUVScale.Y : uvScale.Y);
             }
 
             [CallOnThread("Loader")]
