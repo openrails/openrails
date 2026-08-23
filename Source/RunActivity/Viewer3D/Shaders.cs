@@ -66,6 +66,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter eyeVector;
         readonly EffectParameter sideVector;
         readonly EffectParameter imageTexture;
+        readonly EffectParameter detailTexture;
         readonly EffectParameter overlayTexture;
         readonly EffectParameter referenceAlpha;
         readonly EffectParameter uvScale;
@@ -184,6 +185,8 @@ namespace Orts.Viewer3D
 
         public Texture2D ImageTexture { set { imageTexture.SetValue(value); } }
 
+        public Texture2D DetailTexture { set { detailTexture.SetValue(value); } }
+
         public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
 
         public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
@@ -223,6 +226,7 @@ namespace Orts.Viewer3D
             eyeVector = Parameters["EyeVector"];
             sideVector = Parameters["SideVector"];
             imageTexture = Parameters["ImageTexture"];
+            detailTexture = Parameters["DetailTexture"];
             overlayTexture = Parameters["OverlayTexture"];
             referenceAlpha = Parameters["ReferenceAlpha"];
             uvScale = Parameters["UVScale"];

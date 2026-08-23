@@ -2192,6 +2192,7 @@ namespace Orts.Viewer3D
             static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
                 { "Tex", SceneryMaterialOptions.ShaderFullBright },
                 { "TexDiff", SceneryMaterialOptions.Diffuse },
+                { "DetailMod2X", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.DetailMod2X },
                 { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.ShaderFullBright},
                 { "BlendATexDiff", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse },
                 { "AddATex", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright},
@@ -2302,10 +2303,30 @@ namespace Orts.Viewer3D
                     {
                         var texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
                         var imageName = sFile.shape.images[texture.iImage];
+                        string detailTexturePath = null;
+                        if ((options & SceneryMaterialOptions.DetailMod2X) != 0)
+                        {
+                            if (primitiveState.tex_idxs.Length > 1)
+                            {
+                                var detailTexture = sFile.shape.textures[primitiveState.tex_idxs[1]];
+                                var detailImageName = sFile.shape.images[detailTexture.iImage];
+                                detailTexturePath = String.IsNullOrEmpty(sharedShape.ReferencePath)
+                                    ? Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, detailImageName)
+                                    : Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, detailImageName);
+                            }
+                            else if (!ShapeWarnings.Contains("detail_mod_2x_missing_texture"))
+                            {
+                                Trace.TraceInformation("Skipped missing DetailMod2X detail texture first seen in shape {0}", sharedShape.FilePath);
+                                ShapeWarnings.Add("detail_mod_2x_missing_texture");
+                            }
+
+                            if (detailTexturePath == null)
+                                options &= ~SceneryMaterialOptions.DetailMod2X;
+                        }
                         if (String.IsNullOrEmpty(sharedShape.ReferencePath))
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias);
+                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias, detailTextureName: detailTexturePath);
                         else
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
+                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias, detailTextureName: detailTexturePath);
                     }
                     else
                     {

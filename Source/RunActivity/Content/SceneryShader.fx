@@ -55,6 +55,7 @@ float3   SideVector;
 float    ReferenceAlpha;
 float2   UVScale;
 texture  ImageTexture;
+texture  DetailTexture;
 texture  OverlayTexture;
 float	 OverlayScale;
 
@@ -76,6 +77,15 @@ sampler Overlay = sampler_state
 	MipLodBias = 0;
 	AddressU = Wrap;
 	AddressV = Wrap;
+};
+
+sampler Detail = sampler_state
+{
+	Texture = (DetailTexture);
+	MagFilter = Linear;
+	MinFilter = Anisotropic;
+	MipFilter = Linear;
+	MaxAnisotropy = 16;
 };
 
 sampler ShadowMap0 = sampler_state
@@ -487,6 +497,31 @@ float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX
 	return float4(litColor, Color.a);
 }
 
+float4 PSDetailMod2X(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
+{
+	const float FullBrightness = 1.0;
+	const float ShadowBrightness = 0.5;
+
+	float4 Color = tex2D(Image, In.TexCoords.xy);
+	Color.rgb *= tex2D(Detail, In.TexCoords.xy).rgb * 2;
+	// Alpha testing:
+	clip(Color.a - ReferenceAlpha);
+	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
+	// Specular effect next.
+	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In);
+	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), Overcast.x);
+	// Night-time darkens everything, except night-time textures.
+	litColor *= NightColorModifier;
+	// Headlights effect use original Color.
+	_PSApplyHeadlights(litColor, Color.rgb, In);
+	// And fogging is last.
+	_PSApplyFog(litColor, In);
+	if (ShaderModel3) _PSSceneryFade(Color, In);
+	return float4(litColor, Color.a);
+}
+
 float4 PSImage9_3(in VERTEX_OUTPUT In) : COLOR0
 {
     return PSImage(true, false, In);
@@ -500,6 +535,16 @@ float4 PSImage9_3Clamp(in VERTEX_OUTPUT In) : COLOR0
 float4 PSImage9_1(in VERTEX_OUTPUT In) : COLOR0
 {
     return PSImage(false, false, In);
+}
+
+float4 PSDetailMod2X9_3(in VERTEX_OUTPUT In) : COLOR0
+{
+    return PSDetailMod2X(true, In);
+}
+
+float4 PSDetailMod2X9_1(in VERTEX_OUTPUT In) : COLOR0
+{
+    return PSDetailMod2X(false, In);
 }
 
 float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
@@ -649,6 +694,20 @@ technique ImageLevel9_3 {
 	pass Pass_0 {
 		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
 		PixelShader = compile ps_4_0_level_9_3 PSImage9_3();
+	}
+}
+
+technique DetailMod2XLevel9_1 {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSDetailMod2X9_1();
+	}
+}
+
+technique DetailMod2XLevel9_3 {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
+		PixelShader = compile ps_4_0_level_9_3 PSDetailMod2X9_3();
 	}
 }
 

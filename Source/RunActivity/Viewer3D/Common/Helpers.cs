@@ -138,6 +138,7 @@ namespace Orts.Viewer3D.Common
         static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
             { "Tex", SceneryMaterialOptions.None },
             { "TexDiff", SceneryMaterialOptions.Diffuse },
+            { "DetailMod2X", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.DetailMod2X },
             { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend },
             { "BlendATexDiff", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse },
             { "AddATex", SceneryMaterialOptions.AlphaBlendingAdd },
