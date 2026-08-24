@@ -56,6 +56,7 @@ float    ReferenceAlpha;
 float2   UVScale;
 float2   DetailUVScaleRatio;
 float    UVOpReflectMapFull;
+float    DetailUVOpReflectMapFull;
 float    VertexLightingEnabled;
 float    VertexLightingDay;
 float    NightLightModifier;
@@ -180,6 +181,24 @@ struct VERTEX_OUTPUT
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
 
+float2 _VSReflectMapFullTexCoords(float3 relPosition, float3 normal)
+{
+	const float InvPI = 0.31830988618;
+	const float InvTwoPI = 0.15915494309;
+	float3 viewDirection = normalize(relPosition);
+	float3 reflection = normalize(reflect(viewDirection, normal));
+	return float2(
+		atan2(reflection.z, reflection.x) * InvTwoPI + 0.5,
+		asin(clamp(reflection.y, -1, 1)) * InvPI + 0.5);
+}
+
+float2 _VSDetailTexCoords(float2 texCoords, float3 relPosition, float3 normal)
+{
+	if (DetailUVOpReflectMapFull > 0.5)
+		return _VSReflectMapFullTexCoords(relPosition, normal);
+	return texCoords * UVScale * DetailUVScaleRatio;
+}
+
 void _VSNormalProjection(in float4 InPosition, in float2 InTexCoords, in float3 InNormal, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
@@ -189,15 +208,8 @@ void _VSNormalProjection(in float4 InPosition, in float2 InTexCoords, in float3 
 	Out.Normal_Light.xyz = normalize(mul(InNormal, (float3x3)World).xyz);
 	Out.TexCoords.xy = InTexCoords * UVScale;
 
-	if (UVOpReflectMapFull > 0.5) {
-		const float InvPI = 0.31830988618;
-		const float InvTwoPI = 0.15915494309;
-		float3 viewDirection = normalize(Out.RelPosition.xyz);
-		float3 reflection = normalize(reflect(viewDirection, Out.Normal_Light.xyz));
-		Out.TexCoords.xy = float2(
-			atan2(reflection.z, reflection.x) * InvTwoPI + 0.5,
-			asin(clamp(reflection.y, -1, 1)) * InvPI + 0.5);
-	}
+	if (UVOpReflectMapFull > 0.5)
+		Out.TexCoords.xy = _VSReflectMapFullTexCoords(Out.RelPosition.xyz, Out.Normal_Light.xyz);
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
@@ -271,6 +283,9 @@ VERTEX_OUTPUT VSGeneral(uniform bool ShaderModel3, in VERTEX_INPUT In)
 	Out.BakedColor.rgb = lerp(float3(0, 0, 0), In.Color2.rgb, VertexLightingEnabled);
 	Out.BakedColor.a = 1;
 	_VSLightsAndShadows(ShaderModel3, In.Position, Out);
+	float2 detailTexCoords = _VSDetailTexCoords(In.TexCoords, Out.RelPosition.xyz, Out.Normal_Light.xyz);
+	Out.BakedColor.a = detailTexCoords.x;
+	Out.Shadow.w = detailTexCoords.y;
 
 	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
 	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
@@ -393,19 +408,19 @@ float3 _Level9_3GetShadowEffect(in VERTEX_OUTPUT In)
 	float depth = In.RelPosition.w;
 	float3 rv = 0;
 	if (depth < ShadowMapLimit.x) {
-		float3 pos0 = mul(In.Shadow, LightViewProjectionShadowProjection0).xyz;
+		float3 pos0 = mul(float4(In.Shadow.xyz, 1), LightViewProjectionShadowProjection0).xyz;
 		rv = float3(tex2D(ShadowMap0, pos0.xy).xy, pos0.z);
 	} else {
 		if (depth < ShadowMapLimit.y) {
-			float3 pos1 = mul(In.Shadow, LightViewProjectionShadowProjection1).xyz;
+			float3 pos1 = mul(float4(In.Shadow.xyz, 1), LightViewProjectionShadowProjection1).xyz;
 			rv = float3(tex2D(ShadowMap1, pos1.xy).xy, pos1.z);
 		} else {
 			if (depth < ShadowMapLimit.z) {
-				float3 pos2 = mul(In.Shadow, LightViewProjectionShadowProjection2).xyz;
+				float3 pos2 = mul(float4(In.Shadow.xyz, 1), LightViewProjectionShadowProjection2).xyz;
 				rv = float3(tex2D(ShadowMap2, pos2.xy).xy, pos2.z);
 			} else {
 				if (depth < ShadowMapLimit.w) {
-					float3 pos3 = mul(In.Shadow, LightViewProjectionShadowProjection3).xyz;
+					float3 pos3 = mul(float4(In.Shadow.xyz, 1), LightViewProjectionShadowProjection3).xyz;
 					rv = float3(tex2D(ShadowMap3, pos3.xy).xy, pos3.z);
 				}
 			}
@@ -557,6 +572,38 @@ float4 PSDetailMod2X(uniform bool ShaderModel3, uniform bool DetailUVScaled, in 
 	return float4(litColor, SurfaceColor.a);
 }
 
+float2 PSDetailTexCoords(in VERTEX_OUTPUT In)
+{
+	return float2(In.BakedColor.a, In.Shadow.w);
+}
+
+float4 PSGlossMap(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
+{
+	const float FullBrightness = 1.0;
+	const float ShadowBrightness = 0.5;
+
+	float4 Color = tex2D(Image, In.TexCoords.xy);
+	float4 SurfaceColor = Color * In.Color;
+	// Alpha testing:
+	clip(SurfaceColor.a - ReferenceAlpha);
+	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
+	float3 litColor = SurfaceColor.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
+	// Specular effect next.
+	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In);
+	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
+	litColor = lerp(litColor, _PSGetOvercastColor(SurfaceColor, In), Overcast.x);
+	// Night-time darkens everything, except night-time textures.
+	litColor *= NightColorModifier;
+	if (ShaderModel3) litColor = mad(Color.rgb, In.BakedColor.rgb, litColor);
+	// Headlights effect use original Color.
+	_PSApplyHeadlights(litColor, Color.rgb, In);
+	litColor += tex2D(Detail, PSDetailTexCoords(In)).rgb;
+	// And fogging is last.
+	_PSApplyFog(litColor, In);
+	if (ShaderModel3) _PSSceneryFade(SurfaceColor, In);
+	return float4(litColor, SurfaceColor.a);
+}
+
 float4 PSImage9_3(in VERTEX_OUTPUT In) : COLOR0
 {
     return PSImage(true, false, In);
@@ -581,6 +628,12 @@ float4 PSDetailMod2X9_1(in VERTEX_OUTPUT In) : COLOR0
 {
     return PSDetailMod2X(false, false, In);
 }
+
+float4 PSGlossMap9_3(in VERTEX_OUTPUT In) : COLOR0
+{
+    return PSGlossMap(true, In);
+}
+
 
 float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 {
@@ -751,6 +804,20 @@ technique DetailMod2XLevel9_3 {
 	pass Pass_0 {
 		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
 		PixelShader = compile ps_4_0_level_9_3 PSDetailMod2X9_3();
+	}
+}
+
+technique GlossMapLevel9_1 {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSImage9_1();
+	}
+}
+
+technique GlossMapLevel9_3 {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
+		PixelShader = compile ps_4_0_level_9_3 PSGlossMap9_3();
 	}
 }
 

@@ -72,6 +72,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter uvScale;
         readonly EffectParameter detailUVScaleRatio;
         readonly EffectParameter uvOpReflectMapFull;
+        readonly EffectParameter detailUVOpReflectMapFull;
         readonly EffectParameter vertexLightingEnabled;
         readonly EffectParameter vertexLightingDay;
         readonly EffectParameter nightLightModifier;
@@ -202,6 +203,8 @@ namespace Orts.Viewer3D
 
         public bool UVOpReflectMapFull { set { uvOpReflectMapFull.SetValue(value ? 1f : 0f); } }
 
+        public bool DetailUVOpReflectMapFull { set { detailUVOpReflectMapFull.SetValue(value ? 1f : 0f); } }
+
         public bool VertexLightingEnabled { set { vertexLightingEnabled.SetValue(value ? 1f : 0f); } }
 
         public float VertexLightingDay { set { vertexLightingDay.SetValue(value); } }
@@ -247,6 +250,7 @@ namespace Orts.Viewer3D
             uvScale = Parameters["UVScale"];
             detailUVScaleRatio = Parameters["DetailUVScaleRatio"];
             uvOpReflectMapFull = Parameters["UVOpReflectMapFull"];
+            detailUVOpReflectMapFull = Parameters["DetailUVOpReflectMapFull"];
             vertexLightingEnabled = Parameters["VertexLightingEnabled"];
             vertexLightingDay = Parameters["VertexLightingDay"];
             nightLightModifier = Parameters["NightLightModifier"];
@@ -254,6 +258,7 @@ namespace Orts.Viewer3D
             UVScale = Vector2.One;
             DetailUVScaleRatio = Vector2.One;
             UVOpReflectMapFull = false;
+            DetailUVOpReflectMapFull = false;
             VertexLightingEnabled = false;
             VertexLightingDay = 1;
             NightLightModifier = 1;

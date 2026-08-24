@@ -723,6 +723,8 @@ namespace Orts.Viewer3D
         NightLight = 0x2000,
         // Modulate scenery with baked MSTS per-vertex lighting.
         BakedVertexLighting = 0x4000,
+        // Add a second environment-map texture to the lit base texture.
+        GlossMap = 0x8000,
         // Texture to be shown in tunnels and underground (used for 3D cab night textures)
         UndergroundTexture = 0x40000000,
     }
@@ -739,6 +741,7 @@ namespace Orts.Viewer3D
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
         IEnumerator<EffectPass> ShaderPassesDarkShade;
         IEnumerator<EffectPass> ShaderPassesDetailMod2X;
+        IEnumerator<EffectPass> ShaderPassesGlossMap;
         IEnumerator<EffectPass> ShaderPassesFullBright;
         IEnumerator<EffectPass> ShaderPassesHalfBright;
         IEnumerator<EffectPass> ShaderPassesImage;
@@ -836,6 +839,7 @@ namespace Orts.Viewer3D
             var level9_3 = Viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3);
             if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = shader.Techniques[level9_3 ? "DarkShadeLevel9_3" : "DarkShadeLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesDetailMod2X == null) ShaderPassesDetailMod2X = shader.Techniques[level9_3 ? "DetailMod2XLevel9_3" : "DetailMod2XLevel9_1"].Passes.GetEnumerator();
+            if (ShaderPassesGlossMap == null) ShaderPassesGlossMap = shader.Techniques[level9_3 ? "GlossMapLevel9_3" : "GlossMapLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesFullBright == null) ShaderPassesFullBright = shader.Techniques[level9_3 ? "FullBrightLevel9_3" : "FullBrightLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = shader.Techniques[level9_3 ? "HalfBrightLevel9_3" : "HalfBrightLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques[level9_3 ? "ImageLevel9_3" : "ImageLevel9_1"].Passes.GetEnumerator();
@@ -894,6 +898,11 @@ namespace Orts.Viewer3D
                 shader.CurrentTechnique = shader.Techniques[level9_3 ? "DetailMod2XLevel9_3" : "DetailMod2XLevel9_1"];
                 ShaderPasses = ShaderPassesDetailMod2X;
             }
+            else if ((Options & SceneryMaterialOptions.GlossMap) != 0)
+            {
+                shader.CurrentTechnique = shader.Techniques[level9_3 ? "GlossMapLevel9_3" : "GlossMapLevel9_1"];
+                ShaderPasses = ShaderPassesGlossMap;
+            }
             else switch (Options & SceneryMaterialOptions.ShaderMask)
             {
                 case SceneryMaterialOptions.ShaderImage:
@@ -947,7 +956,7 @@ namespace Orts.Viewer3D
                 shader.ImageTextureIsNight = false;
             }
 
-            if ((Options & SceneryMaterialOptions.DetailMod2X) != 0)
+            if ((Options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap)) != 0)
                 shader.DetailTexture = DetailTexture;
 
             shader.VertexLightingEnabled = (Options & SceneryMaterialOptions.BakedVertexLighting) != 0;
@@ -971,6 +980,7 @@ namespace Orts.Viewer3D
                     shader.UVScale = item.RenderPrimitive.UVScale;
                     shader.DetailUVScaleRatio = item.RenderPrimitive.DetailUVScaleRatio;
                     shader.UVOpReflectMapFull = item.RenderPrimitive.UVOpReflectMapFull;
+                    shader.DetailUVOpReflectMapFull = item.RenderPrimitive.DetailUVOpReflectMapFull;
                     ShaderPasses.Current.Apply();
 
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
@@ -992,6 +1002,7 @@ namespace Orts.Viewer3D
             shader.VertexLightingDay = 1;
             shader.NightLightModifier = 1;
             shader.UVOpReflectMapFull = false;
+            shader.DetailUVOpReflectMapFull = false;
 
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;

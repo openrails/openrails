@@ -2193,6 +2193,7 @@ namespace Orts.Viewer3D
                 { "Tex", SceneryMaterialOptions.ShaderFullBright },
                 { "TexDiff", SceneryMaterialOptions.Diffuse },
                 { "DetailMod2X", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.DetailMod2X },
+                { "GlossMap", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.GlossMap },
                 { "NightLight", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.NightTexture | SceneryMaterialOptions.NightLight },
                 { "nightlight", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.NightTexture | SceneryMaterialOptions.NightLight },
                 { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.ShaderFullBright},
@@ -2311,7 +2312,7 @@ namespace Orts.Viewer3D
                         var texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
                         var imageName = sFile.shape.images[texture.iImage];
                         string detailTexturePath = null;
-                        if ((options & SceneryMaterialOptions.DetailMod2X) != 0)
+                        if ((options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap)) != 0)
                         {
                             if (primitiveState.tex_idxs.Length > 1)
                             {
@@ -2323,12 +2324,12 @@ namespace Orts.Viewer3D
                             }
                             else if (!ShapeWarnings.Contains("detail_mod_2x_missing_texture"))
                             {
-                                Trace.TraceInformation("Skipped missing DetailMod2X detail texture first seen in shape {0}", sharedShape.FilePath);
+                                Trace.TraceInformation("Skipped missing second detail/environment texture first seen in shape {0}", sharedShape.FilePath);
                                 ShapeWarnings.Add("detail_mod_2x_missing_texture");
                             }
 
                             if (detailTexturePath == null)
-                                options &= ~SceneryMaterialOptions.DetailMod2X;
+                                options &= ~(SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap);
                         }
                         if (String.IsNullOrEmpty(sharedShape.ReferencePath))
                             material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias, detailTextureName: detailTexturePath);
@@ -2369,11 +2370,13 @@ namespace Orts.Viewer3D
                     var uvScale = GetUVScale(GetUVOp(lightModelConfiguration, 0));
                     var detailUVScale = GetUVScale(GetUVOp(lightModelConfiguration, 1) ?? GetUVOp(lightModelConfiguration, 0));
                     var uvOpReflectMapFull = IsUVOpReflectMapFull(GetUVOp(lightModelConfiguration, 0));
+                    var detailUVOpReflectMapFull = IsUVOpReflectMapFull(GetUVOp(lightModelConfiguration, 1));
 
                     ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
                     ShapePrimitives[primitiveIndex].UVScale = uvScale;
                     ShapePrimitives[primitiveIndex].DetailUVScaleRatio = GetUVScaleRatio(detailUVScale, uvScale);
                     ShapePrimitives[primitiveIndex].UVOpReflectMapFull = uvOpReflectMapFull;
+                    ShapePrimitives[primitiveIndex].DetailUVOpReflectMapFull = detailUVOpReflectMapFull;
                     ShapePrimitives[primitiveIndex].SortIndex = ++totalPrimitiveIndex;
                     ++primitiveIndex;
 #if DEBUG_SHAPE_NORMALS
