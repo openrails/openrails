@@ -514,26 +514,26 @@ namespace Menu.Notifications
                         replacement = SystemInfo.Application.Version;
                         break;
                     case "runtime":
-                        replacement = Runtime.ToString();
+                        replacement = $"{Runtime.Name} {Runtime.Version}";
                         break;
                     case "system":
-                        replacement = SystemInfo.OperatingSystem.Name;
+                        replacement = $"{SystemInfo.OperatingSystem.Name} {SystemInfo.OperatingSystem.Version}";
                         break;
                     case "memory":
-                        replacement = Direct3DFeatureLevels.ToString();
+                        replacement = InstalledMemoryMB.ToString();
                         break;
                     case "cpu":
                         replacement = "";
                         foreach (var cpu in CPUs)
                         {
-                            replacement += $", {cpu.Name}";
+                            replacement += (replacement == "") ? cpu.Name : ", " + cpu.Name;
                         }
                         break;
                     case "gpu":
                         replacement = "";
                         foreach (var gpu in GPUs)
                         {
-                            replacement += $", {gpu.Name}";
+                            replacement += (replacement == "") ? gpu.Name : ", " + gpu.Name;
                         }
                         break;
                     case "direct3d":
