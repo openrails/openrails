@@ -2194,6 +2194,7 @@ namespace Orts.Viewer3D
                 { "TexDiff", SceneryMaterialOptions.Diffuse },
                 { "DetailMod2X", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.DetailMod2X },
                 { "GlossMap", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.GlossMap },
+                { "AlphRefMap", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.AlphRefMap },
                 { "NightLight", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.NightTexture | SceneryMaterialOptions.NightLight },
                 { "nightlight", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.NightTexture | SceneryMaterialOptions.NightLight },
                 { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.ShaderFullBright},
@@ -2312,7 +2313,7 @@ namespace Orts.Viewer3D
                         var texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
                         var imageName = sFile.shape.images[texture.iImage];
                         string detailTexturePath = null;
-                        if ((options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap)) != 0)
+                        if ((options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap)) != 0)
                         {
                             if (primitiveState.tex_idxs.Length > 1)
                             {
@@ -2329,7 +2330,7 @@ namespace Orts.Viewer3D
                             }
 
                             if (detailTexturePath == null)
-                                options &= ~(SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap);
+                                options &= ~(SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap);
                         }
                         if (String.IsNullOrEmpty(sharedShape.ReferencePath))
                             material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias, detailTextureName: detailTexturePath);

@@ -725,6 +725,8 @@ namespace Orts.Viewer3D
         BakedVertexLighting = 0x4000,
         // Add a second environment-map texture to the lit base texture.
         GlossMap = 0x8000,
+        // Blend a second environment-map texture by the inverse alpha of the base texture.
+        AlphRefMap = 0x10000,
         // Texture to be shown in tunnels and underground (used for 3D cab night textures)
         UndergroundTexture = 0x40000000,
     }
@@ -742,6 +744,7 @@ namespace Orts.Viewer3D
         IEnumerator<EffectPass> ShaderPassesDarkShade;
         IEnumerator<EffectPass> ShaderPassesDetailMod2X;
         IEnumerator<EffectPass> ShaderPassesGlossMap;
+        IEnumerator<EffectPass> ShaderPassesAlphRefMap;
         IEnumerator<EffectPass> ShaderPassesFullBright;
         IEnumerator<EffectPass> ShaderPassesHalfBright;
         IEnumerator<EffectPass> ShaderPassesImage;
@@ -840,6 +843,7 @@ namespace Orts.Viewer3D
             if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = shader.Techniques[level9_3 ? "DarkShadeLevel9_3" : "DarkShadeLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesDetailMod2X == null) ShaderPassesDetailMod2X = shader.Techniques[level9_3 ? "DetailMod2XLevel9_3" : "DetailMod2XLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesGlossMap == null) ShaderPassesGlossMap = shader.Techniques[level9_3 ? "GlossMapLevel9_3" : "GlossMapLevel9_1"].Passes.GetEnumerator();
+            if (ShaderPassesAlphRefMap == null) ShaderPassesAlphRefMap = shader.Techniques[level9_3 ? "AlphRefMapLevel9_3" : "AlphRefMapLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesFullBright == null) ShaderPassesFullBright = shader.Techniques[level9_3 ? "FullBrightLevel9_3" : "FullBrightLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = shader.Techniques[level9_3 ? "HalfBrightLevel9_3" : "HalfBrightLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques[level9_3 ? "ImageLevel9_3" : "ImageLevel9_1"].Passes.GetEnumerator();
@@ -903,6 +907,11 @@ namespace Orts.Viewer3D
                 shader.CurrentTechnique = shader.Techniques[level9_3 ? "GlossMapLevel9_3" : "GlossMapLevel9_1"];
                 ShaderPasses = ShaderPassesGlossMap;
             }
+            else if ((Options & SceneryMaterialOptions.AlphRefMap) != 0)
+            {
+                shader.CurrentTechnique = shader.Techniques[level9_3 ? "AlphRefMapLevel9_3" : "AlphRefMapLevel9_1"];
+                ShaderPasses = ShaderPassesAlphRefMap;
+            }
             else switch (Options & SceneryMaterialOptions.ShaderMask)
             {
                 case SceneryMaterialOptions.ShaderImage:
@@ -956,7 +965,7 @@ namespace Orts.Viewer3D
                 shader.ImageTextureIsNight = false;
             }
 
-            if ((Options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap)) != 0)
+            if ((Options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap)) != 0)
                 shader.DetailTexture = DetailTexture;
 
             shader.VertexLightingEnabled = (Options & SceneryMaterialOptions.BakedVertexLighting) != 0;

@@ -597,7 +597,35 @@ float4 PSGlossMap(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	if (ShaderModel3) litColor = mad(Color.rgb, In.BakedColor.rgb, litColor);
 	// Headlights effect use original Color.
 	_PSApplyHeadlights(litColor, Color.rgb, In);
-	litColor += tex2D(Detail, PSDetailTexCoords(In)).rgb;
+	litColor += tex2D(Detail, PSDetailTexCoords(In)).rgb * SurfaceColor.a;
+	// And fogging is last.
+	_PSApplyFog(litColor, In);
+	if (ShaderModel3) _PSSceneryFade(SurfaceColor, In);
+	return float4(litColor, SurfaceColor.a);
+}
+
+float4 PSAlphRefMap(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
+{
+	const float FullBrightness = 1.0;
+	const float ShadowBrightness = 0.5;
+
+	float4 BaseColor = tex2D(Image, In.TexCoords.xy);
+	float4 DetailColor = tex2D(Detail, PSDetailTexCoords(In));
+	float4 Color = float4(BaseColor.rgb + (1 - BaseColor.a) * DetailColor.rgb, saturate(BaseColor.a + lerp(0, In.Color.a, VertexLightingEnabled)));
+	float4 SurfaceColor = float4(Color.rgb * In.Color.rgb, Color.a);
+	// Alpha testing:
+	clip(SurfaceColor.a - ReferenceAlpha);
+	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
+	float3 litColor = SurfaceColor.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
+	// Specular effect next.
+	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In);
+	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
+	litColor = lerp(litColor, _PSGetOvercastColor(SurfaceColor, In), Overcast.x);
+	// Night-time darkens everything, except night-time textures.
+	litColor *= NightColorModifier;
+	if (ShaderModel3) litColor = mad(Color.rgb, In.BakedColor.rgb, litColor);
+	// Headlights effect use original Color.
+	_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	if (ShaderModel3) _PSSceneryFade(SurfaceColor, In);
@@ -632,6 +660,11 @@ float4 PSDetailMod2X9_1(in VERTEX_OUTPUT In) : COLOR0
 float4 PSGlossMap9_3(in VERTEX_OUTPUT In) : COLOR0
 {
     return PSGlossMap(true, In);
+}
+
+float4 PSAlphRefMap9_3(in VERTEX_OUTPUT In) : COLOR0
+{
+    return PSAlphRefMap(true, In);
 }
 
 
@@ -818,6 +851,20 @@ technique GlossMapLevel9_3 {
 	pass Pass_0 {
 		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
 		PixelShader = compile ps_4_0_level_9_3 PSGlossMap9_3();
+	}
+}
+
+technique AlphRefMapLevel9_1 {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSImage9_1();
+	}
+}
+
+technique AlphRefMapLevel9_3 {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
+		PixelShader = compile ps_4_0_level_9_3 PSAlphRefMap9_3();
 	}
 }
 
