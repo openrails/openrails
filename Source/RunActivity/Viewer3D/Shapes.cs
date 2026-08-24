@@ -2068,7 +2068,7 @@ namespace Orts.Viewer3D
             {
                 debugShapeHierarchy.AppendFormat("  LState {0,-2}: flags={1,-8:X8} uv_ops={2,-2}\n", i, sFile.shape.light_model_cfgs[i].flags, sFile.shape.light_model_cfgs[i].uv_ops.Count);
                 for (var j = 0; j < sFile.shape.light_model_cfgs[i].uv_ops.Count; ++j)
-                    debugShapeHierarchy.AppendFormat("    UV OP {0,-2}: texture_address_mode={1,-2}\n", j, sFile.shape.light_model_cfgs[i].uv_ops[j].TexAddrMode);
+                    debugShapeHierarchy.AppendFormat("    UV OP {0,-2}: type={1,-24} texture_address_mode={2,-2}\n", j, sFile.shape.light_model_cfgs[i].uv_ops[j].GetType().Name, sFile.shape.light_model_cfgs[i].uv_ops[j].TexAddrMode);
             }
             Console.Write(debugShapeHierarchy.ToString());
 #endif
@@ -2368,10 +2368,12 @@ namespace Orts.Viewer3D
 
                     var uvScale = GetUVScale(GetUVOp(lightModelConfiguration, 0));
                     var detailUVScale = GetUVScale(GetUVOp(lightModelConfiguration, 1) ?? GetUVOp(lightModelConfiguration, 0));
+                    var uvOpReflectMapFull = IsUVOpReflectMapFull(GetUVOp(lightModelConfiguration, 0));
 
                     ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
                     ShapePrimitives[primitiveIndex].UVScale = uvScale;
                     ShapePrimitives[primitiveIndex].DetailUVScaleRatio = GetUVScaleRatio(detailUVScale, uvScale);
+                    ShapePrimitives[primitiveIndex].UVOpReflectMapFull = uvOpReflectMapFull;
                     ShapePrimitives[primitiveIndex].SortIndex = ++totalPrimitiveIndex;
                     ++primitiveIndex;
 #if DEBUG_SHAPE_NORMALS
@@ -2446,6 +2448,11 @@ namespace Orts.Viewer3D
                     return new Vector2(nonUniformScale.ScaleU, nonUniformScale.ScaleV);
 
                 return Vector2.One;
+            }
+
+            static bool IsUVOpReflectMapFull(uv_op uvOp)
+            {
+                return uvOp is uv_op_reflectmapfull;
             }
 
             static Vector2 GetUVScaleRatio(Vector2 uvScale, Vector2 baseUVScale)

@@ -970,6 +970,7 @@ namespace Orts.Viewer3D
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     shader.UVScale = item.RenderPrimitive.UVScale;
                     shader.DetailUVScaleRatio = item.RenderPrimitive.DetailUVScaleRatio;
+                    shader.UVOpReflectMapFull = item.RenderPrimitive.UVOpReflectMapFull;
                     ShaderPasses.Current.Apply();
 
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
@@ -990,6 +991,7 @@ namespace Orts.Viewer3D
             shader.VertexLightingEnabled = false;
             shader.VertexLightingDay = 1;
             shader.NightLightModifier = 1;
+            shader.UVOpReflectMapFull = false;
 
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;

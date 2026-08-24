@@ -55,6 +55,7 @@ float3   SideVector;
 float    ReferenceAlpha;
 float2   UVScale;
 float2   DetailUVScaleRatio;
+float    UVOpReflectMapFull;
 float    VertexLightingEnabled;
 float    VertexLightingDay;
 float    NightLightModifier;
@@ -185,8 +186,18 @@ void _VSNormalProjection(in float4 InPosition, in float2 InTexCoords, in float3 
 	Out.Position = mul(mul(mul(InPosition, World), View), Projection);
 	Out.RelPosition.xyz = mul(InPosition, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
-	Out.TexCoords.xy = InTexCoords * UVScale;
 	Out.Normal_Light.xyz = normalize(mul(InNormal, (float3x3)World).xyz);
+	Out.TexCoords.xy = InTexCoords * UVScale;
+
+	if (UVOpReflectMapFull > 0.5) {
+		const float InvPI = 0.31830988618;
+		const float InvTwoPI = 0.15915494309;
+		float3 viewDirection = normalize(Out.RelPosition.xyz);
+		float3 reflection = normalize(reflect(viewDirection, Out.Normal_Light.xyz));
+		Out.TexCoords.xy = float2(
+			atan2(reflection.z, reflection.x) * InvTwoPI + 0.5,
+			asin(clamp(reflection.y, -1, 1)) * InvPI + 0.5);
+	}
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
