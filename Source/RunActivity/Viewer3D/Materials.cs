@@ -1006,13 +1006,15 @@ namespace Orts.Viewer3D
 
             bool alphaTestRequested = (Options & SceneryMaterialOptions.AlphaTest) != 0;            // the artist requested alpha testing for this material
             bool alphaBlendRequested = (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0;   // the artist specified a blend capable shader
+            bool vertexAlphaRequested = (Options & SceneryMaterialOptions.BakedVertexLighting) != 0; // MSTS vertex colors may supply alpha even when the ACE has none
 
             return alphaBlendRequested                                   // the material is using a blend capable shader   
                     && (AceAlphaBits > 1                                    // and the original ace has more than 1 bit of alpha
-                          || (AceAlphaBits == 1 && !alphaTestRequested));    //  or its just 1 bit, but with no alphatesting, we must blend it anyway
+                          || (AceAlphaBits == 1 && !alphaTestRequested)      //  or its just 1 bit, but with no alphatesting, we must blend it anyway
+                          || vertexAlphaRequested);                         //  or vertex colors may provide alpha
 
             // To summarize, assuming we are using a blend capable shader ..
-            //     0 bits of alpha - never blend
+            //     0 bits of alpha - only blend if vertex colors may provide alpha
             //     1 bit of alpha - only blend if the alpha test wasn't requested
             //     >1 bit of alpha - always blend
         }
