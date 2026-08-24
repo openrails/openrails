@@ -149,8 +149,31 @@ namespace Orts.Formats.Msts
             else
             {
                 // Structured data is stored as a table of 32bit offsets to each scanline of each image.
+                var scanlineOffsets = new int[imageCount][];
                 for (var imageIndex = 0; imageIndex < imageCount; imageIndex++)
-                    reader.ReadBytes(4 * height / (int)Math.Pow(2, imageIndex));
+                {
+                    var imageHeight = height / (int)Math.Pow(2, imageIndex);
+                    scanlineOffsets[imageIndex] = new int[imageHeight];
+                    for (var y = 0; y < imageHeight; y++)
+                        scanlineOffsets[imageIndex][y] = reader.ReadInt32();
+                }
+
+                var scanlineDataEnd = reader.BaseStream.Position;
+                for (var imageIndex = 0; imageIndex < imageCount; imageIndex++)
+                {
+                    var imageWidth = width / (int)Math.Pow(2, imageIndex);
+                    var imageHeight = height / (int)Math.Pow(2, imageIndex);
+                    var scanlineLength = channels.Sum(channel => (channel.Size * imageWidth + 7) / 8);
+                    for (var y = 0; y < imageHeight; y++)
+                        scanlineDataEnd = Math.Max(scanlineDataEnd, scanlineOffsets[imageIndex][y] + scanlineLength);
+                }
+
+                while (reader.BaseStream.Position < scanlineDataEnd)
+                {
+                    var bytesToRead = (int)Math.Min(4096, scanlineDataEnd - reader.BaseStream.Position);
+                    if (reader.ReadBytes(bytesToRead).Length == 0)
+                        throw new EndOfStreamException();
+                }
 
                 var buffer = new int[width * height];
                 var channelBuffers = new byte[8][];
@@ -160,6 +183,8 @@ namespace Orts.Formats.Msts
                     var imageHeight = height / (int)Math.Pow(2, imageIndex);
                     for (var y = 0; y < imageHeight; y++)
                     {
+                        Array.Clear(channelBuffers, 0, channelBuffers.Length);
+                        reader.BaseStream.Seek(scanlineOffsets[imageIndex][y], SeekOrigin.Begin);
                         foreach (var channel in channels)
                         {
                             if (channel.Size == 1)
