@@ -143,6 +143,13 @@ struct VERTEX_INPUT_FOREST
 	float3 Normal    : NORMAL;
 };
 
+struct VERTEX_INPUT_TERRAIN
+{
+	float4 Position  : POSITION;
+	float2 TexCoords : TEXCOORD0;
+	float3 Normal    : NORMAL;
+};
+
 struct VERTEX_INPUT_SIGNAL
 {
 	float4 Position  : POSITION;
@@ -172,14 +179,14 @@ struct VERTEX_OUTPUT
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
 
-void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
+void _VSNormalProjection(in float4 InPosition, in float2 InTexCoords, in float3 InNormal, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
-	Out.Position = mul(mul(mul(In.Position, World), View), Projection);
-	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
+	Out.Position = mul(mul(mul(InPosition, World), View), Projection);
+	Out.RelPosition.xyz = mul(InPosition, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
-	Out.TexCoords.xy = In.TexCoords * UVScale;
-	Out.Normal_Light.xyz = normalize(mul(In.Normal, (float3x3)World).xyz);
+	Out.TexCoords.xy = InTexCoords * UVScale;
+	Out.Normal_Light.xyz = normalize(mul(InNormal, (float3x3)World).xyz);
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
@@ -247,7 +254,7 @@ VERTEX_OUTPUT VSGeneral(uniform bool ShaderModel3, in VERTEX_INPUT In)
 		}
 	}
 
-	_VSNormalProjection(In, Out);
+	_VSNormalProjection(In.Position, In.TexCoords, In.Normal, Out);
 	Out.Color.rgb = lerp(float3(1, 1, 1), In.Color1.rgb * VertexLightingDay, VertexLightingEnabled);
 	Out.Color.a = 1;
 	Out.BakedColor.rgb = lerp(float3(0, 0, 0), In.Color2.rgb, VertexLightingEnabled);
@@ -297,20 +304,20 @@ VERTEX_OUTPUT VSTransfer9_1(in VERTEX_INPUT_TRANSFER In)
     return VSTransfer(false, In);
 }
 
-VERTEX_OUTPUT VSTerrain(uniform bool ShaderModel3, in VERTEX_INPUT In)
+VERTEX_OUTPUT VSTerrain(uniform bool ShaderModel3, in VERTEX_INPUT_TERRAIN In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
-	_VSNormalProjection(In, Out);
+	_VSNormalProjection(In.Position, In.TexCoords, In.Normal, Out);
 	_VSLightsAndShadows(ShaderModel3, In.Position, Out);
 	return Out;
 }
 
-VERTEX_OUTPUT VSTerrain9_3(in VERTEX_INPUT In)
+VERTEX_OUTPUT VSTerrain9_3(in VERTEX_INPUT_TERRAIN In)
 {
     return VSTerrain(true, In);
 }
 
-VERTEX_OUTPUT VSTerrain9_1(in VERTEX_INPUT In)
+VERTEX_OUTPUT VSTerrain9_1(in VERTEX_INPUT_TERRAIN In)
 {
     return VSTerrain(false, In);
 }
