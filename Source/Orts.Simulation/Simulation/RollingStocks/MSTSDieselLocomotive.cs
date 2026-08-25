@@ -263,12 +263,12 @@ namespace Orts.Simulation.RollingStocks
                             maxPower = pointPower;
                         if (forceCurve.Y[j] > maxForce)
                             maxForce = forceCurve.Y[j];
-                }
+                    }
                 }
 
                 MaxPowerW = maxPower;
 
-                    if (Simulator.Settings.VerboseConfigurationMessages)
+                if (Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("Maximum Rail Power calculated from MaxTractiveForceCurves = {0}", FormatStrings.FormatPower(MaxPowerW, IsMetric, false, false));
 
                 // Set max force if not set
@@ -295,9 +295,9 @@ namespace Orts.Simulation.RollingStocks
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Maximum Traction Power calculated from DieselTransmissionEfficiency = {0}", FormatStrings.FormatPower(LocomotiveMaxTractionPowerW, IsMetric, false, false));
                 }
-                }
-                else
-                {
+            }
+            else
+            {
                 MaxPowerW = LocomotiveMaxTractionPowerW * DieselTransmissionEfficiency;
             }
 
@@ -321,7 +321,7 @@ namespace Orts.Simulation.RollingStocks
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set the same as MaxTractionPower = {0}", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false));
-            }
+                }
                 else
                 {
                     if (Simulator.Settings.VerboseConfigurationMessages)
@@ -356,9 +356,9 @@ namespace Orts.Simulation.RollingStocks
                 // User should specify max force, but if it's missing then estimate 25% adhesion to avoid wheel slips
                 MaxForceN = 0.25f * DrvWheelWeightKg * GravitationalAccelerationMpS2;
 
-                    if (Simulator.Settings.VerboseConfigurationMessages)
+                if (Simulator.Settings.VerboseConfigurationMessages)
                     Trace.TraceInformation("Maximum Force set to {0} value, calculated from locomotive mass.", FormatStrings.FormatForce(MaxForceN, IsMetric));
-                    }
+            }
 
             // Check to see if Speed of Max Tractive Force has been set - use ORTS value as first priority, if not use MSTS, last resort use an arbitrary value.
             if (SpeedOfMaxContinuousForceMpS <= 0)
@@ -383,8 +383,8 @@ namespace Orts.Simulation.RollingStocks
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Speed Of Max Continuous Force set to arbitrary value = {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
-                    }
                 }
+            }
 
             // Check that maximum continuous force value has been set
             float calculatedMaxContinuousForceN;
@@ -460,7 +460,7 @@ namespace Orts.Simulation.RollingStocks
                 var dropoffSpeed = calculatedContinuousPowerW / MaxForceN;
                 var configuredAdhesionDropoffSpeed = (Curtius_KnifflerA / (dropoffSpeed + Curtius_KnifflerB) + Curtius_KnifflerC);
 
-                    Trace.TraceInformation("Slip control system: {0}, Traction motor type: {1}", SlipControlSystem.ToString(), TractionMotorType.ToString()); // Slip control
+                Trace.TraceInformation("Slip control system: {0}, Traction motor type: {1}", SlipControlSystem.ToString(), TractionMotorType.ToString()); // Slip control
 
                 Trace.TraceInformation("Apparent (Design) Adhesion: Zero - {0:N2} @ {1}, Min Continuous Speed - {2:N2} @ {3}, Drive Wheel Weight - {4}", designAdhesionZeroSpeed, FormatStrings.FormatSpeedDisplay(zeroSpeed, IsMetric), designAdhesionMinContSpeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric), FormatStrings.FormatLargeMass(DrvWheelWeightKg, IsMetric, IsUK));
                 Trace.TraceInformation("OR Calculated Adhesion Setting: Zero Speed - {0:N2} @ {1}, Dropoff Speed - {2:N2} @ {3}, Min Continuous Speed - {4:N2} @ {5}", configuredAdhesionZeroSpeed, FormatStrings.FormatSpeedDisplay(zeroSpeed, IsMetric), configuredAdhesionDropoffSpeed, FormatStrings.FormatSpeedDisplay(dropoffSpeed, IsMetric), configuredAdhesionMinContinuousSpeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));

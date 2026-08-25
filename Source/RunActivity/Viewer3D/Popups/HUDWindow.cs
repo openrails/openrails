@@ -216,7 +216,7 @@ namespace Orts.Viewer3D.Popups
                 LocomotiveGraphsThrottle.AddSample(loco.ThrottlePercent * 0.01f);
                 if (loco is MSTSDieselLocomotive locoD)
                 {
-                        LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
+                    LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
                     LocomotiveGraphsAuxiliaryPower.AddSample(locoD.DieselEngines.OutputPowerW / locoD.DieselEngines.MaxPowerW);
                     LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.TractionPowerW / locoD.DieselEngines.MaxPowerW);
                 }

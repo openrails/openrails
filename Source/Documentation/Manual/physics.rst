@@ -667,10 +667,10 @@ is enabled.
    single: IdleTemperature
 
 +------------------------------------------+-----------------------------------------------------------+
-|::                               |::                                  |
-|                                 |                                    |
+|::                                        |::                                                         |
+|                                          |                                                           |
 | Engine(                                  | All parameters must be inside the engine section          |
-| ...                             |                                    |
+| ...                                      |                                                           |
 | ORTSDieselEngines ( 2                    | Define the number of engines here                         |
 |   Diesel (                               | Beginning of first diesel engine definition               |
 |     IdleRPM ( 510 )                      | Minimum continuous RPM                                    |
@@ -707,7 +707,7 @@ is enabled.
 |         1100    200000                   |      by DieselConsumptionTab.                             |
 |         1200    280000                   |      If missing, power values will be calculated          |
 |         1250    300000                   |      automatically using the DieselTorqueTab values.      |
-|     )                           |                                    |
+|     )                                    |                                                           |
 |     AuxiliaryPowerTab (                  | Auxiliary Power Draw vs. RPM Table                        |
 |         0       2500                     |   RPM / Power (default watts)                             |
 |         510     3500                     |      Specifies power constantly consumed by auxiliary     |
@@ -730,9 +730,9 @@ is enabled.
 |         10      600                      |      The throttle % values must increase with each entry  |
 |         20      700                      |      in the table, but RPM values can increase, decrease, |
 |         50      1000                     |      or stay the same as throttle setting increases.      |
-|         75  1200                |                                    |
-|         100 1250                |                                    |
-|     )                           |                                    |
+|         75      1200                     |                                                           |
+|         100     1250                     |                                                           |
+|     )                                    |                                                           |
 |     DieselTorqueTab (                    | Torque vs. Engine RPM Table                               |
 |         0       0                        |   RPM / Torque in Newton-Meters                           |
 |         510     25000                    |      Used when running with mechanical transmissions.     |
@@ -741,7 +741,7 @@ is enabled.
 |     MinOilPressure ( 40 )                | Oil pressure at IdleRPM (default PSI)                     |
 |     MaxOilPressure ( 90 )                | Oil pressure at MaxRPM (default PSI)                      |
 |     Cooling ( 3 )                        | Cooling system behavior 0=No cooling, 1=Mechanical,       |
-|                                 | 2= Hysteresis, 3=Proportional      |
+|                                          |   2= Hysteresis, 3=Proportional                           |
 |     TempTimeConstant ( 720 )             | Time required for engine to heat up (default seconds)     |
 |     MaxTemperature ( 120 )               | Maximum temperature for safe full power (default degC)    |
 |     OptTemperature ( 90 )                | Temperature to enable cooling system (default degC)       |

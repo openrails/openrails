@@ -2729,11 +2729,11 @@ namespace Orts.Simulation.RollingStocks
 
             // Dynamically evolving tractive force:
             // Determine long-term average traction force as an estimate of motor/transmission heat
-                float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
-                if (w < 0)
-                    w = 0;
-                AverageForceN = w * AverageForceN + (1 - w) * TractionForceN;
-            }
+            float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
+            if (w < 0)
+                w = 0;
+            AverageForceN = w * AverageForceN + (1 - w) * TractionForceN;
+        }
         public float GetAvailableDynamicBrakeForceN(float d)
         {
             float forceN = 0;
