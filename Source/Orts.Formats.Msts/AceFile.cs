@@ -72,6 +72,7 @@ namespace Orts.Formats.Msts
 
         static Texture2D Texture2DFromReader(GraphicsDevice graphicsDevice, BinaryReader reader)
         {
+            var offsetBase = reader.BaseStream.Position;
             var signature = new String(reader.ReadChars(4));
             if (signature != "\x01\x00\x00\x00") throw new InvalidDataException(String.Format("Incorrect signature; expected '01 00 00 00', got '{0}'", StringToHex(signature)));
             var options = (SimisAceFormatOptions)reader.ReadInt32();
@@ -165,7 +166,7 @@ namespace Orts.Formats.Msts
                     var imageHeight = height / (int)Math.Pow(2, imageIndex);
                     var scanlineLength = channels.Sum(channel => (channel.Size * imageWidth + 7) / 8);
                     for (var y = 0; y < imageHeight; y++)
-                        scanlineDataEnd = Math.Max(scanlineDataEnd, scanlineOffsets[imageIndex][y] + scanlineLength);
+                        scanlineDataEnd = Math.Max(scanlineDataEnd, offsetBase + scanlineOffsets[imageIndex][y] + scanlineLength);
                 }
 
                 while (reader.BaseStream.Position < scanlineDataEnd)
@@ -184,7 +185,7 @@ namespace Orts.Formats.Msts
                     for (var y = 0; y < imageHeight; y++)
                     {
                         Array.Clear(channelBuffers, 0, channelBuffers.Length);
-                        reader.BaseStream.Seek(scanlineOffsets[imageIndex][y], SeekOrigin.Begin);
+                        reader.BaseStream.Seek(offsetBase + scanlineOffsets[imageIndex][y], SeekOrigin.Begin);
                         foreach (var channel in channels)
                         {
                             if (channel.Size == 1)
