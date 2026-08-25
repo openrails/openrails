@@ -26,7 +26,6 @@
 float4x4 World;         // model -> world
 float4x4 View;          // world -> view
 float4x4 Projection;    // view -> projection
-float4x4 EnvMapTransform; // current object -> root/captured object transform for sphere maps
 float4x4 LightViewProjectionShadowProjection0;  // world -> light view -> light projection -> shadow map projection
 float4x4 LightViewProjectionShadowProjection1;
 float4x4 LightViewProjectionShadowProjection2;
@@ -186,7 +185,8 @@ float2 _VSReflectMapFullTexCoords(float3 relPosition, float3 normal)
 {
 	float3 viewDirection = normalize(relPosition);
 	float3 reflection = normalize(2 * dot(viewDirection, normal) * normal - viewDirection);
-	reflection = mul(reflection, (float3x3)EnvMapTransform).xyz;
+	reflection = mul(reflection, (float3x3)World).xyz;
+	reflection.z = -reflection.z;
 	float sphereMapScale = 0.5 / max(length(float3(reflection.xy, reflection.z + 1)), 0.0001);
 	return reflection.xy * sphereMapScale + 0.5;
 }

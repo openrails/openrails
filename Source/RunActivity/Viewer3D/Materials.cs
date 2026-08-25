@@ -990,7 +990,6 @@ namespace Orts.Viewer3D
                     shader.DetailUVScaleRatio = item.RenderPrimitive.DetailUVScaleRatio;
                     shader.UVOpReflectMapFull = item.RenderPrimitive.UVOpReflectMapFull;
                     shader.DetailUVOpReflectMapFull = item.RenderPrimitive.DetailUVOpReflectMapFull;
-                    shader.EnvMapTransform = GetEnvMapTransform(item);
                     ShaderPasses.Current.Apply();
 
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
@@ -1013,27 +1012,9 @@ namespace Orts.Viewer3D
             shader.NightLightModifier = 1;
             shader.UVOpReflectMapFull = false;
             shader.DetailUVOpReflectMapFull = false;
-            shader.EnvMapTransform = Matrix.Identity;
 
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
-        }
-
-        static Matrix GetEnvMapTransform(RenderItem item)
-        {
-            if (!item.RenderPrimitive.UVOpReflectMapFull && !item.RenderPrimitive.DetailUVOpReflectMapFull)
-                return Matrix.Identity;
-
-            var envMapRootMatrix = item.EnvMapRootMatrix;
-            if (Math.Abs(envMapRootMatrix.Determinant()) < 0.000001f)
-                return Matrix.Identity;
-
-            Matrix envMapRootInverse;
-            Matrix.Invert(ref envMapRootMatrix, out envMapRootInverse);
-
-            var envMapTransform = Matrix.Identity;
-            Matrix.Multiply(ref envMapRootInverse, ref item.XNAMatrix, out envMapTransform);
-            return envMapTransform;
         }
 
         /// <summary>

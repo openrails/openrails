@@ -149,7 +149,6 @@ namespace Orts.Viewer3D
         public Material Material;
         public RenderPrimitive RenderPrimitive;
         public Matrix XNAMatrix;
-        public Matrix EnvMapRootMatrix;
         public ShapeFlags Flags;
         public object ItemData;
 
@@ -158,7 +157,6 @@ namespace Orts.Viewer3D
             Material = material;
             RenderPrimitive = renderPrimitive;
             XNAMatrix = xnaMatrix;
-            EnvMapRootMatrix = Matrix.Identity;
             Flags = flags;
             ItemData = itemData;
         }

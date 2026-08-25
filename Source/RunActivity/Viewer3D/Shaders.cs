@@ -46,7 +46,6 @@ namespace Orts.Viewer3D
         readonly EffectParameter world;
         readonly EffectParameter view;
         readonly EffectParameter projection;
-        readonly EffectParameter envMapTransform;
         readonly EffectParameter[] lightViewProjectionShadowProjection;
         readonly EffectParameter[] shadowMapTextures;
         readonly EffectParameter shadowMapLimit;
@@ -202,8 +201,6 @@ namespace Orts.Viewer3D
 
         public Vector2 DetailUVScaleRatio { set { detailUVScaleRatio.SetValue(value); } }
 
-        public Matrix EnvMapTransform { set { envMapTransform.SetValue(value); } }
-
         public bool UVOpReflectMapFull { set { uvOpReflectMapFull.SetValue(value ? 1f : 0f); } }
 
         public bool DetailUVOpReflectMapFull { set { detailUVOpReflectMapFull.SetValue(value ? 1f : 0f); } }
@@ -222,7 +219,6 @@ namespace Orts.Viewer3D
             world = Parameters["World"];
             view = Parameters["View"];
             projection = Parameters["Projection"];
-            envMapTransform = Parameters["EnvMapTransform"];
             lightViewProjectionShadowProjection = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
             shadowMapTextures = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
             for (var i = 0; i < RenderProcess.ShadowMapCountMaximum; i++)
@@ -261,7 +257,6 @@ namespace Orts.Viewer3D
             overlayScale = Parameters["OverlayScale"];
             UVScale = Vector2.One;
             DetailUVScaleRatio = Vector2.One;
-            EnvMapTransform = Matrix.Identity;
             UVOpReflectMapFull = false;
             DetailUVOpReflectMapFull = false;
             VertexLightingEnabled = false;
