@@ -2716,14 +2716,17 @@ namespace Orts.Viewer3D
                     foreach (var shapePrimitive in subObject.ShapePrimitives)
                     {
                         var xnaMatrix = Matrix.Identity;
+                        var rootMatrix = Matrix.Identity;
                         var hi = shapePrimitive.HierarchyIndex;
                         if (matrixVisible != null && !matrixVisible[hi]) continue;
                         while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
                         {
                             Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
+                            rootMatrix = animatedXNAMatrices[hi];
                             hi = shapePrimitive.Hierarchy[hi];
                         }
                         Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+                        Matrix.Multiply(ref rootMatrix, ref xnaDTileTranslation, out rootMatrix);
 
                         if (StoredResultMatrixes.ContainsKey(shapePrimitive.HierarchyIndex))
                             StoredResultMatrixes[shapePrimitive.HierarchyIndex] = xnaMatrix;
@@ -2731,7 +2734,7 @@ namespace Orts.Viewer3D
                         // TODO make shadows depend on shape overrides
 
                         var interior = (flags & ShapeFlags.Interior) != 0;
-                        frame.AddAutoPrimitive(mstsLocation, distanceDetail.ViewSphereRadius, distanceDetail.ViewingDistance * lodBias, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags);
+                        frame.AddAutoPrimitive(mstsLocation, distanceDetail.ViewSphereRadius, distanceDetail.ViewingDistance * lodBias, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, ref rootMatrix, flags);
                     }
                 }
             }

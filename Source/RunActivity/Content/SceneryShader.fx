@@ -26,6 +26,7 @@
 float4x4 World;         // model -> world
 float4x4 View;          // world -> view
 float4x4 Projection;    // view -> projection
+float4x4 EnvMapTransform; // current object -> root/captured object transform for sphere maps
 float4x4 LightViewProjectionShadowProjection0;  // world -> light view -> light projection -> shadow map projection
 float4x4 LightViewProjectionShadowProjection1;
 float4x4 LightViewProjectionShadowProjection2;
@@ -181,18 +182,19 @@ struct VERTEX_OUTPUT
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
 
-float2 _VSReflectMapFullTexCoords(float3 normal)
+float2 _VSReflectMapFullTexCoords(float3 relPosition, float3 normal)
 {
-	float3 cameraNormal = normalize(mul(normal, (float3x3)View).xyz);
-	float3 reflection = normalize(2 * cameraNormal.z * cameraNormal - float3(0, 0, 1));
+	float3 viewDirection = normalize(relPosition);
+	float3 reflection = normalize(2 * dot(viewDirection, normal) * normal - viewDirection);
+	reflection = mul(reflection, (float3x3)EnvMapTransform).xyz;
 	float sphereMapScale = 0.5 / max(length(float3(reflection.xy, reflection.z + 1)), 0.0001);
 	return reflection.xy * sphereMapScale + 0.5;
 }
 
-float2 _VSDetailTexCoords(float2 texCoords, float3 normal)
+float2 _VSDetailTexCoords(float2 texCoords, float3 relPosition, float3 normal)
 {
 	if (DetailUVOpReflectMapFull > 0.5)
-		return _VSReflectMapFullTexCoords(normal);
+		return _VSReflectMapFullTexCoords(relPosition, normal);
 	return texCoords * UVScale * DetailUVScaleRatio;
 }
 
@@ -206,7 +208,7 @@ void _VSNormalProjection(in float4 InPosition, in float2 InTexCoords, in float3 
 	Out.TexCoords.xy = InTexCoords * UVScale;
 
 	if (UVOpReflectMapFull > 0.5)
-		Out.TexCoords.xy = _VSReflectMapFullTexCoords(Out.Normal_Light.xyz);
+		Out.TexCoords.xy = _VSReflectMapFullTexCoords(Out.RelPosition.xyz, Out.Normal_Light.xyz);
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
@@ -280,7 +282,7 @@ VERTEX_OUTPUT VSGeneral(uniform bool ShaderModel3, in VERTEX_INPUT In)
 	Out.BakedColor.rgb = lerp(float3(0, 0, 0), In.Color2.rgb, VertexLightingEnabled);
 	Out.BakedColor.a = 1;
 	_VSLightsAndShadows(ShaderModel3, In.Position, Out);
-	float2 detailTexCoords = _VSDetailTexCoords(In.TexCoords, Out.Normal_Light.xyz);
+	float2 detailTexCoords = _VSDetailTexCoords(In.TexCoords, Out.RelPosition.xyz, Out.Normal_Light.xyz);
 	Out.BakedColor.a = detailTexCoords.x;
 	Out.Shadow.w = detailTexCoords.y;
 
