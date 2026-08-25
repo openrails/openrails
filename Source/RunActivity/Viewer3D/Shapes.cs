@@ -2368,10 +2368,10 @@ namespace Orts.Viewer3D
                         foreach (var index in new[] { vertex_idx.a, vertex_idx.b, vertex_idx.c })
                             indexData.Add((ushort)index);
 
-                    var uvScale = GetUVScale(lightModelConfiguration, 0);
-                    var detailUVScale = GetUVScale(lightModelConfiguration, 1);
-                    var uvOpReflectMapFull = IsUVOpReflectMapFull(lightModelConfiguration, 0);
-                    var detailUVOpReflectMapFull = IsUVOpReflectMapFull(lightModelConfiguration, 1);
+                    var uvScale = GetUVScale(GetUVOp(lightModelConfiguration, 0));
+                    var detailUVScale = GetUVScale(GetUVOp(lightModelConfiguration, 1) ?? GetUVOp(lightModelConfiguration, 0));
+                    var uvOpReflectMapFull = IsUVOpReflectMapFull(GetUVOp(lightModelConfiguration, 0));
+                    var detailUVOpReflectMapFull = IsUVOpReflectMapFull(GetUVOp(lightModelConfiguration, 1));
 
                     ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
                     ShapePrimitives[primitiveIndex].UVScale = uvScale;
@@ -2441,18 +2441,6 @@ namespace Orts.Viewer3D
                 return textureIndex >= 0 && textureIndex < lightModelConfiguration.uv_ops.Count ? lightModelConfiguration.uv_ops[textureIndex] : null;
             }
 
-            static Vector2 GetUVScale(light_model_cfg lightModelConfiguration, int textureIndex)
-            {
-                var uvOp = GetUVOp(lightModelConfiguration, textureIndex);
-                var previousUVOp = GetUVOp(lightModelConfiguration, textureIndex - 1);
-                if (IsUVOpReflectMapFull(uvOp) && IsUVScaleOp(previousUVOp))
-                    return GetUVScale(previousUVOp);
-
-                var uvScale = GetUVScale(uvOp);
-
-                return uvOp != null || textureIndex == 0 ? uvScale : GetUVScale(lightModelConfiguration, 0);
-            }
-
             static Vector2 GetUVScale(uv_op uvOp)
             {
                 var uniformScale = uvOp as uv_op_uniformscale;
@@ -2464,16 +2452,6 @@ namespace Orts.Viewer3D
                     return new Vector2(nonUniformScale.ScaleU, nonUniformScale.ScaleV);
 
                 return Vector2.One;
-            }
-
-            static bool IsUVOpReflectMapFull(light_model_cfg lightModelConfiguration, int textureIndex)
-            {
-                return IsUVOpReflectMapFull(GetUVOp(lightModelConfiguration, textureIndex));
-            }
-
-            static bool IsUVScaleOp(uv_op uvOp)
-            {
-                return uvOp is uv_op_uniformscale || uvOp is uv_op_nonuniformscale;
             }
 
             static bool IsUVOpReflectMapFull(uv_op uvOp)

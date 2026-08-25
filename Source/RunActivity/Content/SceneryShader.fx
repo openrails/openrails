@@ -192,7 +192,7 @@ float2 _VSReflectMapFullTexCoords(float3 normal)
 float2 _VSDetailTexCoords(float2 texCoords, float3 normal)
 {
 	if (DetailUVOpReflectMapFull > 0.5)
-		return _VSReflectMapFullTexCoords(normal) * UVScale * DetailUVScaleRatio;
+		return _VSReflectMapFullTexCoords(normal);
 	return texCoords * UVScale * DetailUVScaleRatio;
 }
 
@@ -206,7 +206,7 @@ void _VSNormalProjection(in float4 InPosition, in float2 InTexCoords, in float3 
 	Out.TexCoords.xy = InTexCoords * UVScale;
 
 	if (UVOpReflectMapFull > 0.5)
-		Out.TexCoords.xy = _VSReflectMapFullTexCoords(Out.Normal_Light.xyz) * UVScale;
+		Out.TexCoords.xy = _VSReflectMapFullTexCoords(Out.Normal_Light.xyz);
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
