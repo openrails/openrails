@@ -302,10 +302,38 @@ VERTEX_OUTPUT VSGeneral9_1(in VERTEX_INPUT In)
     return VSGeneral(false, In);
 }
 
+VERTEX_OUTPUT VSImageNoColor(uniform bool ShaderModel3, in VERTEX_INPUT_TERRAIN In)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+	_VSNormalProjection(In.Position, In.TexCoords, In.Normal, Out);
+	Out.Color = float4(1, 1, 1, 1);
+	Out.BakedColor = float4(0, 0, 0, 1);
+	_VSLightsAndShadows(ShaderModel3, In.Position, Out);
+	Out.BakedColor.a = In.TexCoords.x;
+	Out.Shadow.w = In.TexCoords.y;
+
+	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
+	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
+
+	return Out;
+}
+
+VERTEX_OUTPUT VSImageNoColor9_3(in VERTEX_INPUT_TERRAIN In)
+{
+    return VSImageNoColor(true, In);
+}
+
+VERTEX_OUTPUT VSImageNoColor9_1(in VERTEX_INPUT_TERRAIN In)
+{
+    return VSImageNoColor(false, In);
+}
+
 VERTEX_OUTPUT VSTransfer(uniform bool ShaderModel3, in VERTEX_INPUT_TRANSFER In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	_VSTransferProjection(In, Out);
+	Out.Color = float4(1, 1, 1, 1);
+	Out.BakedColor = float4(0, 0, 0, 1);
 	_VSLightsAndShadows(ShaderModel3, In.Position, Out);
 
 	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
@@ -361,6 +389,8 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT_FOREST In)
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light = EyeVector;
+	Out.Color = float4(1, 1, 1, 1);
+	Out.BakedColor = float4(0, 0, 0, 1);
 
 	_VSLightsAndShadows(false, In.Position, Out);
 
@@ -821,6 +851,20 @@ technique ImageLevel9_1 {
 technique ImageLevel9_3 {
 	pass Pass_0 {
 		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
+		PixelShader = compile ps_4_0_level_9_3 PSImage9_3();
+	}
+}
+
+technique ImageNoColorLevel9_1 {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0_level_9_1 VSImageNoColor9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSImage9_1();
+	}
+}
+
+technique ImageNoColorLevel9_3 {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0_level_9_3 VSImageNoColor9_3();
 		PixelShader = compile ps_4_0_level_9_3 PSImage9_3();
 	}
 }
