@@ -154,16 +154,11 @@ namespace Orts.Viewer3D
         public object ItemData;
 
         public RenderItem(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ShapeFlags flags, object itemData = null)
-            : this(material, renderPrimitive, ref xnaMatrix, ref xnaMatrix, flags, itemData)
-        {
-        }
-
-        public RenderItem(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ref Matrix envMapRootMatrix, ShapeFlags flags, object itemData = null)
         {
             Material = material;
             RenderPrimitive = renderPrimitive;
             XNAMatrix = xnaMatrix;
-            EnvMapRootMatrix = envMapRootMatrix;
+            EnvMapRootMatrix = Matrix.Identity;
             Flags = flags;
             ItemData = itemData;
         }
@@ -600,16 +595,10 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            AddAutoPrimitive(mstsLocation, objectRadius, objectViewingDistance, material, primitive, group, ref xnaMatrix, ref xnaMatrix, flags);
-        }
-
-        [CallOnThread("Updater")]
-        public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ref Matrix envMapRootMatrix, ShapeFlags flags)
-        {
             if (float.IsPositiveInfinity(objectViewingDistance) || (Camera != null && Camera.InRange(mstsLocation, objectRadius, objectViewingDistance)))
             {
                 if (Camera != null && Camera.InFov(mstsLocation, objectRadius))
-                    AddPrimitive(material, primitive, group, ref xnaMatrix, ref envMapRootMatrix, flags);
+                    AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
             }
 
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
@@ -635,19 +624,7 @@ namespace Orts.Viewer3D
         }
 
         [CallOnThread("Updater")]
-        public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ref Matrix envMapRootMatrix, ShapeFlags flags)
-        {
-            AddPrimitive(material, primitive, group, ref xnaMatrix, ref envMapRootMatrix, flags, null);
-        }
-
-        [CallOnThread("Updater")]
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags, object itemData)
-        {
-            AddPrimitive(material, primitive, group, ref xnaMatrix, ref xnaMatrix, flags, itemData);
-        }
-
-        [CallOnThread("Updater")]
-        public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ref Matrix envMapRootMatrix, ShapeFlags flags, object itemData)
         {
             var getBlending = material.GetBlending();
             var blending = getBlending && material is SceneryMaterial ? PrimitiveBlendedScenery : getBlending ? PrimitiveBlended : PrimitiveNotBlended;
@@ -663,7 +640,7 @@ namespace Orts.Viewer3D
                     items = new RenderItemCollection();
                     sequence.Add(sortingMaterial, items);
                 }
-                items.Add(new RenderItem(material, primitive, ref xnaMatrix, ref envMapRootMatrix, flags, itemData));
+                items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags, itemData));
             }
             if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
                 primitive.ZBias = 1;
