@@ -252,8 +252,8 @@ namespace Orts.Viewer3D
     public class SharedMaterialManager
     {
         readonly Viewer Viewer;
-        IDictionary<(string, string, string, int, float, Effect), Material> Materials = new Dictionary<(string, string, string, int, float, Effect), Material>();
-        IDictionary<(string, string, string, int, float, Effect), bool> MaterialMarks = new Dictionary<(string, string, string, int, float, Effect), bool>();
+        IDictionary<(string, string, string, int, float, Effect, float, int), Material> Materials = new Dictionary<(string, string, string, int, float, Effect, float, int), Material>();
+        IDictionary<(string, string, string, int, float, Effect, float, int), bool> MaterialMarks = new Dictionary<(string, string, string, int, float, Effect, float, int), bool>();
 
         public readonly LightConeShader LightConeShader;
         public readonly LightGlowShader LightGlowShader;
@@ -317,9 +317,9 @@ namespace Orts.Viewer3D
 
         }
 
-        public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null, string detailTextureName = null)
+        public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null, string detailTextureName = null, float detailMipMapBias = 0f, int detailTextureAddressMode = 1)
         {
-            var materialKey = (materialName, textureName?.ToLowerInvariant(), detailTextureName?.ToLowerInvariant(), options, mipMapBias, effect);
+            var materialKey = (materialName, textureName?.ToLowerInvariant(), detailTextureName?.ToLowerInvariant(), options, mipMapBias, effect, detailMipMapBias, detailTextureAddressMode);
             if (!Materials.ContainsKey(materialKey))
             {
                 switch (materialName)
@@ -352,7 +352,7 @@ namespace Orts.Viewer3D
                         Materials[materialKey] = new PrecipitationMaterial(Viewer);
                         break;
                     case "Scenery":
-                        Materials[materialKey] = new SceneryMaterial(Viewer, textureName, (SceneryMaterialOptions)options, mipMapBias, detailTextureName);
+                        Materials[materialKey] = new SceneryMaterial(Viewer, textureName, (SceneryMaterialOptions)options, mipMapBias, detailTextureName, detailMipMapBias, detailTextureAddressMode);
                         break;
                     case "ShadowMap":
                         Materials[materialKey] = new ShadowMapMaterial(Viewer);
@@ -579,7 +579,7 @@ namespace Orts.Viewer3D
     {
         public readonly Viewer Viewer;
         public readonly string Key;
-        internal (string, string, string, int, float, Effect) MarkKey;
+        internal (string, string, string, int, float, Effect, float, int) MarkKey;
 
         protected Material(Viewer viewer, string key)
         {
@@ -739,6 +739,8 @@ namespace Orts.Viewer3D
         private readonly string TexturePath;
         protected Texture2D DetailTexture;
         private readonly string DetailTexturePath;
+        readonly float DetailMipMapBias;
+        readonly int DetailTextureAddressMode;
         protected Texture2D NightTexture;
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
         IEnumerator<EffectPass> ShaderPassesDarkShade;
@@ -757,13 +759,15 @@ namespace Orts.Viewer3D
         };
         private static readonly Dictionary<TextureAddressMode, Dictionary<float, SamplerState>> SamplerStates = new Dictionary<TextureAddressMode, Dictionary<float, SamplerState>>();
 
-        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias, string detailTexturePath)
-            : base(viewer, String.Format("{0}:{1}:{2:X}:{3}", texturePath, detailTexturePath, options, mipMapBias))
+        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias, string detailTexturePath, float detailMipMapBias, int detailTextureAddressMode)
+            : base(viewer, String.Format("{0}:{1}:{2:X}:{3}:{4}:{5}", texturePath, detailTexturePath, options, mipMapBias, detailMipMapBias, detailTextureAddressMode))
         {
             Options = options;
             MipMapBias = mipMapBias;
             TexturePath = texturePath;
             DetailTexturePath = detailTexturePath;
+            DetailMipMapBias = detailMipMapBias;
+            DetailTextureAddressMode = detailTextureAddressMode;
             Texture = SharedMaterialManager.MissingTexture;
             DetailTexture = SharedMaterialManager.MissingTexture;
             NightTexture = SharedMaterialManager.MissingTexture;
@@ -994,6 +998,8 @@ namespace Orts.Viewer3D
 
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
                     graphicsDevice.SamplerStates[0] = GetShadowTextureAddressMode();
+                    if ((Options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap)) != 0)
+                        graphicsDevice.SamplerStates[1] = GetDetailTextureAddressMode();
 
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
@@ -1067,9 +1073,18 @@ namespace Orts.Viewer3D
 
         public override SamplerState GetShadowTextureAddressMode()
         {
-            var mipMapBias = MipMapBias < -1 ? -1 : MipMapBias;
+            return GetTextureAddressMode(Options, MipMapBias);
+        }
+
+        SamplerState GetDetailTextureAddressMode()
+        {
+            return GetTextureAddressMode(DetailTextureAddressMode, DetailMipMapBias);
+        }
+
+        static SamplerState GetTextureAddressMode(SceneryMaterialOptions options, float mipMapBias)
+        {
             TextureAddressMode textureAddressMode;
-            switch (Options & SceneryMaterialOptions.TextureAddressModeMask)
+            switch (options & SceneryMaterialOptions.TextureAddressModeMask)
             {
                 case SceneryMaterialOptions.TextureAddressModeWrap:
                     textureAddressMode = TextureAddressMode.Wrap; break;
@@ -1082,6 +1097,30 @@ namespace Orts.Viewer3D
                 default:
                     throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.TextureAddressModeMask value.");
             }
+
+            return GetTextureAddressMode(textureAddressMode, mipMapBias);
+        }
+
+        static SamplerState GetTextureAddressMode(int textureAddressMode, float mipMapBias)
+        {
+            switch (textureAddressMode)
+            {
+                case 1:
+                    return GetTextureAddressMode(TextureAddressMode.Wrap, mipMapBias);
+                case 2:
+                    return GetTextureAddressMode(TextureAddressMode.Mirror, mipMapBias);
+                case 3:
+                    return GetTextureAddressMode(TextureAddressMode.Clamp, mipMapBias);
+                case 4:
+                    return GetTextureAddressMode(TextureAddressMode.Border, mipMapBias);
+                default:
+                    throw new InvalidDataException("Texture address mode has unexpected value.");
+            }
+        }
+
+        static SamplerState GetTextureAddressMode(TextureAddressMode textureAddressMode, float mipMapBias)
+        {
+            mipMapBias = mipMapBias < -1 ? -1 : mipMapBias;
 
             if (!SamplerStates.ContainsKey(textureAddressMode))
                 SamplerStates.Add(textureAddressMode, new Dictionary<float, SamplerState>());
@@ -1097,7 +1136,6 @@ namespace Orts.Viewer3D
                 });
 
             return SamplerStates[textureAddressMode][mipMapBias];
-
         }
 
         public override void Mark()
@@ -1267,7 +1305,7 @@ namespace Orts.Viewer3D
         public readonly int HierarchyIndex;
 
         public ScreenMaterial(Viewer viewer, string key, int hierarchyIndex)
-            : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0, null)
+            : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0, null, 0, 1)
         {
             HierarchyIndex = hierarchyIndex;
         }

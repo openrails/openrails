@@ -2324,6 +2324,8 @@ namespace Orts.Viewer3D
                         var texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
                         var imageName = sFile.shape.images[texture.iImage];
                         string detailTexturePath = null;
+                        var detailTextureAddressMode = 1;
+                        var detailMipMapBias = 0f;
                         if ((options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap)) != 0)
                         {
                             if (primitiveState.tex_idxs.Length > 1)
@@ -2333,6 +2335,16 @@ namespace Orts.Viewer3D
                                 detailTexturePath = String.IsNullOrEmpty(sharedShape.ReferencePath)
                                     ? Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, detailImageName)
                                     : Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, detailImageName);
+                                detailMipMapBias = detailTexture.MipMapLODBias;
+
+                                if (lightModelConfiguration.uv_ops.Count > 1)
+                                    if (lightModelConfiguration.uv_ops[1].TexAddrMode - 1 >= 0 && lightModelConfiguration.uv_ops[1].TexAddrMode - 1 < UVTextureAddressModeMap.Length)
+                                        detailTextureAddressMode = lightModelConfiguration.uv_ops[1].TexAddrMode;
+                                    else if (!ShapeWarnings.Contains("texture_addressing_mode_1:" + lightModelConfiguration.uv_ops[1].TexAddrMode))
+                                    {
+                                        Trace.TraceInformation("Skipped unknown texture addressing mode {1} for second texture stage first seen in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[1].TexAddrMode);
+                                        ShapeWarnings.Add("texture_addressing_mode_1:" + lightModelConfiguration.uv_ops[1].TexAddrMode);
+                                    }
                             }
                             else if (!ShapeWarnings.Contains("detail_mod_2x_missing_texture"))
                             {
@@ -2344,9 +2356,9 @@ namespace Orts.Viewer3D
                                 options &= ~(SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap);
                         }
                         if (String.IsNullOrEmpty(sharedShape.ReferencePath))
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias, detailTextureName: detailTexturePath);
+                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias, detailTextureName: detailTexturePath, detailMipMapBias: detailMipMapBias, detailTextureAddressMode: detailTextureAddressMode);
                         else
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias, detailTextureName: detailTexturePath);
+                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias, detailTextureName: detailTexturePath, detailMipMapBias: detailMipMapBias, detailTextureAddressMode: detailTextureAddressMode);
                     }
                     else
                     {
