@@ -571,22 +571,26 @@ float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX
 	return float4(litColor, SurfaceColor.a);
 }
 
-float4 PSDetailMod2X(uniform bool ShaderModel3, uniform bool DetailUVScaled, in VERTEX_OUTPUT In) : COLOR0
+float2 PSDetailTexCoords(in VERTEX_OUTPUT In)
+{
+	return float2(In.BakedColor.a, In.Shadow.w);
+}
+
+float4 PSDetailMod2X(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
 	const float ShadowBrightness = 0.5;
 
 	float4 Color = tex2D(Image, In.TexCoords.xy);
-	float2 detailTexCoords = In.TexCoords.xy;
-	if (DetailUVScaled) detailTexCoords *= DetailUVScaleRatio;
-	Color.rgb *= tex2D(Detail, detailTexCoords).rgb * 2;
+	Color.rgb *= tex2D(Detail, PSDetailTexCoords(In)).rgb * 2;
 	float4 SurfaceColor = Color * In.Color;
 	// Alpha testing:
 	clip(SurfaceColor.a - ReferenceAlpha);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = SurfaceColor.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
+	float shadowEffect = _PSGetShadowEffect(ShaderModel3, true, In);
+	float3 litColor = SurfaceColor.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * shadowEffect + ImageTextureIsNight));
 	// Specular effect next.
-	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In);
+	litColor += _PSGetSpecularEffect(In) * shadowEffect;
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(SurfaceColor, In), Overcast.x);
 	// Night-time darkens everything, except night-time textures.
@@ -600,11 +604,6 @@ float4 PSDetailMod2X(uniform bool ShaderModel3, uniform bool DetailUVScaled, in 
 	return float4(litColor, SurfaceColor.a);
 }
 
-float2 PSDetailTexCoords(in VERTEX_OUTPUT In)
-{
-	return float2(In.BakedColor.a, In.Shadow.w);
-}
-
 float4 PSGlossMap(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
@@ -615,9 +614,10 @@ float4 PSGlossMap(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	// Alpha testing:
 	clip(SurfaceColor.a - ReferenceAlpha);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = SurfaceColor.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
+	float shadowEffect = _PSGetShadowEffect(ShaderModel3, true, In);
+	float3 litColor = SurfaceColor.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * shadowEffect + ImageTextureIsNight));
 	// Specular effect next.
-	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In);
+	litColor += _PSGetSpecularEffect(In) * shadowEffect;
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(SurfaceColor, In), Overcast.x);
 	// Night-time darkens everything, except night-time textures.
@@ -644,9 +644,10 @@ float4 PSAlphRefMap(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	// Alpha testing:
 	clip(SurfaceColor.a - ReferenceAlpha);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
-	float3 litColor = SurfaceColor.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
+	float shadowEffect = _PSGetShadowEffect(ShaderModel3, true, In);
+	float3 litColor = SurfaceColor.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * shadowEffect + ImageTextureIsNight));
 	// Specular effect next.
-	litColor += _PSGetSpecularEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In);
+	litColor += _PSGetSpecularEffect(In) * shadowEffect;
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	litColor = lerp(litColor, _PSGetOvercastColor(SurfaceColor, In), Overcast.x);
 	// Night-time darkens everything, except night-time textures.
@@ -677,7 +678,7 @@ float4 PSImage9_1(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSDetailMod2X9_3(in VERTEX_OUTPUT In) : COLOR0
 {
-    return PSDetailMod2X(true, true, In);
+    return PSDetailMod2X(true, In);
 }
 
 float4 PSDetailMod2X9_1(in VERTEX_OUTPUT In) : COLOR0
