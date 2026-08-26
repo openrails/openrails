@@ -185,7 +185,6 @@ float2 _VSReflectMapFullTexCoords(float3 relPosition, float3 normal)
 {
 	float3 viewDirection = normalize(relPosition);
 	float3 reflection = normalize(2 * dot(viewDirection, normal) * normal - viewDirection);
-	reflection = mul(reflection, (float3x3)World).xyz;
 	reflection.z = -reflection.z;
 	float sphereMapScale = 0.5 / max(length(float3(reflection.xy, reflection.z + 1)), 0.0001);
 	return reflection.xy * sphereMapScale + 0.5;
