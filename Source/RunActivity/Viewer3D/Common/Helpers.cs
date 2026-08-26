@@ -139,6 +139,8 @@ namespace Orts.Viewer3D.Common
             { "Tex", SceneryMaterialOptions.None },
             { "TexDiff", SceneryMaterialOptions.Diffuse },
             { "DetailMod2X", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.DetailMod2X },
+            { "GlossMap", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.GlossMap },
+            { "AlphRefMap", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.AlphRefMap },
             { "NightLight", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.NightTexture | SceneryMaterialOptions.NightLight },
             { "nightlight", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.NightTexture | SceneryMaterialOptions.NightLight },
             { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend },
