@@ -1973,7 +1973,7 @@ namespace Orts.Viewer3D
 
     public class SharedShape : IDisposable
     {
-        static List<string> ShapeWarnings = new List<string>();
+        static readonly HashSet<string> ShapeWarnings = new HashSet<string>();
 
         // This data is common to all instances of the shape
         public List<string> MatrixNames = new List<string>();
@@ -1983,6 +1983,7 @@ namespace Orts.Viewer3D
         public LodControl[] LodControls;
         public bool HasNightSubObj;
         public int RootSubObjectIndex = 0;
+        readonly HashSet<int> CheckedSrcUVLightConfigurations = new HashSet<int>();
         //public bool negativeBogie = false;
         public string SoundFileName = "";
         public float CustomAnimationFPS = 8;
@@ -2281,7 +2282,8 @@ namespace Orts.Viewer3D
 
                     if (lightModelConfiguration.uv_ops.Count > 0)
                     {
-                        WarnUnsupportedSrcUVIdx(sharedShape.FilePath, lightModelConfiguration);
+                        if (sharedShape.CheckedSrcUVLightConfigurations.Add(vertexState.LightCfgIdx))
+                            WarnUnsupportedSrcUVIdx(sharedShape.FilePath, lightModelConfiguration);
 
                         if (lightModelConfiguration.uv_ops[0].TexAddrMode - 1 >= 0 && lightModelConfiguration.uv_ops[0].TexAddrMode - 1 < UVTextureAddressModeMap.Length)
                             options |= UVTextureAddressModeMap[lightModelConfiguration.uv_ops[0].TexAddrMode - 1];
