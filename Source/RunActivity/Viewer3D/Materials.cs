@@ -1016,6 +1016,8 @@ namespace Orts.Viewer3D
             shader.VertexLightingEnabled = false;
             shader.VertexLightingDay = 1;
             shader.NightLightModifier = 1;
+            shader.UVScale = Vector2.One;
+            shader.DetailUVScaleRatio = Vector2.One;
             shader.UVOpReflectMapFull = false;
             shader.DetailUVOpReflectMapFull = false;
 
