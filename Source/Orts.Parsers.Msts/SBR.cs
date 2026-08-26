@@ -62,7 +62,7 @@ namespace Orts.Parsers.Msts
             {
                 // Skip over the 2 byte zlib header and onto the DEFLATE stream itself
                 fb.Read(buffer, 16, 2);
-                fb = new DeflateStream(fb, CompressionMode.Decompress);
+                fb = new BufferedStream(new DeflateStream(fb, CompressionMode.Decompress));
             }
             else if (headerString.StartsWith("\r\nSIMISA"))
             {
