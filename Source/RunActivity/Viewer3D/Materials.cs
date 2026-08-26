@@ -757,7 +757,7 @@ namespace Orts.Viewer3D
         };
         private static readonly Dictionary<TextureAddressMode, Dictionary<float, SamplerState>> SamplerStates = new Dictionary<TextureAddressMode, Dictionary<float, SamplerState>>();
 
-        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias, string detailTexturePath = null)
+        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias, string detailTexturePath)
             : base(viewer, String.Format("{0}:{1}:{2:X}:{3}", texturePath, detailTexturePath, options, mipMapBias))
         {
             Options = options;
@@ -1267,7 +1267,7 @@ namespace Orts.Viewer3D
         public readonly int HierarchyIndex;
 
         public ScreenMaterial(Viewer viewer, string key, int hierarchyIndex)
-            : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0)
+            : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0, null)
         {
             HierarchyIndex = hierarchyIndex;
         }
