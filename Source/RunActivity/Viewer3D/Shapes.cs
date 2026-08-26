@@ -1832,21 +1832,32 @@ namespace Orts.Viewer3D
     /// </summary>
     public class MutableShapePrimitive : ShapePrimitive
     {
+        readonly SharedShape.VertexBufferSet.ShapeVertex[] VertexData;
+
         /// <remarks>
         /// Buffers cannot be expanded, so take care to properly set <paramref name="maxVertices"/> and <paramref name="maxIndices"/>,
         /// which define the maximum sizes of the vertex and index buffers, respectively.
         /// </remarks>
         public MutableShapePrimitive(Material material, int maxVertices, int maxIndices, int[] hierarchy, int hierarchyIndex)
             : base(material: material,
-                   vertexBufferSet: new SharedShape.VertexBufferSet(new VertexPositionNormalTexture[maxVertices], material.Viewer.GraphicsDevice),
+                   vertexBufferSet: new SharedShape.VertexBufferSet(maxVertices, material.Viewer.GraphicsDevice),
                    indexData: new ushort[maxIndices],
                    graphicsDevice: material.Viewer.GraphicsDevice,
                    hierarchy: hierarchy,
-                   hierarchyIndex: hierarchyIndex) { }
+                   hierarchyIndex: hierarchyIndex)
+        {
+            VertexData = new SharedShape.VertexBufferSet.ShapeVertex[maxVertices];
+        }
 
         public void SetVertexData(VertexPositionNormalTexture[] data, int minVertexIndex, int numVertices, int primitiveCount)
         {
-            VertexBuffer.SetData(SharedShape.VertexBufferSet.CreateVertexData(data));
+            for (var i = 0; i < numVertices; i++)
+            {
+                var vertex = data[minVertexIndex + i];
+                VertexData[i] = new SharedShape.VertexBufferSet.ShapeVertex(vertex.Position, vertex.Normal, vertex.TextureCoordinate, Color.White, Color.Black);
+            }
+
+            VertexBuffer.SetData(VertexData, 0, numVertices);
             PrimitiveCount = primitiveCount;
         }
 
@@ -2525,6 +2536,11 @@ namespace Orts.Viewer3D
             public VertexBufferSet(VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice)
                 : this(CreateVertexData(vertexData), graphicsDevice)
             {
+            }
+
+            public VertexBufferSet(int vertexCount, GraphicsDevice graphicsDevice)
+            {
+                Buffer = new VertexBuffer(graphicsDevice, ShapeVertex.VertexDeclaration, vertexCount, BufferUsage.WriteOnly);
             }
 
             public VertexBufferSet(ShapeVertex[] vertexData, GraphicsDevice graphicsDevice)
