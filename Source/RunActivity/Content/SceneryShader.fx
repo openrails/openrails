@@ -682,7 +682,19 @@ float4 PSDetailMod2X9_3(in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSDetailMod2X9_1(in VERTEX_OUTPUT In) : COLOR0
 {
-    return PSDetailMod2X(false, false, In);
+	const float FullBrightness = 1.0;
+	const float ShadowBrightness = 0.5;
+
+	float4 Color = tex2D(Image, In.TexCoords.xy);
+	Color.rgb *= tex2D(Detail, PSDetailTexCoords(In)).rgb * 2;
+	float4 SurfaceColor = Color * In.Color;
+	clip(SurfaceColor.a - ReferenceAlpha);
+
+	float3 litColor = SurfaceColor.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(false, true, In) + ImageTextureIsNight));
+	litColor *= NightColorModifier;
+	_PSApplyHeadlights(litColor, Color.rgb, In);
+	_PSApplyFog(litColor, In);
+	return float4(litColor, SurfaceColor.a);
 }
 
 float4 PSGlossMap9_3(in VERTEX_OUTPUT In) : COLOR0
