@@ -2280,6 +2280,9 @@ namespace Orts.Viewer3D
                     }
 
                     if (lightModelConfiguration.uv_ops.Count > 0)
+                    {
+                        WarnUnsupportedSrcUVIdx(sharedShape.FilePath, lightModelConfiguration);
+
                         if (lightModelConfiguration.uv_ops[0].TexAddrMode - 1 >= 0 && lightModelConfiguration.uv_ops[0].TexAddrMode - 1 < UVTextureAddressModeMap.Length)
                             options |= UVTextureAddressModeMap[lightModelConfiguration.uv_ops[0].TexAddrMode - 1];
                         else if (!ShapeWarnings.Contains("texture_addressing_mode:" + lightModelConfiguration.uv_ops[0].TexAddrMode))
@@ -2287,6 +2290,7 @@ namespace Orts.Viewer3D
                             Trace.TraceInformation("Skipped unknown texture addressing mode {1} first seen in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[0].TexAddrMode);
                             ShapeWarnings.Add("texture_addressing_mode:" + lightModelConfiguration.uv_ops[0].TexAddrMode);
                         }
+                    }
 
                     if (primitiveState.alphatestmode == 1)
                         options |= SceneryMaterialOptions.AlphaTest;
@@ -2462,6 +2466,41 @@ namespace Orts.Viewer3D
             static uv_op GetUVOp(light_model_cfg lightModelConfiguration, int textureIndex)
             {
                 return textureIndex >= 0 && textureIndex < lightModelConfiguration.uv_ops.Count ? lightModelConfiguration.uv_ops[textureIndex] : null;
+            }
+
+            static void WarnUnsupportedSrcUVIdx(string shapeFilePath, light_model_cfg lightModelConfiguration)
+            {
+                for (var i = 0; i < lightModelConfiguration.uv_ops.Count; ++i)
+                {
+                    var uvOp = lightModelConfiguration.uv_ops[i];
+                    var srcUVIdx = GetSrcUVIdx(uvOp);
+                    if (srcUVIdx == null || srcUVIdx == 0)
+                        continue;
+
+                    var warningKey = String.Format("uv_op_src_uv_idx:{0}:{1}", uvOp.GetType().Name, srcUVIdx);
+                    if (ShapeWarnings.Contains(warningKey))
+                        continue;
+
+                    Trace.TraceInformation("Unsupported SrcUVIdx {2} for {1} first seen in shape {0}; Open Rails currently uses vertex_uvs[0].", shapeFilePath, uvOp.GetType().Name, srcUVIdx);
+                    ShapeWarnings.Add(warningKey);
+                }
+            }
+
+            static int? GetSrcUVIdx(uv_op uvOp)
+            {
+                var copy = uvOp as uv_op_copy;
+                if (copy != null)
+                    return copy.SrcUVIdx;
+
+                var uniformScale = uvOp as uv_op_uniformscale;
+                if (uniformScale != null)
+                    return uniformScale.SrcUVIdx;
+
+                var nonUniformScale = uvOp as uv_op_nonuniformscale;
+                if (nonUniformScale != null)
+                    return nonUniformScale.SrcUVIdx;
+
+                return null;
             }
 
             static Vector2 GetUVScale(uv_op uvOp)
