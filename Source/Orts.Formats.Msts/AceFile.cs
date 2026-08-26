@@ -159,21 +159,24 @@ namespace Orts.Formats.Msts
                         scanlineOffsets[imageIndex][y] = reader.ReadInt32();
                 }
 
-                var scanlineDataEnd = reader.BaseStream.Position;
-                for (var imageIndex = 0; imageIndex < imageCount; imageIndex++)
+                if (reader.BaseStream is BufferedInMemoryStream)
                 {
-                    var imageWidth = width / (int)Math.Pow(2, imageIndex);
-                    var imageHeight = height / (int)Math.Pow(2, imageIndex);
-                    var scanlineLength = channels.Sum(channel => (channel.Size * imageWidth + 7) / 8);
-                    for (var y = 0; y < imageHeight; y++)
-                        scanlineDataEnd = Math.Max(scanlineDataEnd, offsetBase + scanlineOffsets[imageIndex][y] + scanlineLength);
-                }
+                    var scanlineDataEnd = reader.BaseStream.Position;
+                    for (var imageIndex = 0; imageIndex < imageCount; imageIndex++)
+                    {
+                        var imageWidth = width / (int)Math.Pow(2, imageIndex);
+                        var imageHeight = height / (int)Math.Pow(2, imageIndex);
+                        var scanlineLength = channels.Sum(channel => (channel.Size * imageWidth + 7) / 8);
+                        for (var y = 0; y < imageHeight; y++)
+                            scanlineDataEnd = Math.Max(scanlineDataEnd, offsetBase + scanlineOffsets[imageIndex][y] + scanlineLength);
+                    }
 
-                while (reader.BaseStream.Position < scanlineDataEnd)
-                {
-                    var bytesToRead = (int)Math.Min(4096, scanlineDataEnd - reader.BaseStream.Position);
-                    if (reader.ReadBytes(bytesToRead).Length == 0)
-                        throw new EndOfStreamException();
+                    while (reader.BaseStream.Position < scanlineDataEnd)
+                    {
+                        var bytesToRead = (int)Math.Min(4096, scanlineDataEnd - reader.BaseStream.Position);
+                        if (reader.ReadBytes(bytesToRead).Length == 0)
+                            throw new EndOfStreamException();
+                    }
                 }
 
                 var buffer = new int[width * height];
