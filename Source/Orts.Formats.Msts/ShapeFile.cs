@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 using System;
 using System.Collections.Generic;
@@ -109,7 +110,100 @@ namespace Orts.Formats.Msts
             file.VerifyEndOfBlock();
         }
 
+        /// <summary>
+        /// Determines the corners of the 'bounding box' for the shape
+        /// </summary>
+        /// <returns>Two Vector3s, the first measuring the minimum extent of the shape,
+        /// the second measuring the maximum extent of the shape</returns>
+        public (Vector3, Vector3) GetBoundingLimits()
+        {
+            Vector3 mins = new Vector3(float.PositiveInfinity);
+            Vector3 maxes = new Vector3(float.NegativeInfinity);
 
+            // Determine size specifically for LOD0's (nearest LOD) sub objects
+            foreach (sub_object subObj in shape.lod_controls[0].distance_levels[0].sub_objects)
+            {
+                // Use vertex sets in the sub object to determine which vertices to check
+                foreach (vertex_set vSet in subObj.vertex_sets)
+                {
+                    // Use the vertex state used by this vertex set to determine the matrix used
+                    vtx_state vState = shape.vtx_states[vSet.VtxStateIdx];
+
+                    // The index of the matrix used by this vertex state
+                    int mIndex = vState.imatrix;
+
+                    // The 'actual' XNA matrix used to determine the vertex transformation
+                    Matrix mat = Matrix.Identity;
+
+                    // How deep are we in the hierarchy? Set a limit to prevent infinite loops
+                    int depth = 0;
+                    int maxDepth = shape.lod_controls[0].distance_levels[0].distance_level_header.hierarchy.Max();
+
+                    // Determine the overall transformation matrix from the root to the current matrix by following the hierarchy
+                    do
+                    {
+                        matrix m = shape.matrices[mIndex];
+
+                        // Convert the shape file matrix to an XNA matrix
+                        Matrix matTransform = new Matrix
+                        {
+                            M11 = m.AX,
+                            M12 = m.AY,
+                            M13 = m.AZ, //
+                            M14 = 0,
+                            M21 = m.BX,
+                            M22 = m.BY,
+                            M23 = m.BZ, //
+                            M24 = 0,
+                            M31 = m.CX, //
+                            M32 = m.CY, //
+                            M33 = m.CZ,
+                            M34 = 0,
+                            M41 = m.DX,
+                            M42 = m.DY,
+                            M43 = m.DZ, //
+                            M44 = 1.0f
+                        };
+
+                        // Add the effect of this transformation to the overall transformation 
+                        mat = mat * matTransform;
+
+                        // Determine the index of the next highest matrix in the hierarchy
+                        mIndex = shape.lod_controls[0].distance_levels[0].distance_level_header.hierarchy[mIndex];
+
+                        depth++;
+                    } // Keep calculating until we have calculated the root, or until a loop is encountered
+                    while (mIndex > -1 && mIndex != vState.imatrix && mIndex < shape.matrices.Count && depth <= maxDepth);
+
+                    // Determine position of every vertex in this set from point position and transformed by the matrix
+                    for (int i = vSet.StartVtxIdx; i < vSet.StartVtxIdx + vSet.VtxCount; i++)
+                    {
+                        // Determine vertex position from vertex index and point index
+                        point p = shape.points[subObj.vertices[i].ipoint];
+                        Vector3 pPos = new Vector3(p.X, p.Y, p.Z);
+
+                        pPos = Vector3.Transform(pPos, mat);
+
+                        if (pPos.X < mins.X)
+                            mins.X = pPos.X;
+                        if (pPos.X > maxes.X)
+                            maxes.X = pPos.X;
+
+                        if (pPos.Y < mins.Y)
+                            mins.Y = pPos.Y;
+                        if (pPos.Y > maxes.Y)
+                            maxes.Y = pPos.Y;
+
+                        if (pPos.Z < mins.Z)
+                            mins.Z = pPos.Z;
+                        if (pPos.Z > maxes.Z)
+                            maxes.Z = pPos.Z;
+                    }
+                }
+            }
+
+            return (mins, maxes);
+        }
     }
 
     public class shape
