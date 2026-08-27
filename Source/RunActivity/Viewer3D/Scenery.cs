@@ -46,6 +46,7 @@ using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using ORTS.Common;
+using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
 using System;
 using System.Collections.Generic;
@@ -384,40 +385,34 @@ namespace Orts.Viewer3D
                         }
                         else
                         {
-                            // See if superelevation should be used on this piece of track
-                            if (viewer.Simulator.UseSuperElevation
-                                && SuperElevationManager.DecomposeStaticSuperElevation(viewer, trackObj, worldMatrix, dTrackList, shapeFilePath))
+                            // Determine if this is a turntable or transfertable
+                            MovingTable movingTable = null;
+                            if (containsMovingTable)
                             {
-                                // Don't add scenery for this section of track, dynamic superelevated track will be created instead
+                                movingTable = Program.Simulator.MovingTables.FirstOrDefault(table =>
+                                    worldObject.UID == table.UID &&
+                                    WFileName == table.WFile);
                             }
-                            // No superelevation, use static shapes
-                            else if (!containsMovingTable)
-                                sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
-                            else
+
+                            if (movingTable != null)
                             {
-                                var found = false;
-                                foreach (var movingTable in Program.Simulator.MovingTables)
+                                if (movingTable is Turntable turntable)
                                 {
-                                    if (worldObject.UID == movingTable.UID && WFileName == movingTable.WFile)
-                                    {
-                                        found = true;
-                                        if (movingTable is Simulation.Turntable)
-                                        {
-                                            var turntable = movingTable as Simulation.Turntable;
-                                            turntable.ComputeCenter(worldMatrix);
-                                            var startingY = Math.Asin(-2 * (worldObject.QDirection.A * worldObject.QDirection.C - worldObject.QDirection.B * worldObject.QDirection.D));
-                                            sceneryObjects.Add(new TurntableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, turntable, startingY));
-                                        }
-                                        else
-                                        {
-                                            var transfertable = movingTable as Simulation.Transfertable;
-                                            transfertable.ComputeCenter(worldMatrix);
-                                            sceneryObjects.Add(new TransfertableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, transfertable));
-                                        }
-                                        break;
-                                    }
+                                    turntable.ComputeCenter(worldMatrix);
+                                    var startingY = Math.Asin(-2 * (worldObject.QDirection.A * worldObject.QDirection.C - worldObject.QDirection.B * worldObject.QDirection.D));
+                                    sceneryObjects.Add(new TurntableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, turntable, startingY));
                                 }
-                                if (!found) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                                else if (movingTable is Transfertable transfertable)
+                                {
+                                    transfertable.ComputeCenter(worldMatrix);
+                                    sceneryObjects.Add(new TransfertableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, transfertable));
+                                }
+                            }
+                            // Regular track; Only add scenery object if superelevation is NOT used
+                            else if (!(viewer.Simulator.UseSuperElevation
+                                && SuperElevationManager.DecomposeStaticSuperElevation(viewer, trackObj, worldMatrix, dTrackList, shapeFilePath)))
+                            {
+                                sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                             }
                         }
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true
@@ -433,10 +428,16 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(DyntrackObj))
                     {
-                        if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
-                            Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        // Dynamic track objects may be road or track
+                        // Only add wires to track
+                        DyntrackObj dyntrackObj = (DyntrackObj)worldObject;
+                        if (!dyntrackObj.IsRoad &&
+                            viewer.Simulator.Settings.Wire == true &&
+                            viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
+                            Wire.DecomposeDynamicWire(viewer, dTrackList, dyntrackObj, worldMatrix);
                         // Add DyntrackDrawers for individual subsections
-                        SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        SuperElevationManager.DecomposeDynamicSuperElevation(
+                            viewer, dTrackList, dyntrackObj, worldMatrix);
 
                     }
                     // Objects other than tracks
