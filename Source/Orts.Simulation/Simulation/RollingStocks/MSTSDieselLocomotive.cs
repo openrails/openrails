@@ -541,6 +541,10 @@ namespace Orts.Simulation.RollingStocks
                 GearBoxController = new MSTSNotchController(DieselEngines[0].GearBox.NumOfGears + 1);
             }
 
+            EnginesRPM = new float[DieselEngines.Count];
+            EnginesPower = new float[DieselEngines.Count];
+            EnginesTorque = new float[DieselEngines.Count];
+
             base.Initialize();
 
             // Initialise water level in steam heat boiler
@@ -793,7 +797,14 @@ namespace Orts.Simulation.RollingStocks
         {
             EngineRPMRatio = (DieselEngines[0].RealRPM - DieselEngines[0].IdleRPM) / (DieselEngines[0].MaxRPM - DieselEngines[0].IdleRPM);
 
-            Variable1 = ThrottlePercent / 100.0f;
+            for (int i = 0; i < DieselEngines.Count; i++)
+            {
+                EnginesRPM[i] = DieselEngines[i].RealRPM;
+                EnginesPower[i] = DieselEngines[i].OutputPowerW;
+                EnginesTorque[i] = DieselEngines[i].OutputPowerW / RPM.ToRadpS(DieselEngines[i].RealRPM);
+            }
+
+            Variable1[0] = ThrottlePercent / 100.0f;
             // else Variable1 = MotiveForceN / MaxForceN; // Gearbased, Variable1 proportional to motive force
             // allows for motor volume proportional to effort.
 
