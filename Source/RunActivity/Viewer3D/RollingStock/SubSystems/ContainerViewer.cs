@@ -103,7 +103,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         {
             Container = container;
             Viewer = viewer;
-            ContainerShape = new AnimatedShape(viewer, container.BaseShapeFileFolderSlash + container.ShapeFileName + '\0' + container.BaseShapeFileFolderSlash, new WorldPosition(containerHandlingItem.ShapePosition), ShapeFlags.ShadowCaster);
+            ContainerShape = new AnimatedShape(viewer, container.BaseShapeFileFolderSlash + container.ShapeFileName + '\0' + container.BaseShapeFileFolderSlash, container.BaseShapeFileFolderSlash + container.ShapeDescriptor, new WorldPosition(containerHandlingItem.ShapePosition), ShapeFlags.ShadowCaster);
             if (ContainerShape.SharedShape.LodControls.Length > 0)
             {
                 foreach (var lodControl in ContainerShape.SharedShape.LodControls)
@@ -129,7 +129,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         {
             Container = container;
             Viewer = viewer;
-            ContainerShape = new AnimatedShape(viewer, container.BaseShapeFileFolderSlash + container.ShapeFileName + '\0' + container.BaseShapeFileFolderSlash, new WorldPosition(container.WorldPosition), ShapeFlags.ShadowCaster);
+            ContainerShape = new AnimatedShape(viewer, container.BaseShapeFileFolderSlash + container.ShapeFileName + '\0' + container.BaseShapeFileFolderSlash, container.BaseShapeFileFolderSlash + container.ShapeDescriptor, new WorldPosition(container.WorldPosition), ShapeFlags.ShadowCaster);
             if (ContainerShape.SharedShape.LodControls.Length > 0)
             {
                 foreach (var lodControl in ContainerShape.SharedShape.LodControls)
