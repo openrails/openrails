@@ -1434,24 +1434,30 @@ namespace Orts.Viewer3D.RollingStock
 
 
         /// <summary>
-        /// Load the various car sounds
+        /// Load and generate sound sources for all car sounds
         /// </summary>
-        /// <param name="wagonFolderSlash"></param>
+        /// <param name="wagonFolderSlash">Location of the engine/wagon file for this train car, determines where to look for audio files.</param>
         private void LoadCarSounds(string wagonFolderSlash)
         {
-            if (MSTSWagon.MainSoundFileName != null) LoadCarSound(wagonFolderSlash, MSTSWagon.MainSoundFileName);
-            if (MSTSWagon.InteriorSoundFileName != null) LoadCarSound(wagonFolderSlash, MSTSWagon.InteriorSoundFileName);
-            if (MSTSWagon.Cab3DSoundFileName != null) LoadCarSound(wagonFolderSlash, MSTSWagon.InteriorSoundFileName);
+            List<string> soundFileNames = new List<string>();
+            if (MSTSWagon.MainSoundFileNames != null)
+                soundFileNames.AddRange(MSTSWagon.MainSoundFileNames);
+            if (MSTSWagon.InteriorSoundFileNames != null)
+                soundFileNames.AddRange(MSTSWagon.InteriorSoundFileNames);
+            if (MSTSWagon.Cab3DSoundFileNames != null)
+                soundFileNames.AddRange(MSTSWagon.Cab3DSoundFileNames);
+
+            LoadCarSound(wagonFolderSlash, soundFileNames);
         }
 
 
         /// <summary>
-        /// Load the car sound, attach it to the car
+        /// Load the car sound, attach it to the car.
         /// check first in the wagon folder, then the global folder for the sound.
         /// If not found, report a warning.
         /// </summary>
-        /// <param name="wagonFolderSlash"></param>
-        /// <param name="filename"></param>
+        /// <param name="wagonFolderSlash">Location of the engine/wagon file for this train car, determines where to look for audio files.</param>
+        /// <param name="filename">sms file path to generate a sound source using.</param>
         protected void LoadCarSound(string wagonFolderSlash, string filename)
         {
             if (filename == null)
@@ -1471,7 +1477,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (MSTSWagon is MSTSLocomotive && MSTSWagon.Train != null && MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI)
                 {
                     if (MSTSWagon.CarID == MSTSWagon.Train.Cars[0].CarID)
-                    // Lead loco, enable AI train trigger
+                        // Lead loco, enable AI train trigger
                         MSTSWagon.SignalEvent(Event.AITrainLeadLoco);
                     // AI train helper loco
                     else MSTSWagon.SignalEvent(Event.AITrainHelperLoco);
@@ -1489,14 +1495,28 @@ namespace Orts.Viewer3D.RollingStock
         }
 
         /// <summary>
+        /// Load the list of car sounds, attach them to the car.
+        /// </summary>
+        /// <param name="wagonFolderSlash">Location of the engine/wagon file for this train car, determines where to look for audio files.</param>
+        /// <param name="filenames">List of sms file paths to generate sound sources for.</param>
+        protected void LoadCarSound(string wagonFolderSlash, List<string> filenames)
+        {
+            if (filenames == null || filenames.Count == 0) return;
+
+            foreach (string filename in filenames)
+                LoadCarSound(wagonFolderSlash, filename);
+        }
+
+        /// <summary>
         /// Load the inside and outside sounds for the default level 0 track type.
         /// </summary>
         private void LoadTrackSounds()
         {
             if (Viewer.TrackTypes.Count > 0)  // TODO, still have to figure out if this should be part of the car, or train, or track
             {
-                if (!string.IsNullOrEmpty(MSTSWagon.InteriorSoundFileName))
-                    LoadTrackSound(Viewer.TrackTypes[0].InsideSound);
+                foreach (string soundFile in MSTSWagon.InteriorSoundFileNames)
+                    if (!string.IsNullOrEmpty(soundFile))
+                        LoadTrackSound(Viewer.TrackTypes[0].InsideSound);
 
                 LoadTrackSound(Viewer.TrackTypes[0].OutsideSound);
             }
