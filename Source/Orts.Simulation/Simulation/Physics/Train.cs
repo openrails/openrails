@@ -199,7 +199,7 @@ namespace Orts.Simulation.Physics
         public float MaxAuxTenderWaterMassKG;
         public bool IsAuxTenderCoupled = false;
         bool AuxTenderFound = false;
-        string PrevWagonType;
+        TrainCar PrevWagonType;
 
         public bool HasControlCarWithGear = false;
 
@@ -2334,6 +2334,11 @@ namespace Orts.Simulation.Physics
         //================================================================================================//
         /// <summary>
         /// Update Auxiliary Tenders added to train
+        /// NOTE TODO:  It has been reported that setting the WagonType to "Tender for an AuxTender will cause a crash.
+        /// To overcome this in MSTSWagon.cs in FindAuxTendersSteamLocomotive() set the following line.
+        /// if (TendersSteamLocomotive == null) ignore, and return (break out of the loop) with an appropriate error message.
+        /// Note, ideally this AuxTender function should be expanded to allow more then one AuxTender to be added to a consist and,  
+        /// also multiple steam locomotives in the smae consist, each with an AuxTendershould also be catered for.
         /// <\summary>
 
         public void UpdateAuxTender()
@@ -2349,20 +2354,32 @@ namespace Orts.Simulation.Physics
 
                     if (Cars[i].AuxWagonType == "AuxiliaryTender" && i > LeadLocomotiveIndex && IsPlayerDriven)  // If value has been entered for auxiliary tender & AuxTender car value is greater then the lead locomotive & and it is player driven
                     {
-                        PrevWagonType = Cars[i - 1].AuxWagonType;
-                        if (PrevWagonType == "Tender" || PrevWagonType == "Engine")  // Aux tender found in consist
-                        {
-                            if (Simulator.Activity != null) // If an activity check to see if fuel presets are used.
-                            {
-                                if (mstsSteamLocomotive.AuxTenderMoveFlag == false)  // If locomotive hasn't moved and Auxtender connected use fuel presets on aux tender
-                                {
-                                    MaxAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG;
-                                    mstsSteamLocomotive.CurrentAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG * (Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f); // 
-                                    IsAuxTenderCoupled = true;      // Flag to advise MSTSSteamLovcomotive that tender is set.
-                                    AuxTenderFound = true;      // Auxililary tender found in consist.
+                        PrevWagonType = i > 0 ? Cars[i - 1] : null;
 
+                        if (PrevWagonType != null)
+                        {
+                            // Aux tender found in consist, either behind a tank locomotive, so no tender required, or behind a tender, so tender is already present. Aux tender can be used to supplement water supply.
+                            if (PrevWagonType.WagonType == TrainCar.WagonTypes.Tender || (PrevWagonType.WagonType == TrainCar.WagonTypes.Engine && mstsSteamLocomotive.IsTenderRequired == 0))
+                            {
+                                if (Simulator.Activity != null) // If an activity check to see if fuel presets are used.
+                                {
+                                    if (mstsSteamLocomotive.AuxTenderMoveFlag == false)  // If locomotive hasn't moved and Auxtender connected use fuel presets on aux tender
+                                    {
+                                        MaxAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG;
+                                        mstsSteamLocomotive.CurrentAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG * (Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f); // 
+                                        IsAuxTenderCoupled = true;      // Flag to advise MSTSSteamLovcomotive that tender is set.
+                                        AuxTenderFound = true;      // Auxililary tender found in consist.
+
+                                    }
+                                    else  // Otherwise assume aux tender not connected at start of activity and therefore full value of water mass available when connected.
+                                    {
+                                        MaxAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG;
+                                        mstsSteamLocomotive.CurrentAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG;
+                                        IsAuxTenderCoupled = true;
+                                        AuxTenderFound = true;      // Auxililary tender found in consist.
+                                    }
                                 }
-                                else     // Otherwise assume aux tender not connected at start of activity and therefore full value of water mass available when connected.
+                                else  // In explore mode set aux tender to full water value
                                 {
                                     MaxAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG;
                                     mstsSteamLocomotive.CurrentAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG;
@@ -2370,31 +2387,22 @@ namespace Orts.Simulation.Physics
                                     AuxTenderFound = true;      // Auxililary tender found in consist.
                                 }
                             }
-                            else  // In explore mode set aux tender to full water value
+                            else // Aux tender not found in consist
                             {
-                                MaxAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG;
-                                mstsSteamLocomotive.CurrentAuxTenderWaterMassKG = Cars[i].AuxTenderWaterMassKG;
-                                IsAuxTenderCoupled = true;
-                                AuxTenderFound = true;      // Auxililary tender found in consist.
-
+                                MaxAuxTenderWaterMassKG = 0.0f;
+                                IsAuxTenderCoupled = false;
                             }
 
-
                         }
-                        else // Aux tender not found in consist
-                        {
-                            MaxAuxTenderWaterMassKG = 0.0f;
-                            IsAuxTenderCoupled = false;
-                        }
-
+#if DEBUG_AUXTENDER
+                        Trace.TraceInformation("=============================== DEBUG_AUXTENDER (Train.cs) ==============================================================");
+                        // Trace.TraceInformation("Activity Fuel Value {0}", ActivityFuelLevel);
+                        Trace.TraceInformation("CarID {0} AuxWagonType {1} LeadLocomotive {2} Max WaterMass {3} Current Water Mass {4}", i, Cars[i].AuxWagonType, LeadLocomotiveIndex, MaxAuxTenderWaterMassKG, mstsSteamLocomotive.CurrentAuxTenderWaterMassKG);
+                        Trace.TraceInformation("Prev {0} AuxCoupled {1}", PrevWagonType.WagonType, IsAuxTenderCoupled);
+#endif
                     }
 
-#if DEBUG_AUXTENDER
-                    Trace.TraceInformation("=============================== DEBUG_AUXTENDER (Train.cs) ==============================================================");
-                   // Trace.TraceInformation("Activity Fuel Value {0}", ActivityFuelLevel);
-                    Trace.TraceInformation("CarID {0} AuxWagonType {1} LeadLocomotive {2} Max WaterMass {3} Current Water Mass {4}", i, Cars[i].AuxWagonType, LeadLocomotiveIndex, MaxAuxTenderWaterMassKG, mstsSteamLocomotive.CurrentAuxTenderWaterMassKG);
-                    Trace.TraceInformation("Prev {0} Coupled {1}", PrevWagonType, IsAuxTenderCoupled);
-#endif
+
 
                 }
 
