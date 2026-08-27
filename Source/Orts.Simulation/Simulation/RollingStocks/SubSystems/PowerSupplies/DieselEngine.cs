@@ -1296,7 +1296,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <returns>The current target RPM value, limited between IdleRPM and MaxRPM</returns>
         public float GetTargetRPM(float elapsedClockSeconds)
         {
-            float targetRPM = 0f;
+            float targetRPM = DemandedRPM;
 
             if (State == DieselEngineState.Running)
             {
