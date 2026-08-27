@@ -236,7 +236,7 @@ namespace Orts.Viewer3D.Debugging
             // groupBoxCache
             // 
             this.groupBoxCache.Controls.Add(this.tableLayoutPanel1);
-            this.groupBoxCache.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.groupBoxCache.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBoxCache.Location = new System.Drawing.Point(3, 196);
             this.groupBoxCache.Name = "groupBoxCache";
             this.groupBoxCache.Size = new System.Drawing.Size(176, 73);

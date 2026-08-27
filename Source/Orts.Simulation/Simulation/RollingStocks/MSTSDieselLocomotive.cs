@@ -801,7 +801,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 EnginesRPM[i] = DieselEngines[i].RealRPM;
                 EnginesPower[i] = DieselEngines[i].OutputPowerW;
-                EnginesTorque[i] = DieselEngines[i].OutputPowerW / (DieselEngines[i].RealRPM * (2.0f * (float)Math.PI / 60.0f));
+                EnginesTorque[i] = DieselEngines[i].OutputPowerW / RPM.ToRadpS(DieselEngines[i].RealRPM);
             }
 
             Variable1[0] = ThrottlePercent / 100.0f;
