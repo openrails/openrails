@@ -553,6 +553,8 @@ namespace Orts.Simulation.RollingStocks
             ThrottleController = new MSTSNotchController();
             DynamicBrakeController = new MSTSNotchController();
             TrainControlSystem = new ScriptedTrainControlSystem(this);
+
+            TrainBrakeControllers.Add(BrakeModes.Undefined, TrainBrakeController);
         }
 
         /// <summary>
@@ -1411,6 +1413,14 @@ namespace Orts.Simulation.RollingStocks
             DPSyncTrainRelease = locoCopy.DPSyncTrainRelease;
             DPSyncEmergency = locoCopy.DPSyncEmergency;
             DPSyncIndependent = locoCopy.DPSyncIndependent;
+            foreach (var key in locoCopy.TrainBrakeControllers.Keys)
+            {
+                var tbcCopy = locoCopy.TrainBrakeControllers[key].Clone(this);
+                if (TrainBrakeControllers.ContainsKey(key))
+                    TrainBrakeControllers[key] = tbcCopy;
+                else
+                    TrainBrakeControllers.Add(key, tbcCopy);
+            }
 
             LocomotivePowerSupply.Copy(locoCopy.LocomotivePowerSupply);
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
@@ -2457,15 +2467,18 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
             }
 
-            TrainBrakeController.Update(elapsedClockSeconds);
-            if (TrainBrakeController.UpdateValue > 0.0)
+            if (TrainBrakeController != null)
             {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus());
-            }
+                TrainBrakeController.Update(elapsedClockSeconds);
+                if (TrainBrakeController.UpdateValue > 0.0)
+                {
+                    Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus());
+                }
 
-            if (TrainBrakeController.UpdateValue < 0.0)
-            {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
+                if (TrainBrakeController.UpdateValue < 0.0)
+                {
+                    Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
+                }
             }
 
             if (EngineBrakeController != null)
@@ -3014,7 +3027,7 @@ namespace Orts.Simulation.RollingStocks
                 // Simple braking - control Ejector automatically based upon the brake control position
                 // Stop ejector operation if full vacuum pressure reached
                 {
-                if ((TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)) && (this.BrakeSystem.BrakeLine1PressurePSI > Vac.ToPress(this.TrainBrakeController.MaxPressurePSI)))
+                if (TrainBrakeController != null && (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)) && (this.BrakeSystem.BrakeLine1PressurePSI > Vac.ToPress(this.TrainBrakeController.MaxPressurePSI)))
                 {
                     LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
                     LargeEjectorSoundOn = true;
@@ -3027,7 +3040,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else if (!LargeEjectorControllerFitted && CarBrakeSystemType != "straight_vacuum_single_pipe") // Use an "automatic" large ejector when using a dreadnought style brake controller - large ejector stays on until moved back to released position
                 {
-                    if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
+                    if (TrainBrakeController?.TrainBrakeControllerState == ControllerState.Release)
                     {
                         LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
                         LargeEjectorSoundOn = true;
@@ -3883,24 +3896,22 @@ namespace Orts.Simulation.RollingStocks
             if (DynamicBrakeController != null && DynamicBrakeController.CurrentValue > 0 && checkBraking)
             {
                 if (!(CombinedControlType == CombinedControl.ThrottleDynamic
-                    || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0))
+                    || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController?.CurrentValue > 0))
                 {
                     Simulator.Confirmer.Warning(CabControl.Throttle, CabSetting.Warn1);
                     return;
                 }
             }
 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeController.CurrentValue > 0)
+            if (DynamicBrakeController != null && CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeController.CurrentValue > 0)
             {
                 StartDynamicBrakeDecrease(null);
-                if (DynamicBrakeController != null)
-                    DynamicBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
+                DynamicBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
             }
-            else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
+            else if (TrainBrakeController != null && CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
             {
                 StartTrainBrakeDecrease(null);
-                if (TrainBrakeController != null)
-                    TrainBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
+                TrainBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
             }
             else
                 StartThrottleIncrease(ThrottleController.SmoothMax());
@@ -4017,17 +4028,15 @@ namespace Orts.Simulation.RollingStocks
             {
                 ThrottleController.CurrentValue = 1;
             }
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && ThrottleController.CurrentValue <= 0)
+            if (DynamicBrakeController != null && CombinedControlType == CombinedControl.ThrottleDynamic && ThrottleController.CurrentValue <= 0)
             {
                 StartDynamicBrakeIncrease(null);
-                if (DynamicBrakeController != null)
-                    DynamicBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
+                DynamicBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
             }
-            else if (CombinedControlType == CombinedControl.ThrottleAir && ThrottleController.CurrentValue <= 0)
+            else if (TrainBrakeController != null && CombinedControlType == CombinedControl.ThrottleAir && ThrottleController.CurrentValue <= 0)
             {
                 StartTrainBrakeIncrease(null);
-                if (TrainBrakeController != null)
-                    TrainBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
+                TrainBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
             }
             else
                 StartThrottleDecrease(ThrottleController.SmoothMin());
@@ -4072,17 +4081,17 @@ namespace Orts.Simulation.RollingStocks
             AlerterReset(TCSEvent.ThrottleChanged);
             ThrottleController.StopDecrease();
 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic)
+            if (DynamicBrakeController != null && CombinedControlType == CombinedControl.ThrottleDynamic)
             {
                 // sometimes called without a corresponding start
-                if (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime < CommandStartTime)
+                if (DynamicBrakeController.CommandStartTime < CommandStartTime)
                     DynamicBrakeController.CommandStartTime = CommandStartTime;
                 StopDynamicBrakeIncrease();
             }
-            else if (CombinedControlType == CombinedControl.ThrottleAir)
+            else if (TrainBrakeController != null && CombinedControlType == CombinedControl.ThrottleAir)
             {
                 // sometimes called without a corresponding start
-                if (TrainBrakeController != null && TrainBrakeController.CommandStartTime < CommandStartTime)
+                if (TrainBrakeController.CommandStartTime < CommandStartTime)
                     TrainBrakeController.CommandStartTime = CommandStartTime;
                 StopTrainBrakeIncrease();
             }
@@ -4379,7 +4388,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 SetDynamicBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
             }
-            else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
+            else if (TrainBrakeController != null && CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
             {
                 SetTrainBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
             }
@@ -4400,9 +4409,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 SetThrottleValue(1 - MathHelper.Clamp(value, 0, CombinedControlSplitPosition) / CombinedControlSplitPosition);
 
-                if (CombinedControlType == CombinedControl.ThrottleAir)
+                if (TrainBrakeController != null && CombinedControlType == CombinedControl.ThrottleAir)
                     TrainBrakeController.IntermediateValue = 0;
-                else if (CombinedControlType == CombinedControl.ThrottleDynamic)
+                else if (DynamicBrakeController != null && CombinedControlType == CombinedControl.ThrottleDynamic)
                     DynamicBrakeController.IntermediateValue = 0;
             }
         }
@@ -4659,6 +4668,9 @@ namespace Orts.Simulation.RollingStocks
         #region TrainBrakeController
         public void StartTrainBrakeIncrease(float? target)
         {
+            if (TrainBrakeController == null)
+                return;
+
             if (CombinedControlType == CombinedControl.ThrottleAir)
                 ThrottleController.SetValue(0);
 
@@ -4675,6 +4687,9 @@ namespace Orts.Simulation.RollingStocks
 
         public void StopTrainBrakeIncrease()
         {
+            if (TrainBrakeController == null)
+                return;
+
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StopIncrease();
             new TrainBrakeCommand(Simulator.Log, true, TrainBrakeController.CurrentValue, TrainBrakeController.CommandStartTime);
@@ -4682,6 +4697,9 @@ namespace Orts.Simulation.RollingStocks
 
         public void StartTrainBrakeDecrease(float? target, bool toZero = false)
         {
+            if (TrainBrakeController == null)
+                return;
+
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartDecrease(target, toZero);
             TrainBrakeController.CommandStartTime = Simulator.ClockTime;
@@ -4691,6 +4709,9 @@ namespace Orts.Simulation.RollingStocks
 
         public void StopTrainBrakeDecrease()
         {
+            if (TrainBrakeController == null)
+                return;
+
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StopDecrease();
             new TrainBrakeCommand(Simulator.Log, false, TrainBrakeController.CurrentValue, TrainBrakeController.CommandStartTime);
@@ -4703,6 +4724,9 @@ namespace Orts.Simulation.RollingStocks
         /// <param name="target"></param>
         public void TrainBrakeChangeTo(bool increase, float? target)
         {  // Need a better way to express brake as a single number?
+            if (TrainBrakeController == null)
+                return;
+
             if (increase)
             {
                 if (target > TrainBrakeController.CurrentValue)
@@ -4725,6 +4749,9 @@ namespace Orts.Simulation.RollingStocks
 
         public override string GetTrainBrakeStatus()
         {
+            if (TrainBrakeController == null)
+                return "";
+
             var train = Simulator.PlayerLocomotive.Train;//Debrief Eval
             string s = TrainBrakeController.GetStatus();
  
@@ -4748,6 +4775,9 @@ namespace Orts.Simulation.RollingStocks
 
         public void SetTrainBrakeValue(float value)
         {
+            if (TrainBrakeController == null)
+                return;
+
             var controller = TrainBrakeController;
             var oldValue = controller.IntermediateValue;
             var change = controller.SetValue(value);
@@ -4765,6 +4795,9 @@ namespace Orts.Simulation.RollingStocks
 
         public void SetTrainBrakePercent(float percent)
         {
+            if (TrainBrakeController == null)
+                return;
+
             // Insure we have TrainBrakeController ; some vehicles do not
             // such as Hy-rail truck
             // if (HasTrainBrake)
