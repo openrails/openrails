@@ -16,12 +16,11 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
-using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -32,37 +31,95 @@ namespace Orts.Formats.Msts
     /// </summary>
     public class SharedSMSFileManager
     {
-        private static Dictionary<string, SoundManagmentFile> SharedSMSFiles = new Dictionary<string, SoundManagmentFile>();
+        public static Dictionary<string, SoundManagmentFile> SharedSMSFiles = new Dictionary<string, SoundManagmentFile>();
 
         public static int SwitchSMSNumber;
         public static int CurveSMSNumber;
         public static int CurveSwitchSMSNumber;
         public static bool AutoTrackSound = false;
+        public static bool TrackFileReferences = false;
 
         public static bool PlayDefaultTrackSoundsContinuous = false;
         public static float ConcreteSleepers;
 
         public static SoundManagmentFile Get(string path)
         {
-            if (!SharedSMSFiles.ContainsKey(path))
+            // Use resolved path, without any 'up one level' ("..\\") calls
+            path = Path.GetFullPath(path).ToLowerInvariant();
+
+            if (!SharedSMSFiles.ContainsKey(path) || SharedSMSFiles[path].StaleData)
             {
-                SoundManagmentFile smsFile = new SoundManagmentFile(path);
-                SharedSMSFiles.Add(path, smsFile);
-                return smsFile;
+                SharedSMSFiles[path] = new SoundManagmentFile(path);
+                return SharedSMSFiles[path];
             }
             else
             {
                 return SharedSMSFiles[path];
             }
         }
+
+        /// <summary>
+        /// Sets the stale data flag for ALL shared SMS files to the given bool
+        /// (default true)
+        /// </summary>
+        public static void SetAllStale(bool stale = true)
+        {
+            foreach (SoundManagmentFile sms in SharedSMSFiles.Values)
+                sms.StaleData = stale;
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for the sound files in the given set of paths,
+        /// with an optional set of include files to also mark sound files as stale
+        /// </summary>
+        /// <returns>bool indicating if any sound file changed from fresh to stale</returns>
+        public static bool MarkStale(HashSet<string> smsPaths, HashSet<string> incPaths = null)
+        {
+            bool found = false;
+
+            foreach (string smsKey in SharedSMSFiles.Keys)
+            {
+                if (!SharedSMSFiles[smsKey].StaleData)
+                {
+                    if (smsPaths != null && smsPaths.Contains(smsKey))
+                    {
+                        SharedSMSFiles[smsKey].StaleData = true;
+                        found = true;
+
+                        Trace.TraceInformation("SMS file {0} was updated on disk and will be reloaded.", smsKey);
+                    }
+                    else if (incPaths != null && SharedSMSFiles[smsKey].FilesReferenced.Count > 1)
+                    {
+                        foreach (string fileRef in SharedSMSFiles[smsKey].FilesReferenced)
+                        {
+                            if (incPaths.Contains(fileRef))
+                            {
+                                SharedSMSFiles[smsKey].StaleData = true;
+                                found = true;
+
+                                Trace.TraceInformation("INC file {0} used by SMS file {1} was updated on disk, SMS will be reloaded.", fileRef, smsKey);
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Continue scanning next sound manager, there may be multiple sound managers with stale include files
+            }
+
+            return found;
+        }
     }
 
 	/// <summary>
-	/// Represents the hiearchical structure of the SMS File
+	/// Represents the hierarchical structure of the SMS File
 	/// </summary>
 	public class SoundManagmentFile
 	{
 		public Tr_SMS Tr_SMS;
+
+        public bool StaleData = false;
+        // Hot reloading: List of .inc file paths (in lowercase) referenced by this cvf file
+        public HashSet<string> FilesReferenced = new HashSet<string>();
 
 		public SoundManagmentFile( string filePath )
 		{
@@ -72,9 +129,13 @@ namespace Orts.Formats.Msts
         private void ReadFile(string filePath)
         {
             using (STFReader stf = new STFReader(filePath, false))
+            {
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("tr_sms", ()=>{ Tr_SMS = new Tr_SMS(stf); }),
                 });
+                if (SharedSMSFileManager.TrackFileReferences)
+                    FilesReferenced = stf.FileNames.Select(p => p.ToLowerInvariant()).ToHashSet();
+            }
         }
 
 	} // class SMSFile
