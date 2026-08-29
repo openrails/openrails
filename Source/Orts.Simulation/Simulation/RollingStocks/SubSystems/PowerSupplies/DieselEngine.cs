@@ -1086,9 +1086,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             RPMRange = MaxRPM - IdleRPM;
             MagnitudeRange = MaxMagnitude - InitialMagnitude;
             ExhaustRange = MaxExhaust - InitialExhaust;
-            ExhaustSteadyColor.A = 10;
-            ExhaustDecelColor.A = 10;
             TemperatureDegC = IdleTemperatureDegC;
+
             // Do not attach a gearbox to engines that do not provide traction
             if (GearBoxParams.IsInitialized && ProvidesTraction)
             {
