@@ -68,6 +68,7 @@ namespace Orts.Viewer3D.Popups
         HUDGraphSet LocomotiveGraphs;
         HUDGraphMesh LocomotiveGraphsThrottle;
         HUDGraphMesh LocomotiveGraphsInputPower;
+        HUDGraphMesh LocomotiveGraphsAuxiliaryPower;
         HUDGraphMesh LocomotiveGraphsOutputPower;
 
         HUDGraphSet DebugGraphs;
@@ -109,6 +110,7 @@ namespace Orts.Viewer3D.Popups
             LocomotiveGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             LocomotiveGraphsThrottle = LocomotiveGraphs.Add(Viewer.Catalog.GetString("Throttle"), "0", "100%", Color.Blue, 50);
             LocomotiveGraphsInputPower = LocomotiveGraphs.Add(Viewer.Catalog.GetString("Power In/Out"), "0", "100%", Color.Yellow, 50);
+            LocomotiveGraphsAuxiliaryPower = LocomotiveGraphs.AddOverlapped(Color.Orange, 50);
             LocomotiveGraphsOutputPower = LocomotiveGraphs.AddOverlapped(Color.Green, 50);
 
             ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
@@ -211,25 +213,23 @@ namespace Orts.Viewer3D.Popups
             if (Visible && TextPages[TextPage] == TextPageLocomotiveInfo)
             {
                 var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
-                var locoD = Viewer.PlayerLocomotive as MSTSDieselLocomotive;
-                var locoE = Viewer.PlayerLocomotive as MSTSElectricLocomotive;
-                var locoS = Viewer.PlayerLocomotive as MSTSSteamLocomotive;
                 LocomotiveGraphsThrottle.AddSample(loco.ThrottlePercent * 0.01f);
-                if (locoD != null)
+                if (loco is MSTSDieselLocomotive locoD)
                 {
-                        LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
-                        LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
+                    LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
+                    LocomotiveGraphsAuxiliaryPower.AddSample(locoD.DieselEngines.OutputPowerW / locoD.DieselEngines.MaxPowerW);
+                    LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.TractionPowerW / locoD.DieselEngines.MaxPowerW);
                 }
-                if (locoE != null)
+                if (loco is MSTSElectricLocomotive)
                 {
                     LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
-                    LocomotiveGraphsOutputPower.AddSample(Math.Abs(loco.LocomotiveAxles.AxleMotivePowerW) / loco.MaxPowerW);
+                    LocomotiveGraphsOutputPower.AddSample(loco.LocomotiveAxles.DrivePowerW / loco.MaxPowerW);
                 }
                 //TODO: plot correct values
-                if (locoS != null)
+                if (loco is MSTSSteamLocomotive)
                 {
                     LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
-                    LocomotiveGraphsOutputPower.AddSample(Math.Abs(loco.LocomotiveAxles.AxleMotivePowerW) / loco.MaxPowerW);
+                    LocomotiveGraphsOutputPower.AddSample(loco.LocomotiveAxles.DrivePowerW / loco.MaxPowerW);
                 }
 
                 LocomotiveGraphs.PrepareFrame(frame);
@@ -838,6 +838,16 @@ namespace Orts.Viewer3D.Popups
                     circuitBreakerState = Viewer.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(dualModePowerSupply.CircuitBreaker.State));
                     tractionCutOffRelayState = Viewer.Catalog.GetParticularString("TractionCutOffRelay", GetStringAttribute.GetPrettyName(dualModePowerSupply.TractionCutOffRelay.State));
                     mainPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.MainPowerSupplyState));
+                    auxiliaryPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.AuxiliaryPowerSupplyState));
+                    if (locomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
+                    {
+                        electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
+                        electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
+                        electricTrainSupplyPower = FormatStrings.FormatPower(locomotivePowerSupply.ElectricTrainSupplyPowerW, true, false, false);
+                    }
+                }
+                else if (powerSupply is ScriptedControlCarPowerSupply controlCarPowerSuppply)
+                {
                     auxiliaryPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.AuxiliaryPowerSupplyState));
                     if (locomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
                     {

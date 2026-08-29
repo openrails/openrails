@@ -214,7 +214,12 @@ namespace Orts.Simulation.RollingStocks
 
         public bool CylinderCocksAreOpen;
         public bool BlowdownValveOpen;
-        public bool CylinderCompoundOn;  // Flag to indicate whether compound locomotive is in compound or simple mode of operation - simple = true (ie bypass valve is open)
+
+        /// <summary>
+        /// Flag to indicate whether compound locomotive is in compound or simple mode of operation
+        /// Simple mode = true (ie bypass valve is open)
+        /// </summary>
+        public bool CylinderCompoundOn;   
         bool FiringIsManual;
         bool BlowerIsOn = false;
         bool BoilerIsPriming = false;
@@ -2984,8 +2989,8 @@ namespace Orts.Simulation.RollingStocks
             base.InitializeMoving();
             WheelSpeedMpS = SpeedMpS;
             DynamicBrakePercent = -1;
-            CutoffController.SetValue(Train.MUReverserPercent / 100);
-            ThrottleController.SetValue(Train.MUThrottlePercent / 100);
+            CutoffController.SetValue(Train.MUReverserPercent / 100, true);
+            ThrottleController.SetValue(Train.MUThrottlePercent / 100, true);
             HotStart = true;
         }
 
@@ -6748,7 +6753,7 @@ namespace Orts.Simulation.RollingStocks
                             LPslipCompressionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPCompPressure_n_AtmPSI, 0);
                             LPslipAdmissionPressureAtmPSI = Math.Max(SteamEngines[numberofengine].LPCompPressure_q_AtmPSI, 0);
                         }
-                        else  // Simple mode
+                        else  // Bypass Valve opened - Simple mode
                         {
                             // HP Cylinder
                             slipInitialPressureAtmPSI = Math.Max(SteamEngines[numberofengine].Pressure_a_AtmPSI, 0);
@@ -6797,7 +6802,7 @@ namespace Orts.Simulation.RollingStocks
                         float crankAngleRad = (float)(LocalAxlePostionRad + WheelCrankAngleDiffRad[i]);
 
                         crankAngleRad = (float)(MathHelper.WrapAngle(crankAngleRad)); // Ensures that crank angle is in the range 0 - 180 - 0
-
+                                               
                         float crankCylinderPressure = (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate); // fallback default value
 
                         // Calculate cylinder position in relation to crank (and hence wheel) position.
@@ -6838,7 +6843,7 @@ namespace Orts.Simulation.RollingStocks
 
                         // forward stroke
                         if (slipcutoff > forwardCylinderPosition) // pressure will be in cutoff section of cylinder
-                        {
+                        {          
                             // In cutoff section of cylinder pressure follows a straight line representation between initial pressure and cutoff pressure
                             float pressureGradient = (slipCutoffPressureAtmPSI - slipInitialPressureAtmPSI) / (slipcutoff + CylinderClearancePC - CylinderClearancePC);
                             forwardCylinderPressure = slipInitialPressureAtmPSI + pressureGradient * (forwardCylinderPosition - CylinderClearancePC);
@@ -6880,11 +6885,44 @@ namespace Orts.Simulation.RollingStocks
                             crankCylinderPressure = 0;
                         }
 
-                        float slipCylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * SteamEngines[numberofengine].CylindersDiameterM * SteamEngines[numberofengine].CylindersDiameterM / 4.0f);
+                        float slipCylinderPistonAreaFt2 = 0;
+                        float pistonForceLbf = 0;
 
+                        // ToDo - this needs to be corrected to facilitate 100% correct operation of compound locomotives, full indicator
+                        // diagram needs to be calculated.
                         // Calculate wheel tangential forces = Force applied to wheels
+                        // For compound locomotive when in simple mode, both HP and LP cylinders work in parallel, so the area
+                        // of the piston is the sum of the HP and LP cylinder areas.
 
-                        float pistonForceLbf = Me2.ToIn2(Me2.FromFt2(slipCylinderPistonAreaFt2)) * crankCylinderPressure;
+                        if (!CylinderCompoundOn && SteamEngineType == SteamEngineTypes.Compound)
+                        {
+                            // Compound mode
+                            slipCylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * SteamEngines[numberofengine].CylindersDiameterM * SteamEngines[numberofengine].CylindersDiameterM / 4.0f);
+
+                            float LPslipCylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * SteamEngines[numberofengine].LPCylindersDiameterM * SteamEngines[numberofengine].LPCylindersDiameterM / 4.0f);
+
+                            // Token fix - needs to be reworked as part of valve and indicator drawing rework
+                            pistonForceLbf = Me2.ToIn2(Me2.FromFt2(slipCylinderPistonAreaFt2)) * SteamEngines[numberofengine].LPCylinderMEPPSI + Me2.ToIn2(Me2.FromFt2(LPslipCylinderPistonAreaFt2)) * SteamEngines[numberofengine].HPCylinderMEPPSI;
+
+                            //    pistonForceLbf = Me2.ToIn2(Me2.FromFt2(slipCylinderPistonAreaFt2 + LPslipCylinderPistonAreaFt2)) * crankCylinderPressure;
+                        }
+                        else if (CylinderCompoundOn && SteamEngineType == SteamEngineTypes.Compound)
+                        {
+
+                            // Simple Mode - bypass valve opened, so HP 
+                            // cylinder is bypassed, and starting is only done with LP cylinders.
+
+                            slipCylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * SteamEngines[numberofengine].CylindersDiameterM * SteamEngines[numberofengine].LPCylindersDiameterM / 4.0f);
+
+                            pistonForceLbf = Me2.ToIn2(Me2.FromFt2(slipCylinderPistonAreaFt2)) * crankCylinderPressure;
+                        }
+                        else
+                        {
+                            // For simple locomotives only
+                            slipCylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * SteamEngines[numberofengine].CylindersDiameterM * SteamEngines[numberofengine].CylindersDiameterM / 4.0f);
+
+                            pistonForceLbf = Me2.ToIn2(Me2.FromFt2(slipCylinderPistonAreaFt2)) * crankCylinderPressure;
+                        }
 
                         float tangentialCrankForceFactor = Math.Abs(sin + (CrankRadiusFt / ConnectRodLengthFt) * sin * cos);
 
@@ -6900,7 +6938,6 @@ namespace Orts.Simulation.RollingStocks
                         // Calculate the speed factor to allow for variation in speed
                         // Adjust the above factor to allow for the speed of rotation on the parts - based upon Eq 8 (pg 21)
                         float inertiaSpeedCorrectionFactor = 0.00034f * CrankRadiusFt * (float)Math.Pow(pS.TopM(SteamEngines[numberofengine].DriveWheelRevRpS), 2);
-
 
                         // Calculate the inertia force of the reciprocating weights
                         float reciprocatingInertiaForcelbf = inertiaSpeedCorrectionFactor * reciprocatingInertiaAngleFactor * ReciprocatingWeightLb;

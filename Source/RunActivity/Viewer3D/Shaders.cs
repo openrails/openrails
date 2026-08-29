@@ -18,10 +18,8 @@
 // This file is the responsibility of the 3D & Environment Team.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using Orts.Viewer3D.Processes;
@@ -40,39 +38,6 @@ namespace Orts.Viewer3D
             string filePath = Path.Combine(ApplicationInfo.ProcessDirectory, "Content", filename + ".mgfx");
             return File.ReadAllBytes(filePath);
         }
-    }
-
-    class ProcessorContext : ContentProcessorContext
-    {
-        public override TargetPlatform TargetPlatform { get { return TargetPlatform.Windows; } }
-        public override GraphicsProfile TargetProfile { get { return GraphicsProfile.HiDef; } }
-        public override string BuildConfiguration { get { return string.Empty; } }
-        public override string IntermediateDirectory { get { return string.Empty; } }
-        public override string OutputDirectory { get { return string.Empty; } }
-        public override string OutputFilename { get { return string.Empty; } }
-
-        public override ContentIdentity SourceIdentity { get { return sourceIdentity; } }
-        readonly ContentIdentity sourceIdentity = new ContentIdentity();
-
-        public override OpaqueDataDictionary Parameters { get { return parameters; } }
-        readonly OpaqueDataDictionary parameters = new OpaqueDataDictionary();
-
-        public override ContentBuildLogger Logger { get { return logger; } }
-        readonly ContentBuildLogger logger = new TraceContentBuildLogger();
-
-        public override void AddDependency(string filename) { }
-        public override void AddOutputFile(string filename) { }
-
-        public override TOutput Convert<TInput, TOutput>(TInput input, string processorName, OpaqueDataDictionary processorParameters) { throw new NotImplementedException(); }
-        public override TOutput BuildAndLoadAsset<TInput, TOutput>(ExternalReference<TInput> sourceAsset, string processorName, OpaqueDataDictionary processorParameters, string importerName) { throw new NotImplementedException(); }
-        public override ExternalReference<TOutput> BuildAsset<TInput, TOutput>(ExternalReference<TInput> sourceAsset, string processorName, OpaqueDataDictionary processorParameters, string importerName, string assetName) { throw new NotImplementedException(); }
-    }
-
-    class TraceContentBuildLogger : ContentBuildLogger
-    {
-        public override void LogMessage(string message, params object[] messageArgs) => Trace.TraceInformation(message, messageArgs);
-        public override void LogImportantMessage(string message, params object[] messageArgs) => Trace.TraceInformation(message, messageArgs);
-        public override void LogWarning(string helpLink, ContentIdentity contentIdentity, string message, params object[] messageArgs) => Trace.TraceWarning(message, messageArgs);
     }
 
     [CallOnThread("Render")]

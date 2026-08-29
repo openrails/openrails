@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
-    <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
+    <TargetFramework>net6-windows</TargetFramework>
     <OutputType>Exe</OutputType>
     <RootNamespace>Orts.SettingsExporter</RootNamespace>
     <AssemblyName>Contrib.SettingsExporter</AssemblyName>
     <ApplicationIcon>..\..\ORTS.ico</ApplicationIcon>
     <IsPublishable>False</IsPublishable>
     <AssemblyTitle>Open Rails Settings Exporter (Contributed)</AssemblyTitle>
-    <Description>Export ORTS Settings from the Registry to the INI file, or vice versa.</Description>
+    <Description>Open Rails Transport Simulator</Description>
     <Company>Open Rails</Company>
     <Product>Open Rails</Product>
     <Copyright>Copyright © 2009 - 2025</Copyright>
