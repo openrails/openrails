@@ -133,7 +133,7 @@ namespace Orts.Simulation.RollingStocks
             base.InitializeMoving();
             WheelSpeedMpS = SpeedMpS;
 
-            ThrottleController.SetValue(Train.MUThrottlePercent / 100);
+            ThrottleController.SetValue(Train.MUThrottlePercent / 100, true);
         }
 
         /// <summary>

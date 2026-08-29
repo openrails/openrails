@@ -316,6 +316,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             return change;
         }
 
+        /// <summary>
+        /// Sets the actual value of the controller, and adjusts the actual notch to match.
+        /// Plus optional ability to force the controller to change immediately, ignoring the update delay time.
+        /// </summary>
+        /// <param name="value">Normalized value the controller to be set to. Normally is within range [-1..1]</param>
+        /// <param name="immediate">Bool indicating if DelayTimeBeforeUpdating should be ignored, default false.</param>
+        /// <returns>1 or -1 if there was a significant change in controller position, otherwise 0.
+        /// Needed for hinting whether a serializable command is to be issued for repeatability.
+        /// Sign is indicating the direction of change, being displayed by confirmer text.</returns>
+        public int SetValue(float value, bool immediate)
+        {
+            int changed = SetValue(value);
+
+            if (immediate) // Override the delay time before updating
+                TimeSinceLastChange = float.MaxValue;
+
+            return changed;
+        }
+
         public float SetPercent(float percent)
         {
             if (percent > 100) SetValue(1);

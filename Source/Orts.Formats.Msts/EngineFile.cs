@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.IO;
+using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Parsers.Msts;
 
@@ -29,6 +30,7 @@ namespace Orts.Formats.Msts
         public string Name;
         public string EngineType;
         public float MaxPowerW;
+        public float TransmissionEfficiency = 1.0f;
         public float MaxForceN;
         public float MaxContinuousForceN;
         public float MaxDynamicBrakeForceN;
@@ -53,6 +55,7 @@ namespace Orts.Formats.Msts
                             new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                             new STFReader.TokenProcessor("type", ()=>{ EngineType = stf.ReadStringBlock(null); }),
                             new STFReader.TokenProcessor("maxpower", ()=>{ MaxPowerW = stf.ReadFloatBlock( STFReader.UNITS.Power, null); }),
+                            new STFReader.TokenProcessor("ortsdieseltransmissionefficiency", ()=>{ TransmissionEfficiency = MathHelper.Clamp(stf.ReadFloatBlock(STFReader.UNITS.None, null), 0.001f, 1.0f); }),
                             new STFReader.TokenProcessor("maxforce", ()=>{ MaxForceN = stf.ReadFloatBlock( STFReader.UNITS.Force, null); }),
                             new STFReader.TokenProcessor("maxcontinuousforce", ()=>{ MaxContinuousForceN = stf.ReadFloatBlock( STFReader.UNITS.Force, null); }),
                             new STFReader.TokenProcessor("dynamicbrakesmaximumforce", ()=>{ MaxDynamicBrakeForceN = stf.ReadFloatBlock( STFReader.UNITS.Force, null); }),

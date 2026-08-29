@@ -3031,8 +3031,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             base.InitializeMoving();
             WheelSpeedMpS = SpeedMpS;
             DynamicBrakePercent = -1;
-            CutoffController.SetValue(Train.MUReverserPercent / 100);
-            ThrottleController.SetValue(Train.MUThrottlePercent / 100);
+            CutoffController.SetValue(Train.MUReverserPercent / 100, true);
+            ThrottleController.SetValue(Train.MUThrottlePercent / 100, true);
             HotStart = true;
         }
 
