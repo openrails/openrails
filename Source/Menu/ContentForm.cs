@@ -46,7 +46,7 @@ namespace Menu
         private string AutoInstallRouteName;
 
         private readonly string ImageTempFilename;
-        private Thread ImageThread;
+        private CancellationTokenSource ImageCancellation;
         private readonly string InfoTempFilename;
 
         private bool AutoInstallClosingBlocked;
@@ -276,38 +276,62 @@ namespace Menu
 
             if (!string.IsNullOrEmpty(AutoInstallRoutes[AutoInstallRouteName].Image))
             {
-                if (ImageThread != null)
-                {
-                    if (ImageThread.IsAlive)
-                    {
-                        ImageThread.Abort();
-                    }
-                }
+                // Cancel any fetch still in flight. This was ImageThread.Abort(), which always throws
+                // PlatformNotSupportedException on .NET 5 and later, so moving through the route list
+                // faster than an image could be fetched brought the menu down.
+                ImageCancellation?.Cancel();
+                ImageCancellation?.Dispose();
+                ImageCancellation = new CancellationTokenSource();
+                CancellationToken token = ImageCancellation.Token;
 
-                // use a thread as grabbing the picture from the web might take a few seconds
-                ImageThread = new Thread(() =>
-                {
-                    // wait one second as the user might scroll through the list
-                    Stopwatch sw = Stopwatch.StartNew();
-                    while (sw.ElapsedMilliseconds <= 1000) { }
+                // Capture these now: the fields change as the user moves through the list, so a fetch
+                // started earlier must not pick up a later route's values.
+                string imageUrl = AutoInstallRoutes[AutoInstallRouteName].Image;
+                string imageFilename = ImageTempFilename;
 
+                // grabbing the picture from the web might take a few seconds, so do it off the UI thread
+                _ = Task.Run(async () =>
+                {
                     try
                     {
+                        // wait one second as the user might scroll through the list
+                        await Task.Delay(1000, token).ConfigureAwait(false);
+
                         using (WebClient myWebClient = new WebClient())
-                                {
-                            myWebClient.DownloadFile(AutoInstallRoutes[AutoInstallRouteName].Image, ImageTempFilename);
-                            }
-                        if (File.Exists(ImageTempFilename))
+                        using (token.Register(myWebClient.CancelAsync))
                         {
-                            pictureBoxAutoInstallRoute.Image = new Bitmap(ImageTempFilename);
+                            await myWebClient.DownloadFileTaskAsync(imageUrl, imageFilename).ConfigureAwait(false);
                         }
+                        token.ThrowIfCancellationRequested();
+
+                        // Decode from a copy held in memory. Constructing a Bitmap from the path keeps
+                        // the file locked for the lifetime of the image, which made every later download
+                        // to that same temporary file fail silently.
+                        Image image;
+                        using (MemoryStream imageStream = new MemoryStream(File.ReadAllBytes(imageFilename)))
+                            image = new Bitmap(imageStream);
+
+                        // The picture box belongs to the UI thread.
+                        pictureBoxAutoInstallRoute.BeginInvoke((MethodInvoker)delegate
+                        {
+                            if (token.IsCancellationRequested)
+                            {
+                                image.Dispose();
+                                return;
+                            }
+                            pictureBoxAutoInstallRoute.Image?.Dispose();
+                            pictureBoxAutoInstallRoute.Image = image;
+                        });
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // superseded by a later selection
                     }
                     catch
                     {
                         // route lives whithout a picture, not such a problem
                     }
                 });
-                ImageThread.Start();
             }
 
             // text box with description
@@ -1824,6 +1848,10 @@ namespace Menu
 
             try
             {
+                // Stop any image fetch still running, so it cannot touch the form after it closes.
+                ImageCancellation?.Cancel();
+                ImageCancellation?.Dispose();
+                ImageCancellation = null;
                 if (pictureBoxAutoInstallRoute.Image != null)
                 {
                     pictureBoxAutoInstallRoute.Image.Dispose();
