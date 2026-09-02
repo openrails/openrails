@@ -57,6 +57,25 @@ namespace Tests.Orts.Parsers.OR
         }
 
         [Fact]
+        public static void RejectEmptyFile()
+        {
+            // An empty file gives ReadLine() == null; a blank first line gives "". Indexing either
+            // used to throw NullReferenceException / IndexOutOfRangeException out of the constructor.
+            using (var file = new TestFile(""))
+            {
+                Assert.Throws<InvalidDataException>(() => {
+                    var tr = new TimetableReader(file.FileName);
+                });
+            }
+            using (var file = new TestFile("\n;b;c;d"))
+            {
+                Assert.Throws<InvalidDataException>(() => {
+                    var tr = new TimetableReader(file.FileName);
+                });
+            }
+        }
+
+        [Fact]
         public static void ParseStructure()
         {
             using (var file = new TestFile(";b;c;d\n1;2;3\nA;B;C;D;E"))
