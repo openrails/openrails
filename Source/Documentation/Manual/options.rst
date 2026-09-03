@@ -650,6 +650,23 @@ for example km/h for metric and mph for imperial units.
 This conversion can be disabled by checking the box *Use internal units*,
 in which case data is logged in the units used by the software (e.g. m/s).
 
+.. _verbose-configuration-messages:
+
+Verbose ENG/WAG Configuration Messages
+--------------------------------------
+
+The "Verbose ENG/WAG configuration messages" option enables some
+additional logging for the ``OpenRailsLog.txt`` :ref:`log file <driving-logfile>`
+which reports information about the data Open Rails uses to simulate
+the engines and wagons used by the current activity.
+
+These messages do not report anything useful for normal sessions,
+but are very useful for content creators to understand what Open Rails
+is thinking. Logging from this setting will inform the creator about
+missing variables, invalid variables, and assumed values, which can help
+creators verify that their configuration includes all the necessary data
+for maximum functionality of their rolling stock.
+
 .. _options-system:
 
 System Options

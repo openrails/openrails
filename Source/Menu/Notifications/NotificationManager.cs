@@ -448,11 +448,21 @@ namespace Menu.Notifications
             return url;
         }
 
+        /// <summary>
+        /// Given a function that replaces a parameter with its value, this method replaces all parameters in the Notifications object.
+        /// </summary>
         void ReplaceParameters()
         {
             Notifications.ReplaceParameters(ReplaceParameterValues);
         }
 
+        /// <summary>
+        /// Given a string, replaces any parameters in the form {{parameter}} with their value from the ParameterDictionary.
+        /// If the ParameterDictionary is already loaded with override values, these are used first. Otherwise the program is queried for the value.
+        /// If a parameter is not recognised, it is not replaced.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         string ReplaceParameterValues(string value)
         {
             if (value == null) return value;
@@ -504,26 +514,26 @@ namespace Menu.Notifications
                         replacement = SystemInfo.Application.Version;
                         break;
                     case "runtime":
-                        replacement = Runtime.ToString();
+                        replacement = $"{Runtime.Name} {Runtime.Version}";
                         break;
                     case "system":
-                        replacement = SystemInfo.OperatingSystem.ToString();
+                        replacement = $"{SystemInfo.OperatingSystem.Name} {SystemInfo.OperatingSystem.Version}";
                         break;
                     case "memory":
-                        replacement = Direct3DFeatureLevels.ToString();
+                        replacement = InstalledMemoryMB.ToString();
                         break;
                     case "cpu":
                         replacement = "";
                         foreach (var cpu in CPUs)
                         {
-                            replacement += $", {cpu.Name}";
+                            replacement += (replacement == "") ? cpu.Name : ", " + cpu.Name;
                         }
                         break;
                     case "gpu":
                         replacement = "";
                         foreach (var gpu in GPUs)
                         {
-                            replacement += $", {gpu.Name}";
+                            replacement += (replacement == "") ? gpu.Name : ", " + gpu.Name;
                         }
                         break;
                     case "direct3d":

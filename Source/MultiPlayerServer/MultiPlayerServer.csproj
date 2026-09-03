@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
-    <TargetFramework Condition="'$(TargetFramework)' == ''">net5-windows</TargetFramework>
+    <TargetFramework>net6-windows</TargetFramework>
     <OutputType>Exe</OutputType>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
     <IsPublishable>False</IsPublishable>
