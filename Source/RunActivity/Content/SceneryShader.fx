@@ -660,7 +660,7 @@ float3 _PSGetShadowEffectMoments(in VERTEX_OUTPUT In)
     else if (depth < ShadowMapLimit.z)
         index = 2;
     else if (depth >= ShadowMapLimit.w)
-        return float3(0, 0, 1);
+        return (float3)0;
 
     float3 pos = mul(In.Shadow, ShadowMatrices[index]).xyz;
 
