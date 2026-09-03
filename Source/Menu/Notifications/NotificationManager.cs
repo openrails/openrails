@@ -682,9 +682,7 @@ namespace Menu.Notifications
                         Debug.WriteLine($"WARNING: {@namespace}.{name} not recognised item type");
                     }
 
-                    return (result is null)
-                        ? typeof(MissingItem)
-                        : typeof(Notifications).Assembly.GetType($"{@namespace}.{name}");
+                    return result ?? typeof(MissingItem);
                 }
                 else
                 {
