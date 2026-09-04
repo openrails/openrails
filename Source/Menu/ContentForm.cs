@@ -32,6 +32,7 @@ using System.IO.Compression;
 using System.Drawing;
 using System.Threading.Tasks;
 using GNU.Gettext.WinForms;
+using static Menu.Notifications.NotificationPage;
 
 namespace Menu
 {
@@ -467,7 +468,7 @@ namespace Menu
             try
             {
                 // show html file in default browser
-                Process.Start(InfoTempFilename);
+                Process.Start(new ProcessStartInfo { FileName = InfoTempFilename, UseShellExecute = true });
             }
             catch (Exception e)
             {
