@@ -157,7 +157,6 @@ namespace Menu
 
         void buttonDetails_Click(object sender, EventArgs e)
         {
-            Process.Start(LogFilePath);
             Process.Start(new ProcessStartInfo { FileName = LogFilePath, UseShellExecute = true });
         }
 
