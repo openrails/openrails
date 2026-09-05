@@ -400,7 +400,9 @@ namespace Orts.Simulation.RollingStocks
             // Get the path starting at the TRAINS folder, in order to produce a shorter, more legible, path
             string shortPath = wagFilePath.Remove(0, Simulator.BasePath.Length);
 
-            using (STFReader stf = new STFReader(wagFilePath, true))
+            using (STFReader stf = ConsistGenerator.IsWagonRecognized(wagFilePath)
+                ? new STFReader(ConsistGenerator.GetWagon(wagFilePath), wagFilePath, System.Text.Encoding.UTF8, true)
+                : new STFReader(wagFilePath, true))
             {
                 while (!stf.Eof)
                 {

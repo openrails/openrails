@@ -34,6 +34,7 @@ using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Common;
 using ORTS.Common;
+using Orts.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -42,6 +43,7 @@ using System.Linq;
 using System.Threading;
 using Event = Orts.Common.Event;
 using Events = Orts.Common.Events;
+using System.Collections;
 
 namespace Orts.Viewer3D
 {
@@ -74,7 +76,8 @@ namespace Orts.Viewer3D
             {
                 try
                 {
-                    Shapes.Add(path, new SharedShape(Viewer, path));
+                    var extension = Path.GetExtension(path.Split('\0')[0]).ToLower();
+                    Shapes.Add(path, extension == ".gltf" || extension == ".glb" ? new GltfShape(Viewer, path) : new SharedShape(Viewer, path));
                 }
                 catch (Exception error)
                 {
@@ -234,6 +237,7 @@ namespace Orts.Viewer3D
                 matrix *= SharedShape.Matrices[hi];
                 hi = shapePrimitive.Hierarchy[hi];
             }
+            matrix *= shapes.FirstOrDefault()?.SharedShape.ForwardZDirection ?? Matrix.Identity;
 
             var matricies = new Matrix[shapes.Count];
             for (var i = 0; i < shapes.Count; i++)
@@ -268,8 +272,6 @@ namespace Orts.Viewer3D
     /// </summary>
     public class PoseableShape : StaticShape
     {
-        protected static Dictionary<string, bool> SeenShapeAnimationError = new Dictionary<string, bool>();
-
         public Matrix[] XNAMatrices = new Matrix[0];  // the positions of the subobjects
 
         public readonly int[] Hierarchy;
@@ -294,14 +296,10 @@ namespace Orts.Viewer3D
                     Trace.TraceWarning("Couldn't load shape {0} file may be corrupt", location);
                 }
                 // The 0th matrix should always be the identity matrix
-                XNAMatrices = new Matrix[1];
-                XNAMatrices[0] = Matrix.Identity;
+                XNAMatrices = new[] { Matrix.Identity };
             }
 
-            if (SharedShape.LodControls.Length > 0 && SharedShape.LodControls[0].DistanceLevels.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0)
-                Hierarchy = SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
-            else
-                Hierarchy = new int[0];
+            Hierarchy = SharedShape.LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.FirstOrDefault()?.Hierarchy ?? new int[0];
         }
 
         public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition)
@@ -314,104 +312,9 @@ namespace Orts.Viewer3D
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
-        public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
+        public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Dictionary<int, bool> matrixVisible = null)
         {
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
-        }
-
-        /// <summary>
-        /// Adjust the pose of the specified node to the frame position specifed by key.
-        /// </summary>
-        public void AnimateMatrix(int iMatrix, float key)
-        {
-            // Animate the given matrix.
-            AnimateOneMatrix(iMatrix, key);
-
-            // Animate all child nodes in the hierarchy too.
-            for (var i = 0; i < Hierarchy.Length; i++)
-                if (Hierarchy[i] == iMatrix)
-                    AnimateMatrix(i, key);
-        }
-
-        protected virtual void AnimateOneMatrix(int iMatrix, float key)
-        {
-            if (SharedShape.Animations == null || SharedShape.Animations.Count == 0)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
-                    Trace.TraceInformation("Ignored missing animations data in shape {0}", SharedShape.FilePath);
-                SeenShapeAnimationError[SharedShape.FilePath] = true;
-                return;  // animation is missing
-            }
-
-            if (iMatrix < 0 || iMatrix >= SharedShape.Animations[0].anim_nodes.Count || iMatrix >= XNAMatrices.Length)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
-                    Trace.TraceInformation("Ignored out of bounds matrix {1} in shape {0}", SharedShape.FilePath, iMatrix);
-                SeenShapeAnimationError[SharedShape.FilePath] = true;
-                return;  // mismatched matricies
-            }
-
-            var anim_node = SharedShape.Animations[0].anim_nodes[iMatrix];
-            if (anim_node.controllers.Count == 0)
-                return;  // missing controllers
-
-            // Start with the intial pose in the shape file.
-            var xnaPose = SharedShape.Matrices[iMatrix];
-
-            foreach (controller controller in anim_node.controllers)
-            {
-                // Determine the frame index from the current frame ('key'). We will be interpolating between two key
-                // frames (the items in 'controller') so we need to find the last one LESS than the current frame
-                // and interpolate with the one after it.
-                var index = 0;
-                for (var i = 0; i < controller.Count; i++)
-                    if (controller[i].Frame <= key)
-                        index = i;
-                    else if (controller[i].Frame > key) // Optimisation, not required for algorithm.
-                        break;
-
-                var position1 = controller[index];
-                var position2 = index + 1 < controller.Count ? controller[index + 1] : controller[index];
-                var frame1 = position1.Frame;
-                var frame2 = position2.Frame;
-
-                // Make sure to clamp the amount, as we can fall outside the frame range. Also ensure there's a
-                // difference between frame1 and frame2 or we'll crash.
-                var amount = frame1 < frame2 ? MathHelper.Clamp((key - frame1) / (frame2 - frame1), 0, 1) : 0;
-
-                if (position1.GetType() == typeof(slerp_rot))  // rotate the existing matrix
-                {
-                    slerp_rot MSTS1 = (slerp_rot)position1;
-                    slerp_rot MSTS2 = (slerp_rot)position2;
-                    Quaternion XNA1 = new Quaternion(MSTS1.X, MSTS1.Y, -MSTS1.Z, MSTS1.W);
-                    Quaternion XNA2 = new Quaternion(MSTS2.X, MSTS2.Y, -MSTS2.Z, MSTS2.W);
-                    Quaternion q = Quaternion.Slerp(XNA1, XNA2, amount);
-                    Vector3 location = xnaPose.Translation;
-                    xnaPose = Matrix.CreateFromQuaternion(q);
-                    xnaPose.Translation = location;
-                }
-                else if (position1.GetType() == typeof(linear_key))  // a key sets an absolute position, vs shifting the existing matrix
-                {
-                    linear_key MSTS1 = (linear_key)position1;
-                    linear_key MSTS2 = (linear_key)position2;
-                    Vector3 XNA1 = new Vector3(MSTS1.X, MSTS1.Y, -MSTS1.Z);
-                    Vector3 XNA2 = new Vector3(MSTS2.X, MSTS2.Y, -MSTS2.Z);
-                    Vector3 v = Vector3.Lerp(XNA1, XNA2, amount);
-                    xnaPose.Translation = v;
-                }
-                else if (position1.GetType() == typeof(tcb_key)) // a tcb_key sets an absolute rotation, vs rotating the existing matrix
-                {
-                    tcb_key MSTS1 = (tcb_key)position1;
-                    tcb_key MSTS2 = (tcb_key)position2;
-                    Quaternion XNA1 = new Quaternion(MSTS1.X, MSTS1.Y, -MSTS1.Z, MSTS1.W);
-                    Quaternion XNA2 = new Quaternion(MSTS2.X, MSTS2.Y, -MSTS2.Z, MSTS2.W);
-                    Quaternion q = Quaternion.Slerp(XNA1, XNA2, amount);
-                    Vector3 location = xnaPose.Translation;
-                    xnaPose = Matrix.CreateFromQuaternion(q);
-                    xnaPose.Translation = location;
-                }
-            }
-            XNAMatrices[iMatrix] = xnaPose;  // update the matrix
         }
     }
 
@@ -421,171 +324,86 @@ namespace Orts.Viewer3D
     /// </summary>
     public class AnimatedShape : PoseableShape
     {
-        protected float AnimationKey;  // advances with time
-        protected float FrameRateMultiplier = 1; // e.g. in passenger view shapes MSTS divides by 30 the frame rate; this is the inverse
+        readonly AnimatedPart AnimatedPart;
 
-        /// <summary>
-        /// Construct and initialize the class
-        /// </summary>
         public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
             : base(viewer, path, initialPosition, flags)
         {
-            FrameRateMultiplier = 1 / frameRateDivisor;
+            if (frameRateDivisor == 0)
+                frameRateDivisor = 1.0f;
+
+            if (SharedShape.HasAnimations())
+            {
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAnimations();
+                AnimatedPart.SetMstsSpeed(1.0f / frameRateDivisor, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+            }
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // if the shape has animations
-            if (SharedShape.Animations?.Count > 0 && SharedShape.Animations[0].FrameCount > 0)
-            {
-                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds * FrameRateMultiplier;
-                while (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
-                while (AnimationKey < 0) AnimationKey += SharedShape.Animations[0].FrameCount;
-
-                // Update the pose for each matrix
-                for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
-                    AnimateMatrix(matrix, AnimationKey);
-            }
+            AnimatedPart?.UpdateLoop(1, elapsedTime);
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
 
-        //Class AnalogClockShape to animate analog OR-Clocks as child of AnimatedShape <- PoseableShape <- StaticShape
-    public class AnalogClockShape : AnimatedShape
+    public class AnalogClockShape : PoseableShape
     {
+        readonly AnimatedPart CentiSecondHand;
+        readonly AnimatedPart SecondHand;
+        readonly AnimatedPart MinuteHand;
+        readonly AnimatedPart HourHand;
+
         public AnalogClockShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
             : base(viewer, path, initialPosition, flags)
         {
+            if (!SharedShape.HasAnimations())
+                return;
+
+            CentiSecondHand = new AnimatedPart(this);
+            SecondHand = new AnimatedPart(this);
+            MinuteHand = new AnimatedPart(this);
+            HourHand = new AnimatedPart(this);
+
+            CentiSecondHand.AddAnimation("orts_chand_clock*");
+            SecondHand.AddAnimation("orts_shand_clock*");
+            MinuteHand.AddAnimation("orts_mhand_clock*");
+            HourHand.AddAnimation("orts_hhand_clock*");
+
+            CentiSecondHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
+            SecondHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
+            MinuteHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
+            HourHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
         }
 
-        protected override void AnimateOneMatrix(int iMatrix, float key)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (SharedShape.Animations == null || SharedShape.Animations.Count == 0)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
-                    Trace.TraceInformation("Ignored missing animations data in shape {0}", SharedShape.FilePath);
-                SeenShapeAnimationError[SharedShape.FilePath] = true;
-                return;  // animation is missing
-            }
+            var clockTimeSeconds = Viewer.Simulator.ClockTime;
 
-            if (iMatrix < 0 || iMatrix >= SharedShape.Animations[0].anim_nodes.Count || iMatrix >= XNAMatrices.Length)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
-                    Trace.TraceInformation("Ignored out of bounds matrix {1} in shape {0}", SharedShape.FilePath, iMatrix);
-                SeenShapeAnimationError[SharedShape.FilePath] = true;
-                return;  // mismatched matricies
-            }
+            var hour = clockTimeSeconds / (60 * 60);
+            clockTimeSeconds -= (int)hour * 60 * 60;
+            var minute = clockTimeSeconds / 60;
+            clockTimeSeconds -= (int)minute * 60;
+            var seconds = clockTimeSeconds;
 
-            var anim_node = SharedShape.Animations[0].anim_nodes[iMatrix];
-            if (anim_node.controllers.Count == 0)
-                    return;  // missing controllers
+            hour %= 12;
+            minute %= 60;
+            seconds %= 60;
 
-            // Start with the intial pose in the shape file.
-            var xnaPose = SharedShape.Matrices[iMatrix];
+            CentiSecondHand.SetState((float)(seconds / 60.0));
+            SecondHand.SetState((int)seconds / 60.0f);
+            MinuteHand.SetState((float)(minute / 60.0));
+            HourHand.SetState((float)(hour / 12.0));
 
-            foreach (controller controller in anim_node.controllers)
-            {
-                // Determine the frame index from the current frame ('key'). We will be interpolating between two key
-                // frames (the items in 'controller') so we need to find the last one LESS than the current frame
-                // and interpolate with the one after it.
-                var index = 0;
-                for (var i = 0; i < controller.Count; i++)
-                    if (controller[i].Frame <= key)
-                        index = i;
-                    else if (controller[i].Frame > key) // Optimisation, not required for algorithm.
-                        break;
-
-                //OR-Clock-hands Animation -------------------------------------------------------------------------------------------------------------
-                var animName = anim_node.Name.ToLowerInvariant();
-                if (animName.IndexOf("hand_clock") > -1)           //anim_node seems to be an OR-Clock-hand-matrix of an analog OR-Clock
-                {
-                    int gameTimeInSec = Convert.ToInt32((long)TimeSpan.FromSeconds(Viewer.Simulator.ClockTime).Ticks / 100000); //Game time as integer in milliseconds
-                    int clockHour = gameTimeInSec / 360000 % 24;                          //HOUR of Game time
-                    gameTimeInSec %= 360000;                                                //Game time by Modulo 360000 -> resultes minutes as rest
-                    int clockMinute = gameTimeInSec / 6000;                                 //MINUTE of Game time
-                    gameTimeInSec %= 6000;                                                  //Game time by Modulo 6000 -> resultes seconds as rest
-                    int clockSecond = gameTimeInSec / 100;                                  //SECOND of Game time
-                    int clockCenti = (gameTimeInSec - clockSecond * 100);                   //CENTI-SECOND of Game time
-                    int clockQuadrant = 0;                                                  //Preset: Start with Anim-Control 0 (first quadrant of OR-Clock)
-                    bool calculateClockHand = false;                                        //Preset: No drawing of a new matrix by default
-                    float quadrantAmount = 1;                                               //Preset: Represents part of the way from position1 to position2 (float Value between 0 and 1)
-                    if (animName.StartsWith("orts_chand_clock")) //Shape matrix is a CentiSecond Hand (continuous moved second hand) of an analog OR-clock
-                    {
-                        clockQuadrant = (int)clockSecond / 15;                              //Quadrant of the clock / Key-Index of anim_node (int Values: 0, 1, 2, 3)
-                        quadrantAmount = (float)(clockSecond - (clockQuadrant * 15)) / 15;  //Seconds      Percentage quadrant related (float Value between 0 and 1) 
-                        quadrantAmount += ((float)clockCenti / 100 / 15);                   //CentiSeconds Percentage quadrant related (float Value between 0 and 0.0666666)
-                        if (controller.Count == 0 || clockQuadrant < 0 || clockQuadrant + 1 > controller.Count - 1)
-                            clockQuadrant = 0;  //If controller.Count dosen't match
-                        calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
-                    }
-                    else if (animName.StartsWith("orts_shand_clock")) //Shape matrix is a Second Hand of an analog OR-clock
-                    {
-                        clockQuadrant = (int)clockSecond / 15;                              //Quadrant of the clock / Key-Index of anim_node (int Values: 0, 1, 2, 3)
-                        quadrantAmount = (float)(clockSecond - (clockQuadrant * 15)) / 15;  //Percentage quadrant related (float Value between 0 and 1) 
-                        if (controller.Count == 0 || clockQuadrant < 0 || clockQuadrant + 1 > controller.Count - 1)
-                            clockQuadrant = 0;  //If controller.Count doesn't match
-                        calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
-                    }
-                    else if (animName.StartsWith("orts_mhand_clock")) //Shape matrix is a Minute Hand of an analog OR-clock
-                    {
-                        clockQuadrant = (int)clockMinute / 15;                              //Quadrant of the clock / Key-Index of anim_node (Values: 0, 1, 2, 3)
-                        quadrantAmount = (float)(clockMinute - (clockQuadrant * 15)) / 15;  //Percentage quadrant related (Value between 0 and 1)
-                        if (controller.Count == 0 || clockQuadrant < 0 || clockQuadrant + 1 > controller.Count - 1)
-                            clockQuadrant = 0; //If controller.Count dosen't match
-                        calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
-                    }
-                    else if (animName.StartsWith("orts_hhand_clock")) //Shape matrix is an Hour Hand of an analog OR-clock
-                    {
-                        clockHour %= 12;                                                    //Reduce 24 to 12 format
-                        clockQuadrant = (int)clockHour / 3;                                 //Quadrant of the clock / Key-Index of anim_node (Values: 0, 1, 2, 3)
-                        quadrantAmount = (float)(clockHour - (clockQuadrant * 3)) / 3;      //Percentage quadrant related (Value between 0 and 1)
-                        quadrantAmount += (((float)1 / 3) * ((float)clockMinute / 60));     //add fine minute-percentage for Hour Hand between the full hours
-                        if (controller.Count == 0 || clockQuadrant < 0 || clockQuadrant + 1 > controller.Count - 1)
-                            clockQuadrant = 0; //If controller.Count doesn't match
-                        calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
-                    }
-                    if (calculateClockHand == true & controller.Count > 0)                  //Calculate new Hand position as usual OR-style (Slerp-animation with Quaternions)
-                    {
-                        var position1 = controller[clockQuadrant];
-                        var position2 = controller[clockQuadrant + 1];
-                        if (position1 is slerp_rot sr1 && position2 is slerp_rot sr2)  //OR-Clock anim.node has slerp keys
-                        {
-                            Quaternion XNA1 = new Quaternion(sr1.X, sr1.Y, -sr1.Z, sr1.W);
-                            Quaternion XNA2 = new Quaternion(sr2.X, sr2.Y, -sr2.Z, sr2.W);
-                            Quaternion q = Quaternion.Slerp(XNA1, XNA2, quadrantAmount);
-                            Vector3 location = xnaPose.Translation;
-                            xnaPose = Matrix.CreateFromQuaternion(q);
-                            xnaPose.Translation = location;
-                        }
-                        else if (position1 is linear_key lk1 && position2 is linear_key lk2) //OR-Clock anim.node has tcb keys
-                        {
-                            Vector3 XNA1 = new Vector3(lk1.X, lk1.Y, -lk1.Z);
-                            Vector3 XNA2 = new Vector3(lk2.X, lk2.Y, -lk2.Z);
-                            Vector3 v = Vector3.Lerp(XNA1, XNA2, quadrantAmount);
-                            xnaPose.Translation = v;
-                        }
-                        else if (position1 is tcb_key tk1 && position2 is tcb_key tk2) //OR-Clock anim.node has tcb keys
-                        {
-                            Quaternion XNA1 = new Quaternion(tk1.X, tk1.Y, -tk1.Z, tk1.W);
-                            Quaternion XNA2 = new Quaternion(tk2.X, tk2.Y, -tk2.Z, tk2.W);
-                            Quaternion q = Quaternion.Slerp(XNA1, XNA2, quadrantAmount);
-                            Vector3 location = xnaPose.Translation;
-                            xnaPose = Matrix.CreateFromQuaternion(q);
-                            xnaPose.Translation = location;
-                        }
-                    }
-                }
-            }
-            XNAMatrices[iMatrix] = xnaPose;  // update the matrix
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
 
     public class SwitchTrackShape : PoseableShape
     {
-        protected float AnimationKey;  // tracks position of points as they move left and right
-
-        TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
-        uint MainRoute;                  // 0 or 1 - which route is considered the main route
+        readonly AnimatedPart AnimatedPart;
+        readonly TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
+        readonly uint MainRoute;                 // 0 or 1 - which route is considered the main route
 
         public SwitchTrackShape(Viewer viewer, string path, WorldPosition position, TrJunctionNode trj)
             : base(viewer, path, position, ShapeFlags.AutoZBias)
@@ -593,26 +411,20 @@ namespace Orts.Viewer3D
             TrJunctionNode = trj;
             TrackShape TS = viewer.Simulator.TSectionDat.TrackShapes.Get(TrJunctionNode.ShapeIndex);
             MainRoute = TS.MainRoute;
+
+            if (SharedShape.HasAnimations())
+            {
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAnimations();
+                AnimatedPart.SetMstsSpeed(2.0f, AnimatedPart.MstsOptions.MaxFrameIsOne);
+                // MSTS shape format junction animations are tricky, they consist of 3 animation nodes.
+                // 0: main, 1: diverging, 2: main again. Go till frame 1 only.
+            }
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // ie, with 2 frames of animation, the key will advance from 0 to 1
-            if (TrJunctionNode.SelectedRoute == MainRoute)
-            {
-                if (AnimationKey > 0.001) AnimationKey -= 0.002f * elapsedTime.ClockSeconds * 1000.0f;
-                if (AnimationKey < 0.001) AnimationKey = 0;
-            }
-            else
-            {
-                if (AnimationKey < 0.999) AnimationKey += 0.002f * elapsedTime.ClockSeconds * 1000.0f;
-                if (AnimationKey > 0.999) AnimationKey = 1.0f;
-            }
-
-            // Update the pose
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-                AnimateMatrix(iMatrix, AnimationKey);
-
+            AnimatedPart?.UpdateState(TrJunctionNode.SelectedRoute != MainRoute, elapsedTime);
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
@@ -625,7 +437,7 @@ namespace Orts.Viewer3D
         int NumIndices;
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
 
-        protected float AnimationKey;  // tracks position of points as they move left and right
+        readonly AnimatedPart AnimatedPart; // An old comment from the code: "tracks position of points as they move left and right". But seems to always on 0.
         ShapePrimitive shapePrimitive;
         public SpeedPostShape(Viewer viewer, string path, WorldPosition position, SpeedPostObj spo)
             : base(viewer, path, position)
@@ -752,6 +564,13 @@ namespace Orts.Viewer3D
             IndexBuffer.SetData(newTList);
             shapePrimitive = new ShapePrimitive(material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, NumIndices / 3, new[] { -1 }, 0);
 
+            if (SharedShape.HasAnimations())
+            {
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAnimations();
+                AnimatedPart.SetState(0);
+            }
+
         }
 
         static float GetTextureCoordX(char c)
@@ -788,15 +607,8 @@ namespace Orts.Viewer3D
             // TODO: Make this use AddAutoPrimitive instead.
             frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
 
-            // if there is no animation, that's normal and so no animation missing error is displayed
-            if (SharedShape.Animations == null || SharedShape.Animations.Count == 0)
-            {
-                if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
-                    SeenShapeAnimationError[SharedShape.FilePath] = true;
-            }
             // Update the pose
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-                AnimateMatrix(iMatrix, AnimationKey);
+            //AnimatedPart?.SetState(0); // Currently it seems to be always zero. Unfinished development in the original code?
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
@@ -813,11 +625,15 @@ namespace Orts.Viewer3D
         readonly LevelCrossingObj CrossingObj;
         readonly SoundSource Sound;
         readonly LevelCrossing Crossing;
+        readonly float ClosingDelay;
 
-        readonly float AnimationFrames;
-        readonly float AnimationSpeed;
+        readonly AnimatedPart AnimatedPartOpenLoop;
+        readonly AnimatedPart AnimatedPartClearing;
+        readonly AnimatedPart AnimatedPartClosing;
+        readonly AnimatedPart AnimatedPartClosedLoop;
+
         bool Opening = true;
-        float AnimationKey;
+        float ActualDelay;
 
         public LevelCrossingShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj)
             : base(viewer, path, position, shapeFlags)
@@ -831,24 +647,15 @@ namespace Orts.Viewer3D
                 else if (viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS != null) soundFileName = viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS;
                 if (soundFileName != "")
                 {
-                    var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + soundFileName;
+                    var soundPath = ORTSPaths.GetFileFromFolders(new[] { viewer.Simulator.RoutePath, viewer.Simulator.BasePath }, @"\\sound\\" + soundFileName);
                     try
                     {
                         Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
                         viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                     }
-                    catch
+                    catch (Exception error)
                     {
-                        soundPath = viewer.Simulator.BasePath + @"\\sound\\" + soundFileName;
-                        try
-                        {
-                            Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
-                            viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                        }
-                        catch (Exception error)
-                        {
-                            Trace.WriteLine(new FileLoadException(soundPath, error));
-                        }
+                        Trace.WriteLine(new FileLoadException(soundPath, error));
                     }
                 }
             }
@@ -858,9 +665,27 @@ namespace Orts.Viewer3D
                 from tid in CrossingObj.trItemIDList where tid.db == 1 select tid.dbID,
                 CrossingObj.levelCrParameters.warningTime,
                 CrossingObj.levelCrParameters.minimumDistance);
-            // If there are no animations, we leave the frame count and speed at 0 and nothing will try to animate.
-            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0)
+
+            // MSTS objects come with initialTiming = 60, so we must rule that value out as if it was 0.
+            ClosingDelay = crossingObj.levelCrTiming.initialTiming < 30 ? crossingObj.levelCrTiming.initialTiming : 0;
+
+            if (SharedShape.HasAnimations())
             {
+                AnimatedPartOpenLoop = new AnimatedPart(this);
+                AnimatedPartClosedLoop = new AnimatedPart(this);
+                AnimatedPartClosing = new AnimatedPart(this);
+                AnimatedPartClearing = new AnimatedPart(this);
+
+                // The original MSTS crossing shapes don't have the animations named, but having names allows all types to be in a single shape/glTF file.
+                AnimatedPartClosedLoop.AddAnimation("ORTS_LEVELCROSSING_CLOSED_LOOP*");
+                AnimatedPartClosing.AddAnimation("ORTS_LEVELCROSSING_CLOSING*");
+                AnimatedPartClearing.AddAnimation("ORTS_LEVELCROSSING_CLEARING*");
+                AnimatedPartOpenLoop.AddAnimation("ORTS_LEVELCROSSING_OPEN_LOOP*");
+
+                var speed = 1.0f / CrossingObj.levelCrTiming.animTiming;
+
+                // If no names in the shape file, fall back to the original behaviour.
+                //
                 // LOOPED COSSINGS (animTiming < 0)
                 //     MSTS plays through all the frames of the animation for "closed" and sits on frame 0 for "open". The
                 //     speed of animation is the normal speed (frame rate at 30FPS) scaled by the timing value. Since the
@@ -869,8 +694,33 @@ namespace Orts.Viewer3D
                 //     MSTS plays through the first 1.0 seconds of the animation forwards for closing and backwards for
                 //     opening. The number of frames defined doesn't matter; the animation is limited by time so the frame
                 //     rate (based on 30FPS) is what's needed.
-                AnimationFrames = CrossingObj.levelCrTiming.animTiming < 0 ? SharedShape.Animations[0].FrameCount : SharedShape.Animations[0].FrameRate / 30f;
-                AnimationSpeed = SharedShape.Animations[0].FrameRate / 30f / CrossingObj.levelCrTiming.animTiming;
+                if (AnimatedPartOpenLoop.MatrixIndexes.Count + AnimatedPartClosing.MatrixIndexes.Count + AnimatedPartClosedLoop.MatrixIndexes.Count == 0)
+                {
+                    if (speed < 0)
+                    {
+                        AnimatedPartClosedLoop.AddAnimations();
+                        AnimatedPartClosedLoop.SetMstsSpeed(speed, AnimatedPart.MstsOptions.SpeedFromFrameRatePer30);
+                    }
+                    else
+                    {
+                        AnimatedPartClosing.AddAnimations();
+                        AnimatedPartClosing.SetMstsSpeed(speed, AnimatedPart.MstsOptions.MaxFrameFromFrameRatePer30);
+                    }
+                }
+                else
+                {
+                    // The speed of the loops is determined by the .s FrameRate. The non-loops need different timing, scaled by the animTiming value.
+                    AnimatedPartOpenLoop.SetMstsSpeed(1.0f, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+                    AnimatedPartClosedLoop.SetMstsSpeed(1.0f, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+                    AnimatedPartClosing.SetMstsSpeed(speed, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+                    AnimatedPartClearing.SetMstsSpeed(speed, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+                }
+
+                // glTF animations are less restricted, they can be easily configured individually so the animTiming is used as an overally scale factor, normally left at 1.0
+                AnimatedPartOpenLoop.SetGltfSpeed(speed);
+                AnimatedPartClosedLoop.SetGltfSpeed(speed);
+                AnimatedPartClosing.SetGltfSpeed(speed);
+                AnimatedPartClearing.SetGltfSpeed(speed);
             }
         }
 
@@ -886,31 +736,39 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (CrossingObj.visible != true)
+            if (!CrossingObj.visible)
                 return;
 
             if (Opening == Crossing.HasTrain)
             {
                 Opening = !Crossing.HasTrain;
-                if (Sound != null) Sound.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
+                Sound?.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
             }
 
-            if (Opening)
-                AnimationKey -= elapsedTime.ClockSeconds * AnimationSpeed;
+            if (Crossing.HasTrain)
+                ActualDelay += elapsedTime.ClockSeconds;
             else
-                AnimationKey += elapsedTime.ClockSeconds * AnimationSpeed;
+                ActualDelay = 0;
 
-            if (CrossingObj.levelCrTiming.animTiming < 0)
+            // CLOSING: delayed by the initialTiming, at opening is played backwards.
+            AnimatedPartClosing?.UpdateState(Crossing.HasTrain && ActualDelay > ClosingDelay ? 1 : 0, elapsedTime);
+
+            if (Crossing.HasTrain || AnimatedPartClosing?.AnimationKeyFraction() > 0.1f)
             {
-                // Stick to frame 0 for "open" and loop for "closed".
-                if (Opening) AnimationKey = 0;
-                if (AnimationKey < 0) AnimationKey += AnimationFrames;
-            }
-            if (AnimationKey < 0) AnimationKey = 0;
-            if (AnimationKey > AnimationFrames) AnimationKey = AnimationFrames;
+                AnimatedPartOpenLoop?.SetState(0);
+                AnimatedPartClearing?.UpdateState(1, elapsedTime);
 
-            for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-                AnimateMatrix(i, AnimationKey);
+                // CLOSED_LOOP: starts playing only when CLEARING is at its maxframe, stops playing only when CLOSING is already opened up to 10% closed state
+                if (!(AnimatedPartClearing?.MaxFrame > 0) || AnimatedPartClearing?.AnimationKeyFraction() == 1.0f)
+                    AnimatedPartClosedLoop?.UpdateLoop(1, elapsedTime);
+            }
+            else
+            {
+                // CLEARING animation (amber or yellow + continuous red phase): similar to CLOSING, but at opening it is dropped immediately to 0.
+                AnimatedPartClearing?.SetState(0);
+                AnimatedPartClosedLoop?.SetState(0);
+                AnimatedPartOpenLoop?.UpdateLoop(1, elapsedTime);
+            }
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
@@ -920,10 +778,10 @@ namespace Orts.Viewer3D
     {
         readonly HazardObj HazardObj;
         readonly Hazzard Hazzard;
+        readonly AnimatedPart AnimatedPart;
+        readonly Dictionary<Hazzard.State, Vector2> StateRanges;
 
-        readonly int AnimationFrames;
-        float Moved = 0f;
-        float AnimationKey;
+        float Moved;
         float DelayHazAnimation;
 
         public static HazzardShape CreateHazzard(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj)
@@ -939,7 +797,21 @@ namespace Orts.Viewer3D
         {
             HazardObj = hObj;
             Hazzard = h;
-            AnimationFrames = SharedShape.Animations[0].FrameCount;
+
+            if (SharedShape.HasAnimations())
+            {
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAnimations();
+                AnimatedPart.SetMstsSpeed(24.0f);
+                StateRanges = new Dictionary<Hazzard.State, Vector2>()
+                {
+                    { Hazzard.State.Idle1, Hazzard.HazFile.Tr_HazardFile.Idle_Key / AnimatedPart.MaxFrame },
+                    { Hazzard.State.Idle2, Hazzard.HazFile.Tr_HazardFile.Idle_Key2 / AnimatedPart.MaxFrame },
+                    { Hazzard.State.LookLeft, Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Left / AnimatedPart.MaxFrame },
+                    { Hazzard.State.LookRight, Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Right / AnimatedPart.MaxFrame },
+                    { Hazzard.State.Scared, Hazzard.HazFile.Tr_HazardFile.Success_Scarper_Key / AnimatedPart.MaxFrame }
+                };
+            }
         }
 
         public override void Unload()
@@ -951,68 +823,39 @@ namespace Orts.Viewer3D
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             if (Hazzard == null) return;
-            Vector2 CurrentRange;
-            AnimationKey += elapsedTime.ClockSeconds * 24f;
+
+            var currentRange = StateRanges?[Hazzard.state] ?? Vector2.Zero;
+            AnimatedPart?.UpdateState(currentRange.Y, elapsedTime);
+            var currentKeyFraction = AnimatedPart?.AnimationKeyFraction() ?? 0;
             DelayHazAnimation += elapsedTime.ClockSeconds;
+
             switch (Hazzard.state)
             {
                 case Hazzard.State.Idle1:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key; break;
                 case Hazzard.State.Idle2:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key2; break;
+                    if (DelayHazAnimation > 5f && (currentKeyFraction < currentRange.X || currentKeyFraction >= currentRange.Y))
+                    {
+                        AnimatedPart?.SetState(currentRange.X);
+                        DelayHazAnimation = 0;
+                    }
+                    break;
                 case Hazzard.State.LookLeft:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Left; break;
                 case Hazzard.State.LookRight:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Right; break;
+                    AnimatedPart?.SetState(MathHelper.Clamp(currentKeyFraction, currentRange.X, currentRange.Y));
+                    break;
                 case Hazzard.State.Scared:
-                default:
-                    CurrentRange = Hazzard.HazFile.Tr_HazardFile.Success_Scarper_Key;
+                    if (currentKeyFraction < currentRange.X || currentKeyFraction >= currentRange.Y)
+                        AnimatedPart?.SetState(currentRange.X);
                     if (Moved < Hazzard.HazFile.Tr_HazardFile.Distance)
                     {
                         var m = Hazzard.HazFile.Tr_HazardFile.Speed * elapsedTime.ClockSeconds;
                         Moved += m;
-                        this.HazardObj.Position.Move(this.HazardObj.QDirection, m);
-                        Location.Location = new Vector3(this.HazardObj.Position.X, this.HazardObj.Position.Y, this.HazardObj.Position.Z);
+                        HazardObj.Position.Move(HazardObj.QDirection, m);
+                        Location.Location = new Vector3(HazardObj.Position.X, HazardObj.Position.Y, HazardObj.Position.Z);
                     }
                     else { Moved = 0; Hazzard.state = Hazzard.State.Idle1; }
                     break;
             }
-
-            if (Hazzard.state == Hazzard.State.Idle1 || Hazzard.state == Hazzard.State.Idle2)
-            {
-                if (DelayHazAnimation > 5f)
-                {
-                    if (AnimationKey < CurrentRange.X)
-                    {
-                        AnimationKey = CurrentRange.X;
-                        DelayHazAnimation = 0;
-                    }
-
-                    if (AnimationKey > CurrentRange.Y)
-                    {
-                        AnimationKey = CurrentRange.X;
-                        DelayHazAnimation = 0;
-                    }
-                }
-            }
-
-            if (Hazzard.state == Hazzard.State.LookLeft || Hazzard.state == Hazzard.State.LookRight)
-            {
-                if (AnimationKey < CurrentRange.X) AnimationKey = CurrentRange.X;
-                if (AnimationKey > CurrentRange.Y) AnimationKey = CurrentRange.Y;
-            }
-
-            if (Hazzard.state == Hazzard.State.Scared)
-            {
-                if (AnimationKey < CurrentRange.X) AnimationKey = CurrentRange.X;
-
-                if (AnimationKey > CurrentRange.Y) AnimationKey = CurrentRange.X;
-            }
-
-            for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-                AnimateMatrix(i, AnimationKey);
-
-            //var pos = this.HazardObj.Position;
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
@@ -1023,11 +866,9 @@ namespace Orts.Viewer3D
         protected PickupObj FuelPickupItemObj;
         protected FuelPickupItem FuelPickupItem;
         protected SoundSource Sound;
-        protected float FrameRate;
         protected WorldPosition Position;
 
-        protected int AnimationFrames;
-        protected float AnimationKey;
+        AnimatedPart AnimatedPart;
 
         public FuelPickupItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj)
             : base(viewer, path, position, shapeFlags)
@@ -1041,82 +882,52 @@ namespace Orts.Viewer3D
         {
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS != null && FuelPickupItemObj.PickupType == 7) // Testing for Diesel PickupType
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS);
                 try
                 {
                     Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
                     Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch
+                catch (Exception error)
                 {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS;
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                    Trace.WriteLine(new FileLoadException(Viewer.Simulator.TRK.Tr_RouteFile.DefaultDieselTowerSMS, error));
                 }
             }
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS != null && FuelPickupItemObj.PickupType == 5) // Testing for Water PickupType
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS);
                 try
                 {
                     Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
                     Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch
+                catch (Exception error)
                 {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS;
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                    Trace.WriteLine(new FileLoadException(Viewer.Simulator.TRK.Tr_RouteFile.DefaultWaterTowerSMS, error));
                 }
             }
             if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS != null && (FuelPickupItemObj.PickupType == 6 || FuelPickupItemObj.PickupType == 2))
             {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath }, @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS);
                 try
                 {
                     Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
                     Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch
+                catch (Exception error)
                 {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS;
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.MSTSFuelTower, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                    Trace.WriteLine(new FileLoadException(Viewer.Simulator.TRK.Tr_RouteFile.DefaultCoalTowerSMS, error));
                 }
             }
             FuelPickupItem = Viewer.Simulator.FuelManager.CreateFuelStation(Position, from tid in FuelPickupItemObj.TrItemIDList where tid.db == 0 select tid.dbID);
-            AnimationFrames = 1;
-            FrameRate = 1;
-            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].anim_nodes != null && SharedShape.Animations[0].anim_nodes.Count > 0)
+
+            if (SharedShape.HasAnimations())
             {
-                FrameRate = SharedShape.Animations[0].FrameCount / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
-                foreach (var anim_node in SharedShape.Animations[0].anim_nodes)
-                    if (anim_node.Name == "ANIMATED_PARTS")
-                    {
-                        AnimationFrames = SharedShape.Animations[0].FrameCount;
-                        break;
-                    }
+                AnimatedPart = new AnimatedPart(this);
+                AnimatedPart.AddAnimations();
+                AnimatedPart.SetGltfSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed);
+                AnimatedPart.SetMstsSpeed(1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed,
+                    AnimatedPart.MstsOptions.SpeedFromFrameCount | AnimatedPart.MstsOptions.MaxFrameFromFrameCount);
             }
         }
 
@@ -1132,38 +943,28 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var prevKey = AnimatedPart?.AnimationKeyFraction() ?? 1;
 
             // 0 can be used as a setting for instant animation.
             if (FuelPickupItem.ReFill() && FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
             {
-                if (AnimationKey == 0 && Sound != null) Sound.HandleEvent(Event.FuelTowerDown);
-                if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimationKey = 1.0f;
-                else if (AnimationKey < AnimationFrames)
-                    AnimationKey += elapsedTime.ClockSeconds * FrameRate;
+                if (AnimatedPart?.AnimationKeyFraction() == 0) Sound?.HandleEvent(Event.FuelTowerDown);
+                if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimatedPart?.SetState(1.0f);
+                else AnimatedPart?.UpdateState(1.0f, elapsedTime);
             }
 
-            if (!FuelPickupItem.ReFill() && AnimationKey > 0)
+            if (!FuelPickupItem.ReFill() && AnimatedPart?.AnimationKeyFraction() > 0)
             {
-                if (AnimationKey == AnimationFrames && Sound != null)
+                if (AnimatedPart?.AnimationKeyFraction() == 1)
                 {
-                    Sound.HandleEvent(Event.FuelTowerTransferEnd);
-                    Sound.HandleEvent(Event.FuelTowerUp);
+                    Sound?.HandleEvent(Event.FuelTowerTransferEnd);
+                    Sound?.HandleEvent(Event.FuelTowerUp);
                 }
-                AnimationKey -= elapsedTime.ClockSeconds * FrameRate;
+                AnimatedPart?.UpdateState(0.0f, elapsedTime);
             }
 
-            if (AnimationKey < 0)
-            {
-                AnimationKey = 0;
-            }
-            if (AnimationKey > AnimationFrames)
-            {
-                AnimationKey = AnimationFrames;
-                if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferStart);
-            }
-
-            for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-                AnimateMatrix(i, AnimationKey);
+            if (prevKey < 1 && AnimatedPart?.AnimationKeyFraction() == 1)
+                Sound?.HandleEvent(Event.FuelTowerTransferStart);
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
@@ -1171,27 +972,26 @@ namespace Orts.Viewer3D
 
     public class ContainerHandlingItemShape : FuelPickupItemShape
     {
-        protected float AnimationKeyX;
-        protected float AnimationKeyY;
-        protected float AnimationKeyZ;
-        protected float AnimationKeyGrabber01;
-        protected float AnimationKeyGrabber02;
-        protected int IAnimationMatrixX;
-        protected int IAnimationMatrixY;
-        protected int IAnimationMatrixZ;
-        protected int IGrabber01;
-        protected int IGrabber02;
-        protected controller controllerX;
-        protected controller controllerY;
-        protected controller controllerZ;
-        protected controller controllerGrabber01;
-        protected controller controllerGrabber02;
-        protected float slowDownThreshold = 0.03f;
-        // To detect transitions that trigger sounds
-        protected bool OldMoveX;
-        protected bool OldMoveY;
-        protected bool OldMoveZ;
+        AnimatedPart AnimatedPartX;
+        AnimatedPart AnimatedPartY;
+        AnimatedPart AnimatedPartZ;
+        AnimatedPart AnimatedPartCable;
+        AnimatedPart AnimatedPartGrabber01;
+        AnimatedPart AnimatedPartGrabber02;
 
+        Vector3 AnimationXYZSpan;
+        Vector3 AnimationGrabber01Span;
+        Vector3 AnimationGrabber02Span;
+        Vector3 AnimationXYZStart;
+        Vector3 AnimationGrabber01Start;
+        Vector3 AnimationGrabber02Start;
+
+        readonly float SlowDownThreshold = 0.03f;
+
+        // To detect transitions that trigger sounds
+        bool OldMoveX;
+        bool OldMoveY;
+        bool OldMoveZ;
 
         protected ContainerHandlingItem ContainerHandlingItem;
         public ContainerHandlingItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj)
@@ -1201,302 +1001,128 @@ namespace Orts.Viewer3D
 
         public override void Initialize()
         {
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
+            var soundPath = ORTSPaths.GetFileFromFolders(new[] { Viewer.Simulator.RoutePath + @"\\sound\\" + (FuelPickupItemObj.CraneSound ?? "containercrane.sms"), Viewer.Simulator.BasePath + @"\\sound\\containercrane.sms" }, "");
+            try
             {
-                if (SharedShape.MatrixNames[imatrix].ToLower() == "zaxis")
-                    IAnimationMatrixZ = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "xaxis")
-                    IAnimationMatrixX = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "yaxis")
-                    IAnimationMatrixY = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "grabber01")
-                    IGrabber01 = imatrix;
-                else if (SharedShape.MatrixNames[imatrix].ToLower() == "grabber02")
-                    IGrabber02 = imatrix;
+                Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
+                Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+            }
+            catch
+            {
+                Trace.TraceWarning("Cannot find sound file {0}", soundPath);
             }
 
-            controllerX = SharedShape.Animations[0].anim_nodes[IAnimationMatrixX].controllers[0];
-            controllerY = SharedShape.Animations[0].anim_nodes[IAnimationMatrixY].controllers[0];
-            controllerZ = SharedShape.Animations[0].anim_nodes[IAnimationMatrixZ].controllers[0];
-            controllerGrabber01 = SharedShape.Animations[0].anim_nodes[IGrabber01].controllers[0];
-            controllerGrabber02 = SharedShape.Animations[0].anim_nodes[IGrabber02].controllers[0];
-            AnimationKeyX = Math.Abs((0 - ((linear_key)controllerX[0]).X) / (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X)) * controllerX[1].Frame;
-            AnimationKeyY = Math.Abs((0 - ((linear_key)controllerY[0]).Y) / (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y)) * controllerY[1].Frame;
-            AnimationKeyZ = Math.Abs((0 - ((linear_key)controllerZ[0]).Z) / (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z)) * controllerZ[1].Frame;
-            if (FuelPickupItemObj.CraneSound != null)
-            {
-                var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + FuelPickupItemObj.CraneSound;
-                try
-                {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                }
-                catch
-                {
-                    soundPath = Viewer.Simulator.BasePath + @"\\sound\\containercrane.sms";
-                    try
-                    {
-                        Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
-                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch
-                    {
-                        Trace.TraceWarning("Cannot find sound file {0}", soundPath);
-                    }
-                }
-            }
-            else
-            {
-                var soundPath = Viewer.Simulator.BasePath + @"\\sound\\containercrane.sms";
-                try
-                {
-                    Sound = new SoundSource(Viewer, Position.WorldLocation, Events.Source.ORTSContainerCrane, soundPath);
-                    Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                }
-                catch
-                {
-                    Trace.TraceWarning("Cannot find sound file {0}", soundPath);
-                }
-            }
-            ContainerHandlingItem = Viewer.Simulator.ContainerManager.ContainerHandlingItems[FuelPickupItemObj.TrItemIDList[0].dbID];
-            AnimationFrames = 1;
-            FrameRate = 1;
-            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].anim_nodes != null && SharedShape.Animations[0].anim_nodes.Count > 0)
-            {
-                FrameRate = SharedShape.Animations[0].FrameCount / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
-                foreach (var anim_node in SharedShape.Animations[0].anim_nodes)
-                    if (anim_node.Name == "ANIMATED_PARTS")
-                    {
-                        AnimationFrames = SharedShape.Animations[0].FrameCount;
-                        break;
-                    }
-            }
-            AnimateOneMatrix(IAnimationMatrixX, AnimationKeyX);
-            AnimateOneMatrix(IAnimationMatrixY, AnimationKeyY);
-            AnimateOneMatrix(IAnimationMatrixZ, AnimationKeyZ);
+            AnimatedPartX = new AnimatedPart(this);
+            AnimatedPartY = new AnimatedPart(this);
+            AnimatedPartZ = new AnimatedPart(this);
+            AnimatedPartCable = new AnimatedPart(this);
+            AnimatedPartGrabber01 = new AnimatedPart(this);
+            AnimatedPartGrabber02 = new AnimatedPart(this);
 
-            var absAnimationMatrix = XNAMatrices[IAnimationMatrixY];
-            Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixX], out absAnimationMatrix);
-            Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixZ], out absAnimationMatrix);
+            AnimatedPartX.AddAnimation("XAXIS", false);
+            AnimatedPartY.AddAnimation("YAXIS", false);
+            AnimatedPartZ.AddAnimation("ZAXIS", false);
+            AnimatedPartCable.AddAnimation("CABLE*", false);
+            AnimatedPartGrabber01.AddAnimation("GRABBER01", false);
+            AnimatedPartGrabber02.AddAnimation("GRABBER02", false);
+
+            var speed = 1.0f / FuelPickupItemObj.PickupAnimData.AnimationSpeed;
+            var mstsOptions = AnimatedPart.MstsOptions.MaxFrameFromFrameOne | AnimatedPart.MstsOptions.SpeedFromFrameCount;
+
+            AnimatedPartX.SetMstsSpeed(speed, mstsOptions);
+            AnimatedPartY.SetMstsSpeed(speed, mstsOptions);
+            AnimatedPartZ.SetMstsSpeed(speed, mstsOptions);
+            AnimatedPartCable.SetMstsSpeed(speed, mstsOptions);
+            AnimatedPartGrabber01.SetMstsSpeed(speed, mstsOptions);
+            AnimatedPartGrabber02.SetMstsSpeed(speed, mstsOptions);
+
+            AnimatedPartX.SetGltfSpeed(speed);
+            AnimatedPartY.SetGltfSpeed(speed);
+            AnimatedPartZ.SetGltfSpeed(speed);
+            AnimatedPartCable.SetGltfSpeed(speed);
+            AnimatedPartGrabber01.SetGltfSpeed(speed);
+            AnimatedPartGrabber02.SetGltfSpeed(speed);
+
+            SharedShape.GetAnimationOutputMinMax(AnimatedPartX.MatrixIndexes.FirstOrDefault(), out var minX, out var maxX, out var startX);
+            SharedShape.GetAnimationOutputMinMax(AnimatedPartY.MatrixIndexes.FirstOrDefault(), out var minY, out var maxY, out var startY);
+            SharedShape.GetAnimationOutputMinMax(AnimatedPartZ.MatrixIndexes.FirstOrDefault(), out var minZ, out var maxZ, out var startZ);
+            SharedShape.GetAnimationOutputMinMax(AnimatedPartGrabber01.MatrixIndexes.FirstOrDefault(), out var minG01, out var maxG01, out AnimationGrabber01Start);
+            SharedShape.GetAnimationOutputMinMax(AnimatedPartGrabber02.MatrixIndexes.FirstOrDefault(), out var minG02, out var maxG02, out AnimationGrabber02Start);
+
+            AnimationXYZStart = new Vector3(startX.X, startY.Y, startZ.Z);
+            AnimationXYZSpan = new Vector3(maxX.X - minX.X, maxY.Y - minY.Y, maxZ.Z - minZ.Z);
+            AnimationGrabber01Span = maxG01 - minG01;
+            AnimationGrabber02Span = maxG02 - minG02;
+
+            var key = GetStateFromPosition(Vector3.Zero);
+
+            AnimatedPartX.SetState(key.X);
+            AnimatedPartY.SetState(key.Y);
+            AnimatedPartZ.SetState(key.Z);
+
+            var absAnimationMatrix = XNAMatrices[AnimatedPartY.GetFirstTargetNode()];
+            Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[AnimatedPartX.GetFirstTargetNode()], out absAnimationMatrix);
+            Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[AnimatedPartZ.GetFirstTargetNode()], out absAnimationMatrix);
             Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
-            ContainerHandlingItem.PassSpanParameters(((linear_key)controllerZ[0]).Z, ((linear_key)controllerZ[1]).Z,
-                ((linear_key)controllerGrabber01[0]).Z - ((linear_key)controllerGrabber01[1]).Z, ((linear_key)controllerGrabber02[0]).Z - ((linear_key)controllerGrabber02[1]).Z);
+
+            ContainerHandlingItem = Viewer.Simulator.ContainerManager.ContainerHandlingItems[FuelPickupItemObj.TrItemIDList[0].dbID];
+            ContainerHandlingItem.PassSpanParameters(maxZ.Z, minZ.Z, minG01.Z - maxG01.Z, minG02.Z - maxG02.Z);
             ContainerHandlingItem.ReInitPositionOffset(absAnimationMatrix);
 
-            AnimationKeyX = Math.Abs((ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.X - ((linear_key)controllerX[0]).X) / (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X)) * controllerX[1].Frame;
-            AnimationKeyY = Math.Abs((ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.Y - ((linear_key)controllerY[0]).Y) / (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y)) * controllerY[1].Frame;
-            AnimationKeyZ = Math.Abs((ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition.Z - ((linear_key)controllerZ[0]).Z) / (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z)) * controllerZ[1].Frame;
-            AnimateOneMatrix(IAnimationMatrixX, AnimationKeyX);
-            AnimateOneMatrix(IAnimationMatrixY, AnimationKeyY);
-            AnimateOneMatrix(IAnimationMatrixZ, AnimationKeyZ);
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
-            {
-                if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("cable"))
-                    AnimateOneMatrix(imatrix, AnimationKeyY);
-                if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("grabber"))
-                    AnimateOneMatrix(imatrix, 0);
-            }
+            key = GetStateFromPosition(ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition);
+
+            AnimatedPartX.SetState(key.X);
+            AnimatedPartY.SetState(key.Y);
+            AnimatedPartZ.SetState(key.Z);
+            AnimatedPartCable.SetState(key.Y);
+            AnimatedPartGrabber01.SetState(0);
+            AnimatedPartGrabber02.SetState(0);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-
-            // 0 can be used as a setting for instant animation.
-            /*           if (ContainerHandlingItem.ReFill() && FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
-                       {
-                           if (AnimationKey == 0 && Sound != null) Sound.HandleEvent(Event.FuelTowerDown);
-                           if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimationKey = 1.0f;
-                           else if (AnimationKey < AnimationFrames)
-                               AnimationKey += elapsedTime.ClockSeconds * FrameRate;
-                       }
-
-                       if (!ContainerHandlingItem.ReFill() && AnimationKey > 0)
-                       {
-                           if (AnimationKey == AnimationFrames && Sound != null)
-                           {
-                               Sound.HandleEvent(Event.FuelTowerTransferEnd);
-                               Sound.HandleEvent(Event.FuelTowerUp);
-                           }
-                           AnimationKey -= elapsedTime.ClockSeconds * FrameRate;
-                       }
-
-                       if (AnimationKey < 0)
-                       {
-                           AnimationKey = 0;
-                       }
-                       if (AnimationKey > AnimationFrames)
-                       {
-                           AnimationKey = AnimationFrames;
-                           if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferStart);
-                       }
-
-                       for (var i = 0; i < SharedShape.Matrices.Length; ++i)
-                           AnimateMatrix(i, AnimationKey);
-            */
             if (FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
             {
-                float tempFrameRate;
-                if (ContainerHandlingItem.MoveX)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetX - ((linear_key)controllerX[0]).X) / (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X)) * controllerX[1].Frame;
-                    //                    if (AnimationKey == 0 && Sound != null) Sound.HandleEvent(Event.FuelTowerDown);
-                    tempFrameRate = Math.Abs(AnimationKeyX - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyX < animationTarget)
-                    {
-                        AnimationKeyX += elapsedTime.ClockSeconds * tempFrameRate;
-                        // don't oscillate!
-                        if (AnimationKeyX >= animationTarget)
-                        {
-                            AnimationKeyX = animationTarget;
-                            ContainerHandlingItem.MoveX = false;
-                        }
-                    }
-                    else if (AnimationKeyX > animationTarget)
-                    {
-                        AnimationKeyX -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyX <= animationTarget)
-                        {
-                            AnimationKeyX = animationTarget;
-                            ContainerHandlingItem.MoveX = false;
-                        }
-                    }
-                    else
-                        ContainerHandlingItem.MoveX = false;
-                    if (AnimationKeyX < 0)
-                        AnimationKeyX = 0;
-                }
+                var key = GetStateFromPosition(new Vector3(ContainerHandlingItem.TargetX, ContainerHandlingItem.TargetY, ContainerHandlingItem.TargetZ));
+                var keyGrabber01 = GetStateFromPosition(ContainerHandlingItem.TargetGrabber01, AnimationGrabber01Start.Z, AnimationGrabber01Span.Z);
+                var keyGrabber02 = GetStateFromPosition(ContainerHandlingItem.TargetGrabber02, AnimationGrabber02Start.Z, AnimationGrabber02Span.Z);
 
-                if (ContainerHandlingItem.MoveY)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetY - ((linear_key)controllerY[0]).Y) / (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y)) * controllerY[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyY - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyY < animationTarget)
-                    {
-                        AnimationKeyY += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyY >= animationTarget)
-                        {
-                            AnimationKeyY = animationTarget;
-                            ContainerHandlingItem.MoveY = false;
-                        }
-                    }
-                    else if (AnimationKeyY > animationTarget)
-                    {
-                        AnimationKeyY -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyY <= animationTarget)
-                        {
-                            AnimationKeyY = animationTarget;
-                            ContainerHandlingItem.MoveY = false;
-                        }
-                    }
-                    else
-                        ContainerHandlingItem.MoveY = false;
-                    if (AnimationKeyY < 0)
-                        AnimationKeyY = 0;
-                }
+                AnimatedPartX.SlowDownFactor = Math.Abs(AnimatedPartX.AnimationKeyFraction() - key.X) > SlowDownThreshold / AnimatedPartX.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartY.SlowDownFactor = Math.Abs(AnimatedPartY.AnimationKeyFraction() - key.Y) > SlowDownThreshold / AnimatedPartY.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartZ.SlowDownFactor = Math.Abs(AnimatedPartZ.AnimationKeyFraction() - key.Z) > SlowDownThreshold / AnimatedPartZ.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartCable.SlowDownFactor = Math.Abs(AnimatedPartCable.AnimationKeyFraction() - key.Y) > SlowDownThreshold / AnimatedPartCable.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartGrabber01.SlowDownFactor = Math.Abs(AnimatedPartGrabber01.AnimationKeyFraction() - keyGrabber01) > SlowDownThreshold / AnimatedPartGrabber01.MaxFrame ? 1.0f : 0.25f;
+                AnimatedPartGrabber02.SlowDownFactor = Math.Abs(AnimatedPartGrabber02.AnimationKeyFraction() - keyGrabber02) > SlowDownThreshold / AnimatedPartGrabber02.MaxFrame ? 1.0f : 0.25f;
 
-                if (ContainerHandlingItem.MoveZ)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetZ - ((linear_key)controllerZ[0]).Z) / (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z)) * controllerZ[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyZ - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyZ < animationTarget)
-                    {
-                        AnimationKeyZ += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyZ >= animationTarget)
-                        {
-                            AnimationKeyZ = animationTarget;
-                            ContainerHandlingItem.MoveZ = false;
-                        }
-                    }
-                    else if (AnimationKeyZ > animationTarget)
-                    {
-                        AnimationKeyZ -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyZ <= animationTarget)
-                        {
-                            AnimationKeyZ = animationTarget;
-                            ContainerHandlingItem.MoveZ = false;
-                        }
-                    }
-                    else
-                        ContainerHandlingItem.MoveZ = false;
-                    if (AnimationKeyZ < 0)
-                        AnimationKeyZ = 0;
-                }
+                AnimatedPartX.UpdateState(key.X, elapsedTime);
+                AnimatedPartY.UpdateState(key.Y, elapsedTime);
+                AnimatedPartZ.UpdateState(key.Z, elapsedTime);
+                AnimatedPartCable.UpdateState(key.Y, elapsedTime);
+                AnimatedPartGrabber01.UpdateState(keyGrabber01, elapsedTime);
+                AnimatedPartGrabber02.UpdateState(keyGrabber02, elapsedTime);
 
-                if (ContainerHandlingItem.MoveGrabber)
-                {
-                    var animationTarget = Math.Abs((ContainerHandlingItem.TargetGrabber01 - ((linear_key)controllerGrabber01[0]).Z + ((linear_key)controllerGrabber01[1]).Z) / (((linear_key)controllerGrabber01[1]).Z - ((linear_key)controllerGrabber01[0]).Z)) * controllerGrabber01[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyGrabber01 - animationTarget) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyGrabber01 < animationTarget)
-                    {
-                        AnimationKeyGrabber01 += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber01 >= animationTarget)
-                        {
-                            AnimationKeyGrabber01 = animationTarget;
-                        }
-                    }
-                    else if (AnimationKeyGrabber01 > animationTarget)
-                    {
-                        AnimationKeyGrabber01 -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber01 <= animationTarget)
-                        {
-                            AnimationKeyGrabber01 = animationTarget;
-                        }
-                    }
-                    if (AnimationKeyGrabber01 < 0)
-                        AnimationKeyGrabber01 = 0;
-                    var animationTarget2 = Math.Abs((ContainerHandlingItem.TargetGrabber02 - ((linear_key)controllerGrabber02[0]).Z + ((linear_key)controllerGrabber02[1]).Z) / (((linear_key)controllerGrabber02[1]).Z - ((linear_key)controllerGrabber02[0]).Z)) * controllerGrabber02[1].Frame;
-                    tempFrameRate = Math.Abs(AnimationKeyGrabber01 - animationTarget2) > slowDownThreshold ? FrameRate : FrameRate / 4;
-                    if (AnimationKeyGrabber02 < animationTarget2)
-                    {
-                        AnimationKeyGrabber02 += elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber02 >= animationTarget2)
-                        {
-                            AnimationKeyGrabber02 = animationTarget2;
-                        }
-                    }
-                    else if (AnimationKeyGrabber02 > animationTarget2)
-                    {
-                        AnimationKeyGrabber02 -= elapsedTime.ClockSeconds * tempFrameRate;
-                        if (AnimationKeyGrabber02 <= animationTarget2)
-                        {
-                            AnimationKeyGrabber02 = animationTarget2;
-                        }
-                    }
-                    if (animationTarget == AnimationKeyGrabber01 && animationTarget2 == AnimationKeyGrabber02)
-                        ContainerHandlingItem.MoveGrabber = false;
-                    if (AnimationKeyGrabber02 < 0)
-                        AnimationKeyGrabber02 = 0;
-                }
+                if (AnimatedPartX.AnimationKeyFraction() == key.X) ContainerHandlingItem.MoveX = false;
+                if (AnimatedPartY.AnimationKeyFraction() == key.Y) ContainerHandlingItem.MoveY = false;
+                if (AnimatedPartZ.AnimationKeyFraction() == key.Z) ContainerHandlingItem.MoveZ = false;
+                if (AnimatedPartGrabber01.AnimationKeyFraction() == keyGrabber01 && AnimatedPartGrabber02 .AnimationKeyFraction() == keyGrabber02) ContainerHandlingItem.MoveGrabber = false;
             }
-            ContainerHandlingItem.ActualX = (((linear_key)controllerX[1]).X - ((linear_key)controllerX[0]).X) * AnimationKeyX / controllerX[1].Frame + ((linear_key)controllerX[0]).X;
-            ContainerHandlingItem.ActualY = (((linear_key)controllerY[1]).Y - ((linear_key)controllerY[0]).Y) * AnimationKeyY / controllerY[1].Frame + ((linear_key)controllerY[0]).Y;
-            ContainerHandlingItem.ActualZ = (((linear_key)controllerZ[1]).Z - ((linear_key)controllerZ[0]).Z) * AnimationKeyZ / controllerZ[1].Frame + ((linear_key)controllerZ[0]).Z;
-            ContainerHandlingItem.ActualGrabber01 = (((linear_key)controllerGrabber01[1]).Z - ((linear_key)controllerGrabber01[0]).Z) * AnimationKeyGrabber01 / controllerGrabber01[1].Frame + ((linear_key)controllerGrabber01[0]).Z;
-            ContainerHandlingItem.ActualGrabber02 = (((linear_key)controllerGrabber02[1]).Z - ((linear_key)controllerGrabber02[0]).Z) * AnimationKeyGrabber02 / controllerGrabber02[1].Frame + ((linear_key)controllerGrabber02[0]).Z;
 
-            AnimateOneMatrix(IAnimationMatrixX, AnimationKeyX);
-            AnimateOneMatrix(IAnimationMatrixY, AnimationKeyY);
-            AnimateOneMatrix(IAnimationMatrixZ, AnimationKeyZ);
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
-            {
-                if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("cable"))
-                    AnimateOneMatrix(imatrix, AnimationKeyY);
-                else if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("grabber01"))
-                    AnimateOneMatrix(imatrix, AnimationKeyGrabber01);
-                else if (SharedShape.MatrixNames[imatrix].ToLower().StartsWith("grabber02"))
-                    AnimateOneMatrix(imatrix, AnimationKeyGrabber02);
-            }
+            ContainerHandlingItem.ActualX = AnimatedPartX.AnimationKeyFraction() * AnimationXYZSpan.X + AnimationXYZStart.X;
+            ContainerHandlingItem.ActualY = AnimatedPartY.AnimationKeyFraction() * AnimationXYZSpan.Y + AnimationXYZStart.Y;
+            ContainerHandlingItem.ActualZ = AnimatedPartZ.AnimationKeyFraction() * AnimationXYZSpan.Z + AnimationXYZStart.Z;
+            ContainerHandlingItem.ActualGrabber01 = AnimatedPartGrabber01.AnimationKeyFraction() * AnimationGrabber01Span.Z + AnimationGrabber01Start.Z;
+            ContainerHandlingItem.ActualGrabber02 = AnimatedPartGrabber02.AnimationKeyFraction() * AnimationGrabber02Span.Z + AnimationGrabber02Start.Z;
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+
             if (ContainerHandlingItem.ContainerAttached)
             {
-                var absAnimationMatrix = XNAMatrices[IAnimationMatrixY];
-                Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixX], out absAnimationMatrix);
-                Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[IAnimationMatrixZ], out absAnimationMatrix);
+                var absAnimationMatrix = XNAMatrices[AnimatedPartY.GetFirstTargetNode()];
+                Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[AnimatedPartX.GetFirstTargetNode()], out absAnimationMatrix);
+                Matrix.Multiply(ref absAnimationMatrix, ref XNAMatrices[AnimatedPartZ.GetFirstTargetNode()], out absAnimationMatrix);
                 Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
                 ContainerHandlingItem.TransferContainer(absAnimationMatrix);
             }
-
 
             // let's make some noise
 
@@ -1519,6 +1145,18 @@ namespace Orts.Viewer3D
             OldMoveZ = ContainerHandlingItem.MoveZ;
         }
 
+        float GetStateFromPosition(float input, float start, float span) => MathHelper.Clamp(Math.Abs((input - start) / span), 0.0f, 1.0f);
+
+        Vector3 GetStateFromPosition(Vector3 input)
+        {
+            var output = (input - AnimationXYZStart) / AnimationXYZSpan;
+
+            output.X = Math.Abs(output.X);
+            output.Y = Math.Abs(output.Y);
+            output.Z = Math.Abs(output.Z);
+
+            return Vector3.Clamp(output, Vector3.Zero, Vector3.One);
+        }
     }
 
 
@@ -1532,7 +1170,7 @@ namespace Orts.Viewer3D
 
     public class TurntableShape : PoseableShape
     {
-        protected float AnimationKey;  // advances with time
+        readonly AnimatedPart AnimatedPart;
         protected Turntable Turntable; // linked turntable data
         readonly SoundSource Sound;
         bool Rotating = false;
@@ -1546,9 +1184,8 @@ namespace Orts.Viewer3D
         {
             Turntable = turntable;
             Turntable.StartingY = (float)startingY;
-            Turntable.TurntableFrameRate = SharedShape.Animations[0].FrameRate;
-            AnimationKey = (Turntable.YAngle / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
+            Turntable.TurntableFrameRate = SharedShape.Animations?.FirstOrDefault()?.FrameRate;
+            for (var imatrix = 0; imatrix < SharedShape.GetAnimationNamesCount(); ++imatrix)
             {
                 if (SharedShape.MatrixNames[imatrix].ToLower() == turntable.Animations[0].ToLower())
                 {
@@ -1558,104 +1195,94 @@ namespace Orts.Viewer3D
             }
             if (viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS != null)
             {
-                var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { viewer.Simulator.RoutePath, viewer.Simulator.BasePath }, @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS);
                 try
                 {
                     Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
                     viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch
+                catch (Exception error)
                 {
-                    soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS;
-                    try
-                    {
-                        Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
-                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                    Trace.WriteLine(new FileLoadException(soundPath, error));
                 }
             }
-            for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
-                AnimateMatrix(matrix, AnimationKey);
 
-            var absAnimationMatrix = XNAMatrices[IAnimationMatrix];
+            AnimatedPart = new AnimatedPart(this);
+            AnimatedPart.AddAnimations();
+            AnimatedPart.SetMstsSpeed(1.0f, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+            AnimatedPart.SetFrameWrap(Turntable.YAngle / MathHelper.TwoPi * AnimatedPart.MaxFrame);
+
+            var absAnimationMatrix = XNAMatrices.ElementAtOrDefault(SharedShape.GetAnimationTargetNode(IAnimationMatrix));
             Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
             Turntable.ReInitTrainPositions(absAnimationMatrix);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            float nextKey;
-            var animation = SharedShape.Animations[0];
             if (Turntable.AlignToRemote)
             {
-                AnimationKey = (Turntable.YAngle / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
-                if (AnimationKey < 0)
-                    AnimationKey += animation.FrameCount;
+                AnimatedPart.SetFrameWrap(Turntable.YAngle / MathHelper.TwoPi * AnimatedPart.MaxFrame);
                 Turntable.AlignToRemote = false;
             }
             else
             {
                 if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
                 {
-                    nextKey = Turntable.TargetY / (2 * (float)Math.PI) * animation.FrameCount;
+                    if (Math.Abs(Turntable.YAngle - Turntable.TargetY) < 0.01)
+                        AnimatedPart.SlowDownFactor = 0.25f;
+                    else if (Math.Abs(Turntable.YAngle - Turntable.TargetY) < 0.03)
+                        AnimatedPart.SlowDownFactor = 0.5f;
+
+                    AnimatedPart.UpdateLoop(0, elapsedTime, Turntable.TargetY);
+                    AnimatedPart.SlowDownFactor = 1.0f;
                 }
-                else
+                else if (Turntable.Counterclockwise)
+                    AnimatedPart.UpdateLoop(1, elapsedTime);
+                else if (Turntable.Clockwise)
+                    AnimatedPart.UpdateLoop(-1, elapsedTime);
+
+                // Used if Turntable cannot turn 360 degrees, counting in minus rotation direction.
+                // Thus e.g. MaxAngle 40 deg will result the animation to allow from 360 (=0) to 320 degrees. 
+                if (Turntable.MaxAngle > 0)
                 {
-                    float moveFrames;
-                    if (Turntable.Counterclockwise)
-                        moveFrames = animation.FrameRate * elapsedTime.ClockSeconds;
-                    else if (Turntable.Clockwise)
-                        moveFrames = -animation.FrameRate * elapsedTime.ClockSeconds;
-                    else
-                        moveFrames = 0;
-                    nextKey = AnimationKey + moveFrames;
-                }
-                AnimationKey = nextKey % animation.FrameCount;
-                if (AnimationKey < 0)
-                    AnimationKey += animation.FrameCount;
-                // used if Turntable cannot turn 360 degrees
-                if (Turntable.MaxAngle > 0 && AnimationKey != 0)
-                {
-                    if (AnimationKey < -SharedShape.Animations[0].FrameCount * Turntable.MaxAngle / (2 * Math.PI) + animation.FrameCount)
+                    var maxAngleState = -Turntable.MaxAngle / MathHelper.TwoPi + 1;
+
+                    if (maxAngleState > 0.5f && AnimatedPart.AnimationKeyFraction() < maxAngleState ||
+                        maxAngleState < 0.5f && AnimatedPart.AnimationKeyFraction() > maxAngleState)
                     {
-                        if (AnimationKey > 20)
-                            AnimationKey = -SharedShape.Animations[0].FrameCount * Turntable.MaxAngle / (float)(2 * Math.PI) + animation.FrameCount;
+                        if (AnimatedPart.AnimationKeyFraction() > 0.5f)
+                            AnimatedPart.SetState(maxAngleState > 0.5f ? maxAngleState : 0);
                         else
-                            AnimationKey = 0;
+                            AnimatedPart.SetState(maxAngleState < 0.5f ? maxAngleState : 0);
                     }
                 }
-                Turntable.YAngle = MathHelper.WrapAngle(nextKey / animation.FrameCount * 2 * (float)Math.PI);
+                Turntable.YAngle = MathHelper.WrapAngle(AnimatedPart.AnimationKeyFraction() * MathHelper.TwoPi);
 
                 if ((Turntable.Clockwise || Turntable.Counterclockwise || Turntable.AutoClockwise || Turntable.AutoCounterclockwise) && !Rotating)
                 {
                     Rotating = true;
-                    if (Sound != null) Sound.HandleEvent(Turntable.TrainsOnMovingTable.Count == 1 &&
-                        Turntable.TrainsOnMovingTable[0].FrontOnBoard && Turntable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
+                    Sound?.HandleEvent(Turntable.TrainsOnMovingTable.Count == 1 &&
+                        Turntable.TrainsOnMovingTable[0].FrontOnBoard && Turntable.TrainsOnMovingTable[0].BackOnBoard
+                        ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
                 }
                 else if ((!Turntable.Clockwise && !Turntable.Counterclockwise && !Turntable.AutoClockwise && !Turntable.AutoCounterclockwise && Rotating))
                 {
                     Rotating = false;
-                    if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
+                    Sound?.HandleEvent(Event.MovingTableStopped);
                 }
             }
-            // Update the pose for each matrix
-            for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
-                AnimateMatrix(matrix, AnimationKey);
 
-            var absAnimationMatrix = XNAMatrices[IAnimationMatrix];
+            var absAnimationMatrix = XNAMatrices.ElementAtOrDefault(SharedShape.GetAnimationTargetNode(IAnimationMatrix));
             Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
             Turntable.PerformUpdateActions(absAnimationMatrix);
+
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
 
     public class TransfertableShape : PoseableShape
     {
-        protected float AnimationKey;  // advances with time
+        readonly AnimatedPart AnimatedPart;
         protected Transfertable Transfertable; // linked turntable data
         readonly SoundSource Sound;
         bool Translating = false;
@@ -1668,8 +1295,7 @@ namespace Orts.Viewer3D
             : base(viewer, path, initialPosition, flags)
         {
             Transfertable = transfertable;
-            AnimationKey = (Transfertable.OffsetPos - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
-            for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
+            for (var imatrix = 0; imatrix < SharedShape.GetAnimationNamesCount(); ++imatrix)
             {
                 if (SharedShape.MatrixNames[imatrix].ToLower() == transfertable.Animations[0].ToLower())
                 {
@@ -1679,30 +1305,24 @@ namespace Orts.Viewer3D
             }
             if (viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS != null)
             {
-                var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS;
+                var soundPath = ORTSPaths.GetFileFromFolders(new[] { viewer.Simulator.RoutePath, viewer.Simulator.BasePath }, @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS);
                 try
                 {
                     Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
                     viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
                 }
-                catch
+                catch (Exception error)
                 {
-                    soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultTurntableSMS;
-                    try
-                    {
-                        Sound = new SoundSource(viewer, initialPosition.WorldLocation, Events.Source.ORTSTurntable, soundPath);
-                        viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
-                    }
+                    Trace.WriteLine(new FileLoadException(soundPath, error));
                 }
             }
-            for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
-                AnimateMatrix(matrix, AnimationKey);
 
-            var absAnimationMatrix = XNAMatrices[IAnimationMatrix];
+            AnimatedPart = new AnimatedPart(this);
+            AnimatedPart.AddAnimations();
+            AnimatedPart.SetMstsSpeed(1.0f, AnimatedPart.MstsOptions.SpeedFromFrameRate);
+            AnimatedPart.SetFrameClamp((Transfertable.OffsetPos - Transfertable.CenterOffsetComponent) / Transfertable.Span * AnimatedPart.MaxFrame);
+
+            var absAnimationMatrix = XNAMatrices.ElementAtOrDefault(SharedShape.GetAnimationTargetNode(IAnimationMatrix));
             Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
             Transfertable.ReInitTrainPositions(absAnimationMatrix);
         }
@@ -1712,51 +1332,38 @@ namespace Orts.Viewer3D
             var animation = SharedShape.Animations[0];
             if (Transfertable.AlignToRemote)
             {
-                AnimationKey = (Transfertable.OffsetPos - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
-                if (AnimationKey < 0)
-                    AnimationKey = 0;
+                AnimatedPart.SetFrameClamp((Transfertable.OffsetPos - Transfertable.CenterOffsetComponent) / Transfertable.Span * AnimatedPart.MaxFrame);
                 Transfertable.AlignToRemote = false;
             }
             else
             {
                 if (Transfertable.GoToTarget)
-                {
-                    AnimationKey = (Transfertable.TargetOffset - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
-                }
-
+                    AnimatedPart.SetFrameClamp((Transfertable.TargetOffset - Transfertable.CenterOffsetComponent) / Transfertable.Span * AnimatedPart.MaxFrame);
                 else if (Transfertable.Forward)
-                {
-                    AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
-                }
+                    AnimatedPart.UpdateState(1, elapsedTime);
                 else if (Transfertable.Reverse)
-                {
-                    AnimationKey -= SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
-                }
-                if (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey = SharedShape.Animations[0].FrameCount;
-                if (AnimationKey < 0) AnimationKey = 0;
+                    AnimatedPart.UpdateState(0, elapsedTime);
 
-                Transfertable.OffsetPos = AnimationKey / SharedShape.Animations[0].FrameCount * Transfertable.Span + Transfertable.CenterOffsetComponent;
+                Transfertable.OffsetPos = AnimatedPart.AnimationKeyFraction() * Transfertable.Span + Transfertable.CenterOffsetComponent;
 
                 if ((Transfertable.Forward || Transfertable.Reverse) && !Translating)
                 {
                     Translating = true;
-                    if (Sound != null) Sound.HandleEvent(Transfertable.TrainsOnMovingTable.Count == 1 &&
-                        Transfertable.TrainsOnMovingTable[0].FrontOnBoard && Transfertable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
+                    Sound?.HandleEvent(Transfertable.TrainsOnMovingTable.Count == 1 &&
+                        Transfertable.TrainsOnMovingTable[0].FrontOnBoard && Transfertable.TrainsOnMovingTable[0].BackOnBoard
+                        ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
                 }
                 else if ((!Transfertable.Forward && !Transfertable.Reverse && Translating))
                 {
                     Translating = false;
-                    if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
+                    Sound?.HandleEvent(Event.MovingTableStopped);
                 }
             }
 
-            // Update the pose for each matrix
-            for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
-                AnimateMatrix(matrix, AnimationKey);
-
-            var absAnimationMatrix = XNAMatrices[IAnimationMatrix];
+            var absAnimationMatrix = XNAMatrices.ElementAtOrDefault(SharedShape.GetAnimationTargetNode(IAnimationMatrix));
             Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
             Transfertable.PerformUpdateActions(absAnimationMatrix, Location);
+
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
     }
@@ -1767,30 +1374,38 @@ namespace Orts.Viewer3D
         public int[] Hierarchy { get; protected set; } // the hierarchy from the sub_object
         public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
 
-        protected internal VertexBuffer VertexBuffer;
         protected internal IndexBuffer IndexBuffer;
         protected internal int PrimitiveCount;
+        protected internal int PrimitiveOffset;
+        protected internal PrimitiveType PrimitiveType;
 
-        readonly VertexBufferBinding[] VertexBufferBindings;
+        protected internal readonly VertexBufferBinding[] VertexBufferBindings;
 
-        public ShapePrimitive()
-        {
-        }
+        public ShapePrimitive() { }
+        
+        public ShapePrimitive(VertexBufferBinding[] vertexBufferBindings) => VertexBufferBindings = vertexBufferBindings;
 
         public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IndexBuffer indexBuffer, int primitiveCount, int[] hierarchy, int hierarchyIndex)
+            : this(material, vertexBufferSet, new VertexBufferBinding[0], indexBuffer, primitiveCount, hierarchy, hierarchyIndex)
+        { }
+
+        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, VertexBufferBinding[] vertexBufferBindings, IndexBuffer indexBuffer, int primitiveCount, int[] hierarchy, int hierarchyIndex)
+            : this(vertexBufferBindings.Prepend(new VertexBufferBinding(vertexBufferSet.Buffer)).Append(new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice))).ToArray())
         {
             Material = material;
-            VertexBuffer = vertexBufferSet.Buffer;
             IndexBuffer = indexBuffer;
             PrimitiveCount = primitiveCount;
             Hierarchy = hierarchy;
             HierarchyIndex = hierarchyIndex;
-
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice)) };
+            PrimitiveType = PrimitiveType.TriangleList;
         }
 
         public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IList<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
-            : this(material, vertexBufferSet, null, indexData.Count / 3, hierarchy, hierarchyIndex)
+            : this(material, vertexBufferSet, new VertexBufferBinding[0], indexData, graphicsDevice, hierarchy, hierarchyIndex)
+        { }
+
+        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, VertexBufferBinding[] vertexBufferBindings, IList<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
+            : this(material, vertexBufferSet, vertexBufferBindings, null, indexData.Count / 3, hierarchy, hierarchyIndex)
         {
             IndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
             IndexBuffer.SetData(indexData.ToArray());
@@ -1802,8 +1417,15 @@ namespace Orts.Viewer3D
             {
                 // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
                 graphicsDevice.SetVertexBuffers(VertexBufferBindings);
-                graphicsDevice.Indices = IndexBuffer;
-                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, primitiveCount: PrimitiveCount);
+                if (IndexBuffer != null)
+                {
+                    graphicsDevice.Indices = IndexBuffer;
+                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType, baseVertex: 0, startIndex: PrimitiveOffset, primitiveCount: PrimitiveCount);
+                }
+                else
+                {
+                    graphicsDevice.DrawPrimitives(PrimitiveType, 0, PrimitiveCount);
+                }
             }
         }
 
@@ -1815,13 +1437,16 @@ namespace Orts.Viewer3D
         [CallOnThread("Loader")]
         public virtual void Mark()
         {
-            Material.Mark();
+            Material?.Mark();
         }
 
         public void Dispose()
         {
-            VertexBuffer.Dispose();
-            IndexBuffer.Dispose();
+            var dummyInstanceBuffer = RenderPrimitive.GetDummyVertexBuffer(null);
+            for (var i = 0; i < VertexBufferBindings.Length; i++)
+                if (VertexBufferBindings[i].VertexBuffer != dummyInstanceBuffer)
+                    VertexBufferBindings[i].VertexBuffer?.Dispose();
+            IndexBuffer?.Dispose();
             PrimitiveCount = 0;
         }
     }
@@ -1846,7 +1471,7 @@ namespace Orts.Viewer3D
 
         public void SetVertexData(VertexPositionNormalTexture[] data, int minVertexIndex, int numVertices, int primitiveCount)
         {
-            VertexBuffer.SetData(data);
+            VertexBufferBindings.FirstOrDefault().VertexBuffer?.SetData(data);
             PrimitiveCount = primitiveCount;
         }
 
@@ -1879,11 +1504,11 @@ namespace Orts.Viewer3D
         public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
         public int SubObjectIndex { get; protected set; }
 
-        protected VertexBuffer VertexBuffer;
-        protected VertexDeclaration VertexDeclaration;
         protected int VertexBufferStride;
         protected IndexBuffer IndexBuffer;
         protected int PrimitiveCount;
+        protected internal int PrimitiveOffset;
+        protected PrimitiveType PrimitiveType;
 
         protected VertexBuffer InstanceBuffer;
         protected VertexDeclaration InstanceDeclaration;
@@ -1898,24 +1523,35 @@ namespace Orts.Viewer3D
             Hierarchy = shapePrimitive.Hierarchy;
             HierarchyIndex = shapePrimitive.HierarchyIndex;
             SubObjectIndex = subObjectIndex;
-            VertexBuffer = shapePrimitive.VertexBuffer;
-            VertexDeclaration = shapePrimitive.VertexBuffer.VertexDeclaration;
             IndexBuffer = shapePrimitive.IndexBuffer;
             PrimitiveCount = shapePrimitive.PrimitiveCount;
+            PrimitiveOffset = shapePrimitive.PrimitiveOffset;
+            PrimitiveType = shapePrimitive.PrimitiveType;
 
             InstanceDeclaration = new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements);
             InstanceBuffer = new VertexBuffer(graphicsDevice, InstanceDeclaration, positions.Length, BufferUsage.WriteOnly);
             InstanceBuffer.SetData(positions);
             InstanceCount = positions.Length;
 
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(InstanceBuffer, 0, 1) };
+            var instanceBufferBinding = new VertexBufferBinding(InstanceBuffer, 0, 1);
+
+            VertexBufferBindings = shapePrimitive.VertexBufferBindings.ToArray();
+            var dummyInstanceBuffer = RenderPrimitive.GetDummyVertexBuffer(graphicsDevice);
+            var position = -1;
+            for (var i = 0; i < VertexBufferBindings.Length; i++)
+                if (VertexBufferBindings[i].VertexBuffer == dummyInstanceBuffer)
+                    position = i;
+            if (position == -1)
+                VertexBufferBindings.Append(instanceBufferBinding);
+            else
+                VertexBufferBindings[position] = instanceBufferBinding;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.Indices = IndexBuffer;
             graphicsDevice.SetVertexBuffers(VertexBufferBindings);
-            graphicsDevice.DrawInstancedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, PrimitiveCount, InstanceCount);
+            graphicsDevice.DrawInstancedPrimitives(PrimitiveType, baseVertex: 0, startIndex: PrimitiveOffset, PrimitiveCount, InstanceCount);
         }
     }
 
@@ -1981,8 +1617,9 @@ namespace Orts.Viewer3D
         /// </summary>
         public readonly Dictionary<int, Matrix> StoredResultMatrixes = new Dictionary<int, Matrix>();
 
+        public virtual Matrix ForwardZDirection => Matrix.Identity;
 
-        readonly Viewer Viewer;
+        readonly protected Viewer Viewer;
         public readonly string FilePath;
         public readonly string ReferencePath;
 
@@ -2015,10 +1652,71 @@ namespace Orts.Viewer3D
             LoadContent();
         }
 
+        public virtual void Animate(int iMatrix, float key, Matrix[] animatedMatrices)
+        {
+            // Start with the intial pose in the shape file.
+            var xnaPose = Matrices[iMatrix];
+
+            foreach (controller controller in Animations[0].anim_nodes[iMatrix].controllers)
+            {
+                // Determine the frame index from the current frame ('key'). We will be interpolating between two key
+                // frames (the items in 'controller') so we need to find the last one LESS than the current frame
+                // and interpolate with the one after it.
+                var index = 0;
+                for (var i = 0; i < controller.Count; i++)
+                    if (controller[i].Frame <= key)
+                        index = i;
+                    else if (controller[i].Frame > key) // Optimisation, not required for algorithm.
+                        break;
+
+                var position1 = controller[index];
+                var position2 = index + 1 < controller.Count ? controller[index + 1] : controller[index];
+                var frame1 = position1.Frame;
+                var frame2 = position2.Frame;
+
+                // Make sure to clamp the amount, as we can fall outside the frame range. Also ensure there's a
+                // difference between frame1 and frame2 or we'll crash.
+                var amount = frame1 < frame2 ? MathHelper.Clamp((key - frame1) / (frame2 - frame1), 0, 1) : 0;
+
+                if (position1.GetType() == typeof(slerp_rot))  // rotate the existing matrix
+                {
+                    slerp_rot MSTS1 = (slerp_rot)position1;
+                    slerp_rot MSTS2 = (slerp_rot)position2;
+                    Quaternion XNA1 = new Quaternion(MSTS1.X, MSTS1.Y, -MSTS1.Z, MSTS1.W);
+                    Quaternion XNA2 = new Quaternion(MSTS2.X, MSTS2.Y, -MSTS2.Z, MSTS2.W);
+                    Quaternion q = Quaternion.Slerp(XNA1, XNA2, amount);
+                    Vector3 location = xnaPose.Translation;
+                    xnaPose = Matrix.CreateFromQuaternion(q);
+                    xnaPose.Translation = location;
+                }
+                else if (position1.GetType() == typeof(linear_key))  // a key sets an absolute position, vs shifting the existing matrix
+                {
+                    linear_key MSTS1 = (linear_key)position1;
+                    linear_key MSTS2 = (linear_key)position2;
+                    Vector3 XNA1 = new Vector3(MSTS1.X, MSTS1.Y, -MSTS1.Z);
+                    Vector3 XNA2 = new Vector3(MSTS2.X, MSTS2.Y, -MSTS2.Z);
+                    Vector3 v = Vector3.Lerp(XNA1, XNA2, amount);
+                    xnaPose.Translation = v;
+                }
+                else if (position1.GetType() == typeof(tcb_key)) // a tcb_key sets an absolute rotation, vs rotating the existing matrix
+                {
+                    tcb_key MSTS1 = (tcb_key)position1;
+                    tcb_key MSTS2 = (tcb_key)position2;
+                    Quaternion XNA1 = new Quaternion(MSTS1.X, MSTS1.Y, -MSTS1.Z, MSTS1.W);
+                    Quaternion XNA2 = new Quaternion(MSTS2.X, MSTS2.Y, -MSTS2.Z, MSTS2.W);
+                    Quaternion q = Quaternion.Slerp(XNA1, XNA2, amount);
+                    Vector3 location = xnaPose.Translation;
+                    xnaPose = Matrix.CreateFromQuaternion(q);
+                    xnaPose.Translation = location;
+                }
+            }
+            animatedMatrices[iMatrix] = xnaPose;  // update the matrix
+        }
+
         /// <summary>
         /// Only one copy of the model is loaded regardless of how many copies are placed in the scene.
         /// </summary>
-        void LoadContent()
+        protected virtual void LoadContent()
         {
             var filePath = FilePath;
             // commented lines allow reading the animation block from an additional file in an Openrails subfolder
@@ -2102,6 +1800,8 @@ namespace Orts.Viewer3D
         {
             public DistanceLevel[] DistanceLevels;
 
+            public LodControl() { }
+
             public LodControl(lod_control MSTSlod_control, Helpers.TextureFlags textureFlags, ShapeFile sFile, SharedShape sharedShape)
             {
 #if DEBUG_SHAPE_HIERARCHY
@@ -2136,6 +1836,8 @@ namespace Orts.Viewer3D
             public float ViewingDistance;
             public float ViewSphereRadius;
             public SubObject[] SubObjects;
+
+            public DistanceLevel() { }
 
             public DistanceLevel(distance_level MSTSdistance_level, Helpers.TextureFlags textureFlags, ShapeFile sFile, SharedShape sharedShape)
             {
@@ -2190,26 +1892,34 @@ namespace Orts.Viewer3D
             };
 
             static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
+                { "Diffuse", SceneryMaterialOptions.Diffuse },
                 { "Tex", SceneryMaterialOptions.ShaderFullBright },
                 { "TexDiff", SceneryMaterialOptions.Diffuse },
                 { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.ShaderFullBright},
                 { "BlendATexDiff", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse },
                 { "AddATex", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright},
                 { "AddATexDiff", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.Diffuse },
+                { "GlossMap", SceneryMaterialOptions.Diffuse },
             };
 
             static readonly SceneryMaterialOptions[] VertexLightModeMap = new[] {
-                SceneryMaterialOptions.ShaderDarkShade,
-                SceneryMaterialOptions.ShaderHalfBright,
-                SceneryMaterialOptions.ShaderVegetation, // Not certain this is right.
-                SceneryMaterialOptions.ShaderVegetation,
-                SceneryMaterialOptions.ShaderFullBright,
-                SceneryMaterialOptions.None | SceneryMaterialOptions.Specular750,
-                SceneryMaterialOptions.None | SceneryMaterialOptions.Specular25,
-                SceneryMaterialOptions.None | SceneryMaterialOptions.None,
+                SceneryMaterialOptions.ShaderDarkShade, // -12
+                SceneryMaterialOptions.ShaderHalfBright, // -11
+                SceneryMaterialOptions.ShaderVegetation, // -10 only env. light, no direct light
+                SceneryMaterialOptions.ShaderVegetation, // -9 only env. light half bright, no direct light
+                SceneryMaterialOptions.ShaderFullBright, // -8 no direct light
+                SceneryMaterialOptions.Specular750, // -7 specular, no direct light
+                SceneryMaterialOptions.Specular25, // -6 specular half bright, no direct light
+                SceneryMaterialOptions.None, // -5
+                SceneryMaterialOptions.ShaderVegetation, // -4 only env. light, no direct light
+                SceneryMaterialOptions.Specular750, // -3 specular
+                SceneryMaterialOptions.Specular25, // -2 specular half bright
+                SceneryMaterialOptions.None // -1
             };
 
             public ShapePrimitive[] ShapePrimitives;
+
+            public SubObject() { }
 
 #if DEBUG_SHAPE_HIERARCHY
             public SubObject(sub_object sub_object, ref int totalPrimitiveIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, int subObjectIndex, SFile sFile, SharedShape sharedShape)
@@ -2242,6 +1952,10 @@ namespace Orts.Viewer3D
                     var vertexState = sFile.shape.vtx_states[primitiveState.ivtx_state];
                     var lightModelConfiguration = sFile.shape.light_model_cfgs[vertexState.LightCfgIdx];
                     var options = SceneryMaterialOptions.None;
+
+                    color diffuseColor = new color { R = 1, G = 1, B = 1, A = 1 };
+                    float metallicFactor = 0;
+                    float roughnessFactor = 1;
 
                     // Validate hierarchy position.
                     var hierarchyIndex = vertexState.imatrix;
@@ -2276,7 +1990,16 @@ namespace Orts.Viewer3D
                         options |= SceneryMaterialOptions.AlphaTest;
 
                     if (ShaderNames.ContainsKey(sFile.shape.shader_names[primitiveState.ishader]))
+                    {
                         options |= ShaderNames[sFile.shape.shader_names[primitiveState.ishader]];
+
+                        if (sFile.shape.shader_names[primitiveState.ishader] == "GlossMap")
+                        {
+                            metallicFactor = 1;
+                            roughnessFactor = 0;
+                            options |= SceneryMaterialOptions.PbrHasIndices | SceneryMaterialOptions.PbrHasNormals;
+                        }
+                    }
                     else if (!ShapeWarnings.Contains("shader_name:" + sFile.shape.shader_names[primitiveState.ishader]))
                     {
                         Trace.TraceInformation("Skipped unknown shader name {1} first seen in shape {0}", sharedShape.FilePath, sFile.shape.shader_names[primitiveState.ishader]);
@@ -2285,6 +2008,12 @@ namespace Orts.Viewer3D
 
                     if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
                         options |= VertexLightModeMap[12 + vertexState.LightMatIdx];
+                    else if (vertexState.LightMatIdx >= 0 && sFile.shape.light_materials.ElementAtOrDefault(vertexState.LightMatIdx) is light_material lightMaterial
+                        && sFile.shape.colors.ElementAtOrDefault(lightMaterial.DiffColIdx) is color color)
+                    {
+                        diffuseColor = color;
+                        options |= SceneryMaterialOptions.PbrHasIndices | SceneryMaterialOptions.PbrHasNormals;
+                    }
                     else if (!ShapeWarnings.Contains("lighting_model:" + vertexState.LightMatIdx))
                     {
                         Trace.TraceInformation("Skipped unknown lighting model index {1} first seen in shape {0}", sharedShape.FilePath, vertexState.LightMatIdx);
@@ -2297,19 +2026,53 @@ namespace Orts.Viewer3D
                     if ((textureFlags & Helpers.TextureFlags.Underground) != 0)
                         options |= SceneryMaterialOptions.UndergroundTexture;
 
-                    Material material;
+                    texture texture = null;
+                    string texturePath = null;
+
                     if (primitiveState.tex_idxs.Length != 0)
                     {
-                        var texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
+                        texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
                         var imageName = sFile.shape.images[texture.iImage];
                         if (String.IsNullOrEmpty(sharedShape.ReferencePath))
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias);
+                            texturePath = Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName);
                         else
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
+                            texturePath = Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName);
+                    }
+
+                    Material material;
+                    if ((options & SceneryMaterialOptions.PbrHasIndices) > 0)
+                    {
+                        // Special PBR rendering path for non-textured or glossy materials
+                        var gltf = new glTFLoader.Schema.Gltf
+                        {
+                            Materials = new[]
+                            {
+                                new glTFLoader.Schema.Material
+                                {
+                                    AlphaMode = glTFLoader.Schema.Material.AlphaModeEnum.OPAQUE,
+                                    EmissiveFactor = new[] { 0f, 0f, 0f },
+                                    PbrMetallicRoughness = new glTFLoader.Schema.MaterialPbrMetallicRoughness
+                                    {
+                                        BaseColorFactor = new[] { diffuseColor.R, diffuseColor.G, diffuseColor.B, diffuseColor.A },
+                                        MetallicFactor = metallicFactor,
+                                        RoughnessFactor = roughnessFactor
+                                    }
+                                }
+                        },
+                            Samplers = new[] { GltfShape.GltfSubObject.DefaultGltfSampler },
+                            Scenes = new[] { new glTFLoader.Schema.Scene { Nodes = new[] { 0 } } },
+                        };
+
+                        material = sharedShape.Viewer.MaterialManager.Load("PBR",
+                            $"{sharedShape.FilePath}#0#{vertexState.LightMatIdx}",
+                            (int)options, 0, null, gltf);
+                        var baseColorTexture = texturePath == null ? null : sharedShape.Viewer.TextureManager.Get(texturePath);
+                        (material as PbrMaterial).LoadTextures(baseColorTexture);
                     }
                     else
                     {
-                        material = sharedShape.Viewer.MaterialManager.Load("Scenery", null, (int)options);
+                        // Standard rendering path for traditional textured materials
+                        material = sharedShape.Viewer.MaterialManager.Load("Scenery", texturePath, (int)options, texture?.MipMapLODBias ?? 0);
                     }
 
 #if DEBUG_SHAPE_HIERARCHY
@@ -2425,6 +2188,7 @@ namespace Orts.Viewer3D
             public int DebugNormalsVertexCount;
             public const int DebugNormalsVertexPerVertex = 3 * 4;
 #endif
+            public VertexBufferSet() { }
 
             public VertexBufferSet(VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice)
             {
@@ -2529,12 +2293,12 @@ namespace Orts.Viewer3D
             PrepareFrame(frame, location, Matrices, null, flags);
         }
 
-        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags, bool[] matrixVisible = null)
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, ShapeFlags flags, Dictionary<int, bool> matrixVisible = null)
         {
             PrepareFrame(frame, location, animatedXNAMatrices, null, flags, matrixVisible);
         }
 
-        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool[] subObjVisible, ShapeFlags flags, bool[] matrixVisible = null)
+        public void PrepareFrame(RenderFrame frame, WorldPosition location, Matrix[] animatedXNAMatrices, bool[] subObjVisible, ShapeFlags flags, Dictionary<int, bool> matrixVisible = null)
         {
             var lodBias = ((float)Viewer.Settings.LODBias / 100 + 1);
 
@@ -2555,7 +2319,7 @@ namespace Orts.Viewer3D
 
                 // If this LOD group is not in the FOV, skip the whole LOD group.
                 // TODO: This might imair some shadows.
-                if (!Viewer.Camera.InFov(mstsLocation, lodControl.DistanceLevels[displayDetailLevel].ViewSphereRadius))
+                if (!(lodControl.DistanceLevels.ElementAtOrDefault(displayDetailLevel) is DistanceLevel distanceLevel) || !Viewer.Camera.InFov(mstsLocation, distanceLevel.ViewSphereRadius))
                     continue;
 
                 // We choose the distance level (LOD) to display first:
@@ -2576,9 +2340,23 @@ namespace Orts.Viewer3D
                     // Maximum detail!
                     displayDetailLevel = 0;
                 else if (Viewer.Settings.LODBias > -100)
+                {
                     // Not minimum detail, so find the correct level (with scaling by LODBias)
-                    while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
-                        displayDetailLevel--;
+                    if (this is GltfShape gltfShape)
+                    {
+                        // glTF lod-ding is based on minimum screen coverage.
+                        // Checking from level 0 to less detailed
+                        while (displayDetailLevel > 0 && Viewer.Camera.BiggerThan(xnaDTileTranslation, gltfShape.BoundingBoxNodes, gltfShape.MinimumScreenCoverages[displayDetailLevel - 1]))
+                            displayDetailLevel--;
+                        gltfShape.SetLod(displayDetailLevel);
+                    }
+                    else
+                    {
+                        // .s lod-ding is based on distance levels
+                        while ((displayDetailLevel > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[displayDetailLevel - 1].ViewSphereRadius, lodControl.DistanceLevels[displayDetailLevel - 1].ViewingDistance * lodBias))
+                            displayDetailLevel--;
+                    }
+                }
 
                 var displayDetail = lodControl.DistanceLevels[displayDetailLevel];
                 var distanceDetail = Viewer.Settings.LODBias == 100
@@ -2603,15 +2381,10 @@ namespace Orts.Viewer3D
 
                     foreach (var shapePrimitive in subObject.ShapePrimitives)
                     {
-                        var xnaMatrix = Matrix.Identity;
                         var hi = shapePrimitive.HierarchyIndex;
-                        if (matrixVisible != null && !matrixVisible[hi]) continue;
-                        while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
-                        {
-                            Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
-                            hi = shapePrimitive.Hierarchy[hi];
-                        }
-                        Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+                        if (matrixVisible != null && matrixVisible.TryGetValue(hi, out var visible) && !visible) continue;
+
+                        var xnaMatrix = SetRenderMatrices(shapePrimitive, animatedXNAMatrices, ref xnaDTileTranslation);
 
                         if (StoredResultMatrixes.ContainsKey(shapePrimitive.HierarchyIndex))
                             StoredResultMatrixes[shapePrimitive.HierarchyIndex] = xnaMatrix;
@@ -2625,21 +2398,94 @@ namespace Orts.Viewer3D
             }
         }
 
-        public Matrix GetMatrixProduct(int iNode)
+        public virtual Matrix SetRenderMatrices(ShapePrimitive shapePrimitive, Matrix[] animatedXNAMatrices, ref Matrix xnaDTileTranslation)
         {
-            int[] h = LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
-            Matrix matrix = Matrix.Identity;
-            while (iNode != -1)
+            var xnaMatrix = Matrix.Identity;
+            var hi = shapePrimitive.HierarchyIndex;
+            while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
             {
-                matrix *= Matrices[iNode];
-                iNode = h[iNode];
+                Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
+                hi = shapePrimitive.Hierarchy[hi];
+            }
+            Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+            return xnaMatrix;
+        }
+
+        public virtual Matrix GetMatrixProduct(int iNode)
+        {
+            var h = GetModelHierarchy();
+            Matrix matrix = Matrix.Identity;
+            if (h != null && h.Length > iNode)
+            {
+                while (iNode != -1)
+                {
+                    matrix *= Matrices[iNode];
+                    iNode = h[iNode];
+                }
             }
             return matrix;
         }
 
-        public int GetParentMatrix(int iNode)
+        public int[] GetModelHierarchy() => LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.FirstOrDefault()?.Hierarchy;
+
+        /// <summary>
+        /// This method is part of the animation handling. Gets the parent that will be animated, for finding a bogie for wheels.
+        /// </summary>
+        public int GetParentMatrix(int iNode) => GetModelHierarchy()?.ElementAtOrDefault(iNode) ?? -1;
+
+        /// <summary>
+        /// Searches for the parent animation.
+        /// </summary>
+        /// <param name="animationId">For stf files it is the node id, for gltf files it is the animation id.</param>
+        /// <returns>The parent animation id.</returns>
+        public virtual int GetAnimationParent(int animationId) => GetParentMatrix(animationId);
+
+        /// <summary>
+        /// Tells whether the animation is an internal sequence defined within the shape, or is just a tag that needs external animation.
+        /// </summary>
+        /// <param name="animationId">For stf files it is the node id, for gltf files it is the animation id.</param>
+        /// <returns>true if there is no internal seqence defined in the shape.</returns>
+        public virtual bool IsAnimationArticulation(int animationId) =>
+            !(Animations?.FirstOrDefault()?.anim_nodes is anim_nodes a && a.Count > animationId && a.ElementAtOrDefault(animationId)?.controllers is controllers c && c.Count > 0);
+
+        /// <summary>
+        /// Returns the parent animation id.
+        /// </summary>
+        /// <param name="animationId">For stf files it is the node id, for gltf files it is the animation id.</param>
+        /// <returns>Returns for stf files the node id itself, for gltf files the target node id of the animation.</returns>
+        public virtual int GetAnimationTargetNode(int animationId) => animationId;
+
+        public virtual int GetAnimationNamesCount() => LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault().ShapePrimitives?.FirstOrDefault()?.Hierarchy?.Length ?? 0;
+
+        public virtual bool HasAnimations() => Animations != null;
+
+        public virtual bool HasAnimation(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?.Count > 0;
+
+        public virtual float GetAnimationLength(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?
+            .Select(c => c.LastOrDefault()?.Frame ?? 0).DefaultIfEmpty(0).Max() ?? 0;
+
+        public virtual void GetAnimationOutputMinMax(int animationId, out Vector3 min, out Vector3 max, out Vector3 start)
         {
-            return LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[iNode];
+            min = max = start = Vector3.Zero;
+
+            if (!(Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?.FirstOrDefault() is IList keys) || keys.Count == 0)
+                return;
+
+            var v = (linear_key)keys[0];
+            min = max = start = new Vector3(v.X, v.Y, v.Z);
+
+            for (int i = 1; i < keys.Count; i++)
+            {
+                v = (linear_key)keys[i];
+
+                if (v.X < min.X) min.X = v.X;
+                if (v.Y < min.Y) min.Y = v.Y;
+                if (v.Z < min.Z) min.Z = v.Z;
+
+                if (v.X > max.X) max.X = v.X;
+                if (v.Y > max.Y) max.Y = v.Y;
+                if (v.Z > max.Z) max.Z = v.Z;
+            }
         }
 
         [CallOnThread("Loader")]
