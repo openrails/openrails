@@ -831,6 +831,11 @@ namespace Orts.Parsers.Msts
             /// </summary>
             PowerRate = 1ul << 31,
 
+            /// <summary>Valid Units: m2, ft2, in2
+            /// <para>Scaled to square meters.</para>
+            /// </summary>
+            Area = 1 << 32,
+
             // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values.
             // or interpreting locomotive cab attributes from the ORTSExtendedCVF experimental mechanism.
             // "Any" should not be used where the dimensions of a unit are predictable.
@@ -1196,6 +1201,17 @@ namespace Orts.Parsers.Msts
                     case "w/s": return 1;
                     case "kw/s": return 1e3;
                     case "hp/s": return 745.699872;
+                }
+            if ((validUnits & UNITS.Area) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0f;
+                    case "*(m^2)": return 1.0f;
+                    case "m^2": return 1.0f;
+                    case "*(ft^2)": return 0.09290304f;
+                    case "ft^2": return 0.09290304f;
+                    case "*(in^2)": return 0.00064516f;
+                    case "in^2": return 0.00064516f;
                 }
             STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + validUnits.ToString() + " unit");
             return 1;
