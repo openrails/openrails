@@ -97,6 +97,11 @@ namespace Orts.Simulation
         public float WindAverageSpeedMpS;
         public float WindInstantaneousSpeedMpS;
 
+        public float OverallDimmingFactor { get; private set; }
+        public float AmbientLightingIntensity { get; private set; }
+        public float DirectLightingIntensity { get; private set; }
+        public float DirectLightingPale { get; private set; }
+
         public float WindAverageDirectionRad
         {
             get => (float)Math.Atan2(WindAverageDirection.X, -WindAverageDirection.Y);
@@ -107,6 +112,26 @@ namespace Orts.Simulation
         {
             get => (float)Math.Atan2(WindInstantaneousDirection.X, -WindInstantaneousDirection.Y);
             set => WindInstantaneousDirection = new Vector2((float)Math.Sin(value), -(float)Math.Cos(value));
+        }
+
+        public void UpdateLightingFactors(float dayNightFactor)
+        {
+            float maxVisibility = 2000f;
+            float minVisibility = 50f;
+            float fogFactor = 1f - MathHelper.Clamp((VisibilityM - minVisibility) / (maxVisibility - minVisibility), 0f, 1f);
+
+            OverallDimmingFactor = Math.Max(CloudCoverFactor, fogFactor);
+            DirectLightingIntensity = MathHelper.Lerp(1.0f, 0.01f, OverallDimmingFactor);
+            DirectLightingPale = 1.0f - OverallDimmingFactor * 0.8f;
+
+            // When weatherDimmingFactor is high (overcast/fog), push the ambient upward to compensate for the lost direct light.
+            float weatherBoost = MathHelper.Lerp(1.0f, 1.5f, OverallDimmingFactor);
+
+            float baseAmbient = 0.5f;
+            float finalAmbient = baseAmbient * dayNightFactor * weatherBoost;
+
+            // The metals need a minimum amount of ambient to be visible, and this also prevents the scene from going completely black at night.
+            AmbientLightingIntensity = Math.Max(finalAmbient, 0.05f);
         }
     }
 }
