@@ -1156,9 +1156,17 @@ namespace Orts.Parsers.Msts
                     case "": return 1.0;
                     case "degc": return 1;
                     case "degf":  // For degF we have a complex calculation process that require conversion from a string, calculation of equivalent degC, and then conversion back to a string
-                        float TempConstant = Convert.ToSingle(constant);
+                        // Parse defensively and with the same invariant format the caller uses. This was
+                        // Convert.ToSingle, which threw FormatException when the numeric part was missing
+                        // or malformed - "MaxTemperature ( degF )" leaves constant empty. Leaving constant
+                        // untouched lets ReadFloat handle and report it the same way as any other value.
+                        if (!float.TryParse(constant, parseNum, parseNFI, out float TempConstant))
+                            return 1;
                         float Temperature = (TempConstant - 32f) * (100f / 180f);
-                        constant = Convert.ToString(Temperature);
+                        // Write back with the invariant format too: Convert.ToString used the current
+                        // culture, so on a locale with a comma decimal separator the converted value could
+                        // not be read back correctly by the caller's invariant float.TryParse.
+                        constant = Temperature.ToString(parseNFI);
                         return 1;
                 }
             }
