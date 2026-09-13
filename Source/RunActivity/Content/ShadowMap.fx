@@ -26,6 +26,7 @@
 float4x4 WorldViewProjection;  // model -> world -> view -> projection
 float3   SideVector;
 float    ImageBlurStep;  // = 1 / shadow map texture width and height
+float2   UVScale;
 texture  ImageTexture;
 
 sampler ImageSampler = sampler_state
@@ -96,7 +97,7 @@ VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 	}
 
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.TexCoord_Depth.xy = In.TexCoord;
+	Out.TexCoord_Depth.xy = In.TexCoord * UVScale;
 	Out.TexCoord_Depth.z = Out.Position.z;
 
 	return Out;
