@@ -90,6 +90,7 @@ namespace Orts.Simulation
       , BrakeHose
       , QuickRelease
       , Overcharge
+      , NeutralMode
       // Cab Devices
       , Sander
       , Alerter
@@ -243,6 +244,7 @@ namespace Orts.Simulation
                 , new string [] { GetString("Brake Hose"), GetString("disconnect"), null, GetString("connect") }
                 , new string [] { GetString("Quick Release"), GetString("off"), null, GetString("on") }
                 , new string [] { GetString("Overcharge"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("Neutral mode"), GetString("off"), null, GetString("on") }
                 // Cab Devices
                 , new string [] { GetString("Sander"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Alerter"), GetString("acknowledge"), null, GetParticularString("Alerter", "sound") } 
