@@ -141,7 +141,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 #pragma warning disable CS0618 // SetEmergency is obsolete
                     Script.SetEmergency(value);
 #pragma warning restore CS0618 // SetEmergency is obsolete
-                else
+                else if (Locomotive.TrainBrakeController != null)
                     Locomotive.TrainBrakeController.TCSEmergencyBraking = value;
             }
         }
@@ -341,8 +341,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.CurrentTrainMUDirection = () => Locomotive.Train.MUDirection; // Direction of train
                 Script.IsFlipped = () => Locomotive.Flipped;
                 Script.IsRearCab = () => Locomotive.UsingRearCab;
-                Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
-                Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
+                Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController?.EmergencyBraking ?? false;
+                Script.IsBrakeFullService = () => Locomotive.TrainBrakeController?.TCSFullServiceBraking ?? false;
                 Script.PowerAuthorization = () => PowerAuthorization;
                 Script.CircuitBreakerClosingOrder = () => CircuitBreakerClosingOrder;
                 Script.CircuitBreakerOpeningOrder = () => CircuitBreakerOpeningOrder;
@@ -370,7 +370,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.LocomotiveBrakeCylinderPressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.GetCylPressurePSI()) : float.MaxValue;
                 Script.DoesBrakeCutPower = () => Locomotive.DoesBrakeCutPower;
                 Script.BrakeCutsPowerAtBrakeCylinderPressureBar = () => Bar.FromPSI(Locomotive.BrakeCutsPowerAtBrakeCylinderPressurePSI);
-                Script.TrainBrakeControllerState = () => Locomotive.TrainBrakeController.TrainBrakeControllerState;
+                Script.TrainBrakeControllerState = () => Locomotive.TrainBrakeController?.TrainBrakeControllerState ?? ControllerState.Dummy;
                 Script.AccelerationMpSS = () => Locomotive.AccelerationMpSS;
                 Script.AltitudeM = () => Locomotive.WorldPosition.Location.Y;
                 Script.CurrentGradientPercent = () => -Locomotive.CurrentElevationPercent;
@@ -403,7 +403,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 // TrainControlSystem setters
                 Script.SetFullBrake = (value) =>
                 {
-                    if (Locomotive.TrainBrakeController.TCSFullServiceBraking != value)
+                    if (Locomotive.TrainBrakeController != null && Locomotive.TrainBrakeController.TCSFullServiceBraking != value)
                     {
                         Locomotive.TrainBrakeController.TCSFullServiceBraking = value;
 
@@ -421,7 +421,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 };
                 Script.SetEmergencyBrake = (value) =>
                 {
-                    if (Locomotive.TrainBrakeController.TCSEmergencyBraking != value)
+                    if (Locomotive.TrainBrakeController != null && Locomotive.TrainBrakeController.TCSEmergencyBraking != value)
                         Locomotive.TrainBrakeController.TCSEmergencyBraking = value;
                 };
                 Script.SetFullDynamicBrake = (value) => FullDynamicBrakingOrder = value;
