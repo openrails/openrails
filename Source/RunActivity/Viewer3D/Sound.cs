@@ -3201,13 +3201,13 @@ namespace Orts.Viewer3D
                     foreach (string sms in fss.SoundSourceFileNames)
                     {
                         var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"Sound\" + sms);
-                    if (fullPath != null)
-                    {
-                        ss = new SoundSource(Viewer, wl, Events.Source.None, fullPath, true);
-                        if (ss != null)
-                            ls.Add(ss);
+                        if (fullPath != null)
+                        {
+                            ss = new SoundSource(Viewer, wl, Events.Source.None, fullPath, true);
+                            if (ss != null)
+                                ls.Add(ss);
+                        }
                     }
-                }
                 }
                 Viewer.SoundProcess.AddSoundSources(name, ls);
 
