@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-10-07 15:41:50+0300\n"
-"PO-Revision-Date: 2023-10-07 16:31+0300\n"
+"PO-Revision-Date: 2026-08-12 02:41+0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -11,22 +11,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.4.4\n"
 
 #: ../../ORTS.Settings/InputSettings.cs:564
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
-msgstr "для модификации {0} нужен Shift"
+msgstr "требуется {0}, включается по Shift"
 
 #: ../../ORTS.Settings/InputSettings.cs:566
 #, csharp-format
 msgid "{0} requires and is modified by Control"
-msgstr "для модификации {0} нужен Control"
+msgstr "требуется {0}, включается по Ctrl"
 
 #: ../../ORTS.Settings/InputSettings.cs:568
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
-msgstr "для модификации {0} нужен Alt"
+msgstr "требуется {0}, включается по Alt"
 
 #: ../../ORTS.Settings/InputSettings.cs:599
 #, csharp-format
@@ -35,23 +35,23 @@ msgstr "{2} одновременно назначено для {0} и {1}"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:15
 msgid "Reverser Neutral"
-msgstr "Реверсор Нейтраль"
+msgstr "Реверсор: Нейтраль"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:16
 msgid "Reverser Full Reversed"
-msgstr "Реверсор Полный Назад"
+msgstr "Реверсор: Полный назад"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:17
 msgid "Reverser Full Forward"
-msgstr "Реверсор Полный Вперёд"
+msgstr "Реверсор: Полный вперёд"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:18
 msgid "Throttle Idle"
-msgstr "Контроллер 0"
+msgstr "Контроллер: 0"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:19
 msgid "Full Throttle"
-msgstr "Контроллер 100%"
+msgstr "Контроллер: 100%"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:20
 msgid "Dynamic Brake"
@@ -99,43 +99,43 @@ msgstr "Отпуск ЛТ вкл. (в тормозном положении)"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:31
 msgid "Rotary Switch 1-Position 1(OFF)"
-msgstr "Пакетник 1 - позиция 1(Откл)"
+msgstr "Пакетник 1 - позиция 1 (Откл)"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:32
 msgid "Rotary Switch 1-Position 2(SLOW)"
-msgstr "Пакетник 1 - позиция 2(Медл)"
+msgstr "Пакетник 1 - позиция 2 (Медл)"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:33
 msgid "Rotary Switch 1-Position 3(FULL)"
-msgstr "Пакетник 1 - позиция 3(Быстр)"
+msgstr "Пакетник 1 - позиция 3 (Быстр)"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:34
 msgid "Rotary Switch 2-Position 1(OFF)"
-msgstr "Пакетник 2 - позиция 1(Откл)"
+msgstr "Пакетник 2 - позиция 1 (Откл)"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:35
 msgid "Rotary Switch 2-Position 2(DIM)"
-msgstr "Пакетник 2 - позиция 2(Тускло)"
+msgstr "Пакетник 2 - позиция 2 (Тускло)"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:36
 msgid "Rotary Switch 2-Position 3(FULL)"
-msgstr "Пакетник 2 - позиция 3(Ярко)"
+msgstr "Пакетник 2 - позиция 3 (Ярко)"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:37
 msgid "Reverse Reverser Direction"
-msgstr "Обратить направление Реверсора"
+msgstr "Обратить направление реверсора"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:38
 msgid "Reverse Throttle Direction"
-msgstr "Обратить направление Контроллера"
+msgstr "Обратить направление контроллера"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:39
 msgid "Reverse Auto Brake Direction"
-msgstr "Обратить направление Крана Машиниста"
+msgstr "Обратить направление крана машиниста"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:40
 msgid "Reverse Independent Brake Direction"
-msgstr "Обратить направление Крана независимого тормоза"
+msgstr "Обратить направление крана независимого тормоза"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:41
 msgid "Full Range Throttle"
