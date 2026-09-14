@@ -316,7 +316,7 @@ namespace Orts.Viewer3D.Processes
                                     Application.ProductName, errorSummary, logFile),
                                     Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
                             if (openTracker == DialogResult.OK)
-                                Process.Start("http://launchpad.net/or");
+                                Process.Start(new ProcessStartInfo { FileName = "https://launchpad.net/or", UseShellExecute = true });
                             // James Ross would prefer to do this:
                             //   Process.Start("http://bugs.launchpad.net/or/+filebug?field.title=" + Uri.EscapeDataString(errorSummary));
                             // but unfortunately if you need to log in (as most people might), Launchpad munges the title

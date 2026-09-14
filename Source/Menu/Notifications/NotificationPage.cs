@@ -302,7 +302,7 @@ namespace Menu.Notifications
         {
             var button = ButtonDictionary[key];
             if (button is NLinkControl)
-                Process.Start(((NLinkControl)button).Url);
+                Process.Start(new ProcessStartInfo { FileName = ((NLinkControl)button).Url, UseShellExecute = true });
             else if (button is NDialogControl dialogControl)
                 dialogControl.Show();
             else if (button is NUpdateControl)
