@@ -1,4 +1,4 @@
-// COPYRIGHT 2009 - 2023 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -24,14 +24,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Common;
-using ORTS.Common;
-using ORTS.Common.Input;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.MultiPlayer;
 using Orts.Simulation;
+using ORTS.Common;
+using ORTS.Common.Input;
 using Events = Orts.Common.Events;
 
 namespace Orts.Viewer3D
@@ -42,9 +43,16 @@ namespace Orts.Viewer3D
         public readonly Viewer Viewer;
         public readonly Weather Weather;
 
+        // Parameters for weather sounds
+        readonly object WindExSoundOwner = new object();
+        readonly object WindInSoundOwner = new object();
+        private bool windExRegistered = false;
+        private bool windInRegistered = false;
+
         public readonly List<SoundSourceBase> ClearSound;
         public readonly List<SoundSourceBase> RainSound;
         public readonly List<SoundSourceBase> SnowSound;
+        public readonly List<SoundSourceBase> WindSound;
         public readonly List<SoundSourceBase> WeatherSounds = new List<SoundSourceBase>();
 
         public Vector4 CloudScalePosition { get => new Vector4(CloudScale.X, CloudScale.Y, CloudPositionM.X / SkyPrimitive.RadiusM, CloudPositionM.Y / SkyPrimitive.RadiusM); }
@@ -100,13 +108,20 @@ namespace Orts.Viewer3D
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_in.sms"), false),
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_ex.sms"), false),
             };
+            WindSound = new List<SoundSourceBase>
+            {
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "wind_in.sms"), false),
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "wind_ex.sms"), false),
+            };
 
             WeatherSounds.AddRange(ClearSound);
             WeatherSounds.AddRange(RainSound);
             WeatherSounds.AddRange(SnowSound);
+            WeatherSounds.AddRange(WindSound);
 
             SetInitialWeatherParameters();
             UpdateWeatherParameters();
+
 
             // Add here randomized weather
             if (Viewer.Settings.ActWeatherRandomizationLevel > 0 && Viewer.Simulator.ActivityRun != null && !Viewer.Simulator.ActivityRun.WeatherChangesPresent)
@@ -129,6 +144,48 @@ namespace Orts.Viewer3D
                 SetInitialWeatherParameters();
                 UpdateWeatherParameters();
             };
+        }
+
+        // add this method inside WeatherControl
+        void ManageWindSounds()
+        {
+            // filter to concrete SoundSource before accessing SMSFileName
+            var windEx = WindSound.OfType<SoundSource>().FirstOrDefault(s =>
+                !string.IsNullOrEmpty(s.SMSFileName) &&
+                s.SMSFileName.EndsWith("wind_ex.sms", StringComparison.OrdinalIgnoreCase));
+            var windIn = WindSound.OfType<SoundSource>().FirstOrDefault(s =>
+                !string.IsNullOrEmpty(s.SMSFileName) &&
+                s.SMSFileName.EndsWith("wind_in.sms", StringComparison.OrdinalIgnoreCase));
+
+            if (windEx != null)
+            {
+                bool shouldRegisterEx = Viewer?.Camera?.Style == Camera.Styles.External;
+                if (shouldRegisterEx && !windExRegistered)
+                {
+                    Viewer.SoundProcess.AddSoundSource(WindExSoundOwner, windEx);
+                    windExRegistered = true;
+                }
+                else if (!shouldRegisterEx && windExRegistered)
+                {
+                    Viewer.SoundProcess.RemoveSoundSources(WindExSoundOwner);
+                    windExRegistered = false;
+                }
+            }
+
+            if (windIn != null)
+            {
+                bool shouldRegisterIn = Viewer?.Camera?.Style == Camera.Styles.Cab || Viewer?.Camera?.Style == Camera.Styles.Passenger;
+                if (shouldRegisterIn && !windInRegistered)
+                {
+                    Viewer.SoundProcess.AddSoundSource(WindInSoundOwner, windIn);
+                    windInRegistered = true;
+                }
+                else if (!shouldRegisterIn && windInRegistered)
+                {
+                    Viewer.SoundProcess.RemoveSoundSources(WindInSoundOwner);
+                    windInRegistered = false;
+                }
+            }
         }
 
         public virtual void SaveWeatherParameters(BinaryWriter outf)
@@ -185,6 +242,7 @@ namespace Orts.Viewer3D
 
         public void UpdateWeatherParameters()
         {
+          //  Viewer.SoundProcess.RemoveSoundSources(WindSoundOwner);
             Viewer.SoundProcess.RemoveSoundSources(this);
             switch (Viewer.Simulator.WeatherType)
             {
@@ -619,6 +677,10 @@ namespace Orts.Viewer3D
                 Viewer.Simulator.WeatherType = Weather.PrecipitationLiquidity > DynamicWeather.RainSnowLiquidityThreshold ? WeatherType.Rain : WeatherType.Snow;
                 UpdateWeatherParameters();
             }
+
+            // Update wind sounds based on camera style
+            ManageWindSounds();
+
         }
 
         public class DynamicWeather
