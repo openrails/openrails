@@ -887,6 +887,15 @@ namespace Orts.Formats.Msts
         }
     }
 
+    public class Wind_Gust : Trigger
+    {
+        public Wind_Gust(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+                ParsePlayCommand(f, f.ReadString().ToLower());
+        }
+    }
 
     public class Random_Trigger : Trigger
     {

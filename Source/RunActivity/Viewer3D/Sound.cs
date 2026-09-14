@@ -60,29 +60,274 @@ using Events = Orts.Common.Events;
 namespace Orts.Viewer3D
 {
 
-    // Helper: compute envelope volume (0..peakVolume)
-    static class WindEnvelope
-    {
-        public static float Compute(float speed, float left, float peak, float right, float peakVolume)
-        {
-            // Protect against degenerate ranges
-            if (peak <= left) peak = left + 0.0001f;
-            if (right <= peak) right = peak + 0.0001f;
+    /*
+     * WindEnvelope.cs
+     *
+     * DEVELOPER NOTES
+     * ---------------------------------------------------------------------------
+     * Purpose
+     * -------
+     * Provides ONE helper for calculating the volume of a wind audio stream.
+     *
+     * The intended audio model uses five continuously available WAV streams:
+     *
+     *   Stream 1 = low-speed base wind
+     *   Stream 2 = moderate base wind
+     *   Stream 3 = strong/gale base wind
+     *   Stream 4 = storm/extreme base wind
+     *   Gust     = separate gust/turbulence wind
+     *
+     * BASE MODE
+     * ---------
+     * WindEnvelope.Compute() receives both average and instantaneous wind speed.
+     *
+     *   averageWindSpeed       -> determines the underlying Beaufort stream
+     *                             envelope/cross-fade position.
+     *
+     *   instantaneousWindSpeed -> provides a secondary volume influence on the
+     *                             SAME WAV. It does not select another WAV and
+     *                             does not create another audio layer.
+     *
+     * The two calculated volumes are combined using:
+     *
+     *   combined = average + influence * (instantaneous - average)
+     *
+     * Default instantaneous influence is 0.20:
+     *
+     *   80% average-wind influence
+     *   20% instantaneous-wind influence
+     *
+     * This means that when average and instantaneous wind are equal, the
+     * instantaneous calculation has no effect and the result is exactly the
+     * average-wind volume.
+     *
+     *
+     * GUST MODE
+     * ---------
+     * The same Compute() helper is used, but with an explicit mode:
+     *
+     *   WindEnvelopeMode.Gust
+     *
+     * The first speed parameter is then interpreted as gust speed and the
+     * instantaneous-speed parameter is ignored.
+     *
+     * Example:
+     *
+     *   float gustVolume =
+     *       WindEnvelope.Compute(
+     *           windGustSpeed,
+     *           0f,
+     *           0f, 6f, 14f, 0.40f,
+     *           WindEnvelopeMode.Gust);
+     *
+     * The 0f second argument is only a placeholder. It is NOT a mode flag.
+     * The explicit enum tells the helper that this is a gust calculation.
+     *
+     *
+     * GUST ENVELOPE
+     * -------------
+     * Gust parameters should normally NOT be the same as the parameters for
+     * an individual Beaufort stream.
+     *
+     * The four base streams divide the full wind-speed range between them.
+     * The gust stream is different: it is one continuous WAV representing
+     * transient/turbulent wind and should remain available over the full useful
+     * gust-speed range.
+     *
+     * A recommended starting envelope is:
+     *
+     *       left = 0 m/s
+     *       peak = 6 m/s
+     *       right = 14 m/s
+     *       peakVolume = 0.40
+     *
+     * This means:
+     *
+     *       0 m/s       -> 0.00
+     *       6 m/s       -> 0.40
+     *       14 m/s+     -> 0.00
+     *
+     * The exact values should be tuned to the gust WAV. They are sound-design
+     * parameters rather than physical Beaufort limits.
+     *
+     * For a gust WAV that should remain audible during sustained strong gusts,
+     * a very wide envelope can instead be used, for example:
+     *
+     *       left = 0 m/s
+     *       peak = 8 m/s
+     *       right = 20 m/s
+     *       peakVolume = 0.40
+     *
+     * The important point is that the gust envelope is deliberately wider than
+     * a normal Beaufort stream. It is controlling the intensity of the one
+     * continuously looping gust layer, not selecting a Beaufort wind band.
+     *
+     * If the simulation's "wind gust speed" is already a gust component
+     * (for example instantaneous minus average), pass it directly. If it is
+     * instead an absolute gust speed, use the absolute value directly according
+     * to the simulation's definition. Do not subtract average wind twice.
+     *
+     *
+     * STREAM 4
+     * --------
+     * Stream 4 should normally extend beyond the nominal top of the Beaufort
+     * range so that it does not abruptly disappear at the maximum normal wind
+     * speed. For example:
+     *
+     *   Stream 4:
+     *       left = 24
+     *       peak = 33
+     *       right = 40
+     *       peakVolume = 1.00
+     *
+     * Depending on the simulator's maximum wind speed, the right-hand value can
+     * be increased further.
+     *
+     *
+     * CROSS-FADE
+     * ----------
+     * The envelope is a smooth cosine rise/fall:
+     *
+     *   0 at left *   peakVolume at peak
+     *   0 at right *
+     * Adjacent base streams should overlap. Their combined playback forms the
+     * Beaufort cross-fade.
+     *
+     * IMPORTANT:
+     * The helper calculates stream gain. The audio engine should normally keep
+     * all five WAVs looping and simply update their volume/gain values.
+     *
+     * The helper itself does not perform audio playback or timer smoothing.
+     * Call it from the wind update/timer and, if required, apply separate
+     * attack/release smoothing to the returned volumes.
+     *
+     * C# 7.3 compatible.
+     * ---------------------------------------------------------------------------
+     */
 
-            if (speed <= left || speed >= right) return 0f;
+    public enum WindEnvelopeMode
+    {
+        Base,
+        Gust
+    }
+
+    public static class WindEnvelope
+    {
+        // Percentage of instantaneous volume allowed to influence the
+        // average-volume result.
+        //
+        // 0.00 = average only
+        // 1.00 = instantaneous only
+        public const float DefaultInstantaneousInfluence = 0.20f;
+
+        // -----------------------------------------------------------------------
+        // Main helper
+        // -----------------------------------------------------------------------
+        //
+        // BASE: Compute(averageWindSpeed, instantaneousWindSpeed, left, peak, right, peakVolume, WindEnvelopeMode.Base);
+        //
+        // GUST: Compute(gustSpeed, 0f, left, peak, right, peakVolume, WindEnvelopeMode.Gust);
+        //
+        public static float Compute(float windSpeed, float instantaneousWindSpeed, float left, float peak, float right, float peakVolume, WindEnvelopeMode mode)
+        {
+            peakVolume = Clamp(peakVolume, 0f, 1f);
+
+            // Protect against invalid envelope definitions.
+            if (peak <= left)
+            { peak = left + 0.0001f; }
+
+            if (right <= peak) 
+            { right = peak + 0.0001f; }
+
+            // ===================================================================
+            // GUST MODE
+            // ===================================================================
+            //
+            // windSpeed is gust speed.
+            // instantaneousWindSpeed is deliberately ignored.
+            //
+            if (mode == WindEnvelopeMode.Gust)
+            {
+                return Envelope( Math.Max(windSpeed, 0f), left, peak, right, peakVolume);
+            }
+
+            // ===================================================================
+            // BASE MODE
+            // ===================================================================
+
+            float averageVolume = Envelope( Math.Max(windSpeed, 0f), left, peak, right, peakVolume);
+
+            float instantaneousVolume = Envelope( Math.Max(instantaneousWindSpeed, 0f), left, peak, right, peakVolume);
+
+            // Blend instantaneous behaviour into the average behaviour.
+            //
+            // Example with influence = 0.20:
+            //
+            //   average = 0.50
+            //   instant = 0.80
+            //
+            //   result = 0.50 + 0.20 * (0.80 - 0.50) = 0.56
+            //
+            float combinedVolume = averageVolume + DefaultInstantaneousInfluence * (instantaneousVolume - averageVolume);
+
+            // A stream can never exceed its configured peak volume.
+            return Clamp(combinedVolume, 0f, peakVolume);
+        }
+
+        // -----------------------------------------------------------------------
+        // Core envelope
+        // -----------------------------------------------------------------------
+        //
+        // Produces:
+        //
+        //   speed <= left  -> 0
+        //   speed == peak  -> peakVolume
+        //   speed >= right -> 0
+        //
+        // A cosine curve provides a smooth audio-friendly cross-fade.
+        //
+        private static float Envelope(float speed, float left, float peak, float right, float peakVolume)
+        {
+            if (speed <= left || speed >= right)
+                return 0f;
+
 
             float t;
+
             if (speed <= peak)
-                t = (speed - left) / (peak - left); // rising 0..1
+            {
+                // Rising section: 0 -> 1
+                t = (speed - left) / (peak - left);
+            }
             else
-                t = (right - speed) / (right - peak); // falling 0..1
+            {
+                // Falling section: 1 -> 0
+                t = (right - speed) / (right - peak);
+            }
 
-            // smoothstep using cosine for gentle ramp
-            var smooth = 0.5f - 0.5f * (float)Math.Cos(Math.PI * t);
+            t = Clamp(t, 0f, 1f);
 
-            // scale to peakVolume and clamp
-            var vol = smooth * peakVolume;
-            return Math.Max(0f, Math.Min(vol, peakVolume));
+            // Cosine smoothing.
+            float smooth = 0.5f - 0.5f * (float)Math.Cos(Math.PI * t);
+
+            float volume = smooth * peakVolume;
+
+            return Clamp(volume, 0f, peakVolume);
+        }
+
+        // -----------------------------------------------------------------------
+        // Clamp
+        // -----------------------------------------------------------------------
+
+        private static float Clamp(float value, float minimum, float maximum)
+        {
+            if (value < minimum)
+                return minimum;
+
+            if (value > maximum)
+                return maximum;
+
+            return value;
         }
     }
 
@@ -1374,6 +1619,10 @@ namespace Orts.Viewer3D
                     {
                         Triggers.Add(new ORTSWind_Beaufort_Storm(this, (Orts.Formats.Msts.Wind_Storm)trigger));
                     }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Gust))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Gust(this, (Orts.Formats.Msts.Wind_Gust)trigger));
+                    }
 
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Initial_Trigger))
                     {
@@ -2580,9 +2829,10 @@ namespace Orts.Viewer3D
         public override void TryTrigger()
         {
             var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+            var instantaneousWindSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS;
 
             // envelope: left=0, peak=5, right=14, peakVolume=0.7
-            var vol = WindEnvelope.Compute(windSpeed, 0f, 5f, 14f, 0.7f);
+            var vol = WindEnvelope.Compute(windSpeed, instantaneousWindSpeed, 0f, 5f, 14f, 0.7f, WindEnvelopeMode.Base);
 
             Signaled = vol > 0f;
             if (Enabled)
@@ -2630,9 +2880,10 @@ namespace Orts.Viewer3D
         public override void TryTrigger()
         {
             var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+            var instantaneousWindSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS;
 
             // envelope: left=5, peak=14, right=24, peakVolume=0.8
-            var vol = WindEnvelope.Compute(windSpeed, 5f, 14f, 24f, 0.8f);
+            var vol = WindEnvelope.Compute(windSpeed, instantaneousWindSpeed, 5f, 14f, 24f, 0.8f, WindEnvelopeMode.Base);
 
             Signaled = vol > 0f;
             if (Enabled)
@@ -2680,9 +2931,10 @@ namespace Orts.Viewer3D
         public override void TryTrigger()
         {
             var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+            var instantaneousWindSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS;
 
             // envelope: left=14, peak=24, right=33, peakVolume=0.9
-            var vol = WindEnvelope.Compute(windSpeed, 14f, 24f, 33f, 0.9f);
+            var vol = WindEnvelope.Compute(windSpeed, instantaneousWindSpeed, 14f, 24f, 33f, 0.9f, WindEnvelopeMode.Base);
 
             Signaled = vol > 0f;
             if (Enabled)
@@ -2729,9 +2981,10 @@ namespace Orts.Viewer3D
         public override void TryTrigger()
         {
             var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+            var instantaneousWindSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS;
 
             // envelope: left=24, peak=33, right=50, peakVolume= 1.0
-            var vol = WindEnvelope.Compute(windSpeed, 24f, 33f, 50f, 1.0f);
+            var vol = WindEnvelope.Compute(windSpeed, instantaneousWindSpeed, 24f, 33f, 50f, 1.0f, WindEnvelopeMode.Base);
 
             Signaled = vol > 0f;
             if (Enabled)
@@ -2761,6 +3014,58 @@ namespace Orts.Viewer3D
             }
         }
     } // class ORTSWind_Beaufort_Storm
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed - Beaufort Scale Gusts
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Gust : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Gust SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Gust(SoundStream soundStream, Orts.Formats.Msts.Wind_Gust smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+            var instantaneousWindSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS;
+
+            // envelope: left=24, peak=33, right=50, peakVolume= 0.4
+            var vol = WindEnvelope.Compute(windSpeed, 0, 24f, 33f, 50f, 0.4f, WindEnvelopeMode.Gust);
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Storm: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Storm: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Gust
 
 
     /// <summary>
