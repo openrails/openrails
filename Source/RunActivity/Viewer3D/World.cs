@@ -18,7 +18,6 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.IO;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Orts.Common;
