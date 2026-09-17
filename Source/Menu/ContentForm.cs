@@ -32,6 +32,7 @@ using System.IO.Compression;
 using System.Drawing;
 using System.Threading.Tasks;
 using GNU.Gettext.WinForms;
+using static Menu.Notifications.NotificationPage;
 
 namespace Menu
 {
@@ -63,6 +64,8 @@ namespace Menu
 
         private bool ManualInstallChangesMade = false;
 
+        private readonly bool NoInternet = false;
+
         public ContentForm(UserSettings settings, string baseDocumentationUrl)
         {
             InitializeComponent();
@@ -84,7 +87,14 @@ namespace Menu
             //
             // "Auto Installed" tab
             //
-            Settings.Content.ContentRouteSettings.LoadContent();
+            string errorMsg = "";
+            Settings.Content.ContentRouteSettings.LoadContent(ref errorMsg);
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                string message = Catalog.GetStringFmt("Failed to access the content repository (check Internet connection); automatic download not available. Error: {0}", errorMsg);
+                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                NoInternet = true;
+            }
             AutoInstallRoutes = Settings.Content.ContentRouteSettings.Routes;
             for (int index = 0; index < AutoInstallRoutes.Count; index++)
             {
@@ -143,6 +153,19 @@ namespace Menu
             buttonCancel.Enabled = false;
 
             setTextBoxesManualInstall();
+
+            if (NoInternet)
+            {
+                // open the Manually Installed tab since the Auto Installed tab needs internet
+                tabControlContent.SelectTab(tabPageManuallyInstall);
+            }
+
+            if (dataGridViewAutoInstall.Rows.Count == 0) 
+            {
+                // disable all auto install buttons for a complete empty auto install grid
+                // might be the case when no internet available
+                DisableAutoInstallButtonsWithoutWait();
+            }
         }
 
         void changeManualInstallRoute(string Route)
@@ -272,9 +295,9 @@ namespace Menu
                     try
                     {
                         using (WebClient myWebClient = new WebClient())
-                        {
+                                {
                             myWebClient.DownloadFile(AutoInstallRoutes[AutoInstallRouteName].Image, ImageTempFilename);
-                        }
+                            }
                         if (File.Exists(ImageTempFilename))
                         {
                             pictureBoxAutoInstallRoute.Image = new Bitmap(ImageTempFilename);
@@ -445,7 +468,7 @@ namespace Menu
             try
             {
                 // show html file in default browser
-                Process.Start(InfoTempFilename);
+                Process.Start(new ProcessStartInfo { FileName = InfoTempFilename, UseShellExecute = true });
             }
             catch (Exception e)
             {
@@ -1094,7 +1117,11 @@ namespace Menu
         private void DisableAutoInstallButtons()
         {
             setCursorToWaitCursor();
+            DisableAutoInstallButtonsWithoutWait();
+        }
 
+        private void DisableAutoInstallButtonsWithoutWait()
+        {
             dataGridViewAutoInstall.Enabled = false;
             textBoxAutoInstallPath.Enabled = false;
             buttonAutoInstallBrowse.Enabled = false;
@@ -1119,9 +1146,9 @@ namespace Menu
             dataGridViewAutoInstall.Enabled = true;
             textBoxAutoInstallPath.Enabled = true;
             buttonAutoInstallBrowse.Enabled = true;
-            buttonAutoInstallInfo.Enabled = true;
-            buttonAutoInstallInstall.Enabled = !route.Installed;
-            buttonAutoInstallUpdate.Enabled = route.Installed && (route.getDownloadType() == ContentRouteSettings.DownloadType.github);
+            buttonAutoInstallInfo.Enabled = !NoInternet;
+            buttonAutoInstallInstall.Enabled = !(route.Installed || NoInternet);
+            buttonAutoInstallUpdate.Enabled = route.Installed && (route.getDownloadType() == ContentRouteSettings.DownloadType.github) && !NoInternet;
             buttonAutoInstallDelete.Enabled = route.Installed;
             buttonOK.Enabled = true;
 

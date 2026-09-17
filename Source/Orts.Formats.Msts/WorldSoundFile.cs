@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -64,23 +65,20 @@ namespace Orts.Formats.Msts
 
     public class WorldSoundSource
     {
-        public float X;
-        public float Y;
-        public float Z;
-        public string SoundSourceFileName;
+        public Vector3 Position;
+        public List<string> SoundSourceFileNames;
 
         public WorldSoundSource(STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("filename", ()=>{ SoundSourceFileName = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("position", ()=>{
+                new STFReader.TokenProcessor("filename", ()=>{
                     stf.MustMatch("(");
-                    X = stf.ReadFloat(STFReader.UNITS.None, null);
-                    Y = stf.ReadFloat(STFReader.UNITS.None, null);
-                    Z = stf.ReadFloat(STFReader.UNITS.None, null);
-                    stf.SkipRestOfBlock();
+                    SoundSourceFileNames = new List<string> { stf.ReadString() }; // Reset any existing sound files
+                    while (!stf.EndOfBlock()) // Additional sound files have been defined, add these to the list
+                        SoundSourceFileNames.Add(stf.ReadString());
                 }),
+                new STFReader.TokenProcessor("position", ()=>{ Position = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero); }),
             });
         }
     }

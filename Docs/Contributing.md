@@ -1,10 +1,10 @@
 # Contributing to Open Rails
 
-This document will introduce you to a number of ways you can contribute to Open Rails, and how we expect the process to go - both from your side and our side.
+This document will introduce you to a number of ways you can contribute to Open Rails and how we expect the process to go - from your side and our side.
 
 ## Discussion
 
-Please see the [Community](http://openrails.org/share/community/) page on our website for details of the forums where Open Rails discussion happens.
+If you'd like to discuss anything about Open Rails, please visit [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/).
 
 ## Reporting a bug
 
@@ -22,7 +22,7 @@ In most cases, you can get started immediately with making the changes and creat
 
 **Note:** You must fork the Open Rails repository before you start working on it. We do not allow you to push branches to the official repository.
 
-**Note:** You should do your work on separate branches; they must be created from the "master" branch and pull requests must merge back into the "master" branch, unless we direct you otherwise.
+**Note:** You should do your work on separate branches; they must be created from the default branch and pull requests must merge back into the default branch, unless we direct you otherwise.
 
 ### Documentation and translations
 
@@ -38,13 +38,13 @@ There are no additional requirements for the pull request.
 
 ### Refactoring process
 
-If you'd like to refactor the existing code you can get started immediately, but please have a look at our [architecture requirements](#architecture-requirements). We welcome architectural discussions on our [forum](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/).
+If you'd like to refactor the existing code you can get started immediately, but please have a look at our [architecture requirements](#architecture-requirements). We welcome architectural discussions in [our Developing Features forum on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/256-developing-features/).
 
 There are no additional requirements for the pull request.
 
 ### Bug process
 
-If you'd like to fix a bug, you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our bug tracker on Launchpad](https://bugs.launchpad.net/or). If it has not, you can report the bug *and* fix it!
+If you'd like to fix a bug you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our bug tracker on Launchpad](https://bugs.launchpad.net/or). If it has not, you can report the bug _and_ fix it!
 
 There are no additional requirements for _creating_ the pull request.
 
@@ -54,7 +54,7 @@ These things must be done in the required order:
 
 ### Feature process
 
-If you'd like to add a feature, you can get started immediately. However, we would prefer you to to do some things first. These will ensure that people are aware you are working on a particular feature and give the community some time to resolve any potential issues.
+If you'd like to add a feature you can get started immediately. However, we would prefer you to to do some things first. These will ensure that people are aware you are working on a particular feature and give the community some time to resolve any potential issues.
 
 The following diagram shows the required order (solid lines) and recommended order (dashed lines):
 
@@ -74,7 +74,7 @@ flowchart
 All new features must result in the following three things existing:
 
 1. A road-map card in [Trello](https://trello.com/b/DS2h3Pxc/open-rails-roadmap)
-2. A forum discussion in [Elvas Tower](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/) more than one week old with all issues resolved
+2. A forum discussion in [Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/256-developing-features/) more than one week old with all issues resolved
 3. A pull request
 
 These things must be done in the required order:
@@ -97,23 +97,27 @@ Our recommended order is:
 
 If you do not know what to work on, you can find bugs and features we are interested in fixed/adding here:
 
-* [Confirmed bugs](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED)
-* [Accepted feature requests (anything in an N.M or N.x list)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap)
+- [Confirmed bugs](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED)
+- [Accepted feature requests (anything in an N.M or N.x list)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap)
 
 If multiple things are interesting to you, we would prefer that you choose the item with the highest priority to us - a higher importance or heat in Launchpad bugs and lowest version number in Trello cards.
 
-If you're unsure what you could contribute to in the code, and nothing looks interesting in the _confirmed bugs_ and _accepted feature requests_, please get in touch on the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/), giving us some idea of your experience and interests, and we'll do our best to find something for you.
+If you're unsure what you could contribute to in the code, and nothing looks interesting in the _confirmed bugs_ and _accepted feature requests_, please get in touch using [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/), giving us some idea of your experience and interests, and we'll do our best to find something for you.
+
+## Requirements for changes
 
 ### General requirements
 
 All of the main Open Rails code is C# and your contribution is expected to also be in C#. We're currently using [version 7.3 of C#](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-7-3), so please take advantage of these features.
 
-Code is expected to follow the [Framework Design Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/) throughout, especially the [Naming Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/naming-guidelines), with few exceptions:
+Code is expected to follow the [Microsoft .NET Framework Design Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/) throughout, especially the [Microsoft .NET Naming Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/naming-guidelines), with few exceptions:
 
-* Structures, fields, and enums defining file format components may be named exactly as in the file format
-* Public and protected fields are allowed, although care must be taken with public fields
+- Structures, fields, and enums defining file format components may be named exactly as in the file format
+- Public and protected fields are allowed, although care must be taken with public fields
 
-Code style (placement of braces, etc.) is expected to follow the default Visual Studio rules; the [C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions) provides a good basis for many aspects of this.
+Code style (placement of braces, etc.) is expected to follow the default Visual Studio rules; the [Microsoft .NET C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions) provides a good basis for many aspects of this.
+
+Code should be consistent with the [Open Rails Code Guidelines](Code%20Guidelines.md).
 
 ### Architecture requirements
 
@@ -133,46 +137,39 @@ All fixed values used in formula must be placed in a constant, with a name and u
 
 Open Rails is a multi-threaded application, which presents some additional complexity. There are four key threads to be aware of:
 
-* Loader
-* Updater
-* Render
-* Sound
+- Loader
+- Updater
+- Render
+- Sound
 
-Data that is operated only on one thread for its lifetime does not need special attention. However, any data that is operated on by multiple threads - even if only one thread is writing - needs special care and attention.
+Data that is operated on by only one thread for its lifetime does not need additional care and attention. However, any data that is operated on by multiple threads - even if only one thread is making changes - needs additional care and attention.
 
 For each object stored in a field or property that is accessed from multiple threads, the root, you must:
 
-* Never modify the contents of the objects within the root (such as adding or removing items from a List<T>)
-* Always copy the root object into a local variable before doing anything else with it
-* Update the root object by (as above) copying into a local, cloning/making a new version from the old version, and finally storing into the root
-* If multiple threads can update the root, the final store into root must be done using an interlocked compare-and-exchange with a loop in case of failure
+- Never modify the contents of the objects within the root (such as adding or removing items from a List<T>)
+- Always copy the root object into a local variable before doing anything else with it
+- Update the root object by (as above) copying into a local, cloning/making a new version from the old version, and finally storing into the root
+- If multiple threads can update the root, the final store into root must be done using an interlocked compare-and-exchange with a loop in case of failure
 
-If you are in any doubt about the use of data by multiple threads, or your implementation of the above rules, please ask in the [Elvas Tower](http://www.elvastower.com/) forums.
+If you are in any doubt about the use of data by multiple threads, or your implementation of the above rules, please ask for help in [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/).
 
-### Getting your code accepted
+## Submitting changes
 
-Your code should be fixing exactly one bug or adding a single new feature; mixing multiple bug fixes or new features makes it harder to review your changes and risks them not being accepted.
+**Note:** Your code should be fixing exactly one bug or adding a single new feature; mixing multiple bug fixes or new features makes it harder to review your changes and risks them not being accepted.
 
-### Different versions of code
+When you're done writing code, you should make a pull request on GitHub from your fork's branch back to the official repository's default branch. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
 
-When your pull request is draft or ready for review, it will not be included in any version of Open Rails unless:
+- Bug report
+- Road-map card
+- Blueprint
 
-* You are a member of the core team
-* A member of the core team adds a particular label
+### When changes are published
 
-If your pull request satisfies the above criteria, it will be automatically included in the Unstable Version (unless there are merge conflicts).
+Your changes will not be included in any version of Open Rails immediately:
 
-After your pull request is merged, it will be included in the Testing Version and Unstable Version.
-
-When we start preparing for a new Stable Version, all code in the Testing Version is used, but no further changes are included during the preparation time (typically 1 month).
-
-### Submitting your code
-
-When you're done writing code, you should make a pull request on GitHub from your fork's branch back to the official repository's "master" branch. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
-
-* Bug report
-* Road-map card
-* Blueprint
+- To be included in the _Unstable Version_, your pull request needs a particular label, which we encourage [our developer team](https://launchpad.net/~ordevs/+members) to add.
+- To be included in the _Testing Version_, your pull request needs to be [reviewed, approved, and merged](#how-to-review-pull-requests).
+- To be included in the _Stable Version_, your pull request needs to be merged before the branch point (typically a month before release).
 
 ## How bugs and features are accepted
 
@@ -192,24 +189,24 @@ We require that a [forum thread is created](http://www.elvastower.com/forums/ind
 
 A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, and approve its direction if appropriate.
 
-## Reviewing pull requests
+## How to review pull requests
 
 If you are reviewing someone else's code for Open Rails, you will need to ensure that they have met the above "Making changes" guidelines as best as possible. This will necessitate, at minimum:
 
-* Check for linked bug report or feature request
-* Check bug report is triaged, and feature request is approved
-  * For a bug report, it should have status "Triaged"
-  * For a road-map card, it should be in an N.M or N.x list
-  * For a blueprint, it should have direction "Approved"
-* Read through all of the changes to the code
-* Check that all new code follows the requirements:
-  * General (including naming)
-  * Architecture
-  * Physics
-  * Multi-threading
-* Be sure that all of the changes are necessary
-* Be sure that no changes are missing
-* Be on the lookout for data being access across threads
+- Check for linked bug report or feature request
+- Check bug report is triaged, and feature request is approved
+  - For a bug report, it should have status "Triaged"
+  - For a road-map card, it should be in an N.M or N.x list
+  - For a blueprint, it should have direction "Approved"
+- Read through all of the changes to the code
+- Check that all new code follows the requirements:
+  - [General](#general-requirements) (including naming)
+  - [Architecture](#architecture-requirements)
+  - [Physics](#physics-requirements)
+  - [Multi-threading](#multi-threading-requirements)
+- Be sure that all of the changes are necessary
+- Be sure that no changes are missing
+- Be on the lookout for data being access across threads
 
 ### Leeway when reviewing
 
@@ -219,8 +216,8 @@ You should take extra care when reviewing first-time and new contributors, to en
 
 For all contributions that deviate from the guidelines, there are a few approaches you can take:
 
-* Politely and constructively suggest changes on the pull request (if possible, include the desired code)
-* Make the changes yourself (GitHub provides instructions to push changes to other people's pull requests)
-* Accept the code as-is, leaving a note for how to improve for the next pull request
+- Politely and constructively suggest changes on the pull request (if possible, include the desired code)
+- Make the changes yourself (GitHub provides instructions to push changes to other people's pull requests)
+- Accept the code as-is, leaving a note for how to improve for the next pull request
 
 It is expected that most contributors will quickly correct their code based on feedback, either in the same pull request or subsequent ones, depending on the path taken above. However, if a contributor continues to not meet the same part of the guidelines, you are free to become more strict with them - it's still helpful to suggest the corrected code, but do not feel obliged to spend time helping the same person with the same part of the guidelines repeatedly.

@@ -72,6 +72,7 @@ namespace Orts.Viewer3D.WebServices
                     .WithUrlPrefixes(urls))
                 .WithModule(new SwitchPanelModule("/switchpanel", Program.Viewer))
                 .WithModule(Program.Viewer.TrainCarOperationsWebpage = new TrainCarOperationsWebpage("/traincaroperations", Program.Viewer))
+                .WithModule(Program.Viewer.ActivityEventsWebpage = new ActivityEventsWebpage("/activityevents", Program.Viewer))
                 .WithWebApi("/API", SerializationCallback, m => m
                     .WithController(() => new ORTSApiController(Program.Viewer)))
                 // do not cache when debugging to make changing and testing web files easier

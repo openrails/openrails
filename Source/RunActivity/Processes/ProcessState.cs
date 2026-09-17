@@ -95,5 +95,11 @@ namespace Orts.Processes
             DebugFileStream.Write("{0},WTF-\n", DateTime.Now.Ticks);
 #endif
         }
+
+        /// <summary>Wait for the specified number of milliseconds, unless termination is signalled.</summary>
+        public void Sleep(int milliseconds)
+        {
+            TerminateEvent.WaitOne(milliseconds);
+        }
     }
 }

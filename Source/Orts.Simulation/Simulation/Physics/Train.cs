@@ -2494,7 +2494,7 @@ namespace Orts.Simulation.Physics
                             car.CarHeatCompartmentPipeAreaM2 = CarCompartmentPipeAreaM2 + CarDoorPipeAreaM2;
 
                             // Pipe convection heat produced - steam is reduced to atmospheric pressure when it is injected into compartment
-                            float CompartmentSteamPipeTempC = C.FromF(mstsLocomotive.SteamHeatPressureToTemperaturePSItoF[0]);
+                            float CompartmentSteamPipeTempC = C.FromF(mstsLocomotive.SaturatedSteamHeatPressureToTemperaturePSItoF[0]);
                             car.CarCompartmentSteamPipeHeatConvW = (PipeHeatTransCoeffWpM2K * car.CarHeatCompartmentPipeAreaM2 * (CompartmentSteamPipeTempC - car.CarInsideTempC));
 
                             // Pipe radiation heat produced
@@ -2513,7 +2513,7 @@ namespace Orts.Simulation.Physics
                         float HeatTransCoeffConnectHoseBTUpFt2pHrpF = 0.04f * car.ConvectionFactor; // rubber connecting hoses - BTU / sq.ft. / hr / l in / °F. TO BE CHECKED
 
                         // Calculate Length of carriage and heat loss in main steam pipe
-                        float CarMainSteamPipeTempF = mstsLocomotive.SteamHeatPressureToTemperaturePSItoF[car.CarSteamHeatMainPipeSteamPressurePSI];
+                        float CarMainSteamPipeTempF = mstsLocomotive.SaturatedSteamHeatPressureToTemperaturePSItoF[car.CarSteamHeatMainPipeSteamPressurePSI];
                         car.CarHeatSteamMainPipeHeatLossBTU = Me.ToFt(car.CarLengthM) * (MathHelper.Pi * Me.ToFt(car.MainSteamHeatPipeOuterDiaM)) * HeatTransCoeffMainPipeBTUpFt2pHrpF * (CarMainSteamPipeTempF - C.ToF(car.CarOutsideTempC));
 
                         // calculate steam connecting hoses heat loss - assume 1.5" hose
@@ -2561,7 +2561,7 @@ namespace Orts.Simulation.Physics
                         }
 
                         // Calculate steam flow rates and steam used
-                        SteamFlowRateLbpHr = (ProgressiveHeatAlongTrainBTU / mstsLocomotive.SteamHeatPSItoBTUpLB[mstsLocomotive.CurrentSteamHeatPressurePSI]) + pS.TopH(car.CarHeatSteamTrapUsageLBpS) + pS.TopH(car.CarHeatConnectingSteamHoseLeakageLBpS);
+                        SteamFlowRateLbpHr = (ProgressiveHeatAlongTrainBTU / mstsLocomotive.SaturatedSteamHeatPSItoBTUpLB[mstsLocomotive.CurrentSteamHeatPressurePSI]) + pS.TopH(car.CarHeatSteamTrapUsageLBpS) + pS.TopH(car.CarHeatConnectingSteamHoseLeakageLBpS);
                         mstsLocomotive.CalculatedCarHeaterSteamUsageLBpS = pS.FrompH(SteamFlowRateLbpHr);
 
                         // Calculate Net steam heat loss or gain for each compartment in the car
@@ -21877,24 +21877,30 @@ namespace Orts.Simulation.Physics
                         {
                             if (car is MSTSElectricLocomotive)
                             {
-                                (car as MSTSElectricLocomotive).Variable1 = 70;
+                                (car as MSTSElectricLocomotive).Variable1[0] = 70;
                                 (car as MSTSElectricLocomotive).Variable2 = 70;
                             }
                             else if (car is MSTSDieselLocomotive)
                             {
-                                (car as MSTSDieselLocomotive).Variable1 = 0.7f;
+                                (car as MSTSDieselLocomotive).Variable1[0] = 0.7f;
                                 (car as MSTSDieselLocomotive).Variable2 = 0.7f;
+                                (car as MSTSDieselLocomotive).EnginesRPM[0] = (car as MSTSDieselLocomotive).MaxRPM * 0.7f;
+                                (car as MSTSDieselLocomotive).EnginesPower[0] = (car as MSTSDieselLocomotive).MaxPowerW * 0.7f;
+                                (car as MSTSDieselLocomotive).EnginesTorque[0] = (car as MSTSDieselLocomotive).MaxPowerW / RPM.ToRadpS((car as MSTSDieselLocomotive).MaxRPM);
                             }
                             else if (car is MSTSSteamLocomotive)
                             {
-                                (car as MSTSSteamLocomotive).Variable1 = car.AbsSpeedMpS / car.DriverWheelRadiusM / MathHelper.Pi * 5;
+                                (car as MSTSSteamLocomotive).Variable1[0] = car.AbsSpeedMpS / car.DriverWheelRadiusM / MathHelper.Pi * 5;
                                 (car as MSTSSteamLocomotive).Variable2 = 70f;
                             }
                         }
                         else if (car is MSTSLocomotive)
                         {
-                            (car as MSTSLocomotive).Variable1 = 0;
+                            (car as MSTSLocomotive).Variable1[0] = 0;
                             (car as MSTSLocomotive).Variable2 = 0;
+                            (car as MSTSLocomotive).EnginesRPM[0] = 0;
+                            (car as MSTSLocomotive).EnginesPower[0] = 0;
+                            (car as MSTSLocomotive).EnginesTorque[0] = 0;
                         }
                     }
 #if INDIVIDUAL_CONTROL

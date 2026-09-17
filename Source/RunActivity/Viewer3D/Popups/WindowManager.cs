@@ -103,10 +103,10 @@ namespace Orts.Viewer3D.Popups
             }
             if (ScrollbarTexture == null)
                 // TODO: This should happen on the loader thread.
-                ScrollbarTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowScrollbar.png"));
+                ScrollbarTexture = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowScrollbar.png"));
             if (LabelShadowTexture == null)
                 // TODO: This should happen on the loader thread.
-                LabelShadowTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowLabelShadow.png"));
+                LabelShadowTexture = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowLabelShadow.png"));
             if (NoticeTexture == null)
             {
                 var size = 256;
@@ -304,7 +304,7 @@ namespace Orts.Viewer3D.Popups
 		Point mouseDownPosition;
 		public Point MouseDownPosition { get { return mouseDownPosition; } }
 
-		Window mouseActiveWindow;
+        Window mouseActiveWindow;
 		public Window MouseActiveWindow { get { return mouseActiveWindow; } }
 
 		double LastUpdateRealTime;
@@ -321,8 +321,8 @@ namespace Orts.Viewer3D.Popups
 
             if (UserInput.IsMouseWheelChanged)
             {
-                mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mouseDownPosition));
-                
+                Point mousePosition = new Point(UserInput.MouseX, UserInput.MouseY);
+                mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mousePosition));
                 if (mouseActiveWindow != null)
                     mouseActiveWindow.HandleUserInput();
             }

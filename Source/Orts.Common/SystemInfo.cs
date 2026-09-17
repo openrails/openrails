@@ -65,7 +65,7 @@ namespace ORTS.Common
                     Languages = (string[])operatingSystem["MUILanguages"],
                 };
             }
-            catch (ManagementException error)
+            catch (Exception error)
             {
                 // Likely to catch multiple exceptions like:
                 // Exception thrown: 'System.IO.InvalidDataException' in ORTS.Menu.dll
@@ -85,7 +85,7 @@ namespace ORTS.Common
                     MaxClockMHz = (uint)processor["MaxClockSpeed"],
                 }).ToList();
             }
-            catch (ManagementException error)
+            catch (Exception error)
             {
                 Trace.WriteLine(error);
             }
@@ -102,7 +102,7 @@ namespace ORTS.Common
                     MemoryMB = (uint)((long)descriptions.FirstOrDefault(desc => desc.Description == (string)adapter["Name"]).DedicatedVideoMemory / 1024 / 1024),
                 }).ToList();
             }
-            catch (ManagementException error)
+            catch (Exception error)
             {
                 Trace.WriteLine(error);
             }
