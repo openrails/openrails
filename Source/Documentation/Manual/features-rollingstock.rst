@@ -411,6 +411,342 @@ some steps of the content creation process or allow more control over content th
 possible. The goal of these features is to save content creators' time, give additional power to
 creators, and to simplify the installation process for end users.
 
+Runtime shape manipulation
+--------------------------
+
+.. _features-shape-manipulation:
+
+MSTS shape files can be clunky to work with due to the proprietary nature of the file format
+and the limitations of the tools available to manipulate them. Even when a shape has been
+manipulated, it's often not appropriate to redistribute those changes (unless the end user
+is to replicate the manipulation themselves) to avoid plagarism. To improve this, OR now
+supports additional ways to manipulate shape file data in memory without editing the original
+shape.
+
+.. index::
+   single: ESD_ORTSShapeDataOverrides
+
+These features use the ``ESD_ORTSShapeDataOverrides`` block placed inside the ``Shape (``
+block of a shape descriptor (.sd) file to provide the information needed to change
+the shape file data at runtime. The .sd file can be edited in plain text in standard
+text editors, and there is no risk of plagarism when including .sd files in a download,
+so changes can be made and distributed easily. However, it may be desired to use a
+different .sd file than the default one (the .sd default file has the same name as the
+.s file) out of a desire to not overwrite the original, or to re-use the same shape file
+repeatedly with different data, saving file space. To facilitate this, most places in
+wagons and engines where a .s file can be specified now accept an additional input to
+*specify a different .sd file than the default*.
+
+For example, ``WagonShape ( "dash9.s" "dash9_reskin.sd" )`` would load the dash9 shape, but
+instead of loading dash9.sd, would load dash9_reskin.sd and apply any settings in that alternate .sd file.
+Similar can be applied to ORTS freight animations (not MSTS freight animations), passenger views,
+3D cabs, and animated couplers. Note that both the .s and .sd file specified can be
+in a different folder from the .eng or .wag by using relative file paths. If only the .s file is
+given, OR will assume the .sd file has the same name as the given .s file, just like MSTS. OR does
+not require .sd files to function, so if the .sd file is missing OR will continue with default settings.
+
+While .sd file replacement is currently unique to engines and wagons, the new features inside .sd files
+can be applied to any .sd file, including scenery.
+
+.. index::
+   single: TextureReplacement
+
+Texture Replacement
+^^^^^^^^^^^^^^^^^^^
+
+Perhaps one of the most useful additional shape descriptor features is the ability to replace the
+textures used by a shape without editing, copying, or even moving the shape file. To achieve this,
+add the ``TextureReplacement`` parameter inside an ``ESD_ORTSShapeDataOverrides`` block to the .sd
+file, and enter texture names in the format ``TextureReplacement ( OriginalTexture.ace ReplacementTexture.ace )``.
+Any OriginalTexture not specified won't be changed, and if the shape doesn't have a texture specified,
+then a warning message is produced. This works with both .ace and .dds textures. Multiple
+textures can be replaced in one go by adding additional pairs of textures::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    shape ( BNSF_C44_9W_4614.s
+	    ESD_Detail_Level ( 0 )
+	    ESD_Alternative_Texture ( 0 )
+	    ESD_Bounding_Box ( -1.632 -0.095 -11.05 1.684 4.628 11.05 )
+        ESD_ORTSShapeDataOverrides (
+            Comment ( Replace the original textures for #4410 with reskin for #4614. )
+            TextureReplacement (
+                "BNSF_C449W_4410a.dds"    "BNSF_C449W_4614a.dds"
+                "BNSF_C449W_4410b.dds"    "BNSF_C449W_4614b.dds"
+            )
+        )
+    )
+
+This example would reskin BNSF 4410 into BNSF 4614 without any need to edit the original shape. Remember
+to reference the original .s file, but with a custom .sd file (in this case, ``WagonShape ( "..\\BNSF_MULLAN_GE_ENGINES\\BNSF_C44_9W_4410.s" 
+"BNSF_C44_9W_4614.sd" )`` would be used in the engine file) so that the original shape file doesn't
+need to be copied from the original location. It is recommended that content creators making multiple
+skins of a new model, or reskinning an existing model, use this method to provide different textures
+for different engines/wagons as only one copy of the shape file is needed, reducing install size and
+simplifying installation as users don't need to move/copy/edit any shape files.
+
+.. index::
+   single: ShaderReplacement
+
+Shader Replacement
+''''''''''''''''''
+
+Similarly, it may be desired to replace the shaders used by a shape file in order to, for example, allow
+transparency to be applied to the shape and "alpha out" certain components. To change the shaders, add
+``ShaderReplacement ( id ShaderName )`` inside an ``ESD_ORTSShapeDataOverrides`` block where "id" is
+the integer index of the shader, starting from 0, and "ShaderName" is the name of the new shader to
+use at this index. If an invalid shader index is given (eg: a negative number, or a number bigger than
+the max index), then a warning will be added to the log and the missing index will be skipped.
+Determining the order of shaders generally requires decompressing the shape file and looking at
+the ``shader_names`` block near the top of the file. The ``named_shader`` at the top of the list has
+an index of 0, the next one down has an index of 1, and so on. The accepted shader names are ``Tex`` (fullbright),
+``TexDiff`` (diffuse lighting), ``BlendATex`` (fullbright with transparency), ``BlendATextDiff`` (diffuse with
+transparency), ``AddATex`` (fullbright with x-ray transparency), ``AddATexDiff`` (diffuse with x-ray
+transparency), and all are case-sensitive. If an invalid shader name is given a warning will be added to the log.
+
+For example, the US2BSignal2.s shape included with Marias Pass uses one shader, the ``TexDiff`` shader. This
+disallows transparency. If, for any reason, transparency were desired on this shape, the shape descriptor file
+could be edited as follows::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    shape ( US2BSignal2.s
+        ESD_Detail_Level ( 0 )
+        ESD_Alternative_Texture ( 0 )
+        
+        ESD_ORTSShapeDataOverrides (
+            Comment ( Change the first, and only, shader to allow for transparency. )
+            ShaderReplacement ( 0 "BlendATexDiff" )
+        )
+    )
+
+
+Like replacing textures, if multiple shaders are to be modified, all can be added in a single ``ShaderReplacement``
+parameter by specifying additional pairs of indices and shader names. Note that changing shaders in this manner will
+change the shader for *all* sub objects linked to that shader. Changing the shader of an individual sub object from
+inside the .sd file is impractical, so an alternate method may be required if additional specificity is desired.
+
+Translation Matrix Modification
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All shape files are organized into one or more *sub objects*, where each sub object is positioned/scaled/rotated
+relative to the other sub objects using a *transformation matrix*, which are the named parts of the
+shape that can be seen in shape viewing utilities. A consequence of this is that the
+position/scale/rotation of a sub object can be changed without changing any of the 3D data used
+to draw the sub object. This can be useful to correct errors in the position/scale/rotation
+of the whole, or part of, a model without changing a tremendous amount of data.
+
+.. index::
+   single: MatrixTranslation
+   single: MatrixScale
+   single: MatrixRotation
+
+- To change the position of a sub object, use ``MatrixTranslation ( MATRIX x y z )`` inside an
+  ``ESD_ORTSShapeDataOverrides`` block where ``MATRIX`` is the name of the matrix and
+  ``x y z`` are respectively the +right/-left, +up/-down, and +front/-back offsets from the
+  original position, measured in units of distance (meters by default).
+- To change the scale (size) of a sub object, use ``MatrixScale ( MATRIX x y z )`` inside an
+  ``ESD_ORTSShapeDataOverrides`` block where ``MATRIX`` is the name of the matrix and
+  ``x y z`` are the horizontal, vertical, and lengthwise scale factors from the original\
+  scale. Scale factors larger than 1 increase size in that dimension, between 0 and 1 reduce
+  size, and negative scale factor mirrors the object in that dimension.
+- To change the rotation of a sub object, use ``MatrixRotation ( MATRIX y p r )`` inside an
+  ``ESD_ORTSShapeDataOverrides`` block where ``MATRIX`` is the name of the matrix and
+  ``y p r`` are the yaw (+left/-right), pitch (+up/-down) and roll (+ccw/-cw) angle change
+  from the original rotation, measured in radians by default. The ``deg`` unit suffix can be
+  used to give angles in degrees.
+
+Only one of each type of parameter can be provided for each matrix. If all 3 transformations are
+applied to a matrix, they will be applied in the order of *translation, scale, then rotation*.
+An important consideration when manipulating these properties of transformation matrices is that
+the transformation will also be applied to any sub objects *below* the current matrix in the hierarchy.
+The transformation also affects 3D interiors, particle emitters, lights, and sounds attached to any
+affected sub objects.
+Should the transformation be desired only for something higher in the hierarchy, an equal but opposite
+transformation would be required on the lower-level sub object. It should also be considered that
+changes made to matrices are not purely graphical and could have consequences with some simulation
+systems. Extreme settings may break simulation behavior.
+
+Shape Hierarchy Manipulation
+''''''''''''''''''''''''''''
+
+The hierarchy of a shape file is particularly important in representing the physical structure
+of the depicted object. Each sub object has a single parent sub object, except for the MAIN object which
+is ultimately the (grand)parent of all sub objects. When a sub object's parent moves or rotates,
+the sub object will move or rotate in exactly the same way (after which, its own motion or rotation
+may be added on), which represents some physical connection (such as a hinge or bearing) to the parent
+object. As such, improper hierarchy definition results in unusual or outright missing connections
+between components, such as connecting rod that doesn't move along with the wheels it is supposed to
+be attached to. The hierarchy of the shape can be determined using shape viewing utilities, and
+the correct hierarchy is described in various content creation tutorials for MSTS and OR.
+
+.. index::
+   single: MatrixParent
+
+To fix such broken hierarchies without editing the shape file, ``MatrixParent ( MATRIXNAME PARENTNAME )``
+can be added inside an ``ESD_ORTSShapeDataOverrides`` block to the shape descriptor file. The hierarchy
+will be changed such that the matrix called "MATRIXNAME" will have its parent in the hierarchy changed
+to the matrix called "PARENTNAME". If either matrix name can't be found in the shape, a warning
+will be added to the log file and the hierarchy will remain unchanged. It's also possible to cause an
+infinite loop in the hierarchy where an object is its own parent or grandparent; each sub object should
+have only one chain of parents and grandparents that eventually leads back to the MAIN object. Should the
+configuration cause an infinite loop, a warning will be added to the log file. Note that OR won't be able
+to tell which specific change causes an invalid hierarchy as each hierarchy change can influence other
+hierarchy changes.
+
+As an example, this shape had a hierarchy where every sub object was a child of the main object, breaking
+bogie animations which require wheels to be children of the bogie, not of the main object. With some
+manipulation in the .sd file, the correct hierarchy could be implemented, fixing the bogie animation::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    Shape ( RhB_Rew_8262.s
+        ESD_Detail_Level ( 0 )
+        ESD_Software_DLev ( 3 )
+        ESD_Alternative_Texture ( 0 )
+        ESD_Bounding_Box ( -1.32 0.1 -8.05 1.32 2.88 8.05 )
+	
+        ESD_ORTSShapeDataOverrides (
+            Comment ( Correcting hierarchy so wheels are below bogies. )
+            MatrixParent (
+                WHEELS11 BOGIE1
+                WHEELS12 BOGIE1
+                WHEELS21 BOGIE2
+                WHEELS22 BOGIE2
+            )
+	    
+            Comment ( Correcting position offset of wheels due to hierarchy change. )
+            MatrixTranslation ( WHEELS11 0m -0.426m -5.45m )
+            MatrixTranslation ( WHEELS12 0m -0.426m -5.45m )
+            MatrixTranslation ( WHEELS21 0m -0.426m  5.45m )
+            MatrixTranslation ( WHEELS22 0m -0.426m  5.45m )
+        )
+    )
+
+Note how multiple parent/child relationships can be changed at once by specifying additional pairs of
+matrix names, and that changing the hierarchy required adjusting the translation of many sub objects in order
+for them to appear in the intended locations. The location of a sub object is measured relative to its parent,
+so if the sub object parent is changed, it's position in the 3D world will change as well (unless corrected for,
+as was done here).
+
+Hiding Sub Objects
+''''''''''''''''''
+
+.. index::
+   single: ObjectVisibility
+
+In some cases, it may be desired to simply disable rendering of some shape sub objects (for example,
+preventing low-poly objects from being rendered so they can be replaced with higher-poly freight
+animations). To achieve this, ``ObjectVisibility'' may be added inside an ``ESD_ORTSShapeDataOverrides``
+block in the shape descriptor file. ``ObjectVisibility ( MATRIXNAME 0/1 )`` will take rendering of all
+sub objects controlled by the matrix called "MATRIXNAME" and make them visible if the second input is not 0,
+or invisible if the second input is 0. Note that 1 (the object is visible) is the default setting for all objects.
+If an object is set to be invisible, data for that object will not be sent to the GPU, saving render time,
+but any CPU calculations such as animations will still be applied to the sub object(s) and ``ORTSShapeHierarchy``
+can still be used to attach lights, freight animations, sounds, particles, etc to the object while invisible.
+Similarly, anything attached to a different matrix (regardless if that matrix is above or below the one made
+invisible) will remain visible and simulated unless specified otherwise.
+
+As an example, we can hide all the (low poly) wheels of an old locomotive in order to replace the wheels with
+(high poly) freight animations using the ORTSShapeHierarchy feature of :ref:`ORTS freight animations<orts-freight-anims>`::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    shape ( SF_FP45_93.s
+        ESD_Detail_Level ( 0 )
+        ESD_Software_DLev ( 2 )
+        ESD_Alternative_Texture ( 0 )
+        ESD_Bounding_Box ( -1.632 -0.095 -10.99 1.684 4.628 10.99 )
+	    
+        ESD_ORTSShapeDataOverrides (
+            Comment ( Disable rendering, but not simulation, of all wheels. )
+            ObjectVisibility (
+                WHEELS11 0
+                WHEELS12 0
+                WHEELS13 0
+                WHEELS21 0
+                WHEELS22 0
+                WHEELS23 0
+            )
+        )
+    )
+
+Note that, similar to other parameters, multiple objects can be hidden in one parameter by adding additional
+pairs of matrix names and 1/0 values. If a matrix name can't be found, the missing matrix will be skipped and
+a warning will be added to the log.
+
+This feature can also be used by freight animations directly using the ``ReplaceObject`` parameter; an ORTS freight
+animation with this parameter will disable rendering of the original object to which it is attached whenever the
+freight animation is visible. When used in combination with the ``ShapeHierarchy`` ORTS freight animation parameter,
+the freight animation can be used to effectively replace specific components of the original model without editing
+the .sd file. Users are encouraged to experiment with whichever approach works best.
+
+Transformation Matrix Name Changes
+''''''''''''''''''''''''''''''''''
+
+.. index::
+   single: MatrixRename
+
+The name of the transformation matrix is itself important for simulator behaviors, particularly
+animations and determining the structure of rolling stock. Should a matrix be named incorrectly,
+or a change in behavior be desired, a matrix can be renamed using ``MatrixReanme ( OLDNAME NEWNAME )``
+inside an ``ESD_ORTSShapeDataOverrides`` block in the .sd file. OR will scan for any matrix "OLDNAME"
+and change the name to "NEWNAME". If no matrix with the old name can be found, a warning will
+be produced and nothing will change. Note that the matrix rename step occurs *after* the previously
+described matrix modifications, so the old matrix name must be used by any other .sd parameters that
+require a matrix name.
+
+LOD Distance Override
+'''''''''''''''''''''
+
+Shape files are generally products of the time they were created, and this includes the level of
+detail distances used. Even if the complexity of the shape is the same, modern shapes tend to
+use longer LOD distances than their legacy counterparts, which can lead to visual inconsistenty.
+The :ref:`"level of detail bias" option<options-lod-bias>` can be used to extend the LOD distance
+of *all* shapes, but this would not solve the inconsistency between shapes.
+
+.. index::
+   single: LODOverride
+
+To resolve this without editing shape files themsleves, the ``LODOverride ( LODindex LODdistance )``
+parameter can be used inside an ``ESD_ORTSShapeDataOverrides`` block in the shape descriptor file to
+set the LOD distance of the LOD at ``LODindex`` to a value of ``LODdistance``, where LODindex is an
+integer specifying which LOD to edit (NOTE: LOD 0 is the closest LOD, LOD 1 is the second closest,
+and so on) and LODdistance is a decimal measured in units of distance (default meters) specifying
+the maximum view distance of the LOD. The number of LODs and their default distances can be seen
+in shape viewing programs.
+
+As an example, a shape from 2011 has LOD distances of 100m, 300m, 700m, and 2000m. Because the shape
+was already of high quality, a later product from 2020 used the same shape but with upgraded textures
+and LODs bumped to 300m, 750m, 1000m and 2000m. To upgrade the old shape LODs to match the new shape,
+the following shape descriptor could be used::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    Shape ( 50ft_BOX_BNSF722974.s 
+        ESD_Detail_Level ( 0 ) 
+        ESD_Software_DLev ( 3 ) 
+        ESD_Alternative_Texture ( 0 ) 
+        ESD_Bounding_Box ( 
+            -1.539  0.61059 -8.08
+            1.549   3.54    8.08 ) 
+            
+        ESD_ORTSShapeDataOverrides (
+            Comment ( New addition: LOD improvement )
+            LODOverride (
+                0 300m
+                1 750m
+                2 1000m
+            )
+        )
+    ) 
+
+
+Observe how multiple LODs can be edited with a single parameter by specifying additional pairs of LOD indices and distances,
+and how not all LODs need to be present (LOD 3 is 2000m on both the old and new shape, so doesn't need to be changed).
+If a given shape does not have the LOD index specified (eg: LOD index 4 does not exist on this shape, as the shape only has
+4 LODs) then a warning is added to the log and the missing LOD is skipped.
+
 Advanced articulation control
 -----------------------------
 
@@ -484,6 +820,8 @@ Other Vehicles:
 
 OR specific freight animations and pickups
 ------------------------------------------
+
+.. _orts-freight-anims:
 
 General
 '''''''
@@ -621,7 +959,13 @@ possible load type. The parameters of the subblock are described below:
 - ``FreightWeightWhenFull`` defines the mass of the freight when the wagon is full; 
   the mass of the wagon is computed by adding the mass of the empty wagon to the 
   actual mass of the freight 
-- ``FullAtStart`` defines wether the wagon is fully loaded (1) or is empty at game 
+- ``ReplaceObject`` if set to 1 (ignored if missing) will disable rendering of the wagon
+  sub object to which the freightanim is attached. This works best when combined with
+  ``ShapeHierarchy`` to disable rendering of specific sub objects, effectively replacing
+  the sub object graphic with that of the freightanim. The intended use of this setting 
+  is to "delete" original shape parts and replace them with higher quality shapes without
+  editing the original shape.
+- ``FullAtStart`` defines wether the wagon is fully loaded ( 1 ) or is empty at game 
   start; if there are more continuous OR freightanims that have ``FullAtStart`` 
   set to 1, only the first one is considered.
 
@@ -1082,6 +1426,7 @@ Here below a sample of a ``.load-or`` file::
   	{
 	  	"Name" : "triton",
 	  	"Shape" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.s",
+	  	"ShapeDescriptor" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.sd",
 	  	"ContainerType" : "C40ftHC",
 	  	"IntrinsicShapeOffset": [0,1.175,0],
    		"EmptyMassKG": 2100.,
@@ -1092,7 +1437,10 @@ Here below a sample of a ``.load-or`` file::
 - "Container" is a fixed keyword.
 - "Name" has as value a string used by Open Rails when the container must be indentified in a message 
   to the player.
-- "Shape" has as value the path of the container shape, having ``Trainset`` as base.
+- "Shape" has as value the path of the container shape (.s) file, having ``Trainset`` as base.
+- "ShapeDescriptor" has the path of the container shape descriptor (.sd) file,
+  having ``Trainset`` as base. This is optional; if missing OR assumes the shape
+  descriptor is in the same location with the same name as the shape file.
 - "ContainerType" identifies the container type, which may be one of the following ones::
 
   * C20ft
@@ -2204,7 +2552,7 @@ be loaded instead.
 ``ORTSTractionCutOffRelayClosingDelay`` refers to the delay between the closing command of the traction cut-off relay
 and the effective closing of the relay.
 
-.. _features-scripting-powerselectors
+.. _features-scripting-powerselectors:
 
 Pantograph, voltage and power limitation selectors
 --------------------------------------------------
