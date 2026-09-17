@@ -44,16 +44,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             base.Initialize();
         }
-        public override double GetDevelopedTorqueNm(double motorSpeedRadpS)
+        protected override double GetTorqueNm(double speedRadpS)
         {
-            return requiredTorqueNm * MathHelper.Clamp((float)(DriveSpeedRadpS - motorSpeedRadpS) / OptimalAsyncSpeedRadpS, -1, 1);
+            return requiredTorqueNm * MathHelper.Clamp((float)(DriveSpeedRadpS - speedRadpS) / OptimalAsyncSpeedRadpS, -1, 1);
         }
         public override void Update(float timeSpan)
         {
             TargetForceN = Locomotive.TractiveForceN * AxleConnected.TractiveForceFraction;
             EngineMaxSpeedMpS = Locomotive.MaxSpeedMpS;
             SlipControl = Locomotive.SlipControlSystem == MSTSLocomotive.SlipControlType.Full;
-            float linToAngFactor = AxleConnected.TransmissionRatio / AxleConnected.WheelRadiusM;
+            float linToAngFactor = TransmissionRatio / AxleConnected.WheelRadiusM;
             if (SlipControl)
             {
                 if (TargetForceN > 0) DriveSpeedRadpS = (AxleConnected.TrainSpeedMpS + AxleConnected.WheelSlipThresholdMpS * 0.95f) * linToAngFactor + OptimalAsyncSpeedRadpS;
@@ -64,7 +64,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (TargetForceN > 0) DriveSpeedRadpS = EngineMaxSpeedMpS * linToAngFactor + OptimalAsyncSpeedRadpS;
                 else if (TargetForceN < 0) DriveSpeedRadpS = -EngineMaxSpeedMpS * linToAngFactor - OptimalAsyncSpeedRadpS;
             }
-            requiredTorqueNm = Math.Abs(TargetForceN) * AxleConnected.WheelRadiusM / AxleConnected.TransmissionRatio;
+            requiredTorqueNm = Math.Abs(TargetForceN) * AxleConnected.WheelRadiusM / TransmissionRatio / TransmissionEfficiency;
             base.Update(timeSpan);
         }
     }

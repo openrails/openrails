@@ -338,19 +338,19 @@ namespace Orts.Simulation
                 RDB = new RoadDatabaseFile(rdbFile);
             }
 
-            var carSpawnFile = RoutePath + @"\carspawn.dat";
+            string carSpawnFile = RoutePath + @"\carspawn.dat";
             if (File.Exists(carSpawnFile))
             {
                 CarSpawnerLists = new List<CarSpawnerList>();
-                CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
+                CarSpawnerFile = new CarSpawnerFile(carSpawnFile, RoutePath + @"\shapes\", CarSpawnerLists);
             }
 
             // Extended car spawner file
-            var extCarSpawnFile = RoutePath + @"\openrails\carspawn.dat";
+            string extCarSpawnFile = ORFileHelper.GetORTSFilePath(carSpawnFile);
             if (File.Exists(extCarSpawnFile))
             {
                 if (CarSpawnerLists == null) CarSpawnerLists = new List<CarSpawnerList>();
-                ExtCarSpawnerFile = new ExtCarSpawnerFile(RoutePath + @"\openrails\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
+                ExtCarSpawnerFile = new ExtCarSpawnerFile(extCarSpawnFile, RoutePath + @"\shapes\", CarSpawnerLists);
             }
 
             // Load animated clocks if file "animated.clocks-or" exists --------------------------------------------------------
@@ -381,7 +381,7 @@ namespace Orts.Simulation
 
             // check for existence of activity file in OpenRails subfolder
 
-            activityPath = RoutePath + @"\Activities\Openrails\" + ActivityFileName + ".act";
+            activityPath = ORFileHelper.GetORTSFilePath(activityPath);
             if (File.Exists(activityPath))
             {
                 // We have an OR-specific addition to world file
@@ -1438,7 +1438,7 @@ namespace Orts.Simulation
             }
             conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
-            ConsistFile conFile = new ConsistFile(conFileName);
+            ConsistFile conFile = new ConsistFile(conFileName, false);
             CurveDurability = conFile.Train.TrainCfg.Durability;   // Finds curve durability of consist based upon the value in consist file
             Player_Traffic_Definition player_Traffic_Definition = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
             Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);

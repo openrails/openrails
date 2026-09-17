@@ -1206,7 +1206,7 @@ namespace Orts.Viewer3D.Popups
             int numOperativeBrakes = 0;
             bool isMetric = false; bool isUK = false;  // isImperial* does not seem to be used in simulation
 
-            if (TrainInfoSpriteSheet == null) { TrainInfoSpriteSheet = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, Path.Combine(Owner.Viewer.ContentPath, "TrainInfoSprites.png")); }
+            if (TrainInfoSpriteSheet == null) { TrainInfoSpriteSheet = SharedTextureManager.LoadInternal(Owner.Viewer.RenderProcess.GraphicsDevice, Path.Combine(Owner.Viewer.ContentPath, "TrainInfoSprites.png")); }
             const int spriteWidth = 6; const int spriteHeight = 26;
             var carInfoList = new List<CarInfo>(playerTrain.Cars.Count);
 
@@ -1215,8 +1215,8 @@ namespace Orts.Viewer3D.Popups
                 // ignore (legacy) EOT
                 if (car.WagonType == TrainCar.WagonTypes.EOT || car.CarLengthM < 1.1f) { continue; }
 
-                var wag = car is MSTSWagon ? (MSTSWagon)car : null;
-                var eng = car is MSTSLocomotive ? (MSTSLocomotive)car : null;
+                var wag = car is MSTSWagon wagon ? wagon : null;
+                var eng = car is MSTSLocomotive locomotive ? locomotive : null;
 
                 var isEng = (car.WagonType == TrainCar.WagonTypes.Engine && eng != null && eng.MaxForceN > 25000);  // count legacy driving trailers as wagons
 
@@ -1226,7 +1226,10 @@ namespace Orts.Viewer3D.Popups
                 {
                     engCount++;
                     numAxles += eng.LocoNumDrvAxles + eng.GetWagonNumAxles();
-                    totPowerW += eng.MaxPowerW;
+                    if (eng is MSTSDieselLocomotive dL)
+                        totPowerW += dL.LocomotiveMaxTractionPowerW;
+                    else
+                        totPowerW += eng.MaxPowerW;
                     totMaxTractiveEffortN += eng.MaxForceN;
                     totMaxContTractiveEffortN += eng.MaxContinuousForceN > 0 ? eng.MaxContinuousForceN : eng.MaxForceN;
                     engMaxContTractiveForceN += eng.MaxContinuousForceN > 0 ? eng.MaxContinuousForceN : eng.MaxForceN;

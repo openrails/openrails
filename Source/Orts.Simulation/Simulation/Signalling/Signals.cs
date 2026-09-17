@@ -26,8 +26,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
+using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.MultiPlayer;
@@ -506,7 +506,7 @@ namespace Orts.Simulation.Signalling
                         {
                             if (!extendedWFileRead)
                             {
-                                WFilePath = Simulator.RoutePath + @"\World\Openrails\" + Path.GetFileName(fileName);
+                                WFilePath = ORFileHelper.GetORTSFilePath(fileName);
                                 if (File.Exists(WFilePath))
                                 {
                                     // We have an OR-specific addition to world file

@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using Orts.Common;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -31,7 +32,7 @@ namespace Orts.Formats.Msts
         public string Name;
         public string WagonType;
         public float MassKG;
-        public CarSize WagonSize;
+        public CarSize WagonSize = new CarSize(2.5f, 4.0f, 40f);
         public int NumWagAxles;  // ORTS
         public float NumWagWheels;  // MSTS
         public string BrakeSystemType;
@@ -52,6 +53,13 @@ namespace Orts.Formats.Msts
                 HeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                 LengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                 stf.MustMatch(")");
+            }
+
+            public CarSize(float width, float height, float length)
+            {
+                WidthM = width;
+                HeightM = height;
+                LengthM = length;
             }
 
             public override string ToString()
@@ -100,7 +108,10 @@ namespace Orts.Formats.Msts
 
         public WagonFile(string filePath)
         {
+            filePath = ORFileHelper.FindORTSFile(filePath);
+
             Name = Path.GetFileNameWithoutExtension(filePath);
+
             using (var stf = new STFReader(filePath, false))
             {
                 stf.ParseFile(new STFReader.TokenProcessor[] {

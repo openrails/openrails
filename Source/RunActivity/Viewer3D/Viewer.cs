@@ -99,6 +99,8 @@ namespace Orts.Viewer3D
         public TrainCarOperationsWindow TrainCarOperationsWindow { get; private set; } // Alt-F9 window
         public TrainCarOperationsViewerWindow TrainCarOperationsViewerWindow { get; private set; } // From TrainCarOperationWindow
         public TrainCarOperationsWebpage TrainCarOperationsWebpage { get; set; }
+
+        public ActivityEventsWebpage ActivityEventsWebpage { get; set; }
         public CarOperationsWindow CarOperationsWindow { get; private set; } // F9 sub-window for car operations
         public TrainDpuWindow TrainDpuWindow { get; private set; } // Shift + F9 train distributed power window
         public NextStationWindow NextStationWindow { get; private set; } // F10 window
@@ -1536,7 +1538,11 @@ namespace Orts.Viewer3D
             if (UserInput.IsMouseMoved || RenderProcess.IsMouseVisible && UserInput.IsMouseWheelChanged)
                 MouseVisibleTillRealTime = RealTime + 1;
 
-            RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime || !Game.IsActive;
+            // keep mouse pointer visible when mouse pointer is within a window (for instance the F1 help window)
+            Point mousePosition = new Point(UserInput.MouseX, UserInput.MouseY);
+            bool inWindow = WindowManager.VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mousePosition)) != null;
+
+            RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime || !Game.IsActive || inWindow;
 
             UserInput.Handled();
         }

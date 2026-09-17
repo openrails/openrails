@@ -48,6 +48,7 @@ using Orts.Simulation.RollingStocks.Coupling;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -640,7 +641,7 @@ namespace Orts.Simulation.RollingStocks
         int jointTrigger;
         float jointTriggerDelayedS = 0.1f; // Set delay to 0.1 seconds
         float jointSpeedMpS;
-        public float SoundAxleCount;
+        public int SoundAxleCount;
         public float CarTrackControlledDistanceM = 0;
         public float CarTunnelDistanceM;
 
@@ -661,6 +662,9 @@ namespace Orts.Simulation.RollingStocks
         public float BrakeRetardForceN;    // brake force applied to wheel by brakeshoe (Newtons) independent of friction wheel/rail friction
         public float BrakeShoeForceN;
         public float FrictionBrakeBlendingMaxForceN; // This is the maximum force for the friction barke when it is blended with the dynamic brake
+
+        public bool IsRackRailway = false;
+        public bool BrakeCogWheelFitted;
 
         // Sum of all the forces acting on a Traincar in the direction of driving.
         // MotiveForceN and GravityForceN act to accelerate the train. The others act to brake the train.
@@ -914,10 +918,18 @@ namespace Orts.Simulation.RollingStocks
             realTimeTrackJointDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM; // Initialise track joint distance
             SoundAxleCount = (LocoNumDrvAxles + WagonNumAxles);
 
-            // make sure that axle count does not exceed maximum possible trigger
-            if (SoundAxleCount > 8)
+            // Where sound axle count does not align with sound triggers, then set to next highest value, also limit to 8 axles
+            if (SoundAxleCount == 5) // No trigger for 5 axles, so increase to 6
             {
-                SoundAxleCount = 8f;
+                SoundAxleCount = 6;
+            }
+            else if (SoundAxleCount == 7) // No trigger for 7 axles, so increase to 8
+            {
+                SoundAxleCount = 8;
+            }
+            else if (SoundAxleCount > 8)
+            {
+                SoundAxleCount = 8;
             }
 
         }
@@ -1232,7 +1244,8 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             // Only apply slide, and advanced brake friction, if advanced adhesion is selected, simplecontrolphysics is not set, and it is a Player train
-            else if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
+            // Rack stock with cog wheel fitted will not skid
+            else if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && !(BrakeCogWheelFitted && IsRackRailway))
             {
                 // Determine whether car is experiencing a wheel slip during braking
                 if (!BrakeSkidWarning && AbsSpeedMpS > 0.01)
@@ -1271,7 +1284,7 @@ namespace Orts.Simulation.RollingStocks
                 // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
                 if (!BrakeSkid && AbsSpeedMpS > 0.01)  // Train must be moving forward to experience skid
                 {
-                    if (BrakeRetardForceN > WagonBrakeAdhesiveForceN)
+                    if (BrakeRetardForceN > WagonBrakeAdhesiveForceN && !(BrakeCogWheelFitted && IsRackRailway))
                     {
                         BrakeSkid = true; 	// wagon wheel is slipping
                         var message = "Car ID: " + CarID + " - experiencing braking force wheel skid.";
@@ -2318,16 +2331,10 @@ public string GetCurveDirection()
         public virtual string GetStatus() { return null; }
         public virtual string GetDebugStatus()
         {
-            string locomotivetypetext = "";
-            if (EngineType == EngineTypes.Control)
-            {
-                locomotivetypetext = "Unpowered Control Trailer Car";
-            }
-
             var loco = this as MSTSDieselLocomotive;
             if (loco != null && loco.DieselEngines.HasGearBox && loco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
-                return String.Format("{0}\t{1}\t{2}\t{3}\t{4:F0}%\t{5} - {6:F0} rpm\t\t{7}\t{8}\t{9}\t",
+                return String.Format("{0}\t{1}\t{2}\t{3}\t{4:F0}%\t{5} - {6:F0} rpm\t\t{7}\t{8}\t",
                 CarID,
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
                 Flipped ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
@@ -2337,13 +2344,12 @@ public string GetCurveDirection()
                 loco.DieselEngines[0].GearBox.HuDShaftRPM,
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
                 FormatStrings.FormatPower(loco.LocomotiveAxles.DrivePowerW, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(loco.LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
-                Simulator.Catalog.GetString(locomotivetypetext)
+                String.Format("{0}{1}", FormatStrings.FormatForce(loco.LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : "")
                 );
             }
             else
             {
-                return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t{8}\t",
+                return String.Format("{0}\t{2}\t{1}\t{3}\t{4:F0}%\t{5}\t\t{6}\t{7}\t",
                 CarID,
                 Flipped ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
@@ -2352,8 +2358,7 @@ public string GetCurveDirection()
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
                 FormatStrings.FormatPower((this as MSTSWagon).LocomotiveAxles.DrivePowerW, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce((this as MSTSWagon).LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
-                Simulator.Catalog.GetString(locomotivetypetext)
+                String.Format("{0}{1}", FormatStrings.FormatForce((this as MSTSWagon).LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : "")
                 );
             }
         }
@@ -3069,6 +3074,9 @@ public string GetCurveDirection()
             m.Up = up;
             m.Backward = fwd;
 
+            // Update whether track is rack or not
+            UpdateRackRailDetection(traveler);
+
             // Update gravity force when position is updated, but before any secondary motion is added
             UpdateGravity(m);
 
@@ -3123,6 +3131,28 @@ public string GetCurveDirection()
 
         #region Traveller-based updates
         public float CurrentCurveRadiusM;
+
+        public void UpdateRackRailDetection(Traveller traveller)
+        {
+            if (this is MSTSWagon wagon)
+            {
+                var thisSection = traveller.GetCurrentSection();
+
+                if (thisSection != null && Simulator.TSectionDat.TrackShapes.ContainsKey(thisSection.ShapeIndex))
+                {
+                    TrackShape thisShape = Simulator.TSectionDat.TrackShapes[thisSection.ShapeIndex];
+
+                    if (thisShape.RackShape)
+                    {
+                        IsRackRailway = true;
+                    }
+                    else
+                    {
+                        IsRackRailway = false;
+                    }
+                }
+            }
+        }
 
         internal void UpdateTilting(Traveller traveller,  float elapsedTimeS, float speedMpS, int direction)
         {

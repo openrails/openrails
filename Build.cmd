@@ -27,9 +27,7 @@ SET CheckToolInPath.Missing=0
 SET CheckToolInPath.Check=0
 :check-tools
 CALL :list-or-check-tool "git.exe" "[UTS] Git version control tool"
-CALL :list-or-check-tool "nuget.exe" "[UTS] .NET package manager tool"
-CALL :list-or-check-tool "MSBuild.exe" "[UTS] Microsoft Visual Studio build tool"
-CALL :list-or-check-tool "xunit.console.x86.exe" "[UTS] XUnit tool"
+CALL :list-or-check-tool "dotnet.exe" "[UTS] .NET tool"
 CALL :list-or-check-tool "rcedit-x86.exe" "[UTS] Electron rcedit tool"
 CALL :list-or-check-tool "7za.exe" "[UTS] 7-zip tool"
 CALL :list-or-check-tool "OfficeToPDF.exe" "[TS] Office-to-PDF conversion tool"
@@ -78,18 +76,20 @@ IF "%Mode%" == "Stable" (
 REM Get product version and code revision.
 FOR /F "usebackq tokens=1* delims==" %%A IN (`CALL GetVersion.cmd %Mode%`) DO SET %%A=%%B
 
-REM Restore NuGet packages.
-nuget restore Source\ORTS.sln || GOTO :error
-
 REM Recreate Program directory for output and delete previous build files.
 CALL :recreate "Program" || GOTO :error
 CALL :delete "OpenRails-%Mode%*" || GOTO :error
 
 REM Build main program.
-REM Disable warning CS1591 "Missing XML comment for publicly visible type or member".
 SET BuildConfiguration=Release
 IF "%Mode%" == "Unstable" SET BuildConfiguration=Debug
-MSBuild Source\ORTS.sln /t:Clean;Build /p:Configuration=%BuildConfiguration% /p:NoWarn=1591 || GOTO :error
+PUSHD Source && dotnet build -p:Configuration=%BuildConfiguration% && POPD || GOTO :error
+
+REM Run unit tests.
+PUSHD Source && dotnet test --no-restore --no-build --logger "trx;LogFileName=Tests.trx" && POPD || GOTO :error
+
+REM Remove `testhost` files which cannot be signed.
+DEL Program\testhost.*
 
 REM Set update channel.
 >>Program\Updater.ini ECHO Channel=string:%Mode% || GOTO :error
@@ -97,10 +97,6 @@ ECHO Set update channel to "%Mode%".
 
 REM Build locales.
 PUSHD Source\Locales && CALL Update.bat non-interactive && POPD || GOTO :error
-
-REM Run unit tests (9009 means XUnit itself wasn't found, which is an error).
-xunit.console.x86 Program\Tests.dll -nunit xunit.xml
-IF "%ERRORLEVEL%" == "9009" GOTO :error
 
 REM Copy the web content
 ROBOCOPY /MIR /NJH /NJS "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web"

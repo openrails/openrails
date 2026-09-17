@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
-    <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
+    <TargetFramework>net6-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <AssemblyName>Contrib.ActivityEditor</AssemblyName>
     <ApplicationIcon>..\..\..\ORTS.ico</ApplicationIcon>
@@ -86,6 +85,6 @@
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.1.303" />
   </ItemGroup>
 </Project>

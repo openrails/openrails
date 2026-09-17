@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
-"PO-Revision-Date: 2021-09-15 03:48:20+0200\n"
+"POT-Creation-Date: 2026-02-14 15:54:31+0000\n"
+"PO-Revision-Date: 2026-02-14 15:54:31+0000\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -13,23 +13,144 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 
-#: ../../ORTS.Settings/InputSettings.cs:526
+#: ../../ORTS.Settings/InputSettings.cs:572
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "[{0} řè9úïřèƨ áñδ ïƨ ₥ôδïƒïèδ β¥ §λïƒƭ !!!]"
 
-#: ../../ORTS.Settings/InputSettings.cs:528
+#: ../../ORTS.Settings/InputSettings.cs:574
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "[{0} řè9úïřèƨ áñδ ïƨ ₥ôδïƒïèδ β¥ Çôñƭřôℓ !!!]"
 
-#: ../../ORTS.Settings/InputSettings.cs:530
+#: ../../ORTS.Settings/InputSettings.cs:576
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "[{0} řè9úïřèƨ áñδ ïƨ ₥ôδïƒïèδ β¥ Âℓƭ !!!]"
 
-#: ../../ORTS.Settings/InputSettings.cs:561
+#: ../../ORTS.Settings/InputSettings.cs:607
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "[{0} áñδ {1} βôƭλ ₥áƭçλ {2} !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:15
+msgid "Reverser Neutral"
+msgstr "[RèƲèřƨèř Nèúƭřáℓ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:16
+msgid "Reverser Full Reversed"
+msgstr "[RèƲèřƨèř Fúℓℓ RèƲèřƨèδ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:17
+msgid "Reverser Full Forward"
+msgstr "[RèƲèřƨèř Fúℓℓ Fôřωářδ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:18
+msgid "Throttle Idle"
+msgstr "[Tλřôƭƭℓè Ìδℓè !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:19
+msgid "Full Throttle"
+msgstr "[Fúℓℓ Tλřôƭƭℓè !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:20
+msgid "Dynamic Brake"
+msgstr "[Ð¥ñá₥ïç ßřáƙè !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:21
+msgid "Dynamic Brake Setup"
+msgstr "[Ð¥ñá₥ïç ßřáƙè §èƭúƥ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:22
+msgid "Auto Brake Released"
+msgstr "[Âúƭô ßřáƙè Rèℓèáƨèδ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:23
+msgid "Full Auto Brake "
+msgstr "[Fúℓℓ Âúƭô ßřáƙè  !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:24
+msgid "Emergency Brake"
+msgstr "[É₥èřϱèñç¥ ßřáƙè !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:25
+msgid "Independent Brake Released"
+msgstr "[Ìñδèƥèñδèñƭ ßřáƙè Rèℓèáƨèδ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:26
+msgid "Independent Brake Full"
+msgstr "[Ìñδèƥèñδèñƭ ßřáƙè Fúℓℓ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:27
+msgid "Bail Off Disengaged (in Released position)"
+msgstr "[ßáïℓ Óƒƒ Ðïƨèñϱáϱèδ (ïñ Rèℓèáƨèδ ƥôƨïƭïôñ) !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:28
+msgid "Bail Off Engaged (in Released position)"
+msgstr "[ßáïℓ Óƒƒ Éñϱáϱèδ (ïñ Rèℓèáƨèδ ƥôƨïƭïôñ) !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:29
+msgid "Bail Off Disengaged (in Full position)"
+msgstr "[ßáïℓ Óƒƒ Ðïƨèñϱáϱèδ (ïñ Fúℓℓ ƥôƨïƭïôñ) !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:30
+msgid "Bail Off Engaged (in Full position)"
+msgstr "[ßáïℓ Óƒƒ Éñϱáϱèδ (ïñ Fúℓℓ ƥôƨïƭïôñ) !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:31
+msgid "Rotary Switch 1-Position 1(OFF)"
+msgstr "[Rôƭář¥ §ωïƭçλ 1-Þôƨïƭïôñ 1(ÓFF) !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:32
+msgid "Rotary Switch 1-Position 2(SLOW)"
+msgstr "[Rôƭář¥ §ωïƭçλ 1-Þôƨïƭïôñ 2(§£ÓW) !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:33
+msgid "Rotary Switch 1-Position 3(FULL)"
+msgstr "[Rôƭář¥ §ωïƭçλ 1-Þôƨïƭïôñ 3(FÛ££) !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:34
+msgid "Rotary Switch 2-Position 1(OFF)"
+msgstr "[Rôƭář¥ §ωïƭçλ 2-Þôƨïƭïôñ 1(ÓFF) !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:35
+msgid "Rotary Switch 2-Position 2(DIM)"
+msgstr "[Rôƭář¥ §ωïƭçλ 2-Þôƨïƭïôñ 2(ÐÌM) !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:36
+msgid "Rotary Switch 2-Position 3(FULL)"
+msgstr "[Rôƭář¥ §ωïƭçλ 2-Þôƨïƭïôñ 3(FÛ££) !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:37
+msgid "Reverse Reverser Direction"
+msgstr "[RèƲèřƨè RèƲèřƨèř Ðïřèçƭïôñ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:38
+msgid "Reverse Throttle Direction"
+msgstr "[RèƲèřƨè Tλřôƭƭℓè Ðïřèçƭïôñ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:39
+msgid "Reverse Auto Brake Direction"
+msgstr "[RèƲèřƨè Âúƭô ßřáƙè Ðïřèçƭïôñ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:40
+msgid "Reverse Independent Brake Direction"
+msgstr "[RèƲèřƨè Ìñδèƥèñδèñƭ ßřáƙè Ðïřèçƭïôñ !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:41
+msgid "Full Range Throttle"
+msgstr "[Fúℓℓ Ráñϱè Tλřôƭƭℓè !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:42
+msgid "Cut Off Delta"
+msgstr "[Çúƭ Óƒƒ Ðèℓƭá !!!]"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:227
+#, csharp-format
+msgid ""
+"Button {0} is assigned to \r\n"
+"\t"
+msgstr ""
+"[ßúƭƭôñ {0} ïƨ áƨƨïϱñèδ ƭô \r\n"
+"\ƭ !!!]"
 

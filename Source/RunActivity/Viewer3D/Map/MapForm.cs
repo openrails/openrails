@@ -1854,7 +1854,7 @@ namespace Orts.Viewer3D.Debugging
 
         private void playerRoleLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Process.Start("https://open-rails.readthedocs.io/en/latest/multiplayer.html#in-game-controls");
+            Process.Start(new ProcessStartInfo { FileName = "https://open-rails.readthedocs.io/en/latest/multiplayer.html#in-game-controls", UseShellExecute = true });
         }
 
         private void mapCustomizationButton_Click(object sender, EventArgs e)

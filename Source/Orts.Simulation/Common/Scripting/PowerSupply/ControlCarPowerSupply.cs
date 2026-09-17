@@ -46,17 +46,16 @@ namespace ORTS.Scripting.Api
             }
         }
         protected override void SetCurrentMainPowerSupplyState(PowerSupplyState state) {}
-        protected override void SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState state) {}
         protected override void SetCurrentElectricTrainSupplyState(PowerSupplyState state) {}
         protected override void SetCurrentDynamicBrakeAvailability(bool avail) {}
-        public override PowerSupplyState GetPowerStatus() => PowerSupplyState.Unavailable;
+        public override PowerSupplyState GetPowerStatus() => LpsHost.AuxiliaryPowerSupplyState;
         public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt)
         {
-            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEvent(evt);
+            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEventFromControlCar(evt);
         }
         public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt, int id)
         {
-            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEvent(evt, id);
+            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEventFromControlCar(evt, id);
         }
     }
 }

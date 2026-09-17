@@ -144,7 +144,7 @@ namespace Orts.Simulation.RollingStocks
             base.InitializeMoving();
             WheelSpeedMpS = SpeedMpS;
             DynamicBrakePercent = -1;
-            ThrottleController.SetValue(Train.MUThrottlePercent / 100);
+            ThrottleController.SetValue(Train.MUThrottlePercent / 100, true);
 
             Pantographs.InitializeMoving();
         }
@@ -202,7 +202,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected override void UpdateSoundVariables(float elapsedClockSeconds)
         {
-            Variable1 = ThrottlePercent;
+            Variable1[0] = ThrottlePercent;
             if (ThrottlePercent == 0f) Variable2 = 0;
             else
             {
