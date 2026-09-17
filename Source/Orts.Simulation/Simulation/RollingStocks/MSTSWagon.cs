@@ -114,15 +114,14 @@ namespace Orts.Simulation.RollingStocks
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
         float TempMassDiffRatio;
 
-        // simulation parameters
-        public float Variable1;  // used to convey status to soundsource
+        // sound system variables
+        public float[] Variable1 = new float[1];
         public float Variable2;
-        public float Variable3;
-        // additional engines
-        public float Variable1_2;
-        public float Variable1_3;
-        public float Variable1_4;
         public float Variable2_Booster;
+        public float Variable3;
+        public float[] EnginesRPM = new float[1];
+        public float[] EnginesPower = new float[1];
+        public float[] EnginesTorque = new float[1];
 
         // wag file data
         public string MainShapeFileName;
@@ -132,9 +131,9 @@ namespace Orts.Simulation.RollingStocks
         public float FreightAnimFlag = 1;   // if absent or >= 0 causes the freightanim to drop in tenders
         public string Cab3DShapeFileName; // 3DCab view shape file name
         public string InteriorShapeFileName; // passenger view shape file name
-        public string MainSoundFileName;
-        public string InteriorSoundFileName;
-        public string Cab3DSoundFileName;
+        public List<string> MainSoundFileNames;
+        public List<string> InteriorSoundFileNames;
+        public List<string> Cab3DSoundFileNames;
         public float ExternalSoundPassThruPercent = -1;
         public float TrackSoundPassThruPercent = -1;
         public float WheelRadiusM = Me.FromIn(18.0f);  // Provide some defaults in case it's missing from the wag - Wagon wheels could vary in size from approx 10" to 25".
@@ -1347,7 +1346,12 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsheatingboilerfuelusage": TrainHeatBoilerFuelUsageGalukpH = new Interpolator(stf); break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
+                case "wagon(sound":
+                    stf.MustMatch("(");
+                    MainSoundFileNames = new List<string> { stf.ReadString() }; // Reset any existing sound files
+                    while (!stf.EndOfBlock()) // Additional sound files have been defined, add these to the list
+                        MainSoundFileNames.Add(stf.ReadString());
+                    break;
                 case "wagon(ortsbrakeshoefriction": BrakeShoeFrictionFactor = new Interpolator(stf); break;
                 case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
@@ -1729,7 +1733,7 @@ namespace Orts.Simulation.RollingStocks
             InitialMassKG = copy.InitialMassKG;
             WheelRadiusM = copy.WheelRadiusM;
             DriverWheelRadiusM = copy.DriverWheelRadiusM;
-            MainSoundFileName = copy.MainSoundFileName;
+            MainSoundFileNames = copy.MainSoundFileNames;
             BrakeShoeFrictionFactor = copy.BrakeShoeFrictionFactor;
             WheelBrakeSlideProtectionFitted = copy.WheelBrakeSlideProtectionFitted;
             WheelBrakeSlideProtectionLimitDisabled = copy.WheelBrakeSlideProtectionLimitDisabled;
@@ -1773,9 +1777,9 @@ namespace Orts.Simulation.RollingStocks
             CarBrakeSystemType = copy.CarBrakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
             InteriorShapeFileName = copy.InteriorShapeFileName;
-            InteriorSoundFileName = copy.InteriorSoundFileName;
+            InteriorSoundFileNames = copy.InteriorSoundFileNames;
             Cab3DShapeFileName = copy.Cab3DShapeFileName;
-            Cab3DSoundFileName = copy.Cab3DSoundFileName;
+            Cab3DSoundFileNames = copy.Cab3DSoundFileNames;
             Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
             Adhesion3 = copy.Adhesion3;
@@ -1873,7 +1877,12 @@ namespace Orts.Simulation.RollingStocks
             PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("sound", ()=>{ InteriorSoundFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("sound", ()=>{
+                    stf.MustMatch("(");
+                    InteriorSoundFileNames = new List<string> { stf.ReadString() }; // Reset any existing sound files
+                    while (!stf.EndOfBlock()) // Additional sound files have been defined, add these to the list
+                        InteriorSoundFileNames.Add(stf.ReadString());
+                }),
                 new STFReader.TokenProcessor("passengercabinfile", ()=>{ InteriorShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("passengercabinheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
@@ -1889,7 +1898,12 @@ namespace Orts.Simulation.RollingStocks
             PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("sound", ()=>{ Cab3DSoundFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("sound", ()=>{
+                    stf.MustMatch("(");
+                    Cab3DSoundFileNames = new List<string> { stf.ReadString() }; // Reset any existing sound files
+                    while (!stf.EndOfBlock()) // Additional sound files have been defined, add these to the list
+                        Cab3DSoundFileNames.Add(stf.ReadString());
+                }),
                 new STFReader.TokenProcessor("orts3dcabfile", ()=>{ Cab3DShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
@@ -1942,13 +1956,21 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
-            outf.Write(Variable1);
+            outf.Write(Variable1.Length);
+            foreach (float v1 in Variable1)
+                outf.Write(v1);
             outf.Write(Variable2);
             outf.Write(Variable2_Booster);
             outf.Write(Variable3);
-            outf.Write(Variable1_2);
-            outf.Write(Variable1_3);
-            outf.Write(Variable1_4);
+            outf.Write(EnginesRPM.Length);
+            foreach (float rpm in EnginesRPM)
+                outf.Write(rpm);
+            outf.Write(EnginesPower.Length);
+            foreach (float power in EnginesPower)
+                outf.Write(power);
+            outf.Write(EnginesTorque.Length);
+            foreach (float torque in EnginesTorque)
+                outf.Write(torque);
             outf.Write(Friction0N);
             outf.Write(DavisAN.Value);
             outf.Write(DavisBNSpM.Value);
@@ -2001,13 +2023,25 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Restore(BinaryReader inf)
         {
-            Variable1 = inf.ReadSingle();
+            int v1Count = inf.ReadInt32();
+            Variable1 = new float[v1Count];
+            for (int v = 0; v < v1Count; v++)
+                Variable1[v] = inf.ReadSingle();
             Variable2 = inf.ReadSingle();
             Variable2_Booster = inf.ReadSingle();
             Variable3 = inf.ReadSingle();
-            Variable1_2 = inf.ReadSingle();
-            Variable1_3 = inf.ReadSingle();
-            Variable1_4 = inf.ReadSingle();
+            int rpmCount = inf.ReadInt32();
+            EnginesRPM = new float[rpmCount];
+            for (int r = 0; r < rpmCount; r++)
+                EnginesRPM[r] = inf.ReadSingle();
+            int powerCount = inf.ReadInt32();
+            EnginesPower = new float[powerCount];
+            for (int p = 0; p < powerCount; p++)
+                EnginesPower[p] = inf.ReadSingle();
+            int torqueCount = inf.ReadInt32();
+            EnginesTorque = new float[torqueCount];
+            for (int t = 0; t < torqueCount; t++)
+                EnginesTorque[t] = inf.ReadSingle();
             Friction0N = inf.ReadSingle();
             DavisAN = inf.ReadSingle();
             DavisBNSpM = inf.ReadSingle();
@@ -2148,6 +2182,15 @@ namespace Orts.Simulation.RollingStocks
             Trace.TraceInformation("***************************************** DEBUG_AUXTENDER (MSTSWagon.cs) ***************************************************************");
             Trace.TraceInformation("Car ID {0} Aux Tender Water Mass {1} Wagon Type {2}", CarID, AuxTenderWaterMassKG, AuxWagonType);
 #endif
+
+            if (WagonType != WagonTypes.Engine)
+            {
+                // Calculate wheel speed for wagons, locomotives use axle speed
+                if (BrakeSkid)
+                    WheelSpeedMpS = 0.0f;
+                else
+                    WheelSpeedMpS = SpeedMpS;
+            }
 
             AbsWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
 

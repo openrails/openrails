@@ -15,13 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -76,8 +70,7 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("tr_sms", ()=>{ Tr_SMS = new Tr_SMS(stf); }),
                 });
         }
-
-	} // class SMSFile
+    } // class SMSFile
 
     public class Tr_SMS
     {
@@ -242,11 +235,165 @@ namespace Orts.Formats.Msts
         public float X, Y;
     }
 
+    public class SoundVariable
+    {
+        public enum ControlType
+        {
+            None,
+            Distance,
+            Speed,
+            Variable1,
+            Variable2,
+            Variable2Booster,
+            Variable3,
+            BrakeCyl,
+            CurveForce,
+            AngleofAttack,
+            CarFriction,
+            WheelRPM,
+            ConcreteSleepers,
+            CarInTunnel,
+            CarDistanceTrack,
+            CarTunnelDistance,
+            BackPressure,
+            TractiveEffort,
+            TractivePower,
+            EngineRPM,
+            EnginePower,
+            EngineTorque
+        };
+
+        public ControlType Control; // What controls this SoundVariable
+        public int SourceID = -1; // Disambiguation for cases where there are multiple data points possible
+
+        /// <summary>
+        /// Creates an empty SoundVariable object with the ControlType set to none. This variable will do nothing if used.
+        /// </summary>
+        public SoundVariable()
+        {
+            Control = ControlType.None;
+        }
+
+        /// <summary>
+        /// Creates a new SoundVariable object using the string name of the sound variable to determine the data source of the sound.
+        /// </summary>
+        /// <param name="controlName">The string name of the control, less any prexfixes or suffixes (such as "_Inc_Past")</param>
+        public SoundVariable(string controlName)
+        {
+            switch (controlName.ToLower())
+            {
+                case "distance": Control = ControlType.Distance; break;
+                case "speed": Control = ControlType.Speed; break;
+                case "variable1": Control = ControlType.Variable1; SourceID = 0; break;
+                case "variable2": Control = ControlType.Variable2; break;
+                case "variable2booster": Control = ControlType.Variable2Booster; break;
+                case "variable3": Control = ControlType.Variable3; break;
+                case "brakecyl": Control = ControlType.BrakeCyl; break;
+                case "curveforce": Control = ControlType.CurveForce; break;
+                case "angleofattack": Control = ControlType.AngleofAttack; break;
+                case "carfriction": Control = ControlType.CarFriction; break;
+                case "wheelrpm": Control = ControlType.WheelRPM; break;
+                case "concretesleepers": Control = ControlType.ConcreteSleepers; break;
+                case "carintunnel": Control = ControlType.CarInTunnel; break;
+                case "cardistancetrack": Control = ControlType.CarDistanceTrack; break;
+                case "cartunneldistance": Control = ControlType.CarTunnelDistance; break;
+                case "backpressure": Control = ControlType.BackPressure; break;
+                case "tractiveeffort": Control = ControlType.TractiveEffort; break;
+                case "tractivepower": Control = ControlType.TractivePower; break;
+                // Below are special cases for sound variables that can accept arbitrary syntax
+                case string s when s.StartsWith("variable1_"): // Variable1_[X], eg: Variable1_5
+                    Control = ControlType.Variable1;
+                    SourceID = GetIndexInString(controlName, "variable1_", "");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("rpm"): // Engine[X]RPM, eg: Engine5RPM
+                    Control = ControlType.EngineRPM;
+                    SourceID = GetIndexInString(controlName, "engine", "rpm");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("power"): // Engine[X]Power, eg: Engine5Power
+                    Control = ControlType.EnginePower;
+                    SourceID = GetIndexInString(controlName, "engine", "power");
+                    break;
+                case string s when s.StartsWith("engine") && s.EndsWith("torque"): // Engine[X]Torque, eg: Engine5Torque
+                    Control = ControlType.EngineTorque;
+                    SourceID = GetIndexInString(controlName, "engine", "torque");
+                    break;
+                default: Control = ControlType.None; break;
+            }
+        }
+
+        /// <summary>
+        /// Determines the type of units of measure that can be used to measure this SoundVariable
+        /// </summary>
+        /// <returns>STFReader.UNITS value representing the type of units to parse for this SoundVariable</returns>
+        public STFReader.UNITS GetUnits()
+        {
+            switch (Control)
+            {
+                case ControlType.Distance:
+                case ControlType.CarDistanceTrack:
+                case ControlType.CarTunnelDistance:
+                    // Distance, track distance, and tunnel distance are all meters
+                    return STFReader.UNITS.Distance;
+                case ControlType.Speed:
+                    // Speed is meters per second
+                    return STFReader.UNITS.Speed;
+                case ControlType.BrakeCyl:
+                case ControlType.BackPressure:
+                    // Brake cylinder and back pressure are PSI
+                    return STFReader.UNITS.PressureDefaultPSI;
+                case ControlType.TractiveEffort:
+                case ControlType.CurveForce:
+                    // Tractive effort and curve force are newtons
+                    return STFReader.UNITS.Force;
+                case ControlType.TractivePower:
+                case ControlType.EnginePower:
+                    // Tractive power and engine power are watts
+                    return STFReader.UNITS.Power;
+                case ControlType.EngineRPM:
+                case ControlType.WheelRPM:
+                    // TODO: Currently there is no STF unit type for rotation speed
+                    return STFReader.UNITS.None;
+                case ControlType.EngineTorque:
+                    // TODO: Currently there is no STF unit type for torque
+                    return STFReader.UNITS.None;
+                case ControlType.AngleofAttack:
+                    // TODO: Currently there is no STF unit type for milliradians
+                    return STFReader.UNITS.None;
+                default: // All other quanities are unitless/dimensionless
+                    return STFReader.UNITS.None;
+            }
+        }
+
+        /// <summary>
+        /// Attemps to extract an integer index contained in the middle of a given string by
+        /// removing specified text from the beginning and end of the string to isolate the
+        /// index in the middle. Returns 0 if the value in the middle could not be interpreted
+        /// as a number.
+        /// </summary>
+        /// <param name="main">The complete string to return an integer from.</param>
+        /// <param name="beginning">The (case-insensitive) part of the string that occurs before the index.</param>
+        /// <param name="end">The (case-insensitive) part of the string that occurs after the index.</param>
+        /// <returns>The integer value contained within the middle of the string,
+        /// or 0 if no such value could be found.</returns>
+        public static int GetIndexInString(string main, string beginning, string end)
+        {
+            // Replace the specified beginning and end strings inside the main string with empty space
+            // Resulting string should contain only the desired index, nothing else
+            string indexStr = main.ToLower().Replace(beginning.ToLower(), "").Replace(end.ToLower(), "");
+
+            // If index can't be determined, assume the user wanted the first thing
+            if (!int.TryParse(indexStr, out int index))
+                index = 1;
+
+            index--; // User input will be 1-indexed, but code needs this value as a 0-index
+
+            return index;
+        }
+    }
+
     public class VolumeCurve
     {
-        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled, WheelRpMControlled, CarDistanceTrackControlled, CarTunnelDistanceControlled, BackPressureControlled };
-
-        public Controls Control = Controls.None;
+        public SoundVariable CurveVariable;
         public float Granularity = 1.0f;
 
         public CurvePoint[] CurvePoints;
@@ -254,27 +401,20 @@ namespace Orts.Formats.Msts
         public VolumeCurve(STFReader stf)
         {
             stf.MustMatch("(");
-            var type = stf.ReadString();
-            switch (type.ToLower())
+            string curveType = stf.ReadString();
+            string variableType = curveType.ToLower();
+            if (variableType.EndsWith("controlled")) // All curve variables end with "controlled"
             {
-                case "distancecontrolled": Control = Controls.DistanceControlled; break;
-                case "speedcontrolled": Control = Controls.SpeedControlled; break;
-                case "variable1controlled": Control = Controls.Variable1Controlled; break;
-                case "variable1_2controlled": Control = Controls.Variable1_2Controlled; break;
-                case "variable1_3controlled": Control = Controls.Variable1_3Controlled; break;
-                case "variable1_4controlled": Control = Controls.Variable1_4Controlled; break;
-                case "variable2controlled": Control = Controls.Variable2Controlled; break;
-                case "variable2boostercontrolled": Control = Controls.Variable2BoosterControlled; break;
-                case "variable3controlled": Control = Controls.Variable3Controlled; break;
-                case "brakecylcontrolled": Control = Controls.BrakeCylControlled; break;
-                case "curveforcecontrolled": Control = Controls.CurveForceControlled; break;
-                case "angleofattackcontrolled": Control = Controls.AngleofAttackControlled; break;
-                case "carfrictioncontrolled": Control = Controls.CarFrictionControlled; break;
-                case "wheelrpmcontrolled": Control = Controls.WheelRpMControlled; break;
-                case "cardistancetrackcontrolled": Control = Controls.CarDistanceTrackControlled; break;
-                case "cartunneldistancecontrolled": Control = Controls.CarTunnelDistanceControlled; break;
-                case "backpressurecontrolled": Control = Controls.BackPressureControlled; break;
-                default: STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type); stf.SkipRestOfBlock(); return;
+                // Remove "controlled" from the end to get the control type
+                variableType = variableType.Substring(0, variableType.LastIndexOf("controlled"));
+                CurveVariable = new SoundVariable(variableType);
+            }
+            if (CurveVariable == null || CurveVariable.Control == SoundVariable.ControlType.None)
+            {
+                STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + curveType);
+                CurveVariable = new SoundVariable();
+                stf.SkipRestOfBlock();
+                return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("granularity", ()=>{ Granularity = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
@@ -282,11 +422,13 @@ namespace Orts.Formats.Msts
                     stf.MustMatch("(");
                     int count = stf.ReadInt(null);
                     CurvePoints = new CurvePoint[count];
+                    STFReader.UNITS units = CurveVariable.GetUnits();
                     for (int i = 0; i < count; ++i)
                     {
-                        CurvePoints[i].X = stf.ReadFloat(STFReader.UNITS.None, null);
-                        if (Control == Controls.DistanceControlled)
-						{
+                        CurvePoints[i].X = stf.ReadFloat(units, null);
+                        if (CurveVariable.Control == SoundVariable.ControlType.Distance)
+                        {
+                            // Convert distance into square distance
 							if (CurvePoints[i].X >= 0) CurvePoints[i].X *= CurvePoints[i].X;
 							else CurvePoints[i].X *= -CurvePoints[i].X;
 						}
@@ -409,65 +551,57 @@ namespace Orts.Formats.Msts
 
     public class Variable_Trigger : Trigger
     {
-        public enum Events { Speed_Inc_Past, Speed_Dec_Past, Distance_Inc_Past, Distance_Dec_Past,
-            Variable1_Inc_Past, Variable1_2_Inc_Past, Variable1_3_Inc_Past, Variable1_4_Inc_Past, Variable1_Dec_Past, Variable1_2_Dec_Past, Variable1_3_Dec_Past, Variable1_4_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past, AngleofAttack_Inc_Past, AngleofAttack_Dec_Past, WheelRpM_Dec_Past, WheelRPM_Inc_Past, ConcreteSleepers_Inc_Past, ConcreteSleepers_Dec_Past, CarInTunnel_Inc_Past, CarInTunnel_Dec_Past
-        };
+        public enum TriggerType
+        {
+            None,
+            Inc_Past,
+            Dec_Past
+        }
 
-        public Events Event;
+        public SoundVariable TriggerVariable;
+        public TriggerType Type = TriggerType.None;
         public float Threshold;
 
-        public Variable_Trigger(STFReader f)
+        public Variable_Trigger(STFReader stf)
         {
-            f.MustMatch("(");
+            stf.MustMatch("(");
 
-            string eventString = f.ReadString();
-
-            Threshold = f.ReadFloat(STFReader.UNITS.None, null);
-
-            switch (eventString.ToLower())
+            string triggerType = stf.ReadString();
+            string variableType = triggerType.ToLower();
+            // All variable triggers end with "_Inc_Past" or "_Dec_Past"
+            if (variableType.EndsWith("_inc_past"))
             {
-                case "speed_inc_past": Event = Events.Speed_Inc_Past; break;
-                case "speed_dec_past": Event = Events.Speed_Dec_Past; break;
-                case "distance_inc_past":
-                    {
-                        Event = Events.Distance_Inc_Past;
-                        Threshold = Threshold * Threshold;
-                        break;
-                    }
-                case "distance_dec_past":
-                    {
-                        Event = Events.Distance_Dec_Past;
-                        Threshold = Threshold * Threshold;
-                        break;
-                    }
-                case "variable1_inc_past": Event = Events.Variable1_Inc_Past; break;
-                case "variable1_2_inc_past": Event = Events.Variable1_2_Inc_Past; break;
-                case "variable1_3_inc_past": Event = Events.Variable1_3_Inc_Past; break;
-                case "variable1_4_inc_past": Event = Events.Variable1_4_Inc_Past; break;
-                case "variable1_dec_past": Event = Events.Variable1_Dec_Past; break;
-                case "variable1_2_dec_past": Event = Events.Variable1_2_Dec_Past; break;
-                case "variable1_3_dec_past": Event = Events.Variable1_3_Dec_Past; break;
-                case "variable1_4_dec_past": Event = Events.Variable1_4_Dec_Past; break;
-                case "variable2_inc_past": Event = Events.Variable2_Inc_Past; break;
-                case "variable2_dec_past": Event = Events.Variable2_Dec_Past; break;
-                case "variable3_inc_past": Event = Events.Variable3_Inc_Past; break;
-                case "variable3_dec_past": Event = Events.Variable3_Dec_Past; break;
-                case "brakecyl_inc_past": Event = Events.BrakeCyl_Inc_Past; break;
-                case "brakecyl_dec_past": Event = Events.BrakeCyl_Dec_Past; break;
-                case "curveforce_inc_past": Event = Events.CurveForce_Inc_Past; break;
-                case "curveforce_dec_past": Event = Events.CurveForce_Dec_Past; break;
-                case "angleofattack_inc_past": Event = Events.AngleofAttack_Inc_Past; break;
-                case "angleofattack_dec_past": Event = Events.AngleofAttack_Dec_Past; break;
-                case "wheelrpm_inc_past": Event = Events.WheelRPM_Inc_Past; break;
-                case "wheelrpm_dec_past": Event = Events.WheelRpM_Dec_Past; break;
-                case "concretesleepers_inc_past": Event = Events.ConcreteSleepers_Inc_Past; break;
-                case "concretesleepers_dec_past": Event = Events.ConcreteSleepers_Dec_Past; break;
-                case "carintunnel_inc_past": Event = Events.CarInTunnel_Inc_Past; break;
-                case "carintunnel_dec_past": Event = Events.CarInTunnel_Dec_Past; break;
+                // Remove "_Inc_Past" from the end to get the control type
+                Type = TriggerType.Inc_Past;
+                variableType = variableType.Substring(0, variableType.LastIndexOf("_inc_past"));
+                TriggerVariable = new SoundVariable(variableType);
+            }
+            else if (variableType.EndsWith("_dec_past"))
+            {
+                // Remove "_Dec_Past" from the end to get the control type
+                Type = TriggerType.Dec_Past;
+                variableType = variableType.Substring(0, variableType.LastIndexOf("_dec_past"));
+                TriggerVariable = new SoundVariable(variableType);
+            }
+            if (TriggerVariable == null || TriggerVariable.Control == SoundVariable.ControlType.None)
+            {
+                STFException.TraceWarning(stf, "Crash expected: Skipped unknown variable trigger type " + triggerType);
+                TriggerVariable = new SoundVariable();
+                stf.SkipRestOfBlock();
+                return;
             }
 
-            while (!f.EndOfBlock())
-                ParsePlayCommand(f, f.ReadString().ToLower());
+            STFReader.UNITS units = TriggerVariable.GetUnits();
+            Threshold = stf.ReadFloat(units, null);
+
+            if (TriggerVariable.Control == SoundVariable.ControlType.Distance)
+            {
+                // Convert distance into square distance
+                Threshold = Threshold * Threshold;
+            }
+
+            while (!stf.EndOfBlock())
+                ParsePlayCommand(stf, stf.ReadString().ToLower());
         }
     }
 
