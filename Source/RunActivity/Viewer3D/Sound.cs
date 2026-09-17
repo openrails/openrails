@@ -42,8 +42,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.Linq;
+using System.Security.Policy;
+using Microsoft.VisualBasic.ApplicationServices;
+using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
@@ -54,6 +58,15 @@ using Orts.Simulation.Signalling;
 using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Settings;
+using SharpDX.Direct2D1.Effects;
+using SharpDX.Direct3D9;
+using SharpDX.DirectWrite;
+using SharpDX.MediaFoundation;
+using SharpDX.Win32;
+using SharpDX.X3DAudio;
+using static System.Net.WebRequestMethods;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+using static Orts.Simulation.RollingStocks.SubSystems.Controllers.MultiPositionController;
 using Event = Orts.Common.Event;
 using Events = Orts.Common.Events;
 
@@ -511,8 +524,152 @@ namespace Orts.Viewer3D
         }
     }
 
+    /// <summary>
+    /// Provides helper for calculating the volume of a wind audio streams.
+    /// 
+    /// The intended audio model uses five continuously available WAV streams:
+    /// 
+    /// Stream 1 (light)    = low-speed base wind, typically typically left=0, peak=5, right=14, peakVolume=0.7
+    /// Stream 2 (moderate) = moderate base wind, typically left=5, peak=14, right=24, peakVolume=0.8
+    /// Stream 3 (gale)     = strong/gale base wind, typically left=14, peak=24, right=33, peakVolume=0.9
+    /// Stream 4 (storm)    = storm/extreme base wind, typically left=24, peak=33, right=50, peakVolume= 1.0
+    /// Gust(Stream 5)      = separate gust/turbulence wind, typically left=0, peak=25, right=50, peakVolume= 0.4
+    ///  
+    /// BASE MODE WindEnvelope.Compute() receives both average wind speed.
+    ///
+    /// averageWindSpeed -> determines the underlying Beaufort stream envelope/cross-fade position.
+    /// 
+    ///  Compute(averageWindSpeed, left, peak, right, peakVolume, WindEnvelopeMode.Base);
+    ///  
+    ///  Stream 4 should normally extend beyond the nominal top of the Beaufort range so that it does not abruptly disappear at the maximum normal wind speed.For example:
+    ///  Stream 4:
+    ///       left = 24
+    ///       peak = 33
+    ///       right = 40
+    ///       peakVolume = 1.00 
+    ///       
+    /// Depending on the simulator's maximum wind speed, the right-hand value can be increased further.
+    ///
+    /// GUST MODE
+    /// ---------
+    /// The same Compute() helper is used for the instantaneous (gust in ORTS), but with an explicit mode:
+    ///
+    ///   WindEnvelopeMode.Gust
+    ///   
+    ///  Compute(gustSpeed, left, peak, right, peakVolume, WindEnvelopeMode.Gust);
+    ///  
+    ///  The four base streams divide the full wind-speed range between them.
+    ///  The gust stream is different: it is one continuous WAV representing transient/turbulent wind and should remain available over the full useful gust-speed range.
+    ///  
+    ///  The important point is that the gust envelope is deliberately wider than a normal Beaufort stream.It is controlling the intensity of the one continuously 
+    ///  looping gust layer, not selecting a Beaufort wind band.
+    /// 
+    /// CROSS-FADE
+    /// The envelope provides a smooth cosine rise/fall:
+    ///
+    ///   0 at left * peakVolume at peak
+    ///   0 at right * peakVolume at peak
+    /// Adjacent base streams should overlap.Their combined playback forms the  Beaufort cross-fade.
+    ///   
+    /// </summary>
 
-    
+    public enum WindEnvelopeMode
+    {
+        Base,
+        Gust
+    }
+
+    public static class WindEnvelope
+    {
+        public static float Compute(float windSpeed, float left, float peak, float right, float peakVolume, WindEnvelopeMode mode)
+        {
+            peakVolume = Clamp(peakVolume, 0f, 1f);
+
+            // Protect against invalid envelope definitions.
+            if (peak <= left)
+            { peak = left + 0.0001f; }
+
+            if (right <= peak)
+            { right = peak + 0.0001f; }
+
+            // ===================================================================
+            // GUST MODE
+            // ===================================================================
+            //
+            // windSpeed is gust speed.
+            //
+            if (mode == WindEnvelopeMode.Gust)
+            {
+                return Envelope(Math.Max(windSpeed, 0f), left, peak, right, peakVolume);
+            }
+
+            // ===================================================================
+            // BASE MODE
+            // ===================================================================
+
+            float averageVolume = Envelope(Math.Max(windSpeed, 0f), left, peak, right, peakVolume);
+
+            // A stream can never exceed its configured peak volume.
+            return Clamp(averageVolume, 0f, peakVolume);
+        }
+
+        // -----------------------------------------------------------------------
+        // Core envelope
+        // -----------------------------------------------------------------------
+        //
+        // Produces:
+        //
+        //   speed <= left  -> 0
+        //   speed == peak  -> peakVolume
+        //   speed >= right -> 0
+        //
+        // A cosine curve provides a smooth audio-friendly cross-fade.
+        //
+        private static float Envelope(float speed, float left, float peak, float right, float peakVolume)
+        {
+            if (speed <= left || speed >= right)
+                return 0f;
+
+
+            float t;
+
+            if (speed <= peak)
+            {
+                // Rising section: 0 -> 1
+                t = (speed - left) / (peak - left);
+            }
+            else
+            {
+                // Falling section: 1 -> 0
+                t = (right - speed) / (right - peak);
+            }
+
+            t = Clamp(t, 0f, 1f);
+
+            // Cosine smoothing.
+            float smooth = 0.5f - 0.5f * (float)Math.Cos(Math.PI * t);
+
+            float volume = smooth * peakVolume;
+
+            return Clamp(volume, 0f, peakVolume);
+        }
+
+        // -----------------------------------------------------------------------
+        // Clamp
+        // -----------------------------------------------------------------------
+
+        private static float Clamp(float value, float minimum, float maximum)
+        {
+            if (value < minimum)
+                return minimum;
+
+            if (value > maximum)
+                return maximum;
+
+            return value;
+        }
+    }
+
     /// <summary>
     /// Represents an sms file
     /// </summary>
@@ -1319,6 +1476,30 @@ namespace Orts.Viewer3D
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_8) && soundSource.Car != null)
                     {
                         Triggers.Add(new ORTSXover8AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_8)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Calm))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Calm(this, (Orts.Formats.Msts.Wind_Calm)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Light))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Light(this, (Orts.Formats.Msts.Wind_Light)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Moderate))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Moderate(this, (Orts.Formats.Msts.Wind_Moderate)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Gale))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Gale(this, (Orts.Formats.Msts.Wind_Gale)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Storm))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Storm(this, (Orts.Formats.Msts.Wind_Storm)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Wind_Gust))
+                    {
+                        Triggers.Add(new ORTSWind_Beaufort_Gust(this, (Orts.Formats.Msts.Wind_Gust)trigger));
                     }
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Initial_Trigger))
                     {
@@ -2465,7 +2646,311 @@ namespace Orts.Viewer3D
         }
     } // class ORTSXover8AxleTrigger
 
-    
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed - Beaufort Scale Calm - Level 0 - Speed = 0 m/s
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Calm : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Calm SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Calm(SoundStream soundStream, Orts.Formats.Msts.Wind_Calm smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+
+            // Calm: special-case near-zero wind
+            float vol;
+            if (windSpeed < 0.01f)
+                vol = 0.65f; // full peak for calm
+            else
+                vol = 0f;
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Calm: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Calm: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Calm
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed  - Beaufort Scale Light - Level 1 - 3 - Speed = 0 to 5 m/s
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Light : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Light SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Light(SoundStream soundStream, Orts.Formats.Msts.Wind_Light smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+
+            // envelope: left=0, peak=5, right=14, peakVolume=0.7
+            var vol = WindEnvelope.Compute(windSpeed, 0f, 5f, 14f, 0.7f, WindEnvelopeMode.Base);
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Light: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Light: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Light
+
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed - Beaufort Scale Moderate - Level 4 - 6 - Speed = 5 to 14 m/s
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Moderate : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Moderate SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Moderate(SoundStream soundStream, Orts.Formats.Msts.Wind_Moderate smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+
+            // envelope: left=5, peak=14, right=24, peakVolume=0.8
+            var vol = WindEnvelope.Compute(windSpeed, 5f, 14f, 24f, 0.8f, WindEnvelopeMode.Base);
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Moderate: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Moderate: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Moderate
+
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed  - Beaufort Scale Gale - Level 7 - 9 - Speed = 14 to 24 m/s
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Gale : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Gale SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Gale(SoundStream soundStream, Orts.Formats.Msts.Wind_Gale smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+
+            // envelope: left=14, peak=24, right=33, peakVolume=0.9
+            var vol = WindEnvelope.Compute(windSpeed, 14f, 24f, 33f, 0.9f, WindEnvelopeMode.Base);
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Gale: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Gale: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Gale
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed - Beaufort Scale Storm - Level 10 - 12 - Speed = 24 to 33+ m/s
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Storm : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Storm SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Storm(SoundStream soundStream, Orts.Formats.Msts.Wind_Storm smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var windSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindAverageSpeedMpS;
+
+            // envelope: left=24, peak=33, right=50, peakVolume= 1.0
+            var vol = WindEnvelope.Compute(windSpeed, 24f, 33f, 50f, 1.0f, WindEnvelopeMode.Base);
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Storm: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Storm: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Storm
+
+    /// <summary>
+    /// Play this sound controlled for Wind Speed - Beaufort Scale Gusts
+    /// </summary>
+    public sealed class ORTSWind_Beaufort_Gust : ORTSTrigger
+    {
+        Orts.Formats.Msts.Wind_Gust SMS;
+        SoundStream SoundStream;
+
+        public ORTSWind_Beaufort_Gust(SoundStream soundStream, Orts.Formats.Msts.Wind_Gust smsData)
+        {
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
+        }
+
+        public override void TryTrigger()
+        {
+            var instantaneousWindSpeed = SoundStream.SoundSource.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS;
+
+            // envelope: left=0, peak=12, right=25, peakVolume= 0.4
+            var vol = WindEnvelope.Compute(instantaneousWindSpeed, 0f, 12f, 25f, 0.4f, WindEnvelopeMode.Gust);
+
+            Signaled = vol > 0f;
+            if (Enabled)
+            {
+                SoundStream.Volume = vol;
+                if (Signaled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    if (!SoundStream.ALSoundSource.isPlaying)
+                    {
+                        SoundCommand.Run();
+                        SoundStream.LastTriggered = this;
+                    }
+
+#if DEBUGSCR
+                    if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                        Console.WriteLine("({0})ORTSWind_Beaufort_Storm: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                    Trace.TraceInformation("Storm: WindSpeed: {0} m/s, WavFileName: {1}", windSpeed, SoundStream.SoundSource.WavFileName);
+#endif
+
+
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSWind_Beaufort_Gust
+
     /// <summary>
     /// Play this sound immediately when this SoundSource becomes active, or in case no other VariableTriggers are active
     /// </summary>
