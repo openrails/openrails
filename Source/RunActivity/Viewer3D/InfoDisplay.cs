@@ -144,6 +144,9 @@ namespace Orts.Viewer3D
                     {
                         PreviousLoggedSpeedMpH = (int)speedMpH; // Keep speed records close to whole numbers
 
+                        // based on MSTSSteamLocomotive.Initialize() at about line 1928, there always is at least one steam engine for a steam locomotive.
+                        var firstSteamEngine = steam.SteamEngines[0];
+
                         Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, false).ToString("F0"));
                         Logger.Data(S.ToM(steam.SteamPerformanceTimeS).ToString("F1"));
                         Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
@@ -157,11 +160,11 @@ namespace Orts.Viewer3D
                         Logger.Data(N.ToLbf(steam.TotalFrictionForceN).ToString("F0"));
                         Logger.Data(Kg.ToTUK(steam.TrainLoadKg).ToString("F0"));
                         Logger.Data(steam.BoilerPressurePSI.ToString("F0"));
-                        Logger.Data(steam.LogSteamChestPressurePSI.ToString("F0"));
-                        Logger.Data(steam.LogInitialPressurePSI.ToString("F0"));
-                        Logger.Data(steam.LogCutoffPressurePSI.ToString("F0"));
-                        Logger.Data(steam.LogReleasePressurePSI.ToString("F0"));
-                        Logger.Data(steam.LogBackPressurePSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.LogSteamChestPressurePSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.LogInitialPressurePSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.LogCutoffPressurePSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.LogReleasePressurePSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.LogBackPressurePSI.ToString("F0"));
                         Logger.Data(steam.MeanEffectivePressurePSI.ToString("F0"));
                         Logger.Data(steam.CurrentSuperheatTempF.ToString("F0"));
                         Logger.Data(pS.TopH(steam.CylinderSteamUsageLBpS).ToString("F0"));
@@ -171,13 +174,15 @@ namespace Orts.Viewer3D
                         Logger.Data(steam.CumulativeCylinderSteamConsumptionLbs.ToString("F0"));
                         Logger.Data(steam.CumulativeWaterConsumptionLbs.ToString("F0"));
                         Logger.Data(steam.CutoffPressureDropRatio.ToString("F2"));
-                        Logger.Data(steam.HPCylinderMEPPSI.ToString("F0"));
-                        Logger.Data(steam.LogLPInitialPressurePSI.ToString("F0"));
-                        Logger.Data(steam.LogLPCutoffPressurePSI.ToString("F0"));
-                        Logger.Data(steam.LogLPReleasePressurePSI.ToString("F0"));
-                        Logger.Data(steam.LogLPBackPressurePSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.HPCylinderMEPPSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.LogLPInitialPressurePSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.LogLPCutoffPressurePSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.LogLPReleasePressurePSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.LogLPBackPressurePSI.ToString("F0"));
                         Logger.Data(steam.CutoffPressureDropRatio.ToString("F2"));
-                        Logger.Data(steam.LPCylinderMEPPSI.ToString("F0"));
+                        Logger.Data(firstSteamEngine.LPCylinderMEPPSI.ToString("F0"));
+
+                        Logger.End();
                     }
                 }
             }
@@ -186,7 +191,7 @@ namespace Orts.Viewer3D
                 if (Viewer.PlayerLocomotive is MSTSSteamLocomotive steam)
                 {
                     var speedMpH = MpS.ToMpH(steam.SpeedMpS);
-                    if (speedMpH >= PreviousLoggedSpeedMpH + 1) // Add a new record every time speed increases by 5 mph
+                    if (speedMpH >= PreviousLoggedSpeedMpH + 1) // Add a new record every time speed increases by 1 mph
                     {
                         PreviousLoggedSpeedMpH = (int)speedMpH; // Keep speed records close to whole numbers
 
@@ -194,6 +199,8 @@ namespace Orts.Viewer3D
                         Logger.Data(W.ToHp(steam.MotiveForceN * steam.SpeedMpS).ToString("F1"));
                         Logger.Data(steam.ThrottlePercent.ToString("F0"));
                         Logger.Data(steam.Train.MUReverserPercent.ToString("F0"));
+
+                        Logger.End();
                     }
                 }
             }
@@ -292,8 +299,9 @@ namespace Orts.Viewer3D
                         Logger.Data(steam.Injector2Controller?.CurrentValue.ToString("F0"));
                     }
                 }
+
+                Logger.End();
             }
-            Logger.End();
         }
 
         void DataLoggerStart()
