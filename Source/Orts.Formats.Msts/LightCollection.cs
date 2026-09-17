@@ -373,7 +373,9 @@ namespace Orts.Formats.Msts
                         STFException.TraceWarning(stf, (count - States.Count).ToString() + " missing State(s)");
                 }),
                 new STFReader.TokenProcessor("shapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsshapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("shapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null).ToUpper(); }),
+                new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null).ToUpper(); }),
                 new STFReader.TokenProcessor("ortsgraphic", ()=>{ Graphic = stf.ReadStringBlock(null).ToUpper(); }),
             });
         }
