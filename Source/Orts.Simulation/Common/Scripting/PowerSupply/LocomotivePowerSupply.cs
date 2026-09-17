@@ -553,6 +553,16 @@ namespace ORTS.Scripting.Api
             SignalEventToTcs(evt);
         }
 
+        public virtual void HandleEventFromControlCar(PowerSupplyEvent evt)
+        {
+            HandleEvent(evt);
+        }
+
+        public virtual void HandleEventFromControlCar(PowerSupplyEvent evt, int id)
+        {
+            HandleEvent(evt, id);
+        }
+
         public virtual void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt)
         {
 

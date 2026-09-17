@@ -35,6 +35,10 @@ using System.IO;
 using System.Linq;
 using static Orts.Viewer3D.Popups.TrainCarOperationsWindow;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Viewer3D.RollingStock;
+using Orts.MultiPlayer;
+using Orts.Viewer3D;
+using System.Diagnostics;
 using ORTS.Scripting.Api;
 
 namespace Orts.Viewer3D.Popups
@@ -176,6 +180,12 @@ namespace Orts.Viewer3D.Popups
             outf.Write(Location.Width);
             outf.Write(Location.Height);
 
+            // rwf-rr: temporary fix for bug 2121985
+            if (SelectedCarPosition >= Owner.Viewer.PlayerTrain.Cars.Count)
+            {
+                Trace.TraceWarning("TrainCarOperationsWindow.SelectedCarPosition {0} out of range [0..{1}]", SelectedCarPosition, Owner.Viewer.PlayerTrain.Cars.Count - 1);
+                SelectedCarPosition = Owner.Viewer.PlayerTrain.Cars.Count - 1;
+            }
             outf.Write(SelectedCarPosition);
             outf.Write(Owner.Viewer.FrontCamera.IsCameraFront);
         }
@@ -210,54 +220,54 @@ namespace Orts.Viewer3D.Popups
 
                 // TO DO: This should happen on the loader thread.
                 //                                                                        texture rectangles : X, Y, width, height
-                ArrowRight = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 112, 16, 16));
-                ArrowLeft = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 64, 16, 16));
+                ArrowRight = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 112, 16, 16));
+                ArrowLeft = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 64, 16, 16));
 
-                Coupler = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 48, 16, 16));
-                CouplerFront = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 48, 16, 16));
-                CouplerRear = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 48, 16, 16));
-                CouplerNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 48, 16, 16));
+                Coupler = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 48, 16, 16));
+                CouplerFront = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 48, 16, 16));
+                CouplerRear = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 48, 16, 16));
+                CouplerNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 48, 16, 16));
 
-                Empty = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 0, 16, 16));
+                Empty = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 0, 16, 16));
 
-                HandBrakeNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 64, 16, 16));
-                HandBrakeNotSet = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 64, 16, 16));
-                HandBrakeSet = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 64, 16, 16));
+                HandBrakeNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 64, 16, 16));
+                HandBrakeNotSet = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 64, 16, 16));
+                HandBrakeSet = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 64, 16, 16));
 
-                BrakeHoseCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 32, 16, 16));
-                BrakeHoseDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 32, 16, 16));
-                BrakeHoseFirstDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 32, 16, 16));
-                BrakeHoseRearDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 32, 16, 16));
-                BrakeHoseFirstCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 144, 16, 16));
-                BrakeHoseRearCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 144, 16, 16));
+                BrakeHoseCon = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 32, 16, 16));
+                BrakeHoseDis = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 32, 16, 16));
+                BrakeHoseFirstDis = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 32, 16, 16));
+                BrakeHoseRearDis = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 32, 16, 16));
+                BrakeHoseFirstCon = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 144, 16, 16));
+                BrakeHoseRearCon = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 144, 16, 16));
 
-                FrontAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 96, 16, 16));
-                FrontAngleCockClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 96, 16, 16));
-                FrontAngleCockPartial = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 128, 16, 16));
-                FrontAngleCockNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 128, 16, 16));
+                FrontAngleCockOpened = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 96, 16, 16));
+                FrontAngleCockClosed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 96, 16, 16));
+                FrontAngleCockPartial = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 128, 16, 16));
+                FrontAngleCockNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 128, 16, 16));
 
-                BleedOffValveClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 16, 16, 16));
-                BleedOffValveOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 16, 16, 16));
-                BleedOffValveNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 16, 16, 16));
+                BleedOffValveClosed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 16, 16, 16));
+                BleedOffValveOpened = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 16, 16, 16));
+                BleedOffValveNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 16, 16, 16));
 
-                RearAngleCockClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 96, 16, 16));
-                RearAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 96, 16, 16));
-                RearAngleCockPartial = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 128, 16, 16));
-                RearAngleCockNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 128, 16, 16));
+                RearAngleCockClosed = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 96, 16, 16));
+                RearAngleCockOpened = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 96, 16, 16));
+                RearAngleCockPartial = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 128, 16, 16));
+                RearAngleCockNotAvailable = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 128, 16, 16));
 
-                PowerChanging = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 112, 16, 16));
-                PowerOff = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 112, 16, 16));
-                PowerOn = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 112, 16, 16));
+                PowerChanging = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 112, 16, 16));
+                PowerOff = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 112, 16, 16));
+                PowerOn = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 112, 16, 16));
 
-                MUconnected = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 80, 16, 16));
-                MUdisconnected = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 80, 16, 16));
+                MUconnected = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 80, 16, 16));
+                MUdisconnected = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(48, 80, 16, 16));
 
-                ETSconnected = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 80, 16, 16));
-                ETSdisconnected = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 80, 16, 16));
+                ETSconnected = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 80, 16, 16));
+                ETSdisconnected = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 80, 16, 16));
 
-                BattOff = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 0, 16, 16));
-                BattOn = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 0, 16, 16));
-                BattAlwaysOn = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 0, 16, 16));
+                BattOff = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(16, 0, 16, 16));
+                BattOn = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(32, 0, 16, 16));
+                BattAlwaysOn = SharedTextureManager.LoadInternal(GraphicsDeviceRender, TrainOperationsPath, new Rectangle(0, 0, 16, 16));
             }
         }
         private void UpdateWindowSize()
@@ -618,6 +628,13 @@ namespace Orts.Viewer3D.Popups
                     LastRowVisible = false;
                     Layout();
                     updateLayoutSize();
+
+                    // rwf-rr: potential partial fix for bug 2121985
+                    // if (trainCarViewer.CouplerChanged && CarPosition >= Owner.Viewer.PlayerTrain.Cars.Count)
+                    // {
+                    //     SelectedCarPosition = CarPosition = Owner.Viewer.PlayerTrain.Cars.Count - 1;
+                    //     LastCarIDSelected = PlayerTrain.Cars[SelectedCarPosition].CarID;
+                    // }
                 }
                 if (OldPositionHeight != Vbox.Position.Height)
                 {

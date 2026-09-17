@@ -1,0 +1,59 @@
+﻿<Window x:Class="Orts.TimetableEditor.Views.PoolView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Orts.TimetableEditor.Views"
+        xmlns:ViewModel="clr-namespace:Orts.TimetableEditor.ViewModel"
+        mc:Ignorable="d"
+        Title="PoolView" Height="450" Width="800" WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <ViewModel:PoolViewModel/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel>
+            <Button DockPanel.Dock="Left" Width="40" Command="{Binding AddPool}" ToolTip="Add Pool">
+                <Image Width="32" Height="32" Source="/Images/Add_24x24.png"/>
+            </Button>
+            <Button DockPanel.Dock="Left" Width="40" Command="{Binding AddRow}" ToolTip="Add Row">
+                <Image Width="32" Height="32" Source="/Images/RowAdd.png"/>
+            </Button>
+            <Button DockPanel.Dock="Left" Width="40" Command="{Binding InsertRow}" ToolTip="Insert Row">
+                <Image Width="32" Height="32" Source="/Images/RowInsert.png"/>
+            </Button>
+            <Button DockPanel.Dock="Left" Width="40" Command="{Binding RemoveRow}" ToolTip="Delete Row">
+                <Image Width="32" Height="32" Source="/Images/RowDelete.png"/>
+            </Button>
+            <Button DockPanel.Dock="Right" Width="40" Command="{Binding SaveCommand}" ToolTip="Save">
+                <Image Width="32" Height="32" Source="/Images/Save_32x32.png"/>
+            </Button>
+        </DockPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding PoolItems}" CanUserAddRows="False" AutoGenerateColumns="False" SelectedItem="{Binding SelectedItem}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Qalifier" Width="150" Binding="{Binding Name}"/>
+                <DataGridTextColumn Header="Value" Width="200" Binding="{Binding Value}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <ListView x:Name="PathListView" Grid.Row="1" Grid.Column="1" ItemsSource="{Binding ConsistsAndPaths.Paths}" MouseDoubleClick="PathListView_MouseDoubleClick" SelectedItem="{Binding SelectedTrainPath}" Visibility="{Binding ShowPathList}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Filename" Width="180" DisplayMemberBinding="{Binding FileName}"/>
+                    <GridViewColumn Header="Pathname" Width="190" DisplayMemberBinding="{Binding Name}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Content="OK" Width="70" Height="24" Margin="30 0" Click="OK_Click"/>
+            <Button Content="Cancel" Width="70" Height="24" Margin="30 0" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>

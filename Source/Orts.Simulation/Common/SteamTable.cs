@@ -1051,6 +1051,15 @@ namespace Orts.Common
             360.0f, 375.0f, 384.0f
         };
 
+        // Allowance for drop in mep (steam cylinder) due to cylinder wire drawing as speed increases - Counter Pressure Braking
+        // Principle reference document - "Dynamic Braking of Steam, Diesel and Gas Turbine Locomotives by J. L. Koffman.
+        // Paper 505   from Journal of Inst of Loco. Engineers
+        // This is a normalised version of the data in Fig 10 of above publication
+        static float[] MEPPressureDropRatio = new float[]
+        {
+            1.0f, 1.0f, 0.95f, 0.95f, 0.8f, 0.55f, 0.3f, 0.175f, 0.174f, 0.173f, 0.172f, 0.171f, 0.170f, 0.169f, 0.168f, 0.167f
+        };
+
         // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources
         static float[] WheelRotationRpM = new float[]
         {
@@ -1152,8 +1161,11 @@ namespace Orts.Common
             return new Interpolator(CylinderSteamTableLbpH, SuperheatTempTableDegF);
         }
 
-
-
+        // Allowance for wire-drawing - ie drop in mep pressure (cutoff) as speed increases for counter pressure braking
+        public static Interpolator CounterPressureMEPDropRatioInterpolatorRpMtoX()
+        {
+            return new Interpolator(WheelRotationRpM, MEPPressureDropRatio);
+        }
 
         // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area - Saturated
         public static Interpolator SatBoilerEfficiencyGrateAreaInterpolatorLbstoX()

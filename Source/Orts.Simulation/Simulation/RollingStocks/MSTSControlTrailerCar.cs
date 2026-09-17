@@ -133,7 +133,7 @@ namespace Orts.Simulation.RollingStocks
             base.InitializeMoving();
             WheelSpeedMpS = SpeedMpS;
 
-            ThrottleController.SetValue(Train.MUThrottlePercent / 100);
+            ThrottleController.SetValue(Train.MUThrottlePercent / 100, true);
         }
 
         /// <summary>
@@ -257,6 +257,14 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Catalog.GetParticularString("PowerSupply", "Power"),
                     Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(ControlActiveLocomotive.LocomotivePowerSupply.MainPowerSupplyState)));
             }
+            return status.ToString();
+        }
+
+        public override string GetDebugStatus()
+        {
+            var status = new StringBuilder(base.GetDebugStatus());
+            if (LocomotivePowerSupply.ElectricTrainSupplyState != ORTS.Scripting.Api.PowerSupplyState.Unavailable) status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Auxiliary power"), Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(LocomotivePowerSupply.AuxiliaryPowerSupplyState)));
+            status.AppendFormat("\t{0}\n", Simulator.Catalog.GetString("Unpowered Control Trailer Car"));
             return status.ToString();
         }
 

@@ -31,7 +31,17 @@ namespace Orts.Simulation.RollingStocks
     {
         public static TrainCar Load(Simulator simulator, Train train, string wagFilePath, bool initialize = true)
         {
-            GenericWAGFile wagFile = SharedGenericWAGFileManager.Get(wagFilePath);
+            GenericWAGFile mstsWagFile = SharedGenericWAGFileManager.Get(wagFilePath);
+            GenericWAGFile wagFile = null;
+
+            string orFile = ORFileHelper.GetORTSFilePath(wagFilePath);
+            bool ortsWag = File.Exists(orFile);
+
+            if (ortsWag)
+                wagFile = SharedGenericWAGFileManager.Get(orFile);
+            else
+                wagFile = SharedGenericWAGFileManager.Get(wagFilePath);
+
             TrainCar car;
             if (wagFile.OpenRails != null
                && wagFile.OpenRails.DLL != null)
@@ -68,10 +78,22 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 // its an ordinary MSTS engine of some type.
-                if (wagFile.Engine.Type == null)
-                    throw new InvalidDataException(wagFilePath + "\r\n\r\nEngine type missing");
+                string engType = "";
 
-                switch (wagFile.Engine.Type.ToLower())
+                if (String.IsNullOrEmpty(wagFile.Engine.Type))
+                {
+                    if (ortsWag && !String.IsNullOrEmpty(mstsWagFile.Engine.Type))
+                    {
+                        engType = mstsWagFile.Engine.Type;
+                        Trace.TraceWarning("Engine type missing from " + orFile + ", assuming " + engType + " engine type.");
+                    }
+                    else
+                        throw new InvalidDataException(wagFilePath + "\r\n\r\nEngine type missing");
+                }
+                else
+                    engType = wagFile.Engine.Type;
+
+                switch (engType.ToLower())
                 {
                     // TODO complete parsing of proper car types
                     case "electric": car = new MSTSElectricLocomotive(simulator, wagFilePath); break;
@@ -127,9 +149,9 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public class GenericWAGFile
         {
-            public bool IsEngine { get { return Engine != null; } }
-            public EngineClass Engine;
-            public OpenRailsData OpenRails;
+            public bool IsEngine = false;
+            public EngineClass Engine = new EngineClass();
+            public OpenRailsData OpenRails = new OpenRailsData();
 
             public GenericWAGFile(string filenamewithpath)
             {
@@ -140,8 +162,8 @@ namespace Orts.Simulation.RollingStocks
             {
                 using (STFReader stf = new STFReader(filenamewithpath, false))
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("engine", ()=>{ Engine = new EngineClass(stf); }),
-                        new STFReader.TokenProcessor("_openrails", ()=>{ OpenRails = new OpenRailsData(stf); }),
+                        new STFReader.TokenProcessor("engine", ()=>{ IsEngine = true; Engine.Parse(stf); }),
+                        new STFReader.TokenProcessor("_openrails", ()=>{ OpenRails.Parse(stf); }),
                     });
             }
 
@@ -149,7 +171,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 public string Type;
 
-                public EngineClass(STFReader stf)
+                public EngineClass() { }
+
+                public void Parse(STFReader stf)
                 {
                     stf.MustMatch("(");
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -162,7 +186,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 public string DLL;
 
-                public OpenRailsData(STFReader stf)
+                public OpenRailsData() { }
+
+                public void Parse(STFReader stf)
                 {
                     stf.MustMatch("(");
                     stf.ParseBlock(new STFReader.TokenProcessor[] {

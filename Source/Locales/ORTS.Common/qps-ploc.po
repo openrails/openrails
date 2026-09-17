@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Common\n"
-"POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
-"PO-Revision-Date: 2021-09-15 03:48:20+0200\n"
+"POT-Creation-Date: 2026-02-14 15:54:31+0000\n"
+"PO-Revision-Date: 2026-02-14 15:54:31+0000\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -13,169 +13,209 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 
-#: ../../ORTS.Common/Conversions.cs:535
+#: ../../ORTS.Common/Conversions.cs:550
 msgid "m"
 msgstr "[₥ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:536
+#: ../../ORTS.Common/Conversions.cs:551
 msgid "km"
 msgstr "[ƙ₥ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:537
+#: ../../ORTS.Common/Conversions.cs:552
 msgid "mm"
 msgstr "[₥₥ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:538
+#: ../../ORTS.Common/Conversions.cs:553
 msgid "mi"
 msgstr "[₥ï !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:539
+#: ../../ORTS.Common/Conversions.cs:554
 msgid "ft"
 msgstr "[ƒƭ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:540
+#: ../../ORTS.Common/Conversions.cs:555
 msgid "yd"
 msgstr "[¥δ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:541
+#: ../../ORTS.Common/Conversions.cs:556
 msgid "m²"
 msgstr "[₥² !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:542
+#: ../../ORTS.Common/Conversions.cs:557
 msgid "ft²"
 msgstr "[ƒƭ² !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:543
+#: ../../ORTS.Common/Conversions.cs:558
 msgid "m³"
 msgstr "[₥³ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:544
+#: ../../ORTS.Common/Conversions.cs:559
 msgid "ft³"
 msgstr "[ƒƭ³ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:545
+#: ../../ORTS.Common/Conversions.cs:560
 msgid "km/h"
 msgstr "[ƙ₥/λ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:546
+#: ../../ORTS.Common/Conversions.cs:561
 msgid "mph"
 msgstr "[₥ƥλ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:547
+#: ../../ORTS.Common/Conversions.cs:562
 msgid "kPa"
 msgstr "[ƙÞá !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:548
+#: ../../ORTS.Common/Conversions.cs:563
 msgid "bar"
 msgstr "[βář !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:549
+#: ../../ORTS.Common/Conversions.cs:564
 msgid "psi"
 msgstr "[ƥƨï !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:550
+#: ../../ORTS.Common/Conversions.cs:565
 msgid "inHg"
 msgstr "[ïñHϱ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:551
+#: ../../ORTS.Common/Conversions.cs:566
 msgid "kgf/cm²"
 msgstr "[ƙϱƒ/ç₥² !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:552
+#: ../../ORTS.Common/Conversions.cs:567
+msgid "L/s"
+msgstr "[£/ƨ !!!]"
+
+#: ../../ORTS.Common/Conversions.cs:568
+msgid "L/min"
+msgstr "[£/₥ïñ !!!]"
+
+#: ../../ORTS.Common/Conversions.cs:569
+msgid "cfm"
+msgstr "[çƒ₥ !!!]"
+
+#: ../../ORTS.Common/Conversions.cs:570
 msgid "kg"
 msgstr "[ƙϱ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:553
+#: ../../ORTS.Common/Conversions.cs:571
 msgid "t"
 msgstr "[ƭ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:554
+#: ../../ORTS.Common/Conversions.cs:572
 msgid "t-uk"
 msgstr "[ƭ-úƙ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:555
+#: ../../ORTS.Common/Conversions.cs:573
 msgid "t-us"
 msgstr "[ƭ-úƨ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:556
+#: ../../ORTS.Common/Conversions.cs:574
 msgid "lb"
 msgstr "[ℓβ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:557
+#: ../../ORTS.Common/Conversions.cs:575
 msgid "s"
 msgstr "[ƨ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:558
+#: ../../ORTS.Common/Conversions.cs:576
 msgid "min"
 msgstr "[₥ïñ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:559
+#: ../../ORTS.Common/Conversions.cs:577
 msgid "h"
 msgstr "[λ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:560
+#: ../../ORTS.Common/Conversions.cs:578
 msgid "L"
 msgstr "[£ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:561
+#: ../../ORTS.Common/Conversions.cs:579
 msgid "g-uk"
 msgstr "[ϱ-úƙ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:562
+#: ../../ORTS.Common/Conversions.cs:580
 msgid "g-us"
 msgstr "[ϱ-úƨ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:563
+#: ../../ORTS.Common/Conversions.cs:581
 msgid "rpm"
 msgstr "[řƥ₥ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:564
+#: ../../ORTS.Common/Conversions.cs:582
 msgid "kW"
 msgstr "[ƙW !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:565
+#: ../../ORTS.Common/Conversions.cs:583
 msgid "hp"
 msgstr "[λƥ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:566
+#: ../../ORTS.Common/Conversions.cs:584
 msgid "bhp"
 msgstr "[βλƥ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:567
+#: ../../ORTS.Common/Conversions.cs:585
+msgid "V"
+msgstr "[V !!!]"
+
+#: ../../ORTS.Common/Conversions.cs:586
+msgid "kV"
+msgstr "[ƙV !!!]"
+
+#: ../../ORTS.Common/Conversions.cs:587
 msgid "kJ"
 msgstr "[ƙJ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:568
+#: ../../ORTS.Common/Conversions.cs:588
 msgid "MJ"
 msgstr "[MJ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:569
+#: ../../ORTS.Common/Conversions.cs:589
 msgid "BTU"
 msgstr "[ßTÛ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:570
+#: ../../ORTS.Common/Conversions.cs:590
 msgid "°C"
 msgstr "[°Ç !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:571
+#: ../../ORTS.Common/Conversions.cs:591
 msgid "°F"
 msgstr "[°F !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:572
+#: ../../ORTS.Common/Conversions.cs:592
 msgid "N"
 msgstr "[N !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:573
+#: ../../ORTS.Common/Conversions.cs:593
 msgid "kN"
 msgstr "[ƙN !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:574
+#: ../../ORTS.Common/Conversions.cs:594
+msgid "N/m/s"
+msgstr "[N/₥/ƨ !!!]"
+
+#: ../../ORTS.Common/Conversions.cs:595
+msgid "N/(m/s)²"
+msgstr "[N/(₥/ƨ)² !!!]"
+
+#: ../../ORTS.Common/Conversions.cs:596
 msgid "lbf"
 msgstr "[ℓβƒ !!!]"
 
-#: ../../ORTS.Common/Conversions.cs:575
+#: ../../ORTS.Common/Conversions.cs:597
 msgid "klbf"
 msgstr "[ƙℓβƒ !!!]"
+
+#: ../../ORTS.Common/Conversions.cs:598
+msgid "lbf/mph"
+msgstr "[ℓβƒ/₥ƥλ !!!]"
+
+#: ../../ORTS.Common/Conversions.cs:599
+msgid "lbf/mph²"
+msgstr "[ℓβƒ/₥ƥλ² !!!]"
+
+#: ../../ORTS.Common/Conversions.cs:600
+msgid "°"
+msgstr "[° !!!]"
 
 #. Context: Reverser
 #: ../../ORTS.Common/enums.cs:27
@@ -195,795 +235,955 @@ msgctxt "Reverser"
 msgid "N"
 msgstr "[N !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:11
+#: ../../ORTS.Common/Input/UserCommand.cs:28
 msgid "Game Pause Menu"
 msgstr "[Gá₥è Þáúƨè Mèñú !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:12
+#: ../../ORTS.Common/Input/UserCommand.cs:29
 msgid "Game Save"
 msgstr "[Gá₥è §áƲè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:13
+#: ../../ORTS.Common/Input/UserCommand.cs:30
 msgid "Game Quit"
 msgstr "[Gá₥è Qúïƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:14
+#: ../../ORTS.Common/Input/UserCommand.cs:31
 msgid "Game Pause"
 msgstr "[Gá₥è Þáúƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:15
+#: ../../ORTS.Common/Input/UserCommand.cs:32
 msgid "Game Screenshot"
 msgstr "[Gá₥è §çřèèñƨλôƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:16
+#: ../../ORTS.Common/Input/UserCommand.cs:33
 msgid "Game Fullscreen"
 msgstr "[Gá₥è Fúℓℓƨçřèèñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:17
+#: ../../ORTS.Common/Input/UserCommand.cs:34
+msgid "Game External Controller (RailDriver)"
+msgstr "[Gá₥è Éжƭèřñáℓ Çôñƭřôℓℓèř (RáïℓÐřïƲèř) !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:35
 msgid "Game Switch Ahead"
 msgstr "[Gá₥è §ωïƭçλ Âλèáδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:18
+#: ../../ORTS.Common/Input/UserCommand.cs:36
 msgid "Game Switch Behind"
 msgstr "[Gá₥è §ωïƭçλ ßèλïñδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:19
+#: ../../ORTS.Common/Input/UserCommand.cs:37
 msgid "Game Switch Picked"
 msgstr "[Gá₥è §ωïƭçλ Þïçƙèδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:20
+#: ../../ORTS.Common/Input/UserCommand.cs:38
 msgid "Game Signal Picked"
 msgstr "[Gá₥è §ïϱñáℓ Þïçƙèδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:21
+#: ../../ORTS.Common/Input/UserCommand.cs:39
 msgid "Game Switch With Mouse"
 msgstr "[Gá₥è §ωïƭçλ Wïƭλ Môúƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:22
+#: ../../ORTS.Common/Input/UserCommand.cs:40
 msgid "Game Uncouple With Mouse"
 msgstr "[Gá₥è Ûñçôúƥℓè Wïƭλ Môúƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:23
+#: ../../ORTS.Common/Input/UserCommand.cs:41
 msgid "Game Change Cab"
 msgstr "[Gá₥è Çλáñϱè Çáβ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:24
+#: ../../ORTS.Common/Input/UserCommand.cs:42
 msgid "Game Request Control"
 msgstr "[Gá₥è Rè9úèƨƭ Çôñƭřôℓ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:25
+#: ../../ORTS.Common/Input/UserCommand.cs:43
 msgid "Game Multi Player Dispatcher"
 msgstr "[Gá₥è Múℓƭï Þℓá¥èř Ðïƨƥáƭçλèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:26
+#: ../../ORTS.Common/Input/UserCommand.cs:44
 msgid "Game Multi Player Texting"
 msgstr "[Gá₥è Múℓƭï Þℓá¥èř Tèжƭïñϱ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:27
+#: ../../ORTS.Common/Input/UserCommand.cs:45
 msgid "Game Switch Manual Mode"
 msgstr "[Gá₥è §ωïƭçλ Máñúáℓ Môδè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:28
+#: ../../ORTS.Common/Input/UserCommand.cs:46
 msgid "Game Reset Out Of Control Mode"
 msgstr "[Gá₥è Rèƨèƭ Óúƭ Óƒ Çôñƭřôℓ Môδè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:29
+#: ../../ORTS.Common/Input/UserCommand.cs:47
 msgid "Game Clear Signal Forward"
 msgstr "[Gá₥è Çℓèář §ïϱñáℓ Fôřωářδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:30
+#: ../../ORTS.Common/Input/UserCommand.cs:48
 msgid "Game Clear Signal Backward"
 msgstr "[Gá₥è Çℓèář §ïϱñáℓ ßáçƙωářδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:31
+#: ../../ORTS.Common/Input/UserCommand.cs:49
 msgid "Game Reset Signal Forward"
 msgstr "[Gá₥è Rèƨèƭ §ïϱñáℓ Fôřωářδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:32
+#: ../../ORTS.Common/Input/UserCommand.cs:50
 msgid "Game Reset Signal Backward"
 msgstr "[Gá₥è Rèƨèƭ §ïϱñáℓ ßáçƙωářδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:33
+#: ../../ORTS.Common/Input/UserCommand.cs:51
 msgid "Game Autopilot Mode"
 msgstr "[Gá₥è Âúƭôƥïℓôƭ Môδè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:34
+#: ../../ORTS.Common/Input/UserCommand.cs:52
 msgid "Game Suspend Old Player"
 msgstr "[Gá₥è §úƨƥèñδ Óℓδ Þℓá¥èř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:36
+#: ../../ORTS.Common/Input/UserCommand.cs:54
 msgid "Display Next Window Tab"
 msgstr "[Ðïƨƥℓá¥ Nèжƭ Wïñδôω Táβ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:37
+#: ../../ORTS.Common/Input/UserCommand.cs:55
 msgid "Display Help Window"
 msgstr "[Ðïƨƥℓá¥ Hèℓƥ Wïñδôω !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:38
+#: ../../ORTS.Common/Input/UserCommand.cs:56
 msgid "Display Track Monitor Window"
 msgstr "[Ðïƨƥℓá¥ Třáçƙ Môñïƭôř Wïñδôω !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:39
+#: ../../ORTS.Common/Input/UserCommand.cs:57
 msgid "Display HUD"
 msgstr "[Ðïƨƥℓá¥ HÛÐ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:40
+#: ../../ORTS.Common/Input/UserCommand.cs:58
 msgid "Display Train Driving Window"
 msgstr "[Ðïƨƥℓá¥ Třáïñ ÐřïƲïñϱ Wïñδôω !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:41
+#: ../../ORTS.Common/Input/UserCommand.cs:59
 msgid "Display Multi Player Window"
 msgstr "[Ðïƨƥℓá¥ Múℓƭï Þℓá¥èř Wïñδôω !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:42
+#: ../../ORTS.Common/Input/UserCommand.cs:60
 msgid "Display Car Labels"
 msgstr "[Ðïƨƥℓá¥ Çář £áβèℓƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:43
+#: ../../ORTS.Common/Input/UserCommand.cs:61
 msgid "Display Station Labels"
 msgstr "[Ðïƨƥℓá¥ §ƭáƭïôñ £áβèℓƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:44
+#: ../../ORTS.Common/Input/UserCommand.cs:62
 msgid "Display Switch Window"
 msgstr "[Ðïƨƥℓá¥ §ωïƭçλ Wïñδôω !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:45
+#: ../../ORTS.Common/Input/UserCommand.cs:63
 msgid "Display Train Operations Window"
 msgstr "[Ðïƨƥℓá¥ Třáïñ Óƥèřáƭïôñƨ Wïñδôω !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:46
+#: ../../ORTS.Common/Input/UserCommand.cs:64
+msgid "Display Train Car Operations Window"
+msgstr "[Ðïƨƥℓá¥ Třáïñ Çář Óƥèřáƭïôñƨ Wïñδôω !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:65
+msgid "Display Train Dpu Window"
+msgstr "[Ðïƨƥℓá¥ Třáïñ Ðƥú Wïñδôω !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:66
 msgid "Display Next Station Window"
 msgstr "[Ðïƨƥℓá¥ Nèжƭ §ƭáƭïôñ Wïñδôω !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:47
+#: ../../ORTS.Common/Input/UserCommand.cs:67
+msgid "Display Train Forces Window"
+msgstr "[Ðïƨƥℓá¥ Třáïñ Fôřçèƨ Wïñδôω !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:68
 msgid "Display Compass Window"
 msgstr "[Ðïƨƥℓá¥ Çô₥ƥáƨƨ Wïñδôω !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:48
+#: ../../ORTS.Common/Input/UserCommand.cs:69
 msgid "Display Train List Window"
 msgstr "[Ðïƨƥℓá¥ Třáïñ £ïƨƭ Wïñδôω !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:50
+#: ../../ORTS.Common/Input/UserCommand.cs:70
+msgid "Display EOT List Window"
+msgstr "[Ðïƨƥℓá¥ ÉÓT £ïƨƭ Wïñδôω !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:71
+msgid "Display Control Rectangles"
+msgstr "[Ðïƨƥℓá¥ Çôñƭřôℓ Rèçƭáñϱℓèƨ !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:73
 msgid "Debug Speed Up"
 msgstr "[Ðèβúϱ §ƥèèδ Ûƥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:51
+#: ../../ORTS.Common/Input/UserCommand.cs:74
 msgid "Debug Speed Down"
 msgstr "[Ðèβúϱ §ƥèèδ Ðôωñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:52
+#: ../../ORTS.Common/Input/UserCommand.cs:75
 msgid "Debug Speed Reset"
 msgstr "[Ðèβúϱ §ƥèèδ Rèƨèƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:53
+#: ../../ORTS.Common/Input/UserCommand.cs:76
 msgid "Debug Overcast Increase"
 msgstr "[Ðèβúϱ ÓƲèřçáƨƭ Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:54
+#: ../../ORTS.Common/Input/UserCommand.cs:77
 msgid "Debug Overcast Decrease"
 msgstr "[Ðèβúϱ ÓƲèřçáƨƭ Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:55
+#: ../../ORTS.Common/Input/UserCommand.cs:78
 msgid "Debug Fog Increase"
 msgstr "[Ðèβúϱ Fôϱ Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:56
+#: ../../ORTS.Common/Input/UserCommand.cs:79
 msgid "Debug Fog Decrease"
 msgstr "[Ðèβúϱ Fôϱ Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:57
+#: ../../ORTS.Common/Input/UserCommand.cs:80
 msgid "Debug Precipitation Increase"
 msgstr "[Ðèβúϱ Þřèçïƥïƭáƭïôñ Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:58
+#: ../../ORTS.Common/Input/UserCommand.cs:81
 msgid "Debug Precipitation Decrease"
 msgstr "[Ðèβúϱ Þřèçïƥïƭáƭïôñ Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:59
+#: ../../ORTS.Common/Input/UserCommand.cs:82
 msgid "Debug Precipitation Liquidity Increase"
 msgstr "[Ðèβúϱ Þřèçïƥïƭáƭïôñ £ï9úïδïƭ¥ Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:60
+#: ../../ORTS.Common/Input/UserCommand.cs:83
 msgid "Debug Precipitation Liquidity Decrease"
 msgstr "[Ðèβúϱ Þřèçïƥïƭáƭïôñ £ï9úïδïƭ¥ Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:61
+#: ../../ORTS.Common/Input/UserCommand.cs:84
+msgid "Debug Daylight Offset Increase"
+msgstr "[Ðèβúϱ Ðá¥ℓïϱλƭ Óƒƒƨèƭ Ìñçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:85
+msgid "Debug Daylight Offset Decrease"
+msgstr "[Ðèβúϱ Ðá¥ℓïϱλƭ Óƒƒƨèƭ Ðèçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:86
 msgid "Debug Weather Change"
 msgstr "[Ðèβúϱ Wèáƭλèř Çλáñϱè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:62
+#: ../../ORTS.Common/Input/UserCommand.cs:87
 msgid "Debug Clock Forwards"
 msgstr "[Ðèβúϱ Çℓôçƙ Fôřωářδƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:63
+#: ../../ORTS.Common/Input/UserCommand.cs:88
 msgid "Debug Clock Backwards"
 msgstr "[Ðèβúϱ Çℓôçƙ ßáçƙωářδƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:64
+#: ../../ORTS.Common/Input/UserCommand.cs:89
 msgid "Debug Logger"
 msgstr "[Ðèβúϱ £ôϱϱèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:65
+#: ../../ORTS.Common/Input/UserCommand.cs:90
 msgid "Debug Lock Shadows"
 msgstr "[Ðèβúϱ £ôçƙ §λáδôωƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:66
+#: ../../ORTS.Common/Input/UserCommand.cs:91
 msgid "Debug Dump Keyboard Map"
 msgstr "[Ðèβúϱ Ðú₥ƥ Kè¥βôářδ Máƥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:67
+#: ../../ORTS.Common/Input/UserCommand.cs:92
 msgid "Debug Log Render Frame"
 msgstr "[Ðèβúϱ £ôϱ Rèñδèř Fřá₥è !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:68
+#: ../../ORTS.Common/Input/UserCommand.cs:93
 msgid "Debug Tracks"
 msgstr "[Ðèβúϱ Třáçƙƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:69
+#: ../../ORTS.Common/Input/UserCommand.cs:94
 msgid "Debug Signalling"
 msgstr "[Ðèβúϱ §ïϱñáℓℓïñϱ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:70
+#: ../../ORTS.Common/Input/UserCommand.cs:95
 msgid "Debug Reset Wheel Slip"
 msgstr "[Ðèβúϱ Rèƨèƭ Wλèèℓ §ℓïƥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:71
+#: ../../ORTS.Common/Input/UserCommand.cs:96
 msgid "Debug Toggle Advanced Adhesion"
 msgstr "[Ðèβúϱ Tôϱϱℓè ÂδƲáñçèδ Âδλèƨïôñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:72
+#: ../../ORTS.Common/Input/UserCommand.cs:97
 msgid "Debug Sound Form"
 msgstr "[Ðèβúϱ §ôúñδ Fôř₥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:73
+#: ../../ORTS.Common/Input/UserCommand.cs:98
 msgid "Debug Physics Form"
 msgstr "[Ðèβúϱ Þλ¥ƨïçƨ Fôř₥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:74
+#: ../../ORTS.Common/Input/UserCommand.cs:99
 msgid "Debug Toggle Confirmations"
 msgstr "[Ðèβúϱ Tôϱϱℓè Çôñƒïř₥áƭïôñƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:76
+#: ../../ORTS.Common/Input/UserCommand.cs:101
 msgid "Camera Cab"
 msgstr "[Çá₥èřá Çáβ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:77
+#: ../../ORTS.Common/Input/UserCommand.cs:102
 msgid "Camera Change Passenger Viewpoint"
 msgstr "[Çá₥èřá Çλáñϱè Þáƨƨèñϱèř Vïèωƥôïñƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:78
+#: ../../ORTS.Common/Input/UserCommand.cs:103
+msgid "Camera Change 3DCab Viewpoint"
+msgstr "[Çá₥èřá Çλáñϱè 3ÐÇáβ Vïèωƥôïñƭ !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:104
 msgid "Camera Toggle 3D Cab"
 msgstr "[Çá₥èřá Tôϱϱℓè 3Ð Çáβ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:79
+#: ../../ORTS.Common/Input/UserCommand.cs:105
 msgid "Camera Toggle Show Cab"
 msgstr "[Çá₥èřá Tôϱϱℓè §λôω Çáβ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:80
+#: ../../ORTS.Common/Input/UserCommand.cs:106
 msgid "Camera Toggle Letterbox Cab"
 msgstr "[Çá₥èřá Tôϱϱℓè £èƭƭèřβôж Çáβ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:81
+#: ../../ORTS.Common/Input/UserCommand.cs:107
 msgid "Camera Head Out Forward"
 msgstr "[Çá₥èřá Hèáδ Óúƭ Fôřωářδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:82
+#: ../../ORTS.Common/Input/UserCommand.cs:108
 msgid "Camera Head Out Backward"
 msgstr "[Çá₥èřá Hèáδ Óúƭ ßáçƙωářδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:83
+#: ../../ORTS.Common/Input/UserCommand.cs:109
 msgid "Camera Outside Front"
 msgstr "[Çá₥èřá Óúƭƨïδè Fřôñƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:84
+#: ../../ORTS.Common/Input/UserCommand.cs:110
 msgid "Camera Outside Rear"
 msgstr "[Çá₥èřá Óúƭƨïδè Rèář !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:85
+#: ../../ORTS.Common/Input/UserCommand.cs:111
 msgid "Camera Trackside"
 msgstr "[Çá₥èřá Třáçƙƨïδè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:86
+#: ../../ORTS.Common/Input/UserCommand.cs:112
 msgid "Camera SpecialTracksidePoint"
 msgstr "[Çá₥èřá §ƥèçïáℓTřáçƙƨïδèÞôïñƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:87
+#: ../../ORTS.Common/Input/UserCommand.cs:113
 msgid "Camera Passenger"
 msgstr "[Çá₥èřá Þáƨƨèñϱèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:88
+#: ../../ORTS.Common/Input/UserCommand.cs:114
 msgid "Camera Brakeman"
 msgstr "[Çá₥èřá ßřáƙè₥áñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:89
+#: ../../ORTS.Common/Input/UserCommand.cs:115
 msgid "Camera Free"
 msgstr "[Çá₥èřá Fřèè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:90
+#: ../../ORTS.Common/Input/UserCommand.cs:116
 msgid "Camera Previous Free"
 msgstr "[Çá₥èřá ÞřèƲïôúƨ Fřèè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:91
+#: ../../ORTS.Common/Input/UserCommand.cs:117
 msgid "Camera Reset"
 msgstr "[Çá₥èřá Rèƨèƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:92
+#: ../../ORTS.Common/Input/UserCommand.cs:118
 msgid "Camera Move Fast"
 msgstr "[Çá₥èřá MôƲè Fáƨƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:93
+#: ../../ORTS.Common/Input/UserCommand.cs:119
 msgid "Camera Move Slow"
 msgstr "[Çá₥èřá MôƲè §ℓôω !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:94
+#: ../../ORTS.Common/Input/UserCommand.cs:120
 msgid "Camera Pan (Rotate) Left"
 msgstr "[Çá₥èřá Þáñ (Rôƭáƭè) £èƒƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:95
+#: ../../ORTS.Common/Input/UserCommand.cs:121
 msgid "Camera Pan (Rotate) Right"
 msgstr "[Çá₥èřá Þáñ (Rôƭáƭè) Rïϱλƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:96
+#: ../../ORTS.Common/Input/UserCommand.cs:122
 msgid "Camera Pan (Rotate) Up"
 msgstr "[Çá₥èřá Þáñ (Rôƭáƭè) Ûƥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:97
+#: ../../ORTS.Common/Input/UserCommand.cs:123
 msgid "Camera Pan (Rotate) Down"
 msgstr "[Çá₥èřá Þáñ (Rôƭáƭè) Ðôωñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:98
+#: ../../ORTS.Common/Input/UserCommand.cs:124
 msgid "Camera Zoom In (Move Z)"
 msgstr "[Çá₥èřá Zôô₥ Ìñ (MôƲè Z) !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:99
+#: ../../ORTS.Common/Input/UserCommand.cs:125
 msgid "Camera Zoom Out (Move Z)"
 msgstr "[Çá₥èřá Zôô₥ Óúƭ (MôƲè Z) !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:100
+#: ../../ORTS.Common/Input/UserCommand.cs:126
 msgid "Camera Rotate (Pan) Left"
 msgstr "[Çá₥èřá Rôƭáƭè (Þáñ) £èƒƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:101
+#: ../../ORTS.Common/Input/UserCommand.cs:127
 msgid "Camera Rotate (Pan) Right"
 msgstr "[Çá₥èřá Rôƭáƭè (Þáñ) Rïϱλƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:102
+#: ../../ORTS.Common/Input/UserCommand.cs:128
 msgid "Camera Rotate (Pan) Up"
 msgstr "[Çá₥èřá Rôƭáƭè (Þáñ) Ûƥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:103
+#: ../../ORTS.Common/Input/UserCommand.cs:129
 msgid "Camera Rotate (Pan) Down"
 msgstr "[Çá₥èřá Rôƭáƭè (Þáñ) Ðôωñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:104
+#: ../../ORTS.Common/Input/UserCommand.cs:130
 msgid "Camera Car Next"
 msgstr "[Çá₥èřá Çář Nèжƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:105
+#: ../../ORTS.Common/Input/UserCommand.cs:131
 msgid "Camera Car Previous"
 msgstr "[Çá₥èřá Çář ÞřèƲïôúƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:106
+#: ../../ORTS.Common/Input/UserCommand.cs:132
 msgid "Camera Car First"
 msgstr "[Çá₥èřá Çář Fïřƨƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:107
+#: ../../ORTS.Common/Input/UserCommand.cs:133
 msgid "Camera Car Last"
 msgstr "[Çá₥èřá Çář £áƨƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:108
+#: ../../ORTS.Common/Input/UserCommand.cs:134
 msgid "Camera Jumping Trains"
 msgstr "[Çá₥èřá Jú₥ƥïñϱ Třáïñƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:109
+#: ../../ORTS.Common/Input/UserCommand.cs:135
 msgid "Camera Jump Back Player"
 msgstr "[Çá₥èřá Jú₥ƥ ßáçƙ Þℓá¥èř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:110
+#: ../../ORTS.Common/Input/UserCommand.cs:136
 msgid "Camera Jump See Switch"
 msgstr "[Çá₥èřá Jú₥ƥ §èè §ωïƭçλ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:111
+#: ../../ORTS.Common/Input/UserCommand.cs:137
 msgid "Camera Vibrate"
 msgstr "[Çá₥èřá Vïβřáƭè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:112
+#: ../../ORTS.Common/Input/UserCommand.cs:138
 msgid "Camera Scroll Right"
 msgstr "[Çá₥èřá §çřôℓℓ Rïϱλƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:113
+#: ../../ORTS.Common/Input/UserCommand.cs:139
 msgid "Camera Scroll Left"
 msgstr "[Çá₥èřá §çřôℓℓ £èƒƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:114
+#: ../../ORTS.Common/Input/UserCommand.cs:140
 msgid "Camera Browse Backwards"
 msgstr "[Çá₥èřá ßřôωƨè ßáçƙωářδƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:115
+#: ../../ORTS.Common/Input/UserCommand.cs:141
 msgid "Camera Browse Forwards"
 msgstr "[Çá₥èřá ßřôωƨè Fôřωářδƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:117
+#: ../../ORTS.Common/Input/UserCommand.cs:143
 msgid "Control Forwards"
 msgstr "[Çôñƭřôℓ Fôřωářδƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:118
+#: ../../ORTS.Common/Input/UserCommand.cs:144
 msgid "Control Backwards"
 msgstr "[Çôñƭřôℓ ßáçƙωářδƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:119
+#: ../../ORTS.Common/Input/UserCommand.cs:145
 msgid "Control Throttle Increase"
 msgstr "[Çôñƭřôℓ Tλřôƭƭℓè Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:120
+#: ../../ORTS.Common/Input/UserCommand.cs:146
 msgid "Control Throttle Decrease"
 msgstr "[Çôñƭřôℓ Tλřôƭƭℓè Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:121
+#: ../../ORTS.Common/Input/UserCommand.cs:147
 msgid "Control Throttle Zero"
 msgstr "[Çôñƭřôℓ Tλřôƭƭℓè Zèřô !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:122
+#: ../../ORTS.Common/Input/UserCommand.cs:148
 msgid "Control Gear Up"
 msgstr "[Çôñƭřôℓ Gèář Ûƥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:123
+#: ../../ORTS.Common/Input/UserCommand.cs:149
 msgid "Control Gear Down"
 msgstr "[Çôñƭřôℓ Gèář Ðôωñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:124
+#: ../../ORTS.Common/Input/UserCommand.cs:150
 msgid "Control Train Brake Increase"
 msgstr "[Çôñƭřôℓ Třáïñ ßřáƙè Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:125
+#: ../../ORTS.Common/Input/UserCommand.cs:151
 msgid "Control Train Brake Decrease"
 msgstr "[Çôñƭřôℓ Třáïñ ßřáƙè Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:126
+#: ../../ORTS.Common/Input/UserCommand.cs:152
 msgid "Control Train Brake Zero"
 msgstr "[Çôñƭřôℓ Třáïñ ßřáƙè Zèřô !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:127
+#: ../../ORTS.Common/Input/UserCommand.cs:153
 msgid "Control Engine Brake Increase"
 msgstr "[Çôñƭřôℓ Éñϱïñè ßřáƙè Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:128
+#: ../../ORTS.Common/Input/UserCommand.cs:154
 msgid "Control Engine Brake Decrease"
 msgstr "[Çôñƭřôℓ Éñϱïñè ßřáƙè Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:129
+#: ../../ORTS.Common/Input/UserCommand.cs:155
 msgid "Control Brakeman Brake Increase"
 msgstr "[Çôñƭřôℓ ßřáƙè₥áñ ßřáƙè Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:130
+#: ../../ORTS.Common/Input/UserCommand.cs:156
 msgid "Control Brakeman Brake Decrease"
 msgstr "[Çôñƭřôℓ ßřáƙè₥áñ ßřáƙè Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:131
+#: ../../ORTS.Common/Input/UserCommand.cs:157
 msgid "Control Dynamic Brake Increase"
 msgstr "[Çôñƭřôℓ Ð¥ñá₥ïç ßřáƙè Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:132
+#: ../../ORTS.Common/Input/UserCommand.cs:158
 msgid "Control Dynamic Brake Decrease"
 msgstr "[Çôñƭřôℓ Ð¥ñá₥ïç ßřáƙè Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:133
+#: ../../ORTS.Common/Input/UserCommand.cs:159
 msgid "Control Bail Off"
 msgstr "[Çôñƭřôℓ ßáïℓ Óƒƒ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:134
+#: ../../ORTS.Common/Input/UserCommand.cs:160
+msgid "Control Brake Quick Release"
+msgstr "[Çôñƭřôℓ ßřáƙè Qúïçƙ Rèℓèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:161
+msgid "Control Brake Overcharge"
+msgstr "[Çôñƭřôℓ ßřáƙè ÓƲèřçλářϱè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:162
 msgid "Control Initialize Brakes"
 msgstr "[Çôñƭřôℓ Ìñïƭïáℓïƺè ßřáƙèƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:135
+#: ../../ORTS.Common/Input/UserCommand.cs:163
 msgid "Control Handbrake Full"
 msgstr "[Çôñƭřôℓ Háñδβřáƙè Fúℓℓ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:136
+#: ../../ORTS.Common/Input/UserCommand.cs:164
 msgid "Control Handbrake None"
 msgstr "[Çôñƭřôℓ Háñδβřáƙè Nôñè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:137
+#: ../../ORTS.Common/Input/UserCommand.cs:165
 msgid "Control Odometer Show/Hide"
 msgstr "[Çôñƭřôℓ Óδô₥èƭèř §λôω/Hïδè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:138
+#: ../../ORTS.Common/Input/UserCommand.cs:166
 msgid "Control Odometer Reset"
 msgstr "[Çôñƭřôℓ Óδô₥èƭèř Rèƨèƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:139
+#: ../../ORTS.Common/Input/UserCommand.cs:167
 msgid "Control Odometer Direction"
 msgstr "[Çôñƭřôℓ Óδô₥èƭèř Ðïřèçƭïôñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:140
+#: ../../ORTS.Common/Input/UserCommand.cs:168
 msgid "Control Retainers On"
 msgstr "[Çôñƭřôℓ Rèƭáïñèřƨ Óñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:141
+#: ../../ORTS.Common/Input/UserCommand.cs:169
 msgid "Control Retainers Off"
 msgstr "[Çôñƭřôℓ Rèƭáïñèřƨ Óƒƒ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:142
+#: ../../ORTS.Common/Input/UserCommand.cs:170
 msgid "Control Brake Hose Connect"
 msgstr "[Çôñƭřôℓ ßřáƙè Hôƨè Çôññèçƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:143
+#: ../../ORTS.Common/Input/UserCommand.cs:171
 msgid "Control Brake Hose Disconnect"
 msgstr "[Çôñƭřôℓ ßřáƙè Hôƨè Ðïƨçôññèçƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:144
+#: ../../ORTS.Common/Input/UserCommand.cs:172
 msgid "Control Alerter"
 msgstr "[Çôñƭřôℓ Âℓèřƭèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:145
+#: ../../ORTS.Common/Input/UserCommand.cs:173
 msgid "Control Emergency Push Button"
 msgstr "[Çôñƭřôℓ É₥èřϱèñç¥ Þúƨλ ßúƭƭôñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:146
+#: ../../ORTS.Common/Input/UserCommand.cs:174
+msgid "Control EOT Emergency Brake"
+msgstr "[Çôñƭřôℓ ÉÓT É₥èřϱèñç¥ ßřáƙè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:175
 msgid "Control Sander"
 msgstr "[Çôñƭřôℓ §áñδèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:147
+#: ../../ORTS.Common/Input/UserCommand.cs:176
 msgid "Control Sander Toggle"
 msgstr "[Çôñƭřôℓ §áñδèř Tôϱϱℓè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:148
+#: ../../ORTS.Common/Input/UserCommand.cs:177
 msgid "Control Wiper"
 msgstr "[Çôñƭřôℓ Wïƥèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:149
+#: ../../ORTS.Common/Input/UserCommand.cs:178
 msgid "Control Horn"
 msgstr "[Çôñƭřôℓ Hôřñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:150
+#: ../../ORTS.Common/Input/UserCommand.cs:179
 msgid "Control Bell"
 msgstr "[Çôñƭřôℓ ßèℓℓ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:151
+#: ../../ORTS.Common/Input/UserCommand.cs:180
 msgid "Control Bell Toggle"
 msgstr "[Çôñƭřôℓ ßèℓℓ Tôϱϱℓè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:152
+#: ../../ORTS.Common/Input/UserCommand.cs:181
 msgid "Control Door Left"
 msgstr "[Çôñƭřôℓ Ðôôř £èƒƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:153
+#: ../../ORTS.Common/Input/UserCommand.cs:182
 msgid "Control Door Right"
 msgstr "[Çôñƭřôℓ Ðôôř Rïϱλƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:154
+#: ../../ORTS.Common/Input/UserCommand.cs:183
 msgid "Control Mirror"
 msgstr "[Çôñƭřôℓ Mïřřôř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:155
+#: ../../ORTS.Common/Input/UserCommand.cs:184
 msgid "Control Light"
 msgstr "[Çôñƭřôℓ £ïϱλƭ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:156
+#: ../../ORTS.Common/Input/UserCommand.cs:185
 msgid "Control Pantograph 1"
 msgstr "[Çôñƭřôℓ Þáñƭôϱřáƥλ 1 !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:157
+#: ../../ORTS.Common/Input/UserCommand.cs:186
 msgid "Control Pantograph 2"
 msgstr "[Çôñƭřôℓ Þáñƭôϱřáƥλ 2 !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:158
+#: ../../ORTS.Common/Input/UserCommand.cs:187
 msgid "Control Pantograph 3"
 msgstr "[Çôñƭřôℓ Þáñƭôϱřáƥλ 3 !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:159
+#: ../../ORTS.Common/Input/UserCommand.cs:188
 msgid "Control Pantograph 4"
 msgstr "[Çôñƭřôℓ Þáñƭôϱřáƥλ 4 !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:160
+#: ../../ORTS.Common/Input/UserCommand.cs:189
+msgid "Control Window Left"
+msgstr "[Çôñƭřôℓ Wïñδôω £èƒƭ !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:190
+msgid "Control Window Right"
+msgstr "[Çôñƭřôℓ Wïñδôω Rïϱλƭ !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:191
 msgid "Control Battery Close"
 msgstr "[Çôñƭřôℓ ßáƭƭèř¥ Çℓôƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:161
+#: ../../ORTS.Common/Input/UserCommand.cs:192
 msgid "Control Battery Open"
 msgstr "[Çôñƭřôℓ ßáƭƭèř¥ Óƥèñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:162
+#: ../../ORTS.Common/Input/UserCommand.cs:193
 msgid "Control Master Key"
 msgstr "[Çôñƭřôℓ Máƨƭèř Kè¥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:163
+#: ../../ORTS.Common/Input/UserCommand.cs:194
 msgid "Control Service Retention"
 msgstr "[Çôñƭřôℓ §èřƲïçè Rèƭèñƭïôñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:164
+#: ../../ORTS.Common/Input/UserCommand.cs:195
 msgid "Control Service Retention Cancellation"
 msgstr "[Çôñƭřôℓ §èřƲïçè Rèƭèñƭïôñ Çáñçèℓℓáƭïôñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:165
+#: ../../ORTS.Common/Input/UserCommand.cs:196
 msgid "Control Circuit Breaker Closing Order"
 msgstr "[Çôñƭřôℓ Çïřçúïƭ ßřèáƙèř Çℓôƨïñϱ Óřδèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:166
+#: ../../ORTS.Common/Input/UserCommand.cs:197
 msgid "Control Circuit Breaker Opening Order"
 msgstr "[Çôñƭřôℓ Çïřçúïƭ ßřèáƙèř Óƥèñïñϱ Óřδèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:167
+#: ../../ORTS.Common/Input/UserCommand.cs:198
 msgid "Control Circuit Breaker Closing Authorization"
 msgstr "[Çôñƭřôℓ Çïřçúïƭ ßřèáƙèř Çℓôƨïñϱ Âúƭλôřïƺáƭïôñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:168
+#: ../../ORTS.Common/Input/UserCommand.cs:199
 msgid "Control Traction Cut-Off Relay Closing Order"
 msgstr "[Çôñƭřôℓ Třáçƭïôñ Çúƭ-Óƒƒ Rèℓá¥ Çℓôƨïñϱ Óřδèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:169
+#: ../../ORTS.Common/Input/UserCommand.cs:200
 msgid "Control Traction Cut-Off Relay Opening Order"
 msgstr "[Çôñƭřôℓ Třáçƭïôñ Çúƭ-Óƒƒ Rèℓá¥ Óƥèñïñϱ Óřδèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:170
+#: ../../ORTS.Common/Input/UserCommand.cs:201
 msgid "Control Traction Cut-Off Relay Closing Authorization"
 msgstr "[Çôñƭřôℓ Třáçƭïôñ Çúƭ-Óƒƒ Rèℓá¥ Çℓôƨïñϱ Âúƭλôřïƺáƭïôñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:171
+#: ../../ORTS.Common/Input/UserCommand.cs:202
 msgid "Control Electric Train Supply"
 msgstr "[Çôñƭřôℓ Éℓèçƭřïç Třáïñ §úƥƥℓ¥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:172
+#: ../../ORTS.Common/Input/UserCommand.cs:203
 msgid "Control Diesel Player"
 msgstr "[Çôñƭřôℓ Ðïèƨèℓ Þℓá¥èř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:173
+#: ../../ORTS.Common/Input/UserCommand.cs:204
 msgid "Control Diesel Helper"
 msgstr "[Çôñƭřôℓ Ðïèƨèℓ Hèℓƥèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:174
+#: ../../ORTS.Common/Input/UserCommand.cs:205
 msgid "Control Headlight Increase"
 msgstr "[Çôñƭřôℓ Hèáδℓïϱλƭ Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:175
+#: ../../ORTS.Common/Input/UserCommand.cs:206
 msgid "Control Headlight Decrease"
 msgstr "[Çôñƭřôℓ Hèáδℓïϱλƭ Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:176
+#: ../../ORTS.Common/Input/UserCommand.cs:207
 msgid "Control Injector 1 Increase"
 msgstr "[Çôñƭřôℓ ÌñJèçƭôř 1 Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:177
+#: ../../ORTS.Common/Input/UserCommand.cs:208
 msgid "Control Injector 1 Decrease"
 msgstr "[Çôñƭřôℓ ÌñJèçƭôř 1 Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:178
+#: ../../ORTS.Common/Input/UserCommand.cs:209
 msgid "Control Injector 1"
 msgstr "[Çôñƭřôℓ ÌñJèçƭôř 1 !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:179
+#: ../../ORTS.Common/Input/UserCommand.cs:210
 msgid "Control Injector 2 Increase"
 msgstr "[Çôñƭřôℓ ÌñJèçƭôř 2 Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:180
+#: ../../ORTS.Common/Input/UserCommand.cs:211
 msgid "Control Injector 2 Decrease"
 msgstr "[Çôñƭřôℓ ÌñJèçƭôř 2 Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:181
+#: ../../ORTS.Common/Input/UserCommand.cs:212
 msgid "Control Injector 2"
 msgstr "[Çôñƭřôℓ ÌñJèçƭôř 2 !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:182
+#: ../../ORTS.Common/Input/UserCommand.cs:213
 msgid "Control Blowdown Valve"
 msgstr "[Çôñƭřôℓ ßℓôωδôωñ VáℓƲè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:183
+#: ../../ORTS.Common/Input/UserCommand.cs:214
 msgid "Control Blower Increase"
 msgstr "[Çôñƭřôℓ ßℓôωèř Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:184
+#: ../../ORTS.Common/Input/UserCommand.cs:215
 msgid "Control Blower Decrease"
 msgstr "[Çôñƭřôℓ ßℓôωèř Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:185
+#: ../../ORTS.Common/Input/UserCommand.cs:216
 msgid "Control Steam Heat Increase"
 msgstr "[Çôñƭřôℓ §ƭèá₥ Hèáƭ Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:186
+#: ../../ORTS.Common/Input/UserCommand.cs:217
 msgid "Control Steam Heat Decrease"
 msgstr "[Çôñƭřôℓ §ƭèá₥ Hèáƭ Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:187
+#: ../../ORTS.Common/Input/UserCommand.cs:218
+msgid "Control Steam Booster Air Valve"
+msgstr "[Çôñƭřôℓ §ƭèá₥ ßôôƨƭèř Âïř VáℓƲè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:219
+msgid "Control Steam Booster Idle Valve"
+msgstr "[Çôñƭřôℓ §ƭèá₥ ßôôƨƭèř Ìδℓè VáℓƲè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:220
+msgid "Control Steam Booster Latch"
+msgstr "[Çôñƭřôℓ §ƭèá₥ ßôôƨƭèř £áƭçλ !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:221
 msgid "Control Damper Increase"
 msgstr "[Çôñƭřôℓ Ðá₥ƥèř Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:188
+#: ../../ORTS.Common/Input/UserCommand.cs:222
 msgid "Control Damper Decrease"
 msgstr "[Çôñƭřôℓ Ðá₥ƥèř Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:189
+#: ../../ORTS.Common/Input/UserCommand.cs:223
 msgid "Control Firebox Open"
 msgstr "[Çôñƭřôℓ Fïřèβôж Óƥèñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:190
+#: ../../ORTS.Common/Input/UserCommand.cs:224
 msgid "Control Firebox Close"
 msgstr "[Çôñƭřôℓ Fïřèβôж Çℓôƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:191
+#: ../../ORTS.Common/Input/UserCommand.cs:225
 msgid "Control Firing Rate Increase"
 msgstr "[Çôñƭřôℓ Fïřïñϱ Ráƭè Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:192
+#: ../../ORTS.Common/Input/UserCommand.cs:226
 msgid "Control Firing Rate Decrease"
 msgstr "[Çôñƭřôℓ Fïřïñϱ Ráƭè Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:193
+#: ../../ORTS.Common/Input/UserCommand.cs:227
 msgid "Control Fire Shovel Full"
 msgstr "[Çôñƭřôℓ Fïřè §λôƲèℓ Fúℓℓ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:194
+#: ../../ORTS.Common/Input/UserCommand.cs:228
 msgid "Control Cylinder Cocks"
 msgstr "[Çôñƭřôℓ Ç¥ℓïñδèř Çôçƙƨ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:195
+#: ../../ORTS.Common/Input/UserCommand.cs:229
 msgid "Control Large Ejector Increase"
 msgstr "[Çôñƭřôℓ £ářϱè ÉJèçƭôř Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:196
+#: ../../ORTS.Common/Input/UserCommand.cs:230
 msgid "Control Large Ejector Decrease"
 msgstr "[Çôñƭřôℓ £ářϱè ÉJèçƭôř Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:197
+#: ../../ORTS.Common/Input/UserCommand.cs:231
 msgid "Control Small Ejector Increase"
 msgstr "[Çôñƭřôℓ §₥áℓℓ ÉJèçƭôř Ìñçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:198
+#: ../../ORTS.Common/Input/UserCommand.cs:232
 msgid "Control Small Ejector Decrease"
 msgstr "[Çôñƭřôℓ §₥áℓℓ ÉJèçƭôř Ðèçřèáƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:199
+#: ../../ORTS.Common/Input/UserCommand.cs:233
 msgid "Control Vacuum Exhauster"
 msgstr "[Çôñƭřôℓ Váçúú₥ Éжλáúƨƭèř !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:200
+#: ../../ORTS.Common/Input/UserCommand.cs:234
 msgid "Control Cylinder Compound"
 msgstr "[Çôñƭřôℓ Ç¥ℓïñδèř Çô₥ƥôúñδ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:201
+#: ../../ORTS.Common/Input/UserCommand.cs:235
 msgid "Control Firing"
 msgstr "[Çôñƭřôℓ Fïřïñϱ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:202
+#: ../../ORTS.Common/Input/UserCommand.cs:236
 msgid "Control Refill"
 msgstr "[Çôñƭřôℓ Rèƒïℓℓ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:203
+#: ../../ORTS.Common/Input/UserCommand.cs:237
+msgid "Control Discrete Unload"
+msgstr "[Çôñƭřôℓ Ðïƨçřèƭè Ûñℓôáδ !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:238
 msgid "Control Water Scoop"
 msgstr "[Çôñƭřôℓ Wáƭèř §çôôƥ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:204
+#: ../../ORTS.Common/Input/UserCommand.cs:239
 msgid "Control ImmediateRefill"
 msgstr "[Çôñƭřôℓ Ì₥₥èδïáƭèRèƒïℓℓ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:205
+#: ../../ORTS.Common/Input/UserCommand.cs:240
 msgid "Control Turntable Clockwise"
 msgstr "[Çôñƭřôℓ Túřñƭáβℓè Çℓôçƙωïƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:206
+#: ../../ORTS.Common/Input/UserCommand.cs:241
 msgid "Control Turntable Counterclockwise"
 msgstr "[Çôñƭřôℓ Túřñƭáβℓè Çôúñƭèřçℓôçƙωïƨè !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:207
-msgid "Control Generic 1"
-msgstr "[Çôñƭřôℓ Gèñèřïç 1 !!!]"
+#: ../../ORTS.Common/Input/UserCommand.cs:242
+msgid "Control Generic Item 1"
+msgstr "[Çôñƭřôℓ Gèñèřïç Ìƭè₥ 1 !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:208
-msgid "Control Generic 2"
-msgstr "[Çôñƭřôℓ Gèñèřïç 2 !!!]"
+#: ../../ORTS.Common/Input/UserCommand.cs:243
+msgid "Control Generic Item 2"
+msgstr "[Çôñƭřôℓ Gèñèřïç Ìƭè₥ 2 !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:209
+#: ../../ORTS.Common/Input/UserCommand.cs:244
+msgid "Control TCS Generic 1"
+msgstr "[Çôñƭřôℓ TÇ§ Gèñèřïç 1 !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:245
+msgid "Control TCS Generic 2"
+msgstr "[Çôñƭřôℓ TÇ§ Gèñèřïç 2 !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:246
 msgid "Control Cab Radio"
 msgstr "[Çôñƭřôℓ Çáβ Ráδïô !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:210
+#: ../../ORTS.Common/Input/UserCommand.cs:247
 msgid "Control AI Fire On"
 msgstr "[Çôñƭřôℓ ÂÌ Fïřè Óñ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:211
+#: ../../ORTS.Common/Input/UserCommand.cs:248
 msgid "Control AI Fire Off"
 msgstr "[Çôñƭřôℓ ÂÌ Fïřè Óƒƒ !!!]"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:212
+#: ../../ORTS.Common/Input/UserCommand.cs:249
 msgid "Control AI Fire Reset"
 msgstr "[Çôñƭřôℓ ÂÌ Fïřè Rèƨèƭ !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:252
+msgid "Control Speed Regulator Mode Increase"
+msgstr "[Çôñƭřôℓ §ƥèèδ Rèϱúℓáƭôř Môδè Ìñçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:253
+msgid "Control Speed Regulator Mode Descrease"
+msgstr "[Çôñƭřôℓ §ƥèèδ Rèϱúℓáƭôř Môδè Ðèƨçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:254
+msgid "Control Selected Speed Increase"
+msgstr "[Çôñƭřôℓ §èℓèçƭèδ §ƥèèδ Ìñçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:255
+msgid "Control Selected Speed Decrease"
+msgstr "[Çôñƭřôℓ §èℓèçƭèδ §ƥèèδ Ðèçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:256
+msgid "Control Speed Regulator Max Acceleration Increase"
+msgstr "[Çôñƭřôℓ §ƥèèδ Rèϱúℓáƭôř Máж Âççèℓèřáƭïôñ Ìñçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:257
+msgid "Control Speed Regulator Max Acceleration Decrease"
+msgstr "[Çôñƭřôℓ §ƥèèδ Rèϱúℓáƭôř Máж Âççèℓèřáƭïôñ Ðèçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:258
+msgid "Control Number Of Axles Increase"
+msgstr "[Çôñƭřôℓ Nú₥βèř Óƒ Âжℓèƨ Ìñçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:259
+msgid "Control Number Of Axles Decrease"
+msgstr "[Çôñƭřôℓ Nú₥βèř Óƒ Âжℓèƨ Ðèçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:260
+msgid "Control Restricted Speed Zone Active"
+msgstr "[Çôñƭřôℓ Rèƨƭřïçƭèδ §ƥèèδ Zôñè ÂçƭïƲè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:261
+msgid "Control Cruise Control Mode Increase"
+msgstr "[Çôñƭřôℓ Çřúïƨè Çôñƭřôℓ Môδè Ìñçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:262
+msgid "Control Cruise Control Mode Decrease"
+msgstr "[Çôñƭřôℓ Çřúïƨè Çôñƭřôℓ Môδè Ðèçřèáƨè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:263
+msgid "Control Train Type Change (Passenger/Cargo)"
+msgstr "[Çôñƭřôℓ Třáïñ T¥ƥè Çλáñϱè (Þáƨƨèñϱèř/Çářϱô) !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:264
+msgid "Control Selected Speed To Zero"
+msgstr "[Çôñƭřôℓ §èℓèçƭèδ §ƥèèδ Tô Zèřô !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:266
+msgid "Control DP Move To Front"
+msgstr "[Çôñƭřôℓ ÐÞ MôƲè Tô Fřôñƭ !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:267
+msgid "Control DP Move To Back"
+msgstr "[Çôñƭřôℓ ÐÞ MôƲè Tô ßáçƙ !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:268
+msgid "Control DP Traction"
+msgstr "[Çôñƭřôℓ ÐÞ Třáçƭïôñ !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:269
+msgid "Control DP Idle"
+msgstr "[Çôñƭřôℓ ÐÞ Ìδℓè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:270
+msgid "Control DP Brake"
+msgstr "[Çôñƭřôℓ ÐÞ ßřáƙè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:271
+msgid "Control DP More"
+msgstr "[Çôñƭřôℓ ÐÞ Môřè !!!]"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:272
+msgid "Control DP Less"
+msgstr "[Çôñƭřôℓ ÐÞ £èƨƨ !!!]"
 

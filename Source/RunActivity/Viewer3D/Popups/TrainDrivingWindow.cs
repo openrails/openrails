@@ -1051,24 +1051,49 @@ namespace Orts.Viewer3D.Popups
                 var dynBrakeString = "";
                 var dynBrakeColor = "";
 
-                if (locomotive.DynamicBrakePercent < 0)
-                    dynBrakeString = Viewer.Catalog.GetString("Off");
-                else if (!locomotive.DynamicBrake)
+                // For steam locomotives the Counter Pressure Brake acts as a dynamic brake, but it doesn't have the "Setup" state,
+                // so we only show "On" or "Off" for them.
+                if (locomotive is MSTSSteamLocomotive)
                 {
-                    dynBrakeString = Viewer.Catalog.GetString("Setup");
-                    dynBrakeColor = ColorCode[Color.Cyan];
+                    if (locomotive.DynamicBrakePercent < 0)
+                        dynBrakeString = Viewer.Catalog.GetString("Off");
+                    else
+                        dynBrakeString = dynamicBrakeStatus;
                 }
                 else
-                    dynBrakeString = dynamicBrakeStatus;
-
-                if (locomotive is MSTSDieselLocomotive && train.DPMode == -1)
-                    dynBrakeString += string.Format(" | {0:F0}%", train.DPDynamicBrakePercent);
-
-                AddLabel(new ListLabel
                 {
-                    FirstCol = Viewer.Catalog.GetString("Dynamic brake"),
-                    LastCol = dynBrakeString + dynBrakeColor,
-                });
+                    if (locomotive.DynamicBrakePercent < 0)
+                        dynBrakeString = Viewer.Catalog.GetString("Off");
+                    else if (!locomotive.DynamicBrake)
+                    {
+                        dynBrakeString = Viewer.Catalog.GetString("Setup");
+                        dynBrakeColor = ColorCode[Color.Cyan];
+                    }
+                    else
+                        dynBrakeString = dynamicBrakeStatus;
+
+                    if (locomotive is MSTSDieselLocomotive && train.DPMode == -1)
+                        dynBrakeString += string.Format(" | {0:F0}%", train.DPDynamicBrakePercent);
+                }
+
+                if (locomotive is MSTSSteamLocomotive)
+                {
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Counter Press."),
+                        LastCol = dynBrakeString + dynBrakeColor,
+                    });
+                }
+                else
+                {
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Dynamic brake"),
+                        LastCol = dynBrakeString + dynBrakeColor,
+                    });
+                }
+
+
             }
 
             AddSeparator();

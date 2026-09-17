@@ -102,7 +102,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                         if ((!SEList[i].IsInitialized))
                         {
-                            STFException.TraceWarning(stf, "Steam engine model has some errors - loading MSTS format");
+                            Trace.TraceInformation("Steam engine {0} model has some errors - loading MSTS format", i+1);
                             SEList[i].InitFromMSTS();
                             SEList[i].Initialize();
                         }
@@ -274,10 +274,18 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public float LPCylindersStrokeM;
 
+        /// <summary>
+        /// Starting Tractive Force for the engine
+        /// </summary>
+        public float absStartTractiveForceN;
+
+        
         public enum AuxiliarySteamEngineTypes
         {
             Unknown,
             Booster,
+            Adhesion,
+            Rack,            
         }
 
         public AuxiliarySteamEngineTypes AuxiliarySteamEngineType;
@@ -312,6 +320,21 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public float DisplayTractiveForceN;
 
+        /// <summary>
+        /// Steam Engine counter pressure barking force
+        /// </summary>
+        public float CylinderCounterPressureBrakeForceN;
+
+        /// <summary>
+        /// Steam Engine counter pressure barking force
+        /// </summary>
+        public bool CounterPressureBrakingFitted;
+
+        /// <summary>
+        /// Steam Engine counter pressure MEP
+        /// </summary>
+        public float CounterPressureMEP;
+        
         /// <summary>
         /// Steam Engine maximum indicated horsepower
         /// </summary>
@@ -620,6 +643,19 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             get
             {
                 var initCheck = false;
+
+                // Code duplicated from below - maybe able to get rid of it eventually
+                if (AuxiliarySteamEngineType == AuxiliarySteamEngineTypes.Unknown)
+                {
+                    // Set to Adhesion as default if not defined by user, as this is the most common type of steam engine.
+                    AuxiliarySteamEngineType = AuxiliarySteamEngineTypes.Adhesion;
+
+                    if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("Auxiliary Steam Engine Type: not found in Steam Engine Configuration: set to default value = {0}", AuxiliarySteamEngineType);
+
+                }
+
+
                 if (AuxiliarySteamEngineType == AuxiliarySteamEngineTypes.Booster)
                 {
                     // Checks to see if a Booster engine has been correctly configured
@@ -660,11 +696,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public virtual void Parse(STFReader stf)
         {
             stf.MustMatch("(");
-            bool end = false;
-            while (!end)
+            while (!stf.EndOfBlock())
             {
-                string lowercasetoken = stf.ReadItem().ToLower();
-                switch (lowercasetoken)
+                switch (stf.ReadItem().ToLower())
                 {
                     case "numcylinders": NumberCylinders = stf.ReadIntBlock(null); initLevel |= SettingsFlags.NumberCylindersF; break;
                     case "cylinderstroke": CylindersStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); initLevel |= SettingsFlags.CylinderStrokeF; break;
@@ -676,6 +710,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "boosterthrottlecutoff": BoosterThrottleCutoff = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.BoosterThrottleCutoffF; break;
                     case "boostergearratio": BoosterGearRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.BoosterGearRatioF; break;
                     case "attachedaxle": AttachedAxleId = stf.ReadIntBlock(null); initLevel |= SettingsFlags.AttachedAxleIdF; break;
+                    case "counterpressurebraking":
+                        CounterPressureBrakingFitted = stf.ReadBoolBlock(false);
+                        break;
                     case "maxindicatedhorsepower":
                         MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
                         MaxIndicatedHorsePowerHP = W.ToHp(MaxIndicatedHorsePowerHP);  // Convert input to HP for use internally in this module
@@ -684,10 +721,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                         var excess = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                         ExcessRodBalanceLbs = Kg.ToLb(excess);  // Convert input to lbs for use internally in this module
                         break;
-
                     case "auxiliarysteamenginetype":
-                        stf.MustMatch("(");
-                        var auxiliarysteamengineType = stf.ReadString();
+                        var auxiliarysteamengineType = stf.ReadStringBlock("");
                         try
                         {
                             AuxiliarySteamEngineType = (AuxiliarySteamEngineTypes)Enum.Parse(typeof(AuxiliarySteamEngineTypes), auxiliarysteamengineType);
@@ -698,8 +733,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                         }
                         break;
 
-                    default:
-                        end = true;
+                    case "(":
+                        stf.SkipRestOfBlock();
                         break;
 
                 }
@@ -715,6 +750,8 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             LPCylindersStrokeM = other.LPCylindersStrokeM;
             LPCylindersDiameterM = other.LPCylindersDiameterM;
             BoosterCutoff = other.BoosterCutoff;
+            AuxiliarySteamEngineType = other.AuxiliarySteamEngineType;
+            CounterPressureBrakingFitted = other.CounterPressureBrakingFitted;
             MaxIndicatedHorsePowerHP = other.MaxIndicatedHorsePowerHP;
             ExcessRodBalanceLbs = other.ExcessRodBalanceLbs;
             BoosterThrottleCutoff = other.BoosterThrottleCutoff;
@@ -724,8 +761,16 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Initialize()
         {
+            // Code duplicated from above - maybe able to get rid of it eventually
+            if (AuxiliarySteamEngineType == AuxiliarySteamEngineTypes.Unknown)
+            {
+                // Set to Adhesion as default if not defined by user, as this is the most common type of steam engine.
+                AuxiliarySteamEngineType = AuxiliarySteamEngineTypes.Adhesion;
 
+                if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("Auxiliary Steam Engine Type: not found in Steam Engine Configuration: set to default value = {0}", AuxiliarySteamEngineType);
 
+            }
 
         }
 
@@ -756,7 +801,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         /// <summary>
-        /// Fix or define a steam engine code block. If the user has not defned a steam engine in the ENG file, then OR will use this section to create one.
+        /// Fix or define a steam engine code block. If the user has not defined a steam engine in the ENG file, then OR will use this section to create one.
         /// If the user has left a parameter out of the code, then OR uses this section to try and set the missing values to a default value.
         /// Error code has been provided that will provide the user with an indication if a parameter has been left out.
         /// </summary>

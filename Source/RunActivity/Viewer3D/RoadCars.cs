@@ -372,7 +372,10 @@ namespace Orts.Viewer3D
         {
             var cars = Cars;
             foreach (var car in cars.Values)
+            {
                 car.Mark();
+                if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) break;
+            }
         }
     }
 
