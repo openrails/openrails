@@ -26,6 +26,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using Orts.Simulation.RollingStocks;
+using Orts.Viewer3D.RollingStock;
 
 namespace Orts.Viewer3D
 {
@@ -54,11 +55,11 @@ namespace Orts.Viewer3D
         int InputCycle;
 #endif
 
-        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
+        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, MSTSWagonViewer car, WorldPosition worldPosition)
         {
             Viewer = viewer;
             EmissionHoleM2 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
-            Emitter = new ParticleEmitterPrimitive(viewer, data, worldPosition);
+            Emitter = new ParticleEmitterPrimitive(viewer, data, car, worldPosition);
 #if DEBUG_EMITTER_INPUT
             EmitterID = ++EmitterIDIndex;
             InputCycle = Viewer.Random.Next(InputCycleLimit);
@@ -153,7 +154,7 @@ namespace Orts.Viewer3D
     public class ParticleEmitterPrimitive : RenderPrimitive
     {
         const int IndiciesPerParticle = 6;
-        const int VerticiesPerParticle = 4;
+        const int VerticesPerParticle = 4;
         const int PrimitivesPerParticle = 2;
 
         readonly int MaxParticles;
@@ -186,13 +187,13 @@ namespace Orts.Viewer3D
 
         internal ParticleEmitterData EmitterData;
         internal Vector3 XNAInitialVelocity;
-        internal Vector3 XNATargetVelocity;
+        internal Vector3 XNAFinalVelocity;
         internal float ParticlesPerSecond;
         internal float ParticleDuration;
         internal Color ParticleColor;
 
         internal WorldPosition WorldPosition;
-        internal WorldPosition LastWorldPosition;
+        internal MSTSWagonViewer CarViewer;
 
         // Particle buffer goes like this:
         //   +--active>-----new>--+
@@ -204,34 +205,36 @@ namespace Orts.Viewer3D
         int FirstFreeParticle;
         int FirstRetiredParticle;
 
-        float TimeParticlesLastEmitted;
+        float AccumulatedParticles;
         int DrawCounter;
 
-        Viewer viewer;
-        GraphicsDevice graphicsDevice;
+        Viewer Viewer;
+        GraphicsDevice GraphicsDevice;
 
-        public ParticleEmitterPrimitive(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
+        public ParticleEmitterPrimitive(Viewer viewer, ParticleEmitterData data, MSTSWagonViewer car, WorldPosition worldPosition)
         {
-            this.viewer = viewer;
-            this.graphicsDevice = viewer.GraphicsDevice;
+            this.Viewer = viewer;
+            this.GraphicsDevice = viewer.GraphicsDevice;
 
             MaxParticles = (int)(ParticleEmitterViewer.MaxParticlesPerSecond * ParticleEmitterViewer.MaxParticleDuration);
-            Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
+            Vertices = new ParticleVertex[MaxParticles * VerticesPerParticle];
             VertexDeclaration = new VertexDeclaration(ParticleVertex.VertexStride, ParticleVertex.VertexElements);
-            VertexBuffer = new DynamicVertexBuffer(graphicsDevice, VertexDeclaration, MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
-            IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
+            VertexBuffer = new DynamicVertexBuffer(GraphicsDevice, VertexDeclaration, MaxParticles * VerticesPerParticle, BufferUsage.WriteOnly);
+            IndexBuffer = InitIndexBuffer(GraphicsDevice, MaxParticles * IndiciesPerParticle);
 
             EmitterData = data;
             XNAInitialVelocity = data.XNADirection;
-            XNATargetVelocity = Vector3.Up;
+            XNAFinalVelocity = Vector3.Up;
             ParticlesPerSecond = 0;
             ParticleDuration = 3;
             ParticleColor = Color.White;
 
-            WorldPosition = worldPosition;
-            LastWorldPosition = new WorldPosition(worldPosition);
+            CarViewer = car;
 
-            TimeParticlesLastEmitted = (float)viewer.Simulator.GameTime;
+            WorldPosition = worldPosition;
+
+            // Initialize the particle accumulator to a random value to de-sync particle emitters from eachother
+            AccumulatedParticles = -(float)Viewer.Random.NextDouble() * 5.0f;
 
             PerlinStart = new float[] {
                 (float)Viewer.Random.NextDouble() * 30000f,
@@ -260,7 +263,7 @@ namespace Orts.Viewer3D
                 indices[i + 4] = (ushort)(index + 3);
                 indices[i + 5] = (ushort)(index);
 
-                index += VerticiesPerParticle;
+                index += VerticesPerParticle;
             }
             var indexBuffer = new IndexBuffer(graphicsDevice, typeof(ushort), numIndicies, BufferUsage.WriteOnly);
             indexBuffer.SetData(indices);
@@ -276,7 +279,7 @@ namespace Orts.Viewer3D
         {
             while (FirstActiveParticle != FirstNewParticle)
             {
-                var vertex = FirstActiveParticle * VerticiesPerParticle;
+                var vertex = FirstActiveParticle * VerticesPerParticle;
                 var expiry = Vertices[vertex].InitialVelocity_EndTime.W;
 
                 // Stop as soon as we find the first particle which hasn't expired.
@@ -289,11 +292,28 @@ namespace Orts.Viewer3D
             }
         }
 
+        void ForceRetireParticles(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                int NextActiveParticle = (FirstActiveParticle + 1) % MaxParticles;
+
+                // Don't try to clear so many particles that we start clearing the newest ones
+                if (NextActiveParticle == FirstNewParticle)
+                    break;
+
+                int vertex = FirstActiveParticle * VerticesPerParticle;
+
+                Vertices[vertex].StartPosition_StartTime.W = (float)DrawCounter;
+                FirstActiveParticle = NextActiveParticle;
+            }
+        }
+
         void FreeRetiredParticles()
         {
             while (FirstRetiredParticle != FirstActiveParticle)
             {
-                var vertex = FirstRetiredParticle * VerticiesPerParticle;
+                var vertex = FirstRetiredParticle * VerticesPerParticle;
                 var age = DrawCounter - (int)Vertices[vertex].StartPosition_StartTime.W;
 
                 // Stop as soon as we find the first expired particle which hasn't been expired for at least 2 'ticks'.
@@ -316,77 +336,107 @@ namespace Orts.Viewer3D
 
         public void Update(float currentTime, ElapsedTime elapsedTime)
         {
-            var velocity = WorldPosition.Location - LastWorldPosition.Location;
-            velocity.X += (WorldPosition.TileX - LastWorldPosition.TileX) * 2048;
-            velocity.Z += (WorldPosition.TileZ - LastWorldPosition.TileZ) * 2048;
-            velocity.Z *= -1;
-            velocity /= elapsedTime.ClockSeconds;
-            LastWorldPosition.Location = WorldPosition.Location;
-            LastWorldPosition.TileX = WorldPosition.TileX;
-            LastWorldPosition.TileZ = WorldPosition.TileZ;
-
-            RetireActiveParticles(currentTime);
-            FreeRetiredParticles();
-
-            if (ParticlesPerSecond < 0.1)
-                TimeParticlesLastEmitted = currentTime;
-
-            var numToBeEmitted = (int)((currentTime - TimeParticlesLastEmitted) * ParticlesPerSecond);
-            var numCanBeEmitted = GetCountFreeParticles();
-            var numToEmit = Math.Min(numToBeEmitted, numCanBeEmitted);
-
-            if (numToEmit > 0)
+            if (ParticlesPerSecond > 0)
             {
-                var rotation = WorldPosition.XNAMatrix;
-                rotation.Translation = Vector3.Zero;
+                // Limit particle spawn rate to try and prevent overfilling the particle buffer
+                // This should only be needed when the particle spawn rate is visually excessive
+                float effectiveParticlesPerSecond = Math.Min(ParticlesPerSecond, (MaxParticles * 0.9f) / (ParticleDuration * (1.0f + ParticleEmitterViewer.DurationVariation)));
 
-                var position = Vector3.Transform(EmitterData.XNALocation, rotation) + WorldPosition.XNAMatrix.Translation;
-                var globalInitialVelocity = Vector3.Transform(XNAInitialVelocity, rotation) + velocity;
-                // TODO: This should only be rotated about the Y axis and not get fully rotated.
-                var globalTargetVelocity = Vector3.Transform(XNATargetVelocity, rotation);
+                AccumulatedParticles += elapsedTime.ClockSeconds * effectiveParticlesPerSecond;
 
-                var time = TimeParticlesLastEmitted;
+                int maxNewParticles = GetCountFreeParticles() - (int)(MaxParticles * 0.025f);
 
-                for (var i = 0; i < numToEmit; i++)
+                // We are low on free particles, always try to leave a free buffer of about 2.5% of the total
+                if (AccumulatedParticles > maxNewParticles)
+                    ForceRetireParticles((int)AccumulatedParticles);
+                else // Otherwise, only clear out expired particles
+                    RetireActiveParticles(currentTime);
+                FreeRetiredParticles();
+
+                AccumulatedParticles = Math.Min(AccumulatedParticles, GetCountFreeParticles());
+
+                int numToBeEmitted = (int)Math.Floor(AccumulatedParticles);
+
+                if (numToBeEmitted > 0)
                 {
-                    time += 1 / ParticlesPerSecond;
+                    Matrix transform = WorldPosition.XNAMatrix;
+                    transform.Translation = Vector3.Zero; // Only want rotation data for this step
+                    // rotation = CarViewer.TrainCarShape.ResultMatrices[EmitterData.ShapeIndex] * rotation; // Future: ShapeHierarchy goes here
 
-                    var nextFreeParticle = (FirstFreeParticle + 1) % MaxParticles;
-                    var vertex = FirstFreeParticle * VerticiesPerParticle;
-                    var texture = Viewer.Random.Next(16); // Randomizes emissions.
-                    var color_Random = new Color((float)ParticleColor.R / 255f, (float)ParticleColor.G / 255f, (float)ParticleColor.B / 255f, (float)Viewer.Random.NextDouble());
+                    Matrix rotation = transform;
+                    rotation.Translation = Vector3.Zero; // Last step needed translational effects, next step does not
 
-                    // Initial velocity varies in X and Z only.
-                    var initialVelocity = globalInitialVelocity;
-                    initialVelocity.X += (float)(Viewer.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
-                    initialVelocity.Z += (float)(Viewer.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
+                    // Final velocity should rotate with the attached train car, but only about the Y axis
+                    rotation.Decompose(out _, out Quaternion rotY, out _);
+                    rotY.X = 0;
+                    rotY.Z = 0;
+                    rotY.Normalize();
 
-                    // Target/final velocity varies in X, Y and Z.
-                    var targetVelocity = globalTargetVelocity;
-                    targetVelocity.X += Noise.Generate(time + PerlinStart[0]) * ParticleEmitterViewer.SpreadRate;
-                    targetVelocity.Y += Noise.Generate(time + PerlinStart[1]) * ParticleEmitterViewer.SpreadRate;
-                    targetVelocity.Z += Noise.Generate(time + PerlinStart[2]) * ParticleEmitterViewer.SpreadRate;
+                    Vector3 carVelocity = new Vector3(CarViewer.Velocity[0], CarViewer.Velocity[1], -CarViewer.Velocity[2]);
 
-                    // Add wind speed
-                    targetVelocity.X += viewer.Simulator.Weather.WindInstantaneousSpeedMpS * viewer.Simulator.Weather.WindInstantaneousDirection.X;
-                    targetVelocity.Z += viewer.Simulator.Weather.WindInstantaneousSpeedMpS * viewer.Simulator.Weather.WindInstantaneousDirection.Y;
+                    float emitTime = currentTime - elapsedTime.ClockSeconds;
 
-                    // ActionDuration is variable too.
-                    var duration = ParticleDuration * (1 + Noise.Generate(time + PerlinStart[3]) * ParticleEmitterViewer.DurationVariation);
+                    float deltaTime = elapsedTime.ClockSeconds / AccumulatedParticles;
 
-                    for (var j = 0; j < VerticiesPerParticle; j++)
+                    for (int i = 0; i < numToBeEmitted; i++)
                     {
-                        Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, time);
-                        Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, time + duration);
-                        Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(targetVelocity, ParticleEmitterViewer.DecelerationTime);
-                        Vertices[vertex + j].TileXY_Vertex_ID = new Vector4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
-                        Vertices[vertex + j].Color_Random = color_Random;
+                        emitTime += deltaTime;
+
+                        int nextFreeParticle = (FirstFreeParticle + 1) % MaxParticles;
+                        int vertex = FirstFreeParticle * VerticesPerParticle;
+                        int texture = Viewer.Random.Next(16); // Randomizes emissions.
+                        Color color_Random = new Color(ParticleColor.R / 255f, ParticleColor.G / 255f, ParticleColor.B / 255f, (float)Viewer.Random.NextDouble());
+
+                        Vector3 position = EmitterData.XNALocation;
+
+                        Vector3 initialVelocity = XNAInitialVelocity;
+                        Vector3 finalVelocity = XNAFinalVelocity;
+
+                        initialVelocity.X += (float)(Viewer.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
+                        initialVelocity.Z += (float)(Viewer.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
+
+                        finalVelocity.X += Noise.Generate(emitTime + PerlinStart[0]) * ParticleEmitterViewer.SpreadRate;
+                        finalVelocity.Y += Noise.Generate(emitTime + PerlinStart[1]) * ParticleEmitterViewer.SpreadRate;
+                        finalVelocity.Z += Noise.Generate(emitTime + PerlinStart[2]) * ParticleEmitterViewer.SpreadRate;
+
+                        // Duration is variable too.
+                        float duration = ParticleDuration * (1 + Noise.Generate(emitTime + PerlinStart[3]) * ParticleEmitterViewer.DurationVariation);
+
+                        position = Vector3.Transform(position, transform) + WorldPosition.XNAMatrix.Translation;
+
+                        // Interpolate the position of the particle in-between frames
+                        position -= carVelocity * (currentTime - emitTime);
+
+                        initialVelocity = Vector3.Transform(initialVelocity, rotation);
+                        finalVelocity = Vector3.Transform(finalVelocity, rotY);
+
+                        // Add on velocity of attached train car
+                        initialVelocity += carVelocity;
+
+                        // Add wind speed (not randomized here)
+                        finalVelocity.X += Viewer.Simulator.Weather.WindInstantaneousSpeedMpS * Viewer.Simulator.Weather.WindInstantaneousDirection.X;
+                        finalVelocity.Z += Viewer.Simulator.Weather.WindInstantaneousSpeedMpS * Viewer.Simulator.Weather.WindInstantaneousDirection.Y;
+
+                        for (int j = 0; j < VerticesPerParticle; j++)
+                        {
+                            Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, emitTime);
+                            Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, emitTime + duration);
+                            Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(finalVelocity, ParticleEmitterViewer.DecelerationTime);
+                            Vertices[vertex + j].TileXY_Vertex_ID = new Vector4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
+                            Vertices[vertex + j].Color_Random = color_Random;
+                        }
+
+                        FirstFreeParticle = nextFreeParticle;
                     }
 
-                    FirstFreeParticle = nextFreeParticle;
+                    // Remove emitted particles from the accumulator, with some randomness to keep emitters out of sync
+                    AccumulatedParticles -= numToBeEmitted + ((float)Viewer.Random.NextDouble() * 0.05f);
                 }
-
-                TimeParticlesLastEmitted = time;
+            }
+            else // Skip most processing if emitter is currently inactive
+            {
+                RetireActiveParticles(currentTime);
+                FreeRetiredParticles();
             }
         }
 
@@ -395,14 +445,14 @@ namespace Orts.Viewer3D
             if (FirstNewParticle < FirstFreeParticle)
             {
                 var numParticlesToAdd = FirstFreeParticle - FirstNewParticle;
-                VertexBuffer.SetData(FirstNewParticle * ParticleVertex.VertexStride * VerticiesPerParticle, Vertices, FirstNewParticle * VerticiesPerParticle, numParticlesToAdd * VerticiesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
+                VertexBuffer.SetData(FirstNewParticle * ParticleVertex.VertexStride * VerticesPerParticle, Vertices, FirstNewParticle * VerticesPerParticle, numParticlesToAdd * VerticesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
             }
             else
             {
                 var numParticlesToAddAtEnd = MaxParticles - FirstNewParticle;
-                VertexBuffer.SetData(FirstNewParticle * ParticleVertex.VertexStride * VerticiesPerParticle, Vertices, FirstNewParticle * VerticiesPerParticle, numParticlesToAddAtEnd * VerticiesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
+                VertexBuffer.SetData(FirstNewParticle * ParticleVertex.VertexStride * VerticesPerParticle, Vertices, FirstNewParticle * VerticesPerParticle, numParticlesToAddAtEnd * VerticesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
                 if (FirstFreeParticle > 0)
-                    VertexBuffer.SetData(0, Vertices, 0, FirstFreeParticle * VerticiesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
+                    VertexBuffer.SetData(0, Vertices, 0, FirstFreeParticle * VerticesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
             }
 
             FirstNewParticle = FirstFreeParticle;
