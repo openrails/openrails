@@ -972,10 +972,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
     public abstract class FreightAnimation
     {
         public string ShapeFileName;
-        public bool Flipped = false;
-        public Vector3 Offset = new Vector3();
-        public int ShapeIndex = -1;
-        public string ShapeHierarchy;
     }
 
     public class FreightAnimationContinuous : FreightAnimation
