@@ -109,6 +109,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 new STFReader.TokenProcessor("emptymaxbrakeforce", ()=>{ EmptyMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("emptymaxbrakeshoeforce", ()=>{ EmptyMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("emptymaxhandbrakeforce", ()=>{ EmptyMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
+                new STFReader.TokenProcessor("emptycenterofgravity_y", ()=>{ EmptyCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
                 new STFReader.TokenProcessor("emptycentreofgravity_y", ()=>{ EmptyCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
                 new STFReader.TokenProcessor("emptybrakerelayvalveratio", ()=>{ EmptyRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, -1); }),
                 new STFReader.TokenProcessor("emptybrakerelayvalveinshot", ()=>{ EmptyInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, -1); }),
@@ -1021,6 +1022,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 new STFReader.TokenProcessor("fullmaxbrakeforce", ()=>{ FullMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("fullmaxbrakeshoeforce", ()=>{ FullMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("fullmaxhandbrakeforce", ()=>{ FullMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
+                new STFReader.TokenProcessor("fullcenterofgravity_y", ()=>{ FullCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
                 new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
                 new STFReader.TokenProcessor("fullbrakerelayvalveratio", ()=>{ FullRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, -1); }),
                 new STFReader.TokenProcessor("fullbrakerelayvalveinshot", ()=>{ FullInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, -1); })
@@ -1147,6 +1149,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             new STFReader.TokenProcessor("fullmaxbrakeforce", ()=>{ FullStaticMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
             new STFReader.TokenProcessor("fullmaxbrakeshoeforce", ()=>{ FullStaticMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
             new STFReader.TokenProcessor("fullmaxhandbrakeforce", ()=>{ FullStaticMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
+            new STFReader.TokenProcessor("fullcenterofgravity_y", ()=>{ FullStaticCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
             new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullStaticCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
             new STFReader.TokenProcessor("fullbrakerelayvalveratio", ()=>{ FullStaticRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, -1); }),
             new STFReader.TokenProcessor("fullbrakerelayvalveinshot", ()=>{ FullStaticInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, -1); })

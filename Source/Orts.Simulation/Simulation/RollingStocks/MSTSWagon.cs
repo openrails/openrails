@@ -1313,18 +1313,30 @@ namespace Orts.Simulation.RollingStocks
                         stf.SkipRestOfBlock();
                     }
                     break;
+                case "wagon(centerofgravity":
                 case "wagon(centreofgravity":
                     stf.MustMatch("(");
-                    InitialCentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
+                    float initialValue = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                    if (!stf.EndOfBlock()) // User has entered a 3-d vector
                     {
-                        STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
-                        InitialCentreOfGravityM.Z = 0;
+                        InitialCentreOfGravityM.X = initialValue;
+                        InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                        InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+
+                        if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
+                        {
+                            STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
+                            InitialCentreOfGravityM.Z = 0;
+                        }
+
+                        stf.SkipRestOfBlock();
                     }
-                    stf.SkipRestOfBlock();
+                    else // User has entered a single value, only set the Y component to this value, leave other components unchanged
+                    {
+                        InitialCentreOfGravityM.Y = initialValue;
+                    }
                     break;
+                case "wagon(ortsshapenudge": InitialCentreOfGravityM.Z = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsunbalancedsuperelevation": MaxUnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsrigidwheelbase":
                     stf.MustMatch("(");
@@ -1719,7 +1731,6 @@ namespace Orts.Simulation.RollingStocks
             RearArticulation = copy.RearArticulation;
             TrackGaugeM = copy.TrackGaugeM;
             CentreOfGravityM = copy.CentreOfGravityM;
-            InitialCentreOfGravityM = copy.InitialCentreOfGravityM;
             MaxUnbalancedSuperElevationM = copy.MaxUnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
             CarBogieCentreLengthM = copy.CarBogieCentreLengthM;
