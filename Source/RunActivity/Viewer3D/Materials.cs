@@ -629,10 +629,10 @@ namespace Orts.Viewer3D
 
             // Headlight illumination
             if (Viewer.PlayerLocomotiveViewer != null
-                && Viewer.PlayerLocomotiveViewer.lightDrawer != null
-                && Viewer.PlayerLocomotiveViewer.lightDrawer.HasLightCone)
+                && Viewer.PlayerLocomotiveViewer.LightDrawer != null
+                && Viewer.PlayerLocomotiveViewer.LightDrawer.HasLightCone)
             {
-                var lightDrawer = Viewer.PlayerLocomotiveViewer.lightDrawer;
+                var lightDrawer = Viewer.PlayerLocomotiveViewer.LightDrawer;
                 var lightState = lightDrawer.IsLightConeActive;
                 if (lightState != lastLightState)
                 {

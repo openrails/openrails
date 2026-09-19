@@ -855,6 +855,10 @@ namespace Orts.Viewer3D
                 }
             }
 
+            // If player viewer has gone stale, it needs to be reloaded
+            if (PlayerLocomotiveViewer.StaleData)
+                PlayerLocomotiveReloaded();
+
             // auto save
             if (Simulator.Settings.AutoSaveActive && RealTime > AutoSaveDueAt && !Simulator.Paused)
             {
@@ -2050,6 +2054,18 @@ namespace Orts.Viewer3D
                 CabCamera.Activate(); // If you need anything else here the cameras should check for it.
             else if (Simulator.PlayerLocomotive.HasFront3DCab || Simulator.PlayerLocomotive.HasRear3DCab)
                 ThreeDimCabCamera.Activate();
+            SetCommandReceivers();
+        }
+
+        /// <summary>
+        /// Called when player locomotive is updated by hot reloading feature
+        /// </summary>
+        public void PlayerLocomotiveReloaded()
+        {
+            PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
+            ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
+            HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
+            HeadOutBackCamera.ChangeCab(Simulator.PlayerLocomotive);
             SetCommandReceivers();
         }
 

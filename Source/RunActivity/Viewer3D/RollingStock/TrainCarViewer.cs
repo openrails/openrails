@@ -26,7 +26,8 @@ namespace Orts.Viewer3D.RollingStock
     {
         // TODO add view location and limits
         public TrainCar Car;
-        public LightViewer lightDrawer;
+        public LightViewer LightDrawer;
+        public bool StaleData = false;
 
         protected Viewer Viewer;
 
@@ -35,7 +36,7 @@ namespace Orts.Viewer3D.RollingStock
             Car = car;
             Viewer = viewer;
 
-            Car.StaleViewer = false;
+            Car.StaleViewer = StaleData;
         }
 
         public abstract void HandleUserInput(ElapsedTime elapsedTime);
@@ -50,7 +51,10 @@ namespace Orts.Viewer3D.RollingStock
         public abstract void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime);
 
         [CallOnThread("Loader")]
-        public virtual void Unload() { }
+        public virtual void Unload()
+        {
+            StaleData = true;
+        }
 
         [CallOnThread("Loader")]
         internal virtual void LoadForPlayer() { }
@@ -66,7 +70,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (!Car.StaleViewer)
             {
-                if (lightDrawer != null && lightDrawer.CheckStale())
+                if (LightDrawer != null && LightDrawer.CheckStale())
                     Car.StaleViewer = true;
 
                 return Car.StaleViewer;
