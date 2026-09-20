@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
+// COPYRIGHT 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -3696,18 +3696,17 @@ namespace Orts.MultiPlayer
             public int iCar;
             public float exhPart;
             public float exhMag;
-            public float exhColorR, exhColorG, exhColorB, exhColorA;
+            public float exhColorR, exhColorG, exhColorB;
 
-            public MSGExhaustItem(string u, int n, int i, float eP, float eM, float eCR, float eCG, float eCB, float eCA)
+            public MSGExhaustItem(string u, int n, int i, float eP, float eM, float eCR, float eCG, float eCB)
             {
-                user = u; num = n; iCar = i; exhPart = eP; exhMag = eM; exhColorR = eCR; exhColorG = eCG; exhColorB = eCB; exhColorA = eCA;
+                user = u; num = n; iCar = i; exhPart = eP; exhMag = eM; exhColorR = eCR; exhColorG = eCG; exhColorB = eCB;
             }
 
             public override string ToString()
             {
                 return user + " " + num + " " + iCar + " " + exhPart.ToString(CultureInfo.InvariantCulture) + " " + exhMag.ToString(CultureInfo.InvariantCulture) +
-                    " " + exhColorR.ToString(CultureInfo.InvariantCulture) + " " + exhColorG.ToString(CultureInfo.InvariantCulture) + " " + exhColorB.ToString(CultureInfo.InvariantCulture)
-                     + " " + exhColorA.ToString(CultureInfo.InvariantCulture);
+                    " " + exhColorR.ToString(CultureInfo.InvariantCulture) + " " + exhColorG.ToString(CultureInfo.InvariantCulture) + " " + exhColorB.ToString(CultureInfo.InvariantCulture);
             }
         }
         List<MSGExhaustItem> items;
@@ -3716,7 +3715,7 @@ namespace Orts.MultiPlayer
         {
             m = m.Trim();
             string[] areas = m.Split(' ');
-            if (areas.Length % 9 != 0)
+            if (areas.Length % 8 != 0)
             {
                 throw new Exception("Parsing error " + m);
             }
@@ -3724,11 +3723,10 @@ namespace Orts.MultiPlayer
             {
                 int i = 0;
                 items = new List<MSGExhaustItem>();
-                for (i = 0; i < areas.Length / 9; i++)
-                    items.Add(new MSGExhaustItem(areas[9 * i], int.Parse(areas[9 * i + 1]), int.Parse(areas[9 * i + 2]),
-                        float.Parse(areas[9 * i + 3], CultureInfo.InvariantCulture), float.Parse(areas[9 * i + 4], CultureInfo.InvariantCulture),
-                        float.Parse(areas[9 * i + 5], CultureInfo.InvariantCulture), float.Parse(areas[9 * i + 6], CultureInfo.InvariantCulture),
-                        float.Parse(areas[9 * i + 7], CultureInfo.InvariantCulture), float.Parse(areas[9 * i + 8], CultureInfo.InvariantCulture)));
+                for (i = 0; i < areas.Length / 8; i++)
+                    items.Add(new MSGExhaustItem(areas[8 * i], int.Parse(areas[8 * i + 1]), int.Parse(areas[8 * i + 2]),
+                        float.Parse(areas[8 * i + 3], CultureInfo.InvariantCulture), float.Parse(areas[8 * i + 4], CultureInfo.InvariantCulture),
+                        float.Parse(areas[8 * i + 5], CultureInfo.InvariantCulture), float.Parse(areas[8 * i + 6], CultureInfo.InvariantCulture), float.Parse(areas[8 * i + 7], CultureInfo.InvariantCulture)));
             }
             catch (Exception e)
             {
@@ -3745,7 +3743,7 @@ namespace Orts.MultiPlayer
             if (items == null) items = new List<MSGExhaustItem>();
             MSTSDieselLocomotive l = t.Cars[c] as MSTSDieselLocomotive;
             items.Add(new MSGExhaustItem(u, t.Number, c, l.ExhaustParticles.SmoothedValue, l.ExhaustMagnitude.SmoothedValue,
-                l.ExhaustColorR.SmoothedValue, l.ExhaustColorG.SmoothedValue, l.ExhaustColorB.SmoothedValue, l.ExhaustColorA.SmoothedValue));
+                l.ExhaustColorR.SmoothedValue, l.ExhaustColorG.SmoothedValue, l.ExhaustColorB.SmoothedValue));
         }
 
         public bool OKtoSend()
@@ -3772,7 +3770,7 @@ namespace Orts.MultiPlayer
                     if (t != null && t.Cars.Count > m.iCar && t.Cars[m.iCar] is MSTSDieselLocomotive)
                     {
                         MSTSDieselLocomotive remoteDiesel = t.Cars[m.iCar] as MSTSDieselLocomotive;
-                        remoteDiesel.RemoteUpdate(m.exhPart, m.exhMag, m.exhColorR, m.exhColorG, m.exhColorB, m.exhColorA);
+                        remoteDiesel.RemoteUpdate(m.exhPart, m.exhMag, m.exhColorR, m.exhColorG, m.exhColorB);
                     }
                 }
             }

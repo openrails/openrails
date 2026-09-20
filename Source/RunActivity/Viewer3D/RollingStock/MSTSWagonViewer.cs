@@ -115,8 +115,8 @@ namespace Orts.Viewer3D.RollingStock
             : base(viewer, car)
         {
             
-            string steamTexture = "smokemain.ace";
-            string dieselTexture = "dieselsmoke.ace";
+            string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
+            string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
 
             // Particle Drawers called in Wagon so that wagons can also have steam effects.
             ParticleDrawers = (
@@ -737,37 +737,37 @@ namespace Orts.Viewer3D.RollingStock
             // Steam leak in heating hose
             foreach (var drawer in HeatingHose)
             {
-                drawer.SetOutputVelocity(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseParticleDurationS);
+                drawer.SetOutput(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
             }
 
             // Steam leak in heating compartment steamtrap
             foreach (var drawer in HeatingCompartmentSteamTrap)
             {
-                drawer.SetOutputVelocity(car.HeatingCompartmentSteamTrapVelocityMpS, car.HeatingCompartmentSteamTrapParticleDurationS);
+                drawer.SetOutput(car.HeatingCompartmentSteamTrapVelocityMpS, car.HeatingCompartmentSteamTrapVolumeM3pS, car.HeatingCompartmentSteamTrapParticleDurationS);
             }
 
             // Steam leak in heating main pipe steamtrap
             foreach (var drawer in HeatingMainPipeSteamTrap)
             {
-                drawer.SetOutputVelocity(car.HeatingMainPipeSteamTrapVelocityMpS, car.HeatingMainPipeSteamTrapDurationS);
+                drawer.SetOutput(car.HeatingMainPipeSteamTrapVelocityMpS, car.HeatingMainPipeSteamTrapVolumeM3pS, car.HeatingMainPipeSteamTrapDurationS);
             }
 
             // Heating Steam Boiler Exhaust
             foreach (var drawer in HeatingSteamBoiler)
             {
-                drawer.SetOutputVolumetric(car.HeatingSteamBoilerVolumeM3pS, car.HeatingSteamBoilerDurationS, car.HeatingSteamBoilerSteadyColor);
+                drawer.SetOutput(car.HeatingSteamBoilerVolumeM3pS, car.HeatingSteamBoilerDurationS, car.HeatingSteamBoilerSteadyColor);
             }
 
             // Exhaust for HEP/Electrical Generator
             foreach (var drawer in WagonGenerator)
             {
-                drawer.SetOutputVolumetric(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
+                drawer.SetOutput(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
             }
 
             // Wagon fire smoke
             foreach (var drawer in WagonSmoke)
             {
-                drawer.SetOutputVelocity(car.WagonSmokeVelocityMpS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
+                drawer.SetOutput(car.WagonSmokeVelocityMpS, car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
             }
 
             if (car.Train != null) // only process this visual feature if this is a valid car in the train
@@ -777,7 +777,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     foreach (var drawer in WaterScoop)
                     {
-                        drawer.SetOutputVelocity(car.WaterScoopWaterVelocityMpS, car.WaterScoopParticleDurationS);
+                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
                     }
                 }
                 // If travelling in reverse turn on rearward facing effect
@@ -785,7 +785,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     foreach (var drawer in WaterScoopReverse)
                     {
-                        drawer.SetOutputVelocity(car.WaterScoopWaterVelocityMpS, car.WaterScoopParticleDurationS);
+                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
                     }
                 }
             }
@@ -793,19 +793,19 @@ namespace Orts.Viewer3D.RollingStock
             // Water overflow from tender (uses steam effects currently)
             foreach (var drawer in TenderWaterOverflow)
             {
-                drawer.SetOutputVelocity(car.TenderWaterOverflowVelocityMpS, car.TenderWaterOverflowParticleDurationS);
+                drawer.SetOutput(car.TenderWaterOverflowVelocityMpS, car.TenderWaterOverflowVolumeM3pS, car.TenderWaterOverflowParticleDurationS);
             }
 
             // Bearing Hot box smoke
             foreach (var drawer in BearingHotBox)
             {
-                drawer.SetOutputVelocity(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
+                drawer.SetOutput(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeVolumeM3pS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
             }
 
             // Steam Brake effects
             foreach (var drawer in SteamBrake)
             {
-                drawer.SetOutputVelocity(car.SteamBrakeLeaksVelocityMpS, car.SteamBrakeLeaksDurationS);
+                drawer.SetOutput(car.SteamBrakeLeaksVelocityMpS, car.SteamBrakeLeaksVolumeM3pS, car.SteamBrakeLeaksDurationS);
             }
 
             foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)
