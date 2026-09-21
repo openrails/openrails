@@ -343,6 +343,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             if (!Activated)
             {
+                Activated = true;
                 if (ScriptName != null && ScriptName != "MSTS")
                 {
                     var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };

@@ -22,10 +22,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
     public abstract class MSTSBrakeSystem : BrakeSystem
     {
-        /// <summary>
-        /// True if equipped with handbrake. (Not common for older steam locomotives.)
-        /// </summary>
-        public bool HandBrakePresent;
         public static BrakeSystem Create(string type, TrainCar car)
         {
             switch (type)
@@ -51,12 +47,5 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         }
 
         public abstract void Parse(string lowercasetoken, STFReader stf);
-
-        public abstract void Update(float elapsedClockSeconds);
-
-        public virtual void InitializeFromCopy(BrakeSystem copy)
-        {
-            HandBrakePresent = (copy as MSTSBrakeSystem).HandBrakePresent;
-        }
     }
 }
