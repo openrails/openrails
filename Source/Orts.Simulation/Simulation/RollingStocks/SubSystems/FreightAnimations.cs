@@ -971,6 +971,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
     public abstract class FreightAnimation
     {
         public string ShapeFileName;
+        public string ShapeDescriptor;
+        public bool ReplaceObject = false;
     }
 
     public class FreightAnimationContinuous : FreightAnimation
@@ -1006,7 +1008,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     wagon.IntakePointList.Last().LinkedFreightAnim = this;
                     LinkedIntakePoint = wagon.IntakePointList.Last();
                 }),
-                new STFReader.TokenProcessor("shape", ()=>{ ShapeFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("shape", ()=>{
+                    stf.MustMatch("(");
+                    ShapeFileName = stf.ReadString();
+                    if (!stf.EndOfBlock())
+                    {
+                        ShapeDescriptor = stf.ReadString();
+                        stf.SkipRestOfBlock();
+                    }
+                    else
+                        ShapeDescriptor = ShapeFileName + "d";
+                }),
+                new STFReader.TokenProcessor("replaceobject", ()=>{ ReplaceObject = stf.ReadBoolBlock(true);}),
                 new STFReader.TokenProcessor("maxheight", ()=>{ MaxHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0); }),
                 new STFReader.TokenProcessor("minheight", ()=>{ MinHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0); }),
                 new STFReader.TokenProcessor("freightweightwhenfull", ()=>{ FreightWeightWhenFull = stf.ReadFloatBlock(STFReader.UNITS.Mass, 0); }),
@@ -1037,6 +1050,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 LinkedIntakePoint = wagon.IntakePointList.Last();
             }
             ShapeFileName = freightAnimContin.ShapeFileName;
+            ShapeDescriptor = freightAnimContin.ShapeDescriptor;
+            ReplaceObject = freightAnimContin.ReplaceObject;
             MaxHeight = freightAnimContin.MaxHeight;
             MinHeight = freightAnimContin.MinHeight;
             FreightWeightWhenFull = freightAnimContin.FreightWeightWhenFull;
@@ -1107,7 +1122,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         break;
 	            }
             }),
-            new STFReader.TokenProcessor("shape", ()=>{ ShapeFileName = stf.ReadStringBlock(null); }),
+            new STFReader.TokenProcessor("shape", ()=>{
+                stf.MustMatch("(");
+                ShapeFileName = stf.ReadString();
+                if (!stf.EndOfBlock())
+                {
+                    ShapeDescriptor = stf.ReadString();
+                    stf.SkipRestOfBlock();
+                }
+                else
+                    ShapeDescriptor = ShapeFileName + "d";
+            }),
             new STFReader.TokenProcessor("freightweight", ()=>{ FreightWeight = stf.ReadFloatBlock(STFReader.UNITS.Mass, 0); }),
             new STFReader.TokenProcessor("offset", ()=>{
                 stf.MustMatch("(");
@@ -1117,6 +1142,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 stf.MustMatch(")");
             }),
             new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
+            new STFReader.TokenProcessor("replaceobject", ()=>{ ReplaceObject = stf.ReadBoolBlock(true);}),
             new STFReader.TokenProcessor("visibility", ()=>{
                 for (int index = 0; index < 3; index++)
                     Visibility[index] = false;
@@ -1158,6 +1184,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             SubType = freightAnimStatic.SubType;
             ShapeFileName = freightAnimStatic.ShapeFileName;
+            ShapeDescriptor = freightAnimStatic.ShapeDescriptor;
             XOffset = freightAnimStatic.XOffset;
             YOffset = freightAnimStatic.YOffset;
             ZOffset = freightAnimStatic.ZOffset;
