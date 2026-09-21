@@ -199,7 +199,6 @@ namespace Orts.Simulation.Physics
         public float MaxAuxTenderWaterMassKG;
         public bool IsAuxTenderCoupled = false;
         bool AuxTenderFound = false;
-        TrainCar PrevWagonType;
 
         public bool HasControlCarWithGear = false;
 
@@ -2338,12 +2337,12 @@ namespace Orts.Simulation.Physics
         /// To overcome this in MSTSWagon.cs in FindAuxTendersSteamLocomotive() set the following line.
         /// if (TendersSteamLocomotive == null) ignore, and return (break out of the loop) with an appropriate error message.
         /// Note, ideally this AuxTender function should be expanded to allow more then one AuxTender to be added to a consist and,  
-        /// also multiple steam locomotives in the smae consist, each with an AuxTendershould also be catered for.
+        /// also multiple steam locomotives in the same consist, each with an AuxTender should also be catered for.
         /// <\summary>
 
         public void UpdateAuxTender()
         {
-
+            TrainCar PrevWagonType;
             var mstsSteamLocomotive = Cars[0] as MSTSSteamLocomotive;  // Don't process if locomotive is not steam locomotive
             if (mstsSteamLocomotive != null)
             {
@@ -2386,6 +2385,11 @@ namespace Orts.Simulation.Physics
                                     IsAuxTenderCoupled = true;
                                     AuxTenderFound = true;      // Auxililary tender found in consist.
                                 }
+
+                                if (AuxTenderFound)
+                                { 
+                                    return; // Exit loop if aux tender found in consist - Note this will need to change when expanded to cater for multiple aux tenders in consist.
+                                } 
                             }
                             else // Aux tender not found in consist
                             {
