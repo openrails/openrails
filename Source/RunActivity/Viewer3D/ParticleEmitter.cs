@@ -342,6 +342,10 @@ namespace Orts.Viewer3D
                 // This should only be needed when the particle spawn rate is visually excessive
                 float effectiveParticlesPerSecond = Math.Min(ParticlesPerSecond, (MaxParticles * 0.9f) / (ParticleDuration * (1.0f + ParticleEmitterViewer.DurationVariation)));
 
+                // Momentary Infinity/NaN values can occur, treat these as 0
+                if (!float.IsFinite(effectiveParticlesPerSecond))
+                    effectiveParticlesPerSecond = 0;
+
                 AccumulatedParticles += elapsedTime.ClockSeconds * effectiveParticlesPerSecond;
 
                 int maxNewParticles = GetCountFreeParticles() - (int)(MaxParticles * 0.025f);
