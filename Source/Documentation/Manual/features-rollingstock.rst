@@ -425,8 +425,9 @@ until it is centered.
 
 In some cases, this approach could still be insufficient as the Z offset is limited to 2 meters in
 order to prevent unusual behaviors with some MSTS models that used unreasonably large Z offsets.
-To facilitate models that need large offsets without introducing errors, OR now accepts this offset
-with the parameter ``ORTSShapeNudge ( z )``, which can be set to *any length offset without limit*.
+To facilitate models that need offsets without introducing errors, OR now accepts this offset
+with the parameter ``ORTSShapeNudge ( z )``, which can be set to *any length offset without limit*,
+overriding the original Z offset.
 
 .. index::
    single: CentreOfGravity
