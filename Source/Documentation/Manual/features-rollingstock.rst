@@ -411,32 +411,6 @@ some steps of the content creation process or allow more control over content th
 possible. The goal of these features is to save content creators' time, give additional power to
 creators, and to simplify the installation process for end users.
 
-Improved wagon alignment tools
-------------------------------
-
-Many MSTS and OR creators have encountered rolling stock shapes that were not correctly aligned,
-resulting in couplers/buffers clipping at one end of the wagon and separating at the other end.
-Normally, this would require inspecting the 3D model to determine exactly how off-center it was
-and carefully setting the Z value of ``CentreOfGravity ( x, y, z )`` to "nudge" the wagon shape
-until it is centered.
-
-.. index::
-   single: ORTSShapeNudge
-
-In some cases, this approach could still be insufficient as the Z offset is limited to 2 meters in
-order to prevent unusual behaviors with some MSTS models that used unreasonably large Z offsets.
-To facilitate models that need large offsets without introducing errors, OR now accepts this offset
-with the parameter ``ORTSShapeNudge ( z )``, which can be set to *any length offset without limit*.
-
-.. index::
-   single: CentreOfGravity
-
-However, this does not entirely replace ``CentreOfGravity``. The Y (height) value of the CoG is
-still used by the physics system and should still be defined. In this case, simply use
-``CentreOfGravity ( y )`` where y is the CoG height in meters (or other units, as desired).
-Unlike entering all 3 values for the CoG, entering only the Y value will NOT affect the alignment
-of the 3D model, allowing the "physical" CoG to be entered separately from the "visual" CoG.
-
 Advanced articulation control
 -----------------------------
 
