@@ -74,12 +74,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
         }
 
-        public override void InitializeFromCopy(BrakeSystem copy, bool diff)
+        public override void InitializeFromCopy(BrakeSystem copy)
         {
-            base.InitializeFromCopy(copy, diff);
+            base.InitializeFromCopy(copy);
             ManualBraking thiscopy = (ManualBraking)copy;
-            ManualMaxApplicationRateValuepS = diff && thiscopy.ManualMaxApplicationRateValuepS == default ? ManualMaxApplicationRateValuepS : thiscopy.ManualMaxApplicationRateValuepS;
-            ManualReleaseRateValuepS = diff && thiscopy.ManualReleaseRateValuepS == default ? ManualReleaseRateValuepS : thiscopy.ManualReleaseRateValuepS;
+            ManualMaxApplicationRateValuepS = thiscopy.ManualMaxApplicationRateValuepS;
+            ManualReleaseRateValuepS = thiscopy.ManualReleaseRateValuepS;
 
         }
 
@@ -261,7 +261,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 return new string[] {
                 DebugType,
                 string.Format("{0:F0}", FormatStrings.FormatPressure(SteamBrakeCylinderPressurePSI, PressureUnit.PSI,  PressureUnit.PSI, true)),
-                string.Empty,
                 string.Empty,
                 string.Empty,
                 string.Empty,

@@ -40,6 +40,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         private bool tcsFullServiceBraking = false;
         private bool overchargeButtonPressed = false;
         private bool quickReleaseButtonPressed = false;
+        private bool neutralModeCommandSwitchOn = false;
+
         public bool EmergencyBraking
         {
             get
@@ -141,6 +143,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
         }
 
+        public bool NeutralModeCommandSwitchOn
+        {
+            get
+            {
+                return neutralModeCommandSwitchOn;
+            }
+            set
+            {
+                if (Simulator.Confirmer != null)
+                {
+                    if (value && !neutralModeCommandSwitchOn)
+                        Simulator.Confirmer.Confirm(CabControl.NeutralMode, CabSetting.On);
+                    else if (!value && neutralModeCommandSwitchOn)
+                        Simulator.Confirmer.Confirm(CabControl.NeutralMode, CabSetting.Off);
+                }
+
+                neutralModeCommandSwitchOn = value;
+            }
+        }
+
+        public bool NeutralModeOn { get; set; }
+
         public float MaxPressurePSI { get; set; }
         public float MaxOverchargePressurePSI { get; private set; }
         public float ReleaseRatePSIpS { get; private set; }
@@ -152,6 +176,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float FullServReductionPSI { get; private set; }
         public float MinReductionPSI { get; private set; }
         public float TrainDynamicBrakeIntervention { get; set; } = -1;
+        public float CruiseControlBrakeDemand
+        { 
+            get
+            {
+                if (Locomotive.CruiseControl == null) return -1;
+                if (this == Locomotive.EngineBrakeController) return Locomotive.CruiseControl.EngineBrakePercent / 100 ?? -1;
+                else return Locomotive.CruiseControl.TrainBrakePercent / 100 ?? -1;
+            }
+        }
         InterpolatorDiesel2D DynamicBrakeBlendingTable;
 
         /// <summary>
@@ -343,8 +376,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             if (!Activated)
             {
-                Activated = true;
-                if (ScriptName != null && ScriptName != "MSTS")
+                if (ScriptName == "PBL2") Script = new PBL2BrakeController();
+                else if (ScriptName != null && ScriptName != "MSTS")
                 {
                     var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
                     Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as BrakeController;

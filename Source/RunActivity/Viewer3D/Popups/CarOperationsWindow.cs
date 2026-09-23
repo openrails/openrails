@@ -58,7 +58,7 @@ namespace Orts.Viewer3D.Popups
             set;
             get;
         }
-        protected override ControlLayout Layout(ControlLayout layout)
+protected override ControlLayout Layout(ControlLayout layout)
         {
             Label ID, buttonHandbrake, buttonTogglePower, buttonToggleMU, buttonToggleBatterySwitch, buttonToggleElectricTrainSupplyCable, buttonToggleFrontBrakeHose, buttonToggleRearBrakeHose, buttonToggleAngleCockA, buttonToggleAngleCockB, buttonToggleBleedOffValve, buttonClose;
 
@@ -67,7 +67,7 @@ namespace Orts.Viewer3D.Popups
                 CarPosition = Viewer.TrainCarOperationsWindow.SelectedCarPosition;
 
             TrainCar trainCar = Viewer.PlayerTrain.Cars[CarPosition];
-            BrakeSystem brakeSystem = trainCar.BrakeSystem;
+            BrakeSystem brakeSystem = (trainCar as MSTSWagon).BrakeSystem;
             MSTSLocomotive locomotive = trainCar as MSTSLocomotive;
             MSTSWagon wagon = trainCar as MSTSWagon;
 
@@ -176,7 +176,7 @@ namespace Orts.Viewer3D.Popups
             // add click controls
 
             // Handbrake
-            if (trainCar.BrakeSystem.HandBrakePresent)
+            if ((trainCar as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
                 buttonHandbrake.Click += new Action<Control, Point>(buttonHandbrake_Click);
             else
                 buttonHandbrake.Color = Color.Gray;

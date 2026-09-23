@@ -61,7 +61,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     else if (Car.Train.BrakeLine4 > 0)
                     {
                         float x = Math.Min(Car.Train.BrakeLine4, 1);
-                        targetPressurePSI = lead.TrainBrakeController.MaxPressurePSI - lead.TrainBrakeController.MinReductionPSI * (1 - x) - lead.TrainBrakeController.FullServReductionPSI * x;
+                        targetPressurePSI = lead.TrainBrakeController.MaxPressurePSI - lead.TrainBrakeController.FullServReductionPSI * x;
                     }
                     if (targetPressurePSI + 1 < BrakeLine1PressurePSI)
                     {
@@ -210,12 +210,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     break;
             }
         }
-        public override void InitializeFromCopy(BrakeSystem copy, bool diff)
+        public override void InitializeFromCopy(BrakeSystem copy)
         {
-            base.InitializeFromCopy(copy, diff);
+            base.InitializeFromCopy(copy);
             EPBrakeSystem thiscopy = (EPBrakeSystem)copy;
-            EPBrakeControlsBrakePipe = diff && thiscopy.EPBrakeControlsBrakePipe == default ? EPBrakeControlsBrakePipe : thiscopy.EPBrakeControlsBrakePipe;
-            EPBrakeActiveInhibitsTripleValve = diff && thiscopy.EPBrakeActiveInhibitsTripleValve == default ? EPBrakeActiveInhibitsTripleValve : thiscopy.EPBrakeActiveInhibitsTripleValve;
+            EPBrakeControlsBrakePipe = thiscopy.EPBrakeControlsBrakePipe;
+            EPBrakeActiveInhibitsTripleValve = thiscopy.EPBrakeActiveInhibitsTripleValve;
+            base.InitializeFromCopy(copy);
         }
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)

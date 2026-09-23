@@ -189,7 +189,7 @@ namespace ORTS.Common
         /// <summary>Convert from kilograms to UK Tons</summary>
         public static float ToTUK(float kg)       { return kg     * (1.0f / 1016.047f); }
         /// <summary>Convert from kilogram to metric tonnes</summary>
-        public static float ToTonne(float kg)      { return kg    / 1000.0f; }
+        public static float ToTonne(float kg)      { return kg    * (1.0f / 1000.0f); }
         /// <summary>Convert from metrix tonnes to kilogram</summary>
         public static float FromTonne(float tonne) { return tonne * 1000.0f; }
     }

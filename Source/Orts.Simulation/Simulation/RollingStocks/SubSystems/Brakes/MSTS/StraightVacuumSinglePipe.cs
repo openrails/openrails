@@ -63,11 +63,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             AuxiliaryReservoirPresent |= equipment.Contains("auxilary_reservoir"); // MSTS legacy parameter - use is discouraged
         }
 
-        public override void InitializeFromCopy(BrakeSystem copy, bool diff)
+        public override void InitializeFromCopy(BrakeSystem copy)
         {
-            base.InitializeFromCopy(copy, diff);
+            base.InitializeFromCopy(copy);
             StraightVacuumSinglePipe thiscopy = (StraightVacuumSinglePipe)copy;
-            AuxiliaryReservoirPresent = diff && thiscopy.AuxiliaryReservoirPresent == default ? AuxiliaryReservoirPresent : thiscopy.AuxiliaryReservoirPresent;
+            AuxiliaryReservoirPresent = thiscopy.AuxiliaryReservoirPresent;
         }
 
 
@@ -391,11 +391,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 // display as a automatic vacuum brake
 
                 return new string[] {
-                "1V" + (BrakeMode == BrakeModes.Undefined ? "" : "-" + BrakeMode),
+                "1V",
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(VacResPressureAdjPSIA()), PressureUnit.InHg, PressureUnit.InHg, true),
-                string.Empty,
                 string.Empty,
                 string.Empty,
                 string.Empty,
@@ -412,7 +411,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 // display as a straight vacuum brake
 
                 return new string[] {
-                "1VS" + (BrakeMode == BrakeModes.Undefined ? "" : "-" + BrakeMode),
+                "1VS",
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 string.Empty,

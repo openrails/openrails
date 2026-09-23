@@ -609,10 +609,11 @@ namespace Orts.Parsers.Msts
             // However, some values (mostly "time" ones) may be followed by text. Therefore that approach cannot be used consistently 
             // and has been abandoned. </CJComment> 
 
+            float val;
+            double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0.0f;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            double scale = ParseUnitSuffix(ref item, validUnits); // must be after TrimEnd(','), otherwise the unit parsed becomes invalid
-            if (float.TryParse(item, parseNum, parseNFI, out float val)) return (scale == 1) ? val : (float)(scale * val);
+            if (float.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
