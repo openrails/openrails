@@ -26,13 +26,13 @@ namespace Orts.Common
         //<CJComment> Cleaner to use GetFileFromFolders() instead, but not sure how to test this. </CJComment>
         public static string FindTrainCarPlugin( string initialFolder, string filename )
         {
-            string dllPath = initialFolder + "\\" + filename;  // search in trainset folder
+            string dllPath = Path.Combine(initialFolder, filename);  // search in trainset folder
             if (File.Exists(dllPath))
                 return dllPath;
-            string rootFolder = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(initialFolder)))+ "\\OpenRails";
+            string rootFolder = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(initialFolder))), "OpenRails");
             if( Directory.Exists( rootFolder ) )
             {
-                dllPath = rootFolder + "\\" + filename;
+                dllPath = Path.Combine(rootFolder, filename);
                 if (File.Exists(dllPath))
                     return dllPath;
             }
