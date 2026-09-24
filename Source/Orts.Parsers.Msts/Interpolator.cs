@@ -325,6 +325,9 @@ namespace Orts.Parsers.Msts
         public int Size;       // number of values populated
         int PrevIndex;  // used to speed up repeated evaluations with similar x values
         bool HasNegativeValues; // set when negative Y values present (e.g. in old triphase locos)
+        // Upper bound on the row count a table may declare. Real tractive-effort tables have at most a few
+        // hundred rows, so this is generous; it exists only to stop a malformed file sizing an allocation.
+        const int MaximumRows = 10000;
         public InterpolatorDiesel2D(int n)
         {
             X = new float[n];
@@ -349,10 +352,15 @@ namespace Orts.Parsers.Msts
             {
                 stf.MustMatch("(");
                 int numOfRows = stf.ReadInt(0);
-                if (numOfRows < 2)
+                if (numOfRows < 2 || numOfRows > MaximumRows)
                 {
                     STFException.TraceWarning(stf, "Interpolator must have at least two rows.");
                     errorFound = true;
+                    // This value sizes the arrays allocated below and bounds the table read loop, so it
+                    // cannot be left as read from the file: a negative count threw OverflowException and a
+                    // large one committed gigabytes before failing. Zero keeps both safe, and errorFound
+                    // already records that this interpolator will not work correctly.
+                    numOfRows = 0;
                 }
                 int numOfColumns = stf.ReadInt(0);
                 string header = stf.ReadString().ToLower();
@@ -393,6 +401,7 @@ namespace Orts.Parsers.Msts
                                 {
                                     STFException.TraceWarning(stf, "Interpolator throttle vs. num of columns mismatch. (missing some throttle values)");
                                     errorFound = true;
+                                    break;      // there is no interpolator to store this column in
                                 }
                                 ilist[j][x] = stf.ReadFloat(STFReader.UNITS.Force, 0);
                                 numofData++;
@@ -413,6 +422,13 @@ namespace Orts.Parsers.Msts
                         {
                             STFException.TraceWarning(stf, "Interpolator has found a mismatch between num of rows declared and num of rows given.");
                             errorFound = true;
+                        }
+                        if (checkMe.GetSize() < 1)
+                        {
+                            // MinX()/MaxX() read X[0] and X[Size-1], which are outside the array when no
+                            // rows were populated - previously an IndexOutOfRangeException here.
+                            errorFound = true;
+                            continue;
                         }
                         float dx = (checkMe.MaxX() - checkMe.MinX()) * 0.1f;
                         if (dx <= 0f)
