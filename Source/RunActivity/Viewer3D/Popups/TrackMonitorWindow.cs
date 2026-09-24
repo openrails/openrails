@@ -913,7 +913,7 @@ namespace Orts.Viewer3D.Popups
                 var labelPoint = new Point(offset.X + speedTextOffset, offset.Y + newLabelPosition + textOffset[forward ? 0 : 1]);
                 var speedString = FormatStrings.FormatSpeedLimitNoUoM(allowedSpeed, metric);
                 Font.Draw(spriteBatch, labelPoint, speedString, thisItem.SpeedObjectType == Train.TrainObjectItem.SpeedItemType.Standard ? (thisItem.IsWarning ? Color.Yellow : Color.White) :
-                    (thisItem.SpeedObjectType == Train.TrainObjectItem.SpeedItemType.TempRestrictedStart ? Color.Red : Color.LightGreen));
+                    (thisItem.SpeedObjectType == Train.TrainObjectItem.SpeedItemType.TempRestrictedStart ? Color.OrangeRed : Color.LightGreen));
 
                 if (itemOffset < firstLabelPosition && !firstLabelShown)
                 {
