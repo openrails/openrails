@@ -1108,7 +1108,18 @@ namespace Orts.Viewer3D
         public static void LoadMaterial(Viewer viewer, LODItem lod)
         {
             var options = Helpers.EncodeMaterialOptions(lod);
-            lod.LODMaterial = viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), (int)options, lod.MipMapLevelOfDetailBias);
+            var multiTextureOptions = SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap;
+            var texturePath = Helpers.GetRouteTextureFile(viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName);
+            if ((options & multiTextureOptions) != 0)
+            {
+                Trace.TraceWarning("Skipped multi-texture shader {1} in dynamic track profile item {0}; dynamic track profiles support one texture slot.", lod.Name, lod.ShaderName);
+                options &= ~multiTextureOptions;
+            }
+
+            lod.LODMaterial = viewer.MaterialManager.Load("Scenery",
+                texturePath,
+                (int)options,
+                lod.MipMapLevelOfDetailBias);
         }
 
         [CallOnThread("Loader")]
