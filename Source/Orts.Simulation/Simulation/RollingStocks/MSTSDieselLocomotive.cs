@@ -532,9 +532,9 @@ namespace Orts.Simulation.RollingStocks
             DieselEngines.Copy(locoCopy.DieselEngines);
         }
 
-        public override void Initialize()
+        public override void Initialize(bool reinitialize = false)
         {
-            DieselEngines.Initialize();
+            DieselEngines.Initialize(reinitialize);
 
             if (DieselEngines[0].GearBox != null)
             {
@@ -545,7 +545,7 @@ namespace Orts.Simulation.RollingStocks
             EnginesPower = new float[DieselEngines.Count];
             EnginesTorque = new float[DieselEngines.Count];
 
-            base.Initialize();
+            base.Initialize(reinitialize);
 
             // Initialise water level in steam heat boiler
             if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0 && IsSteamHeatFitted)
