@@ -3516,36 +3516,44 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         if (i == 0 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi )))
                         {
                             CylinderSteamExhaust1On = true;
+                            SignalEvent(Event.CylinderExhaust1ValveOpen);
                         }
                         else if (i == 0)
                         {
                             CylinderSteamExhaust1On = false;
+                            SignalEvent(Event.CylinderExhaust1ValveClose);
                         }
 
                         else if (i == 1 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi)))
                         {
                             CylinderSteamExhaust2On = true;
+                            SignalEvent(Event.CylinderExhaust2ValveOpen);
                         }
                         else if (i == 1)
                         {
                             CylinderSteamExhaust2On = false;
+                            SignalEvent(Event.CylinderExhaust2ValveClose);
                         }
                         else if (i == 2 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi)))
                         {
                             CylinderSteamExhaust3On = true;
+                            SignalEvent(Event.CylinderExhaust3ValveOpen);
                         }
                         else if (i == 2)
                         {
                             CylinderSteamExhaust3On = false;
+                            SignalEvent(Event.CylinderExhaust3ValveClose);
                         }
 
                         else if (i == 3 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi)))
                         {
                             CylinderSteamExhaust4On = true;
+                            SignalEvent(Event.CylinderExhaust4ValveOpen);
                         }
                         else if (i == 3)
                         {
                             CylinderSteamExhaust4On = false;
+                            SignalEvent(Event.CylinderExhaust4ValveClose);
                         }
                     }
 
