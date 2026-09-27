@@ -765,7 +765,7 @@ namespace Orts.Viewer3D
             return currentVolume + (targetVolume - currentVolume) * alpha;
         }
     }
-
+    
     /// <summary>
     /// Represents an sms file
     /// </summary>
@@ -1885,6 +1885,7 @@ namespace Orts.Viewer3D
                 case SoundVariable.ControlType.AngleofAttack: return car.CurveSquealAoAmRadFiltered;
                 case SoundVariable.ControlType.CarFriction: return car.Train.WagonCoefficientFriction;
                 case SoundVariable.ControlType.WheelRPM: return pS.TopM((float)(car.AbsWheelSpeedMpS / (2 * Math.PI * car.WheelRadiusM)));
+                case SoundVariable.ControlType.DriveWheelRPM: return pS.TopM((float)(car.DriveWheelSpeedMpS / (2 * Math.PI * car.WheelRadiusM)));
                 case SoundVariable.ControlType.ConcreteSleepers: return SharedSMSFileManager.ConcreteSleepers;
                 case SoundVariable.ControlType.CarInTunnel: return car.TrackSoundInTunnelTriggered;
                 case SoundVariable.ControlType.CarDistanceTrack: return car.CarTrackControlledDistanceM;
@@ -2742,7 +2743,7 @@ namespace Orts.Viewer3D
         }
     } // class ORTSXover8AxleTrigger
 
-
+    
     /// <summary>
     /// Play this sound controlled for Wind Speed - Beaufort Scale Calm - Level 0 - Speed = 0 m/s
     /// </summary>
