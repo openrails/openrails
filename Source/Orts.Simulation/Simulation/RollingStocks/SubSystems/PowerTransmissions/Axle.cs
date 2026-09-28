@@ -20,18 +20,12 @@
 
 using System;
 using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using ORTS.Common;
 using Orts.Parsers.Msts;
-using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
-using SharpDX.Direct2D1;
-using SharpDX.Direct3D9;
-using Orts.Formats.OR;
 using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
-using MonoGame.Framework.Utilities.Deflate;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -382,17 +376,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             Trace.TraceInformation("LocomotiveAxleRailDriveType set to Default value of {0}", axle.AxleRailTractionType);
                     }
 
-                    // set the wheel slip threshold times for different types of locomotives
-                    // Because of the irregular force around the wheel for a steam engine during a revolution, "response" time for warnings needs to be lower
+                    // Due to imprecision in the axle model, wheel slip may be detected when the wheels have yet to lose grip,
+                    // so a threshold is set to ignore all slips below a certain duration as those are likely false alarms
                     if (locomotive.EngineType == TrainCar.EngineTypes.Steam)
                     {
-                        axle.WheelSlipThresholdTimeS = 1;
-                        axle.WheelSlipWarningThresholdTimeS = axle.WheelSlipThresholdTimeS * 0.75f;
+                        // Because of the irregular force produced by steam locomotives,
+                        // a longer threshold is used to ignore situations like quarter-slips
+                        // Warning threshold is shorter to inform player when quarter-slips happen
+                        axle.WheelSlipThresholdTimeS = 1.0f;
+                        axle.WheelSlipWarningThresholdTimeS = axle.WheelSlipThresholdTimeS * 0.5f;
                     }
-                    else // diesel and electric locomotives
+                    else
                     {
-                        axle.WheelSlipThresholdTimeS = 1;
-                        axle.WheelSlipWarningThresholdTimeS = 1;
+                        // Diesel and electric locomotives have a threshold time set
+                        // just long enough to ignore artificial slip indications
+                        axle.WheelSlipThresholdTimeS = 0.25f;
+                        axle.WheelSlipWarningThresholdTimeS = 0.25f;
                     }
                 }
                 if (axle.DriveType == AxleDriveType.NotDriven)
@@ -875,7 +874,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool HuDIsWheelSlip { get; private set; }
         public bool IsWheelSlip { get; private set; }
         float WheelSlipTimeS;
-        public float WheelSlipThresholdTimeS = 1;
+        public float WheelSlipThresholdTimeS;
 
         /// <summary>
         /// Wheelslip threshold value used to indicate maximal effective slip
@@ -927,7 +926,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool HuDIsWheelSlipWarning { get; private set; }
         public bool IsWheelSlipWarning { get; private set; }
         float WheelSlipWarningTimeS;
-        public float WheelSlipWarningThresholdTimeS = 1;
+        public float WheelSlipWarningThresholdTimeS;
 
         /// <summary>
         /// Read only slip speed value in metric meters per second
@@ -1348,9 +1347,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (double.IsNaN(AxleSpeedMpS)) AxleSpeedMpS = 0; // TODO: AxleSpeedMpS should always be a number, find the cause of the NaN
 
             // Calculate factor to reduce adhesion due to track gradient
-            float gradeAngle = (float)Math.Atan(Math.Abs(CurrentElevationPercent / 100.0f));
-            AxleGradientForceN = AxleWeightN * (float)Math.Cos(gradeAngle);
-            AxleGradientForceN = MathHelper.Clamp(AxleGradientForceN, 0, AxleWeightN);
+            // Vertical component of gravity force is sqrt(1 / (1 + slope^2))
+            float gradeRatio = (float)Math.Sqrt(1 / (1 + (CurrentElevationPercent * CurrentElevationPercent) / (100.0f * 100.0f)));
+            AxleGradientForceN = MathHelper.Clamp(AxleWeightN * gradeRatio, 0, AxleWeightN);
 
             bool advancedAdhesion = Car is MSTSLocomotive locomotive && locomotive.AdvancedAdhesionModel;
             advancedAdhesion &= DriveType != AxleDriveType.NotDriven; // Skip integrator for undriven axles to save CPU
@@ -1498,8 +1497,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 // Simple adhesion, simple wheelslip conditions
                 if (Car is MSTSLocomotive locomotive && !locomotive.AdvancedAdhesionModel)
                 {
-                    if (!locomotive.AntiSlip && locomotive.SlipControlSystem != MSTSLocomotive.SlipControlType.Full) axleOutForceN *= locomotive.Adhesion1;
-                    else SlipPercent = 100;
+                    if (locomotive.SlipControlSystem != MSTSLocomotive.SlipControlType.Full)
+                        axleOutForceN *= locomotive.Adhesion1;
+                    else
+                        SlipPercent = 100;
                 }
                 else if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven)
                 {

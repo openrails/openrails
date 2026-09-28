@@ -255,7 +255,7 @@ namespace Orts.Simulation.RollingStocks
             Full
         }
         public SlipControlType SlipControlSystem;
-        public bool[] SlipControlActive;
+        public float[] SlipEffortLimit; // 0-1 value representing the % of target tractive effort the slip control system will allow
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
         float SlipFrictionCoefficientFactor;
         public float SteamStaticWheelForce;
@@ -1728,7 +1728,8 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
             }
-            SlipControlActive = new bool[LocomotiveAxles.Count];
+            SlipEffortLimit = new float[LocomotiveAxles.Count];
+            Array.Fill(SlipEffortLimit, 1.0f);
             if (SlipControlSystem == SlipControlType.Unknown)
             {
                 if (AntiSlip) SlipControlSystem = SlipControlType.ReduceForce;
@@ -2298,7 +2299,6 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
 
-                    AntiSlip = true; // Always set AI trains to AntiSlip
                     AdvancedAdhesionModel = false;
                     UpdateAxles(elapsedClockSeconds);   // Simple adhesion model used for AI trains
                     WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
@@ -2345,12 +2345,6 @@ namespace Orts.Simulation.RollingStocks
                     break;
 
             }
-
-            // always set AntiSlip for AI trains
-              if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
-                 {
-                    AntiSlip = true;
-                 }
 
             // If the train is vacuumed braked then no need to update the compressor, but udate the ejector instead
             if (BrakeSystem is VacuumSinglePipe)
@@ -2707,6 +2701,8 @@ namespace Orts.Simulation.RollingStocks
                         maxPowerW *= dL.DieselTransmissionEfficiency;
                     if (maxForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
                 }
+                // Consider wheel slip control
+                targetForceN = UpdateSlipControl(targetForceN, elapsedClockSeconds);
                 UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS, TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);
             }
             else
@@ -2771,6 +2767,8 @@ namespace Orts.Simulation.RollingStocks
                 float limitForceN = GetAvailableDynamicBrakeForceN(maxdynamic);
                 float targetForceN = GetAvailableDynamicBrakeForceN(d);
                 float maxForceN = limitForceN >= targetForceN ? limitForceN : float.MaxValue;
+                // Consider wheel slip control
+                targetForceN = UpdateSlipControl(targetForceN, elapsedClockSeconds);
                 UpdateForceWithRamp(ref DynamicBrakeForceN, elapsedClockSeconds, targetForceN, maxForceN, DynamicBrakeForceRampUpNpS, DynamicBrakeForceRampDownNpS, DynamicBrakeForceRampDownToZeroNpS, DynamicBrakePowerRampUpWpS, DynamicBrakePowerRampDownWpS, DynamicBrakePowerRampDownToZeroWpS);
             }
             else
@@ -2807,106 +2805,119 @@ namespace Orts.Simulation.RollingStocks
             UpdateDynamicBrakeForce(elapsedClockSeconds);
             TractiveForceN -= Math.Sign(WheelSpeedMpS) * DynamicBrakeForceN;
 
-            for (int i=0; i<LocomotiveAxles.Count; i++)
+            foreach (Axle axle in LocomotiveAxles)
             {
-                var axle = LocomotiveAxles[i];
                 if (axle.DriveType == AxleDriveType.ForceDriven)
                 {
-                    float prevForceN = axle.DriveForceN;
                     axle.DriveForceN = TractiveForceN * axle.TractiveForceFraction;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the behavior of the wheel slip control system on each of the locomotive's axles.
+        /// The wheel slip control system, depending on the style equipped, influences the locomotive control
+        /// system to reduce tractive effort/dynamic brake effort demand in order to control wheel slip.
+        /// Returns the tractive effort/dynamic brake effort demanded by the wheel slip control system.
+        /// </summary>
+        /// <param name="targetForceN">The tractive effort the locomotive is attempting to output, without considering slip control.</param>
+        /// <param name="elapsedClockSeconds">Simulation delta time.</param>
+        /// <returns>The tractive effort the locomotive should attempt to output after considering slip control.</returns>
+        protected virtual float UpdateSlipControl(float targetForceN, float elapsedClockSeconds)
+        {
+            if (SlipControlSystem == SlipControlType.Unknown || SlipControlSystem == SlipControlType.None)
+            {
+                // No slip control, do not limit the target tractive effort
+                return targetForceN;
+            }
+
+            float forceRatio = TractionForceN / targetForceN;
+
+            for (int i = 0; i < LocomotiveAxles.Count; i++)
+            {
+                Axle axle = LocomotiveAxles[i];
+
+                if (SlipControlSystem == SlipControlType.ReduceForce || SlipControlSystem == SlipControlType.Full)
+                {
+                    // Shared behavior for both standard and fully capable slip control
+                    // Reduces tractive effort only after slip has actually happened
+                    if (!axle.HuDIsWheelSlip && SlipEffortLimit[i] < 1.0f)
+                    {
+                        if (TractionForceRampUpNpS <= 0)
+                        {
+                            // No ramp rates defined, use default behavior
+                            // If not slipping, gradually increase effort limit back to 100% over 10 seconds
+                            SlipEffortLimit[i] += elapsedClockSeconds / 10.0f;
+                            if (SlipEffortLimit[i] > 1.0f)
+                                SlipEffortLimit[i] = 1.0f;
+                        }
+                        else
+                        {
+                            // Speed of effort restoration will be controlled by ramp rates
+                            SlipEffortLimit[i] = 1.0f;
+                        }
+                    }
+                    else if (axle.HuDIsWheelSlip && SlipEffortLimit[i] > 0.0f)
+                    {
+                        // Reduce target force to mitigate wheel slip
+                        if (TractionForceRampDownToZeroNpS <= 0)
+                        {
+                            // No ramp rates defined, use default behavior
+                            // Immediately set effort reduction to reduce target force to the current force
+                            if (SlipEffortLimit[i] > forceRatio)
+                                SlipEffortLimit[i] = forceRatio;
+                            // If slipping, quickly reduce effort limit toward 0% over 1 second
+                            SlipEffortLimit[i] -= elapsedClockSeconds / 1.0f;
+                            if (SlipEffortLimit[i] < 0.0f)
+                                SlipEffortLimit[i] = 0.0f;
+                        }
+                        else
+                        {
+                            // Speed of effort reduction will be controlled by ramp rates
+                            SlipEffortLimit[i] = 0.0f;
+                        }
+                    }
+
                     if (SlipControlSystem == SlipControlType.Full)
                     {
-                        // Simple slip control
-                        // Motive force is limited to the maximum adhesive force
-                        // In wheelslip situations, motive force is reduced to zero
-                        float absForceN = Math.Min(Math.Abs(axle.DriveForceN), axle.MaximumWheelAdhesion * axle.AxleGradientForceN);
-                        float newForceN;
-                        if (axle.DriveForceN != 0)
-                        {
-                            if (axle.HuDIsWheelSlip) SlipControlActive[i] = true;
-                        }
-                        else
-                        {
-                            SlipControlActive[i] = false;
-                        }
-
-                        if (SlipControlActive[i])
-                        {
-                            if (!axle.HuDIsWheelSlip)
-                            {
-                                // If well below slip threshold, restore full power in 10 seconds
-                                newForceN = Math.Min(Math.Abs(prevForceN) + absForceN * elapsedClockSeconds / 10, absForceN);
-
-                                // If full force is restored, disengage slip control (but limiting force to max adhesion)
-                                if (newForceN / absForceN > 0.95f) SlipControlActive[i] = false;
-                            }
-                            else if (axle.IsWheelSlip)
-                            {
-                                newForceN = Math.Max(Math.Abs(prevForceN) - absForceN * elapsedClockSeconds / 3, 0);
-                            }
-                            else
-                            {
-                                newForceN = Math.Min(Math.Abs(prevForceN), absForceN);
-                            }
-                        }
-                        else
-                        {
-                            newForceN = absForceN;
-                        }
-
-                        if (axle.DriveForceN > 0 && prevForceN >= 0) axle.DriveForceN = newForceN;
-                        else if (axle.DriveForceN < 0 && prevForceN <= 0) axle.DriveForceN = -newForceN;
+                        // Fully capable slip control (creep control)
+                        // In addition to standard behavior, directly overrides the target tractive effort
+                        // by limiting target force to the limit of adhesion
+                        float adhesionLimitN = axle.MaximumWheelAdhesion * axle.AxleGradientForceN * 0.99f;
+                        if (targetForceN > adhesionLimitN)
+                            targetForceN = adhesionLimitN;
                     }
-                    else if (SlipControlSystem == SlipControlType.CutPower)
+                }
+                else if (SlipControlSystem == SlipControlType.CutPower)
+                {
+                    // Rudimentary slip control
+                    // Completely eliminates tractive effort after slip happens
+                    // and only restores effort after it is completely cut
+                    if (!axle.HuDIsWheelSlip && (axle.DriveForceN == 0.0f || SlipEffortLimit[i] > 0.0f))
                     {
-                        if (axle.DriveForceN != 0)
+                        if (TractionForceRampUpNpS <= 0)
                         {
-                            if (axle.HuDIsWheelSlip) SlipControlActive[i] = true;
+                            // No ramp rates defined, use default behavior
+                            // gradually increase effort limit back to 100% over 10 seconds
+                            SlipEffortLimit[i] += elapsedClockSeconds / 10.0f;
+                            if (SlipEffortLimit[i] > 1.0f)
+                                SlipEffortLimit[i] = 1.0f;
                         }
                         else
                         {
-                            // Only restore traction when throttle is set to 0
-                            SlipControlActive[i] = false;
+                            // Speed of effort restoration will be controlled by ramp rates
+                            SlipEffortLimit[i] = 1.0f;
                         }
-                        // Disable traction in the axle if slipping
-                        if (SlipControlActive[i]) axle.DriveForceN = 0;
                     }
-                    else if (SlipControlSystem == SlipControlType.ReduceForce)
+                    else if (axle.HuDIsWheelSlip && SlipEffortLimit[i] > 0.0f)
                     {
-                        if (axle.DriveForceN != 0 && (AdvancedAdhesionModel || !AntiSlip))
-                        {
-                            if (axle.HuDIsWheelSlipWarning) SlipControlActive[i] = true;
-                        }
-                        else
-                        {
-                            SlipControlActive[i] = false;
-                        }
-                        if (SlipControlActive[i])
-                        {
-                            float absForceN = Math.Abs(axle.DriveForceN);
-                            float newForceN;
-                            if (!axle.HuDIsWheelSlipWarning)
-                            {
-                                // If well below slip threshold, restore full power in 10 seconds
-                                newForceN = Math.Min(Math.Abs(prevForceN) + absForceN * elapsedClockSeconds / 10, absForceN);
-
-                                // If full force is restored, disengage slip control
-                                if (newForceN / absForceN > 0.95f) SlipControlActive[i] = false;
-                            }
-                            else if (axle.IsWheelSlipWarning)
-                            {
-                                newForceN = Math.Max(Math.Abs(prevForceN) - absForceN * elapsedClockSeconds / 3, 0);
-                            }
-                            else
-                            {
-                                newForceN = Math.Min(Math.Abs(prevForceN), absForceN);
-                            }
-                            if (axle.DriveForceN > 0 && prevForceN >= 0) axle.DriveForceN = newForceN;
-                            else if (axle.DriveForceN < 0 && prevForceN <= 0) axle.DriveForceN = -newForceN;
-                        }
+                        // If slipping, immediately reduce effort limit to 0%
+                        SlipEffortLimit[i] = 0.0f;
                     }
                 }
             }
+            // Limit target force using the smallest value of SlipEffortLimit
+            return targetForceN * SlipEffortLimit.Min();
         }
 
         /// <summary>
