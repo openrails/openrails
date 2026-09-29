@@ -53,8 +53,10 @@ namespace Orts.Viewer3D
 
         public enum PlacementLocation
         {
-            Start,
-            End,
+            SpanStart,
+            SpanEnd,
+            PathStart,
+            PathEnd,
             Nodes,
         }
 
@@ -199,11 +201,25 @@ namespace Orts.Viewer3D
 
             switch (values[0].ToUpperInvariant())
             {
-                case "START": AddPlacement(PlacementLocation.Start, facing); break;
-                case "END": AddPlacement(PlacementLocation.End, facing); break;
-                case "BOTH":
-                    AddPlacement(PlacementLocation.Start, facing);
-                    AddPlacement(PlacementLocation.End, facing);
+                case "SPANSTART":
+                    AddPlacement(PlacementLocation.SpanStart, facing);
+                    break;
+                case "SPANEND":
+                    AddPlacement(PlacementLocation.SpanEnd, facing);
+                    break;
+                case "PATHSTART":
+                    AddPlacement(PlacementLocation.PathStart, facing);
+                    break;
+                case "PATHEND":
+                    AddPlacement(PlacementLocation.PathEnd, facing);
+                    break;
+                case "SPANBOTH":
+                    AddPlacement(PlacementLocation.SpanStart, facing);
+                    AddPlacement(PlacementLocation.SpanEnd, facing);
+                    break;
+                case "PATHBOTH":
+                    AddPlacement(PlacementLocation.PathStart, facing);
+                    AddPlacement(PlacementLocation.PathEnd, facing);
                     break;
                 case "NODES":
                     if (facing == PlacementFacing.Outward ||
@@ -258,9 +274,10 @@ namespace Orts.Viewer3D
     }
 
     /// <summary>
-    /// Carries object and authored-span identity into procedural generation.
-    /// Rulers additionally supply averaged endpoint directions for Stretch and
-    /// Nodes placement without changing the actual straight span centerline.
+    /// Carries object, authored-span, and complete-path ownership into
+    /// procedural generation. Rulers additionally supply averaged endpoint
+    /// directions for Stretch and Nodes placement without changing the actual
+    /// straight span centerline.
     /// </summary>
     public sealed class TrackProfilePathContext
     {
@@ -269,6 +286,8 @@ namespace Orts.Viewer3D
         public bool IsPointPath;
         public bool OwnStartNode = true;
         public bool OwnEndNode = true;
+        public bool OwnPathStart = true;
+        public bool OwnPathEnd = true;
         public Vector3? StartDirection;
         public Vector3? EndDirection;
     }

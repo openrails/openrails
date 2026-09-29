@@ -24,15 +24,12 @@ namespace Orts.Viewer3D
         const float MinimumSegmentLength = 0.001f;
 
         public static void Decompose(Viewer viewer,
-            List<DynamicTrackViewer> output, RulerObj ruler,
-            WorldPosition tilePosition)
+            List<DynamicTrackViewer> output,
+            List<StaticShape> sceneryObjects, RulerObj ruler,
+            WorldPosition tilePosition, string nodeShapePath,
+            ShapeFlags nodeShapeFlags)
         {
             if (ruler.RulerPoints == null || ruler.RulerPoints.Count < 2)
-                return;
-
-            TrProfile profile;
-            if (!TRPFile.TryResolveRulerProfile(
-                    viewer.TRPs, ruler.ShapeTemplate, out profile))
                 return;
 
             var points = new List<Vector3>();
@@ -45,13 +42,40 @@ namespace Orts.Viewer3D
             for (int i = 0; i + 1 < points.Count; i++)
             {
                 Vector3 spanDirection = points[i + 1] - points[i];
-                if (spanDirection.LengthSquared() > 0)
+                if (spanDirection.LengthSquared() >=
+                    MinimumSegmentLength * MinimumSegmentLength)
                     spanDirection.Normalize();
+                else
+                    spanDirection = Vector3.Zero;
                 spanDirections.Add(spanDirection);
             }
             var nodeDirections = new List<Vector3>();
             for (int i = 0; i < points.Count; i++)
                 nodeDirections.Add(GetNodeDirection(spanDirections, i));
+
+            // FileName is an optional ordinary MSTS shape placed at every
+            // authored Ruler node. It is independent of ShapeTemplate so a
+            // Ruler can use node shapes without procedural span geometry.
+            if (!String.IsNullOrEmpty(nodeShapePath))
+            {
+                for (int i = 0; i < points.Count; i++)
+                {
+                    var nodePosition = new WorldPosition
+                    {
+                        TileX = tilePosition.TileX,
+                        TileZ = tilePosition.TileZ,
+                        XNAMatrix = CreatePathMatrix(points[i],
+                            nodeDirections[i]),
+                    };
+                    sceneryObjects.Add(new StaticShape(viewer,
+                        nodeShapePath, nodePosition, nodeShapeFlags));
+                }
+            }
+
+            TrProfile profile;
+            if (!TRPFile.TryResolveRulerProfile(
+                    viewer.TRPs, ruler.ShapeTemplate, out profile))
+                return;
 
             for (int i = 0; i + 1 < points.Count; i++)
             {
@@ -67,14 +91,10 @@ namespace Orts.Viewer3D
                     continue;
 
                 direction /= length;
-                Vector3 up = Vector3.Up;
-                if (Math.Abs(Vector3.Dot(direction, up)) > 0.999f)
-                    up = Vector3.Forward;
 
                 // Procedural vertices remain local to this segment. This
                 // matrix is supplied later as the normal render transform.
-                Matrix segmentWorld = Matrix.CreateWorld(
-                    tileStart, direction, up);
+                Matrix segmentWorld = CreatePathMatrix(tileStart, direction);
 
                 var start = new WorldPosition
                 {
@@ -97,6 +117,8 @@ namespace Orts.Viewer3D
                     IsPointPath = true,
                     OwnStartNode = true,
                     OwnEndNode = i + 2 == points.Count,
+                    OwnPathStart = i == 0,
+                    OwnPathEnd = i + 2 == points.Count,
                     StartDirection = nodeDirections[i],
                     EndDirection = nodeDirections[i + 1],
                 };
@@ -109,17 +131,53 @@ namespace Orts.Viewer3D
         static Vector3 GetNodeDirection(List<Vector3> spanDirections,
             int nodeIndex)
         {
-            if (nodeIndex <= 0)
-                return spanDirections[0];
-            if (nodeIndex >= spanDirections.Count)
-                return spanDirections[spanDirections.Count - 1];
+            Vector3 incoming = Vector3.Zero;
+            bool hasIncoming = false;
+            for (int i = Math.Min(nodeIndex - 1,
+                    spanDirections.Count - 1); i >= 0; i--)
+            {
+                if (spanDirections[i].LengthSquared() <= 0)
+                    continue;
+                incoming = spanDirections[i];
+                hasIncoming = true;
+                break;
+            }
 
-            Vector3 direction = spanDirections[nodeIndex - 1] +
-                spanDirections[nodeIndex];
-            if (direction.LengthSquared() < 0.000001f)
-                return spanDirections[nodeIndex];
-            direction.Normalize();
-            return direction;
+            Vector3 outgoing = Vector3.Zero;
+            bool hasOutgoing = false;
+            for (int i = Math.Max(nodeIndex, 0);
+                    i < spanDirections.Count; i++)
+            {
+                if (spanDirections[i].LengthSquared() <= 0)
+                    continue;
+                outgoing = spanDirections[i];
+                hasOutgoing = true;
+                break;
+            }
+
+            if (hasIncoming && hasOutgoing)
+            {
+                Vector3 direction = incoming + outgoing;
+                if (direction.LengthSquared() > 0.000001f)
+                {
+                    direction.Normalize();
+                    return direction;
+                }
+                return outgoing;
+            }
+            if (hasOutgoing)
+                return outgoing;
+            if (hasIncoming)
+                return incoming;
+            return Vector3.Forward;
+        }
+
+        static Matrix CreatePathMatrix(Vector3 position, Vector3 direction)
+        {
+            Vector3 up = Vector3.Up;
+            if (Math.Abs(Vector3.Dot(direction, up)) > 0.999f)
+                up = Vector3.Forward;
+            return Matrix.CreateWorld(position, direction, up);
         }
     }
 }

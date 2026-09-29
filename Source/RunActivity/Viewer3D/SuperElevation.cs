@@ -196,8 +196,12 @@ namespace Orts.Viewer3D
                     var pathContext = new TrackProfilePathContext
                     {
                         ObjectIndex = (int)trackObj.UID,
-                        SpanIndex = sectionIndex++,
+                        SpanIndex = sectionIndex,
+                        OwnPathStart = sectionIndex == 0,
+                        OwnPathEnd = sectionIndex + 1 ==
+                            id.TrackSections.Length,
                     };
+                    sectionIndex++;
 
                     if (tmp != null) // Section does have superelevation, prepare to generate it with superelevation
                     {
@@ -569,13 +573,15 @@ namespace Orts.Viewer3D
             TrProfile trProfile = TRPFile.ResolveDynamicTrackProfile(
                 viewer.TRPs, dTrackObj.ShapeTemplate, dTrackObj.IsRoad);
 
+            List<DyntrackObj.TrackSection> activeSections =
+                dTrackObj.trackSections.Where(section =>
+                    section.param1 != 0.0f &&
+                    section.UiD != UInt32.MaxValue).ToList();
+
             // Iterate through all subsections
             int sectionIndex = 0;
-            foreach (DyntrackObj.TrackSection dSection in dTrackObj.trackSections)
+            foreach (DyntrackObj.TrackSection dSection in activeSections)
             {
-                if (dSection.param1 == 0.0f || dSection.UiD == UInt32.MaxValue)
-                    continue; // dTrackObj will contain unused sections sometimes, skip these
-
                 // Convert dynamic track section into regular track section for compatibility with other methods
                 TrackSection section = new TrackSection();
                 // Only adds the bare minimum data needed, this TrackSection won't be fully defined
@@ -611,8 +617,11 @@ namespace Orts.Viewer3D
                 var pathContext = new TrackProfilePathContext
                 {
                     ObjectIndex = (int)dTrackObj.UID,
-                    SpanIndex = sectionIndex++,
+                    SpanIndex = sectionIndex,
+                    OwnPathStart = sectionIndex == 0,
+                    OwnPathEnd = sectionIndex + 1 == activeSections.Count,
                 };
+                sectionIndex++;
 
                 if (tmp != null) // Section does have superelevation
                 {

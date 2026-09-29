@@ -474,8 +474,19 @@ namespace Orts.Viewer3D
                     continue;
                 }
 
+                if (placement.Location ==
+                        TrackProfileTemplate3D.PlacementLocation.PathStart &&
+                    !source.PathContext.OwnPathStart)
+                    continue;
+                if (placement.Location ==
+                        TrackProfileTemplate3D.PlacementLocation.PathEnd &&
+                    !source.PathContext.OwnPathEnd)
+                    continue;
+
                 bool atEnd = placement.Location ==
-                    TrackProfileTemplate3D.PlacementLocation.End;
+                        TrackProfileTemplate3D.PlacementLocation.SpanEnd ||
+                    placement.Location ==
+                        TrackProfileTemplate3D.PlacementLocation.PathEnd;
                 AppendPlacement(source, lodItem, template, meshes,
                     atEnd ? source.GetPathLengthM() : 0, false, atEnd,
                     placement.Facing, copyIndex++, vertices, indices,

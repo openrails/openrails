@@ -684,6 +684,7 @@ namespace Orts.Formats.Msts
         {
             switch (subBlock.ID)
             {
+                case TokenID.FileName: FileName = subBlock.ReadString(); break;
                 case TokenID.Position: Position = new STFPositionItem(subBlock); break;
                 case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
                 case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;

@@ -452,7 +452,10 @@ namespace Orts.Viewer3D
                     else if (worldObject.GetType() == typeof(RulerObj))
                     {
                         RulerShape.Decompose(viewer, dTrackList,
-                            (RulerObj)worldObject, worldMatrix);
+                            sceneryObjects, (RulerObj)worldObject,
+                            worldMatrix, shapeFilePath,
+                            shadowCaster ? ShapeFlags.ShadowCaster :
+                                ShapeFlags.None);
                     }
                     // Objects other than tracks
                     else if (worldObject.GetType() == typeof(ForestObj))
