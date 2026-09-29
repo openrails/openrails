@@ -10850,7 +10850,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         public override void SetStepSize(PickupObj matchPickup)
         {
             uint type = matchPickup.PickupType;
-            if (type == (uint)PickupType.FuelCoal && type == (uint)PickupType.FuelWood && type == (uint)PickupType.FuelDiesel && MaxTenderFuelMassKG != 0)
+            if ((type == (uint)PickupType.FuelCoal || type == (uint)PickupType.FuelWood || type == (uint)PickupType.FuelDiesel) && MaxTenderFuelMassKG != 0)
                 FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxTenderFuelMassKG);
             else if (type == (uint)PickupType.FuelWater && MaxLocoTenderWaterMassKG != 0)
                 WaterController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxLocoTenderWaterMassKG);
