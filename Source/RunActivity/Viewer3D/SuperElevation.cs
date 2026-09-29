@@ -17,15 +17,15 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Orts.Viewer3D
 {
@@ -61,14 +61,22 @@ namespace Orts.Viewer3D
 
             bool dontRender = false; // Should this shape be left as a static object?
             bool removePhys = false; // Should superelevation physics be removed from this object?
+            string requestedTemplate = trackObj.ShapeTemplate == null
+                ? null : trackObj.ShapeTemplate.Trim();
+            bool templateDisabled = string.Equals(requestedTemplate, "DISABLED",
+                StringComparison.OrdinalIgnoreCase);
+            bool explicitProcedural = false;
+            bool isRoadShape = false;
             SectionIdx[] SectionIdxs;
 
             // Using the track object, determine the track sections
             // Most track sections can be recovered directly from a TrackShape object
             if (viewer.Simulator.TSectionDat.TrackShapes.TryGetValue(trackObj.SectionIdx, out TrackShape shape))
             {
-                if (shape.RoadShape)
-                    return false; // Roads don't use superelevation, no use in processing them.
+                isRoadShape = shape.RoadShape;
+                if (isRoadShape && (string.IsNullOrEmpty(requestedTemplate) ||
+                    templateDisabled))
+                    return false; // Ordinary roads retain their original static shape.
 
                 // Can't render superelevation on tunnel shapes
                 dontRender = shape.TunnelShape;
@@ -90,46 +98,67 @@ namespace Orts.Viewer3D
             // 0 = centered, positive = rotation axis moves to inside of curve, negative = moves to outside of curve
             float rollOffsetM = 0.0f;
 
-            // Determine the track profile to use for this section based on the shape file
-            int trpIndex = DynamicTrackViewer.GetBestTrackProfile(viewer, shapeFilePath);
-
             TrProfile trProfile = null;
-            // If a track profile is found (index exists), continue processing
-            if (trpIndex >= 0 && trpIndex < viewer.TRPs.Count)
+            TRPFile selectedProfileFile = null;
+            if (templateDisabled)
+                dontRender = true;
+            else if (!string.IsNullOrEmpty(requestedTemplate))
             {
-                trProfile = viewer.TRPs[trpIndex].TrackProfile;
-
-                // If this track profile has superelevation disabled, don't bother rendering anything
-                if (trProfile.ElevationType == TrProfile.SuperElevationMethod.None)
+                explicitProcedural = TRPFile.TryResolveStaticTrackProfile(
+                    viewer.TRPs, requestedTemplate, isRoadShape,
+                    out selectedProfileFile);
+                if (explicitProcedural)
+                    trProfile = selectedProfileFile.TrackProfile;
+                if (!explicitProcedural)
                     dontRender = true;
-                else // Superelevation enabled, check the roll offset
+            }
+            else
+            {
+                // Preserve the legacy ORTS profile selection when no explicit template is present.
+                int trpIndex = DynamicTrackViewer.GetBestTrackProfile(viewer, shapeFilePath);
+                if (trpIndex >= 0 && trpIndex < viewer.TRPs.Count)
                 {
-                    switch (trProfile.ElevationType)
-                    {
-                        case TrProfile.SuperElevationMethod.Outside: // Only outside rail should elevate
-                            rollOffsetM = trProfile.TrackGaugeM / 2.0f;
-                            break;
-                        case TrProfile.SuperElevationMethod.Inside: // Only inside rail should elevate
-                            rollOffsetM = -trProfile.TrackGaugeM / 2.0f;
-                            break;
-                        case TrProfile.SuperElevationMethod.Both: // Both rails should elevate
-                        default:
-                            rollOffsetM = 0.0f;
-                            break;
-                    }
+                    trProfile = viewer.TRPs[trpIndex].TrackProfile;
+                    if (trProfile.ElevationType == TrProfile.SuperElevationMethod.None)
+                        dontRender = true;
+                }
+                else
+                    dontRender = true;
+            }
+
+            if (!dontRender && trProfile.ElevationType != TrProfile.SuperElevationMethod.None)
+            {
+                switch (trProfile.ElevationType)
+                {
+                    case TrProfile.SuperElevationMethod.Outside: // Only outside rail should elevate
+                        rollOffsetM = trProfile.TrackGaugeM / 2.0f;
+                        break;
+                    case TrProfile.SuperElevationMethod.Inside: // Only inside rail should elevate
+                        rollOffsetM = -trProfile.TrackGaugeM / 2.0f;
+                        break;
+                    case TrProfile.SuperElevationMethod.Both: // Both rails should elevate
+                    default:
+                        rollOffsetM = 0.0f;
+                        break;
                 }
             }
-            else // No track profile suitable, don't render with superelevation
-                dontRender = true;
 
             // Right now it's not confirmed if superelevation viewers are actually needed, so they are added to a temporary list
             List<DynamicTrackViewer> tempViewers = new List<DynamicTrackViewer>();
             // Also keep track of which sections are superelevated
             List<TrVectorSection> superElevationSections = new List<TrVectorSection>();
+            TrProfile[] pathProfiles = explicitProcedural
+                ? TRPFile.ResolveStaticPathProfiles(
+                    viewer.TRPs, selectedProfileFile, SectionIdxs)
+                : null;
 
             // Iterate through all subsections
-            foreach (SectionIdx id in SectionIdxs)
+            for (int pathIndex = 0; pathIndex < SectionIdxs.Length; pathIndex++)
             {
+                SectionIdx id = SectionIdxs[pathIndex];
+                TrProfile pathProfile = pathProfiles != null &&
+                    pathIndex < pathProfiles.Length
+                    ? pathProfiles[pathIndex] : trProfile;
                 // The following vectors represent local positioning relative to root of original section:
                 Vector3 offset = new Vector3((float)id.X, (float)id.Y, -(float)id.Z); // Offset from section origin for this series of sections
                 Vector3 localV = Vector3.Zero; // Local position of subsection (in x-z plane)
@@ -146,6 +175,7 @@ namespace Orts.Viewer3D
                 Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Original position for entire section
                 worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
 
+                int sectionIndex = 0;
                 foreach (uint sid in id.TrackSections)
                 {
                     TrackSection section = viewer.Simulator.TSectionDat.TrackSections.Get(sid);
@@ -159,22 +189,39 @@ namespace Orts.Viewer3D
                     localV = localProjectedV; // Move position to next subsection
 
                     // To determine if this section needs superelevation, search for it in the global superelevation dictionary
-                    TrVectorSection tmp = FindSuperElevationSection(viewer, section, trackObj.UID, root, nextRoot, out bool reversed);
+                    bool reversed = false;
+                    TrVectorSection tmp = isRoadShape ? null :
+                        FindSuperElevationSection(viewer, section,
+                            trackObj.UID, root, nextRoot, out reversed);
+                    var pathContext = new TrackProfilePathContext
+                    {
+                        ObjectIndex = (int)trackObj.UID,
+                        SpanIndex = sectionIndex++,
+                    };
 
                     if (tmp != null) // Section does have superelevation, prepare to generate it with superelevation
                     {
                         superElevationSections.Add(tmp);
 
-                        if (!dontRender)
+                        if (!dontRender && trProfile.ElevationType != TrProfile.SuperElevationMethod.None)
                         {
                             tmp.ElevOffsetM = rollOffsetM;
 
                             // Processing done, prepare to generate section with superelevation
-                            tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile, tmp.VisElevTable, tmp.ElevOffsetM, reversed));
+                            tempViewers.Add(new SuperElevationViewer(viewer,
+                                root, nextRoot, radius, length, pathProfile,
+                                tmp.VisElevTable, tmp.ElevOffsetM, reversed,
+                                pathContext));
                         }
+                        else if (!dontRender)
+                            tempViewers.Add(new SuperElevationViewer(viewer,
+                                root, nextRoot, radius, length, pathProfile,
+                                pathContext: pathContext));
                     }
                     else if (!dontRender) // Section doesn't have superelevation, prepare to generate it without superelevation
-                        tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile));
+                        tempViewers.Add(new SuperElevationViewer(viewer,
+                            root, nextRoot, radius, length, pathProfile,
+                            pathContext: pathContext));
                 }
             }
 
@@ -187,11 +234,11 @@ namespace Orts.Viewer3D
                 return false;
             }
             // We are rendering superelevation, add all superelevation viewers to the global list to be rendered
-            else if (superElevationSections.Count > 0 && tempViewers.Count > 0)
+            else if ((superElevationSections.Count > 0 || explicitProcedural) && tempViewers.Count > 0)
                 dTrackList.AddRange(tempViewers);
 
-            // If no sections with superelevation were found, WorldFile should render with static shapes
-            return superElevationSections.Count > 0;
+            // Explicit templates also replace static shapes which have no superelevated sections.
+            return superElevationSections.Count > 0 || explicitProcedural;
         }
 
         /// <summary>
@@ -519,8 +566,11 @@ namespace Orts.Viewer3D
 
             // Right now it's not confirmed if superelevation viewers are actually needed, so they are added to a temporary list
             List<DynamicTrackViewer> tempViewers = new List<DynamicTrackViewer>();
+            TrProfile trProfile = TRPFile.ResolveDynamicTrackProfile(
+                viewer.TRPs, dTrackObj.ShapeTemplate, dTrackObj.IsRoad);
 
             // Iterate through all subsections
+            int sectionIndex = 0;
             foreach (DyntrackObj.TrackSection dSection in dTrackObj.trackSections)
             {
                 if (dSection.param1 == 0.0f || dSection.UiD == UInt32.MaxValue)
@@ -554,13 +604,18 @@ namespace Orts.Viewer3D
                 localV = localProjectedV; // Move position to next subsection
 
                 // To determine if this section needs superelevation, search for it in the global superelevation dictionary
-                TrVectorSection tmp = FindSuperElevationSection(viewer, section, dTrackObj.UID, root, nextRoot, out bool reversed);
+                bool reversed = false;
+                TrVectorSection tmp = dTrackObj.IsRoad ? null :
+                    FindSuperElevationSection(viewer, section, dTrackObj.UID,
+                        root, nextRoot, out reversed);
+                var pathContext = new TrackProfilePathContext
+                {
+                    ObjectIndex = (int)dTrackObj.UID,
+                    SpanIndex = sectionIndex++,
+                };
 
                 if (tmp != null) // Section does have superelevation
                 {
-                    // FUTURE: Allow dynamic track to use track profiles other than the 0th one
-                    TrProfile trProfile = viewer.TRPs[0].TrackProfile;
-                    
                     // Superelevation is enabled, generate track section with superelevation
                     if (viewer.Simulator.UseSuperElevation)
                     {
@@ -586,13 +641,20 @@ namespace Orts.Viewer3D
                             tmp.VisElevTable.ScaleY(0.0f);
 
                         // Processing done, prepare to generate section with superelevation
-                        tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile, tmp.VisElevTable, tmp.ElevOffsetM, reversed));
+                        tempViewers.Add(new SuperElevationViewer(viewer, root,
+                            nextRoot, radius, length, trProfile,
+                            tmp.VisElevTable, tmp.ElevOffsetM, reversed,
+                            pathContext));
                     }
                     else // Superelevation disabled, generate without superelevation
-                        tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile));
+                        tempViewers.Add(new SuperElevationViewer(viewer, root,
+                            nextRoot, radius, length, trProfile,
+                            pathContext: pathContext));
                 }
                 else // Section doesn't have superelevation, prepare to generate it without superelevation
-                    tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length));
+                    tempViewers.Add(new SuperElevationViewer(
+                        viewer, root, nextRoot, radius, length, trProfile,
+                        pathContext: pathContext));
             }
 
             // Add all the generated sections to the main list
@@ -603,11 +665,14 @@ namespace Orts.Viewer3D
     public class SuperElevationViewer : DynamicTrackViewer
     {
         public SuperElevationViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle,
-            TrProfile trProfile = null, Interpolator elevs = null, float rollOffset = 0, bool reversed = false)
+            TrProfile trProfile = null, Interpolator elevs = null, float rollOffset = 0, bool reversed = false,
+            TrackProfilePathContext pathContext = null)
             : base(viewer, position)
         {
             // Instantiate classes
-            Primitive = new SuperElevationPrimitive(viewer, position, endPosition, radius, angle, trProfile, elevs, rollOffset, reversed);
+            Primitive = new SuperElevationPrimitive(viewer, position,
+                endPosition, radius, angle, trProfile, elevs, rollOffset,
+                reversed, pathContext);
         }
     }
 
@@ -625,9 +690,13 @@ namespace Orts.Viewer3D
         readonly bool Reversed;
 
         public SuperElevationPrimitive(Viewer viewer, WorldPosition worldPosition, WorldPosition endPosition, float radius,
-            float angle, TrProfile trProfile = null, Interpolator elevs = null, float rollOffset = 0, bool reversed = false)
+            float angle, TrProfile trProfile = null, Interpolator elevs = null, float rollOffset = 0, bool reversed = false,
+            TrackProfilePathContext pathContext = null)
             : base()
-        {Reversed = reversed;
+        {
+            Reversed = reversed;
+
+            PathContext = pathContext ?? new TrackProfilePathContext();
 
             // Set up orientation matrix, which describes the initial heading of the section in local coordinates
             Orientation = worldPosition.XNAMatrix;
@@ -642,7 +711,15 @@ namespace Orts.Viewer3D
             // Renormalize the quaternion after deleting X and Z to get the Y component of rotation
             rotation.Normalize();
             // Cancel out the Y rotation of the orientation matrix to translate it to local coordinates
-            Orientation = Orientation * Matrix.Invert(Matrix.CreateFromQuaternion(rotation));
+            Matrix yawRotation = Matrix.CreateFromQuaternion(rotation);
+            Orientation = Orientation * Matrix.Invert(yawRotation);
+            Matrix inverseYawRotation = Matrix.Invert(yawRotation);
+            if (PathContext.StartDirection.HasValue)
+                PathContext.StartDirection = Vector3.TransformNormal(
+                    PathContext.StartDirection.Value, inverseYawRotation);
+            if (PathContext.EndDirection.HasValue)
+                PathContext.EndDirection = Vector3.TransformNormal(
+                    PathContext.EndDirection.Value, inverseYawRotation);
 
             // Use the given angles of superelevation, or zero if none was given
             ElevAngles = elevs ?? new Interpolator(new float[] { 0, 1 }, new float[] { 0, 0 });
@@ -734,6 +811,8 @@ namespace Orts.Viewer3D
                     displacement = LinearGen(out totLength);
                 else
                     displacement = CircArcGen(out totLength);
+                displacement = ApplyPathFrameMode(displacement,
+                    lodItem.PathFrameMode);
 
                 rotation = displacement;
                 rotation.Translation = Vector3.Zero;
@@ -747,7 +826,8 @@ namespace Orts.Viewer3D
                         Vector3 p = v.Position;
 
                         // Rotate the vertex position based on superelevation
-                        if (Direction != 0)
+                        if (Direction != 0 && lodItem.PathFrameMode ==
+                            LODItem.PathFrameModes.Full)
                         {
                             // Check if this vertex should be translated by superelevation
                             bool reposition = v.PositionControl != Vertex.VertexPositionControl.None;
@@ -844,14 +924,29 @@ namespace Orts.Viewer3D
         Matrix DetermineRotation()
         {
             float to = (float)Offset / NumSections;
+            return DetermineRotation(to);
+        }
+
+        Matrix DetermineRotation(float fraction)
+        {
             float angle;
 
             if (Reversed)
-                angle = -ElevAngles[1 - to];
+                angle = -ElevAngles[1 - fraction];
             else
-                angle = ElevAngles[to];
+                angle = ElevAngles[fraction];
             
             return Matrix.CreateRotationZ(angle);
+        }
+
+        protected override Matrix GetFullProfileFrame(Matrix baseFrame,
+            float fraction)
+        {
+            if (Direction == 0)
+                return baseFrame;
+            return Matrix.CreateTranslation(-RollOffset) *
+                DetermineRotation(fraction) *
+                Matrix.CreateTranslation(RollOffset) * baseFrame;
         }
     }
 }

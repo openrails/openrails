@@ -82,7 +82,6 @@ namespace Orts.Formats.Msts
         {
             TokenID.VDbIdCount,
             TokenID.ViewDbSphere,
-            TokenID.Ruler,
         };
 
         public Tr_Worldfile(SBR block, string filename, List<TokenID> allowedTokens)
@@ -139,6 +138,9 @@ namespace Orts.Formats.Msts
                 case TokenID.Dyntrack:
                 case (TokenID)306:
                     Add(new DyntrackObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.Ruler:
+                    Add(new RulerObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Transfer:
                 case (TokenID)363:
@@ -256,6 +258,7 @@ namespace Orts.Formats.Msts
             if (subBlock.ID == TokenID.LevelCr && origObject is LevelCrossingObj) return true;
             if (subBlock.ID == TokenID.Hazard && origObject is HazardObj) return true;
             if (subBlock.ID == TokenID.CarSpawner && origObject is CarSpawnerObj) return true;
+            if (subBlock.ID == TokenID.Ruler && origObject is RulerObj) return true;
             return false;
         }
     }
@@ -508,6 +511,7 @@ namespace Orts.Formats.Msts
         public float Elevation;
         public uint CollideFlags;
         public JNodePosn JNodePosn;
+        public string ShapeTemplate;
 
         public TrackObj(SBR block, int detailLevel)
         {
@@ -527,6 +531,7 @@ namespace Orts.Formats.Msts
                 case TokenID.Elevation: Elevation = subBlock.ReadFloat(); break;
                 case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
                 case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                case TokenID.ShapeTemplate: ShapeTemplate = subBlock.ReadString(); break;
                 case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
                 case TokenID.Position: Position = new STFPositionItem(subBlock); break;
                 case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
@@ -540,10 +545,14 @@ namespace Orts.Formats.Msts
 
     public class DyntrackObj : WorldObject
     {
+        const uint RoadStaticFlag = 0x00000100;
+
         public readonly uint SectionIdx;
         public readonly float Elevation;
         public readonly uint CollideFlags;
         public readonly TrackSections trackSections;
+        public readonly string ShapeTemplate;
+        public bool IsRoad { get { return (StaticFlags & RoadStaticFlag) != 0; } }
 
         public DyntrackObj(SBR block, int detailLevel)
         {
@@ -559,6 +568,7 @@ namespace Orts.Formats.Msts
                         case TokenID.SectionIdx: SectionIdx = subBlock.ReadUInt(); break;
                         case TokenID.Elevation: Elevation = subBlock.ReadFloat(); break;
                         case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
+                        case TokenID.ShapeTemplate: ShapeTemplate = subBlock.ReadString(); break;
                         case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
                         case TokenID.Position: Position = new STFPositionItem(subBlock); break;
                         case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
@@ -576,6 +586,7 @@ namespace Orts.Formats.Msts
             this.SectionIdx = copy.SectionIdx;
             this.Elevation = copy.Elevation;
             this.CollideFlags = copy.CollideFlags;
+            this.ShapeTemplate = copy.ShapeTemplate;
             this.StaticFlags = copy.StaticFlags;
             this.Position = new STFPositionItem(copy.Position);
             this.QDirection = new STFQDirectionItem(copy.QDirection);
@@ -650,6 +661,35 @@ namespace Orts.Formats.Msts
                 this.param1 = copy.param1;
                 this.param2 = copy.param2;
                 this.deltaY = copy.deltaY;
+            }
+        }
+    }
+
+    /// <summary>
+    /// TSRE polyline object. Ruler points are MSTS coordinates relative to the
+    /// world tile; Position normally duplicates the first point.
+    /// </summary>
+    public class RulerObj : WorldObject
+    {
+        public points RulerPoints;
+        public string ShapeTemplate;
+
+        public RulerObj(SBR block, int detailLevel)
+        {
+            StaticDetailLevel = detailLevel;
+            ReadBlock(block);
+        }
+
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            switch (subBlock.ID)
+            {
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
+                case TokenID.points: RulerPoints = new points(subBlock); break;
+                case TokenID.ShapeTemplate: ShapeTemplate = subBlock.ReadString(); break;
+                default: subBlock.Skip(); break;
             }
         }
     }

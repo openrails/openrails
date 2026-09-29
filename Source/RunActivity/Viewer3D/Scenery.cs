@@ -384,8 +384,14 @@ namespace Orts.Viewer3D
                         }
                         else
                         {
+                            bool isMovingTable = containsMovingTable &&
+                                Program.Simulator.MovingTables.Any(movingTable =>
+                                    worldObject.UID == movingTable.UID &&
+                                    WFileName == movingTable.WFile);
+
                             // See if superelevation should be used on this piece of track
-                            if (viewer.Simulator.UseSuperElevation
+                            if (!isMovingTable
+                                && viewer.Simulator.UseSuperElevation
                                 && SuperElevationManager.DecomposeStaticSuperElevation(viewer, trackObj, worldMatrix, dTrackList, shapeFilePath))
                             {
                                 // Don't add scenery for this section of track, dynamic superelevated track will be created instead
@@ -433,11 +439,20 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(DyntrackObj))
                     {
-                        if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
-                            Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        DyntrackObj dyntrackObj = (DyntrackObj)worldObject;
+                        if (!dyntrackObj.IsRoad &&
+                            viewer.Simulator.Settings.Wire == true &&
+                            viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
+                            Wire.DecomposeDynamicWire(viewer, dTrackList, dyntrackObj, worldMatrix);
                         // Add DyntrackDrawers for individual subsections
-                        SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        SuperElevationManager.DecomposeDynamicSuperElevation(
+                            viewer, dTrackList, dyntrackObj, worldMatrix);
 
+                    }
+                    else if (worldObject.GetType() == typeof(RulerObj))
+                    {
+                        RulerShape.Decompose(viewer, dTrackList,
+                            (RulerObj)worldObject, worldMatrix);
                     }
                     // Objects other than tracks
                     else if (worldObject.GetType() == typeof(ForestObj))
