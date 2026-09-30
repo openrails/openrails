@@ -1799,7 +1799,7 @@ namespace Orts.Viewer3D
         /// Generates the ShapePrimitives for this dynamic track section, must
         /// be called in order for any graphics to be rendered.
         /// </summary>
-        public void PreparePrimitives(Viewer viewer)
+        public virtual void PreparePrimitives(Viewer viewer)
         {
             var primitives = new List<ShapePrimitive>();
             var transforms = new List<Matrix[]>();

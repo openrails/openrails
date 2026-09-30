@@ -142,6 +142,9 @@ namespace Orts.Formats.Msts
                 case TokenID.Ruler:
                     Add(new RulerObj(subBlock, currentWatermark));
                     break;
+                case TokenID.Telepole:
+                    Add(new TelepoleObj(subBlock, currentWatermark));
+                    break;
                 case TokenID.Transfer:
                 case (TokenID)363:
                     Add(new TransferObj(subBlock, currentWatermark));
@@ -259,6 +262,7 @@ namespace Orts.Formats.Msts
             if (subBlock.ID == TokenID.Hazard && origObject is HazardObj) return true;
             if (subBlock.ID == TokenID.CarSpawner && origObject is CarSpawnerObj) return true;
             if (subBlock.ID == TokenID.Ruler && origObject is RulerObj) return true;
+            if (subBlock.ID == TokenID.Telepole && origObject is TelepoleObj) return true;
             return false;
         }
     }
@@ -690,6 +694,52 @@ namespace Orts.Formats.Msts
                 case TokenID.Matrix3x3: Matrix3x3 = new Matrix3x3(subBlock); break;
                 case TokenID.points: RulerPoints = new points(subBlock); break;
                 case TokenID.ShapeTemplate: ShapeTemplate = subBlock.ReadString(); break;
+                default: subBlock.Skip(); break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Native MSTS Telepole object. Pole resources and wire attachment points
+    /// are selected through the route's telepole.dat file.
+    /// </summary>
+    public class TelepoleObj : WorldObject
+    {
+        public uint Population;
+        public Vector3? StartPosition;
+        public Vector3? EndPosition;
+        public uint StartType;
+        public uint EndType;
+        public float StartDirection;
+        public float EndDirection;
+        public uint Config;
+        public uint Quality;
+        public Vector3 Direction;
+        public float MaxVisDistance;
+
+        public TelepoleObj(SBR block, int detailLevel)
+        {
+            StaticDetailLevel = detailLevel;
+            ReadBlock(block);
+        }
+
+        public override void AddOrModifyObj(SBR subBlock)
+        {
+            switch (subBlock.ID)
+            {
+                case TokenID.Population: Population = subBlock.ReadUInt(); break;
+                case TokenID.StartPosition: StartPosition = subBlock.ReadVector3(); break;
+                case TokenID.EndPosition: EndPosition = subBlock.ReadVector3(); break;
+                case TokenID.StartType: StartType = subBlock.ReadUInt(); break;
+                case TokenID.EndType: EndType = subBlock.ReadUInt(); break;
+                case TokenID.StartDirection: StartDirection = subBlock.ReadFloat(); break;
+                case TokenID.EndDirection: EndDirection = subBlock.ReadFloat(); break;
+                case TokenID.Config: Config = subBlock.ReadUInt(); break;
+                case TokenID.Quality: Quality = subBlock.ReadUInt(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.Direction: Direction = subBlock.ReadVector3(); break;
+                case TokenID.MaxVisDistance: MaxVisDistance = subBlock.ReadFloat(); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
                 default: subBlock.Skip(); break;
             }
         }

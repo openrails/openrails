@@ -128,7 +128,7 @@ namespace ContentChecker
                         return new NotUsedLoader(); // mdrivers.dat
 
                     case "SIMISA@@@@@@@@@@JINX0r1t______":
-                        return new NotUsedLoader(); // telepole.dat
+                        return new TelepoleLoader();
 
                     case "SIMISA@@@@@@@@@@JINX0S0t______":
                         return new NotUsedLoader(); // Global/soundcfg.dat

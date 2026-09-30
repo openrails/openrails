@@ -313,7 +313,20 @@ namespace Orts.Viewer3D
 
                 // Get the position of the scenery object into ORTS coordinate space.
                 WorldPosition worldMatrix;
-                if (worldObject.Matrix3x3 != null && worldObject.Position != null)
+                if (worldObject is TelepoleObj)
+                {
+                    worldMatrix = new WorldPosition
+                    {
+                        TileX = WFile.TileX,
+                        TileZ = WFile.TileZ,
+                    };
+                    if (worldObject.Position != null)
+                        worldMatrix.Location = new Vector3(
+                            worldObject.Position.X,
+                            worldObject.Position.Y,
+                            worldObject.Position.Z);
+                }
+                else if (worldObject.Matrix3x3 != null && worldObject.Position != null)
                     worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.Matrix3x3);
                 else if (worldObject.QDirection != null && worldObject.Position != null)
                     worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.QDirection);
@@ -454,6 +467,14 @@ namespace Orts.Viewer3D
                         RulerShape.Decompose(viewer, dTrackList,
                             sceneryObjects, (RulerObj)worldObject,
                             worldMatrix, shapeFilePath,
+                            shadowCaster ? ShapeFlags.ShadowCaster :
+                                ShapeFlags.None);
+                    }
+                    else if (worldObject.GetType() == typeof(TelepoleObj))
+                    {
+                        TelepoleShape.Decompose(viewer, dTrackList,
+                            sceneryObjects, (TelepoleObj)worldObject,
+                            WFile.TileX, WFile.TileZ,
                             shadowCaster ? ShapeFlags.ShadowCaster :
                                 ShapeFlags.None);
                     }

@@ -294,6 +294,7 @@ namespace Orts.Parsers.Msts
         Static = 303,
         TrackObj = 305,
         Forest = 308,
+        Telepole = 309,
         CollideObject = 311,
         Signal = 317,
         Platform = 360,
