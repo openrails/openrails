@@ -294,11 +294,19 @@ namespace Orts.Parsers.Msts
         /// //////////////////////////////////////////////////////
         Static = 0x00040003,
         TrackObj = 0x00040005,
+        Dyntrack = 0x00040006,
         Forest = 0x00040008,
         CollideObject = 0x0004000B,
+        Wagon = 0x0004000D,
+        Engine = 0x0004000E,
         Signal = 0x00040011,
+        Gantry = 0x00040038,
+        CarSpawner = 0x00040039,
+        Pickup = 0x0004003B,
         Platform = 0x0004003C,
+        Siding = 0x0004003D,
         LevelCr = 0x0004003E,
+        Transfer = 0x0004003F,
         Speedpost = 0x00040040,
         Hazard = 0x00040041,
 
@@ -1691,16 +1699,6 @@ namespace Orts.Parsers.Msts
         TimetableTollerance,
 
         DEMPath,
-
-        // Additional MSTS forms: canonical IDs replace the former arbitrary values.
-        CarSpawner = 0x00040039,
-        Siding = 0x0004003D,
-        Dyntrack = 0x00040006,
-        Transfer = 0x0004003F,
-        Gantry = 0x00040038,
-        Pickup = 0x0004003B,
-        Wagon = 0x0004000D,
-        Engine = 0x0004000E,
 
         // Proposed ORTS namespace (5), file-token range starting at local ID 2048.
         // Keep explicit assignments stable; append new IDs without renumbering.
