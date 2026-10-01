@@ -1719,7 +1719,14 @@ namespace Orts.Parsers.Msts
         Flipped = 0x0005080E,
 
         // Proposed TSRE namespace (6), with the same reserved local range.
-        Ruler = 0x00060800
+        Ruler = 0x00060800,
+
+        // Procedural terrain extensions.
+        TSRETerrainMaterialBuffer = 0x00061000,
+        TSRETerrainBakedMaterial = 0x00061001,
+        TSRETerrainMaterialMap = 0x00061002,
+        TSRETerrainBakedMaterials = 0x00061003,
+        TSRETerrainMaterials = 0x00061004
     }
 
 }

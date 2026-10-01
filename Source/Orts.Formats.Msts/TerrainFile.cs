@@ -15,12 +15,161 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
 {
+    public class terrain_materials
+    {
+        readonly Dictionary<byte, uint> materialUids = new Dictionary<byte, uint>();
+
+        public string MaterialBuffer { get; private set; }
+        public IReadOnlyDictionary<byte, uint> MaterialUids { get { return materialUids; } }
+        public bool IsValid { get; private set; } = true;
+        public string Error { get; private set; }
+
+        bool materialBufferSeen;
+        bool materialMapSeen;
+
+        public terrain_materials(SBR block)
+        {
+            block.VerifyID(TokenID.TSRETerrainMaterials);
+            while (!block.EndOfBlock())
+            {
+                using (var subBlock = block.ReadSubBlock())
+                {
+                    switch (subBlock.ID)
+                    {
+                        case TokenID.TSRETerrainMaterialBuffer:
+                            if (materialBufferSeen)
+                                MarkInvalid("Duplicate procedural terrain material buffer");
+                            else
+                            {
+                                materialBufferSeen = true;
+                                string value;
+                                if (TryReadString(subBlock, out value))
+                                    MaterialBuffer = value;
+                                else
+                                    MarkInvalid("Invalid procedural terrain material buffer");
+                            }
+                            break;
+                        case TokenID.TSRETerrainMaterialMap:
+                            if (materialMapSeen)
+                                MarkInvalid("Duplicate procedural terrain material map");
+                            else
+                            {
+                                materialMapSeen = true;
+                                Dictionary<byte, uint> values;
+                                if (TryReadMaterialMap(subBlock, out values))
+                                    foreach (var value in values)
+                                        materialUids.Add(value.Key, value.Value);
+                                else
+                                    MarkInvalid("Invalid procedural terrain material map");
+                            }
+                            break;
+                        case TokenID.TSRETerrainBakedMaterial:
+                        case TokenID.TSRETerrainBakedMaterials:
+                            // The existing terrain shaders already provide the compatibility bake.
+                            subBlock.Skip();
+                            break;
+                        default:
+                            subBlock.Skip();
+                            break;
+                    }
+                }
+            }
+
+            if (!materialBufferSeen || !materialMapSeen)
+                MarkInvalid("Incomplete procedural terrain material data");
+        }
+
+        internal void MarkInvalid(string error)
+        {
+            if (IsValid)
+                Error = error;
+            IsValid = false;
+        }
+
+        static bool TryReadString(SBR block, out string value)
+        {
+            value = null;
+            var binary = block as BinaryBlockReader;
+            if (binary == null)
+            {
+                value = block.ReadString();
+                block.Skip();
+                return !String.IsNullOrEmpty(value);
+            }
+
+            if (binary.RemainingBytes < 2)
+            {
+                binary.Skip();
+                return false;
+            }
+
+            ushort count = binary.InputStream.ReadUInt16();
+            binary.RemainingBytes -= 2;
+            uint byteCount = (uint)count * 2;
+            if (count == 0 || byteCount > binary.RemainingBytes)
+            {
+                binary.Skip();
+                return false;
+            }
+
+            byte[] bytes = binary.InputStream.ReadBytes((int)byteCount);
+            if (bytes.Length != byteCount)
+            {
+                binary.RemainingBytes = 0;
+                return false;
+            }
+            binary.RemainingBytes -= byteCount;
+            value = Encoding.Unicode.GetString(bytes);
+            binary.Skip();
+            return !String.IsNullOrEmpty(value);
+        }
+
+        static bool TryReadMaterialMap(SBR block, out Dictionary<byte, uint> values)
+        {
+            values = new Dictionary<byte, uint>();
+            var binary = block as BinaryBlockReader;
+            if (binary != null && binary.RemainingBytes < 4)
+            {
+                binary.Skip();
+                return false;
+            }
+
+            uint count = block.ReadUInt();
+            if (count > 256 || (binary != null && binary.RemainingBytes != count * 8))
+            {
+                block.Skip();
+                return false;
+            }
+
+            for (uint i = 0; i < count; ++i)
+            {
+                uint id = block.ReadUInt();
+                uint uid = block.ReadUInt();
+                if (id > Byte.MaxValue || uid == 0 || values.ContainsKey((byte)id))
+                {
+                    block.Skip();
+                    return false;
+                }
+                values.Add((byte)id, uid);
+            }
+
+            if (!block.EndOfBlock())
+            {
+                block.Skip();
+                return false;
+            }
+            return true;
+        }
+    }
+
     public class terrain_water_height_offset
     {
         public readonly float SW;
@@ -46,6 +195,7 @@ namespace Orts.Formats.Msts
         public readonly terrain_samples terrain_samples;
         public readonly terrain_shader[] terrain_shaders;
         public readonly terrain_patchset[] terrain_patchsets;
+        public readonly terrain_materials terrain_materials;
 
         public terrain(SBR block)
         {
@@ -85,6 +235,15 @@ namespace Orts.Formats.Msts
                                         terrain_patchsets[i] = new terrain_patchset(terrain_patchsetBlock);
                                 if (!subBlock.EndOfBlock())
                                     subBlock.Skip();
+                            }
+                            break;
+                        case TokenID.TSRETerrainMaterials:
+                            if (terrain_materials == null)
+                                terrain_materials = new terrain_materials(subBlock);
+                            else
+                            {
+                                terrain_materials.MarkInvalid("Duplicate procedural terrain material container");
+                                subBlock.Skip();
                             }
                             break;
                     }
