@@ -14897,9 +14897,9 @@ namespace Orts.Simulation.Physics
                                     signalObjectItem.distance_to_train,
                                     signalObjectItem.ObjectDetails,
                                     (TrainObjectItem.SpeedItemType)signalObjectItem.speed_noSpeedReductionOrIsTempSpeedReduction);
-                            PlayerTrainSpeedposts[dir].Add(thisItem);
+                                PlayerTrainSpeedposts[dir].Add(thisItem);
+                            }
                         }
-                    }
                     }
                     if (!signalProcessed && NextSignalObject[0] != null && NextSignalObject[0].enabledTrain != null && NextSignalObject[0].enabledTrain.Train == this)
                     {
