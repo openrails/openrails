@@ -53,6 +53,7 @@ namespace Orts.Formats.Msts
             bool versionSeen = false;
             bool nextUidSeen = false;
             uint version = 0;
+            string materialError = null;
             stf.MustMatch("(");
             stf.ParseBlock(new[] {
                 new STFReader.TokenProcessor("version", () => {
@@ -71,16 +72,22 @@ namespace Orts.Formats.Msts
                         throw new STFException(stf, "Invalid terrain material NextUiD");
                     NextUid = next;
                 }),
-                new STFReader.TokenProcessor("material", () => ReadMaterial(stf)),
+                new STFReader.TokenProcessor("material", () => {
+                    string error = ReadMaterial(stf);
+                    if (materialError == null)
+                        materialError = error;
+                }),
             });
 
+            if (materialError != null)
+                throw new STFException(stf, materialError);
             if (!versionSeen || version != 1 || !nextUidSeen || NextUid == 0 ||
                 NextUid > (ulong)UInt32.MaxValue + 1 ||
                 (materials.Count > 0 && NextUid <= MaximumUid()))
                 throw new STFException(stf, "Invalid terrain material Version or NextUiD");
         }
 
-        void ReadMaterial(STFReader stf)
+        string ReadMaterial(STFReader stf)
         {
             bool uidSeen = false;
             bool nameSeen = false;
@@ -112,9 +119,10 @@ namespace Orts.Formats.Msts
             });
 
             if (!uidSeen || uid == 0 || !nameSeen || String.IsNullOrEmpty(name) ||
-                !textureSeen || !ValidTextureName(texture) || materials.ContainsKey(uid))
-                throw new STFException(stf, "Invalid or duplicate terrain material definition");
+                !textureSeen || !IsSafeRelativePath(texture) || materials.ContainsKey(uid))
+                return "Invalid or duplicate terrain material definition";
             materials.Add(uid, new TerrainMaterialDefinition(uid, name, texture));
+            return null;
         }
 
         uint MaximumUid()
@@ -125,7 +133,7 @@ namespace Orts.Formats.Msts
             return maximum;
         }
 
-        static bool ValidTextureName(string name)
+        public static bool IsSafeRelativePath(string name)
         {
             if (String.IsNullOrEmpty(name) || Path.IsPathRooted(name) ||
                 name.IndexOf(':') >= 0 || name.IndexOf('\\') >= 0)

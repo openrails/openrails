@@ -66,6 +66,9 @@ namespace Orts.Viewer3D
         readonly EffectParameter imageTexture;
         readonly EffectParameter overlayTexture;
         readonly EffectParameter overlayScale;
+        readonly EffectParameter terrainMaterialMapTexture;
+        readonly EffectParameter terrainMaterialNoiseTexture;
+        readonly EffectParameter terrainMaterialData;
 
         // glTF-PBR:
         readonly EffectParameter baseColorFactor;
@@ -129,6 +132,8 @@ namespace Orts.Viewer3D
             ClearcoatNormal,
             Specular,
             SpecularColor,
+            TerrainMaterialMap,
+            TerrainMaterialNoise,
         }
 
         public void SetMatrix(Matrix w)
@@ -300,6 +305,17 @@ namespace Orts.Viewer3D
 
         public Vector2 TextureRotation { set { textureRotation.SetValue(value); } }
 
+        public Texture2D TerrainMaterialMapTexture { set { terrainMaterialMapTexture.SetValue(value); } }
+
+        public Texture2D TerrainMaterialNoiseTexture { set { terrainMaterialNoiseTexture.SetValue(value); } }
+
+        public void SetTerrainMaterialData(float inversePatchSize, float mapScale,
+            float mapOffsetX, float mapOffsetZ)
+        {
+            terrainMaterialData.SetValue(new Vector4(inversePatchSize, mapScale,
+                mapOffsetX, mapOffsetZ));
+        }
+
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
         {
@@ -360,6 +376,9 @@ namespace Orts.Viewer3D
             textureScale = Parameters["TextureScale"];
             textureOffset = Parameters["TextureOffset"];
             textureRotation = Parameters["TextureRotation"];
+            terrainMaterialMapTexture = Parameters["TerrainMaterialMapTexture"];
+            terrainMaterialNoiseTexture = Parameters["TerrainMaterialNoiseTexture"];
+            terrainMaterialData = Parameters["TerrainMaterialData"];
         }
     }
 

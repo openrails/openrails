@@ -121,6 +121,23 @@ namespace Tests.Orts.Formats.Msts
             }
         }
 
+        [Theory]
+        [InlineData("../tile_materials.pmap")]
+        [InlineData("tile_materials.dat")]
+        [InlineData("C:/tile_materials.pmap")]
+        public void UnsafeOrWrongTypeMaterialBufferDisablesOnlyProceduralTerrain(string materialBuffer)
+        {
+            byte[] extension = MaterialContainer(MaterialBuffer(materialBuffer), MaterialMap(0, 1));
+            using (var fixture = new TemporaryFile(TerrainFixture(extension.Concat(Samples(128)).ToArray())))
+            {
+                var file = new TerrainFile(fixture.FileName);
+                Assert.Equal(128, file.terrain.terrain_samples.terrain_nsamples);
+                Assert.False(file.terrain.terrain_materials.IsValid);
+                Assert.Contains("buffer", file.terrain.terrain_materials.Error,
+                    StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
         [Fact]
         public void TerrainMaterialCatalogueLoadsDefinitions()
         {
@@ -159,6 +176,24 @@ namespace Tests.Orts.Formats.Msts
 
             byte[] shortMap = EncodePmap(new byte[1024]);
             Assert.Throws<InvalidDataException>(() => TerrainMaterialMapFile.Decode(shortMap));
+        }
+
+        [Fact]
+        public void PatchAnalysisSortsCoverageAndIncludesBoundaryHalo()
+        {
+            byte[] ids = Enumerable.Repeat((byte)1, TerrainMaterialMapFile.DecodedSize).ToArray();
+            int patchSide = TerrainMaterialMapFile.Side / 16;
+            ids[0] = 2;
+            ids[patchSide] = 3;
+
+            var map = new TerrainMaterialMapFile(EncodePmap(ids));
+            TerrainMaterialMapFile.PatchCoverage[] patches = map.AnalyzePatches(16);
+
+            Assert.Equal((byte)1, patches[0].Materials[0].Key);
+            Assert.Equal(patchSide * patchSide - 1, patches[0].Materials[0].Value);
+            Assert.Contains(patches[0].Materials, item => item.Key == 2 && item.Value == 1);
+            Assert.Contains(patches[0].Materials, item => item.Key == 3 && item.Value == 0);
+            Assert.Contains(patches[1].Materials, item => item.Key == 3 && item.Value == 1);
         }
 
         static byte[] EncodePmap(byte[] ids)

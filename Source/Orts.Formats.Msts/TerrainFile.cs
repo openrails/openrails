@@ -46,12 +46,17 @@ namespace Orts.Formats.Msts
                     {
                         case TokenID.TSRETerrainMaterialBuffer:
                             if (materialBufferSeen)
+                            {
                                 MarkInvalid("Duplicate procedural terrain material buffer");
+                                subBlock.Skip();
+                            }
                             else
                             {
                                 materialBufferSeen = true;
                                 string value;
-                                if (TryReadString(subBlock, out value))
+                                if (TryReadString(subBlock, out value) &&
+                                    TerrainMaterialFile.IsSafeRelativePath(value) &&
+                                    String.Equals(Path.GetExtension(value), ".pmap", StringComparison.OrdinalIgnoreCase))
                                     MaterialBuffer = value;
                                 else
                                     MarkInvalid("Invalid procedural terrain material buffer");
@@ -59,7 +64,10 @@ namespace Orts.Formats.Msts
                             break;
                         case TokenID.TSRETerrainMaterialMap:
                             if (materialMapSeen)
+                            {
                                 MarkInvalid("Duplicate procedural terrain material map");
+                                subBlock.Skip();
+                            }
                             else
                             {
                                 materialMapSeen = true;
