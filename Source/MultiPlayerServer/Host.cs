@@ -3,6 +3,7 @@
 //
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
@@ -23,7 +24,9 @@ namespace MultiPlayerServer
 
         private static readonly Encoding encoding = Encoding.Unicode;
         private static readonly int charSize = encoding.GetByteCount("0");
-        private readonly Dictionary<string, TcpClient> onlinePlayers = new Dictionary<string, TcpClient>();
+        // Accessed concurrently: every client has its own PipeReadAsync task which adds and removes
+        // entries, while Broadcast enumerates the collection to fan a message out to everyone else.
+        private readonly ConcurrentDictionary<string, TcpClient> onlinePlayers = new ConcurrentDictionary<string, TcpClient>();
         private static readonly byte[] initData = encoding.GetBytes("10: SERVER YOU");
         private static readonly byte[] serverChallenge = encoding.GetBytes(" 21: SERVER WhoCanBeServer");
         private static readonly byte[] blankToken = encoding.GetBytes(" ");
@@ -165,7 +168,7 @@ namespace MultiPlayerServer
             string playerName = tcpClient.Client.RemoteEndPoint.ToString();
             bool playerNameSet = false;
             string quitPlayer;
-            onlinePlayers.Add(playerName, tcpClient);
+            onlinePlayers.TryAdd(playerName, tcpClient);
             if (onlinePlayers.Count == 1)
             {
                 currentServer = playerName;
@@ -183,12 +186,27 @@ namespace MultiPlayerServer
                     string player = playerName;
                     if (ReadPlayerName(buffer, ref player, out SequencePosition bytesProcessed))
                     {
-                        onlinePlayers.Remove(playerName);
-                        if (currentServer == playerName)
-                            currentServer = playerName = player;
-                        else
+                        if (player != playerName)
+                        {
+                            // The player name is supplied by the remote client and is not guaranteed to be
+                            // unique. Claim the new name before giving up this connection's existing key,
+                            // so that a clash cannot disturb the player who already holds that name.
+                            if (!onlinePlayers.TryAdd(player, tcpClient))
+                            {
+                                // Previously the duplicate threw ArgumentException out of this
+                                // fire-and-forget task, after the old key had already been removed - so
+                                // this client stayed connected but was absent from onlinePlayers and
+                                // silently received no broadcasts for the rest of the session.
+                                // playerName is still this connection's own key here, so the RemovePlayer
+                                // call below cleans up this connection only.
+                                Console.WriteLine($"Rejected duplicate player name '{player}'.");
+                                break;
+                            }
+                            onlinePlayers.TryRemove(playerName, out _);
+                            if (currentServer == playerName)
+                                currentServer = player;
                             playerName = player;
-                        onlinePlayers.Add(playerName, tcpClient);
+                        }
                         playerNameSet = true;
                     }
                     reader.AdvanceTo(bytesProcessed);
@@ -219,24 +237,33 @@ namespace MultiPlayerServer
         private void Broadcast(string playerName, ReadOnlyMemory<byte> buffer)
         {
             Console.WriteLine(encoding.GetString(buffer.Span).Replace("\r", Environment.NewLine, StringComparison.OrdinalIgnoreCase));
-            Parallel.ForEach(onlinePlayers.Keys, async player =>
+            // Take a snapshot: another client's task may add or remove entries while we fan the message
+            // out. Using the snapshot's value also removes the need to look the key up again, which was
+            // the throwing operation.
+            foreach (KeyValuePair<string, TcpClient> player in onlinePlayers.ToArray())
             {
-                if (player != playerName)
-                {
-                    try
-                    {
-                        TcpClient client = onlinePlayers[player];
-                        NetworkStream clientStream = client.GetStream();
-                        await clientStream.WriteAsync(buffer).ConfigureAwait(false);
-                        await clientStream.FlushAsync().ConfigureAwait(false);
-                    }
-                    catch (Exception ex) when (ex is System.IO.IOException || ex is SocketException || ex is InvalidOperationException)
-                    {
-                        if (playerName != null)
-                            await RemovePlayer(playerName).ConfigureAwait(false);
-                    }
-                }
-            });
+                if (player.Key != playerName)
+                    _ = SendToPlayer(playerName, player.Value, buffer);
+            }
+        }
+
+        // Sends to a single recipient. This is deliberately a named async Task method rather than an async
+        // lambda handed to Parallel.ForEach: that lambda bound to Action<T>, which made it async void, so
+        // any exception not matched by the filter below was rethrown on the thread pool as unhandled and
+        // terminated the whole server process.
+        private async Task SendToPlayer(string playerName, TcpClient client, ReadOnlyMemory<byte> buffer)
+        {
+            try
+            {
+                NetworkStream clientStream = client.GetStream();
+                await clientStream.WriteAsync(buffer).ConfigureAwait(false);
+                await clientStream.FlushAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is System.IO.IOException || ex is SocketException || ex is InvalidOperationException || ex is ObjectDisposedException)
+            {
+                if (playerName != null)
+                    await RemovePlayer(playerName).ConfigureAwait(false);
+            }
         }
 
         private async Task SendMessage(string playerName, ReadOnlyMemory<byte> buffer)
@@ -244,12 +271,13 @@ namespace MultiPlayerServer
             Console.WriteLine(encoding.GetString(buffer.Span).Replace("\r", Environment.NewLine, StringComparison.OrdinalIgnoreCase));
             try
             {
-                TcpClient client = onlinePlayers[playerName];
+                if (!onlinePlayers.TryGetValue(playerName, out TcpClient client))
+                    return;     // the player disconnected while this message was being prepared
                 NetworkStream clientStream = client.GetStream();
                 await clientStream.WriteAsync(buffer).ConfigureAwait(false);
                 await clientStream.FlushAsync().ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is System.IO.IOException || ex is SocketException || ex is InvalidOperationException)
+            catch (Exception ex) when (ex is System.IO.IOException || ex is SocketException || ex is InvalidOperationException || ex is ObjectDisposedException)
             {
                 if (playerName != null)
                     await RemovePlayer(playerName).ConfigureAwait(false);
@@ -258,7 +286,7 @@ namespace MultiPlayerServer
 
         private async Task RemovePlayer(string playerName)
         {
-            if (onlinePlayers.Remove(playerName))
+            if (onlinePlayers.TryRemove(playerName, out _))
             {
                 string lostMessage = $"LOST { playerName}";
                 byte[] lostPlayer = encoding.GetBytes($" {lostMessage.Length}: {lostMessage}");
@@ -267,10 +295,13 @@ namespace MultiPlayerServer
                 {
                     Broadcast(playerName, serverChallenge);
                     await Task.Delay(5000).ConfigureAwait(false);
-                    if (onlinePlayers.Count > 0)
+                    // Snapshot once: checking Count and then calling First() separately could throw if the
+                    // last remaining player disconnected between the two.
+                    string[] remainingPlayers = onlinePlayers.Keys.ToArray();
+                    if (remainingPlayers.Length > 0)
                     {
                         Broadcast(null, lostPlayer);
-                        currentServer = onlinePlayers.Keys.First();
+                        currentServer = remainingPlayers[0];
                         string appointmentMessage = $"SERVER {currentServer}";
                         lostPlayer = encoding.GetBytes($" {appointmentMessage.Length}: {appointmentMessage}");
                         Broadcast(null, lostPlayer);
