@@ -302,11 +302,13 @@ However due to the number of algorithm steps required to calculate the wheel adh
 value, it is more CPU load-intensive then the Pacha one. On low performance PCs, this would lower the 
 frame rate for the screen display to an unacceptable degree. 
 
-To avoid this, OR senses the frame rate and switches from the Polach algorithm 
+To avoid this, OR senses the simulation update rate and switches from the Polach algorithm 
 to the Pacha one as follows.
-If the frame rate falls below 30 fps, then a switch is made to Pacha until the frame rate
-recovers to more than 40 fps. If a switch to Pacha happens more than once in a 5 minute interval
-then it will persist for the rest of the session.
+If the simulation rate falls below 30 fps and the display framerate is not limited by
+graphics rendering, then a switch is made to Pacha until the simulation rate recovers
+to more than 60 fps. If a switch to Pacha happens more than once in a 5 minute interval
+then it will persist for the rest of the session, but only one switch is allowed per
+minute.
 
 In this way OR provides a more accurate algorithm whilst retaining 
 the original one for lower specification computers. When OR is using the 

@@ -485,7 +485,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="elapsedSeconds">Time span within the simulation cycle</param>
         public void Update(float elapsedSeconds)
         {
-            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(this, elapsedSeconds, Car.Simulator.GameTime);
+            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(elapsedSeconds, Car.Simulator.UpdaterTimeS, Car.Simulator.GameTime);
             foreach (var axle in AxleList)
             {
                 if (UsePolachAdhesion != PreviousUsePolachAdhesion) // There's been a transition
@@ -501,7 +501,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             return AxleList.GetEnumerator();
         }
 
-        static class AdhesionPrecision  // "static" so all "Axles" share the same level of precision
+        public static class AdhesionPrecision  // "static" so all "Axles" share the same level of precision
         {
             enum AdhesionPrecisionLevel
             {
@@ -520,54 +520,88 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
 
             // Adjustable limits
-            const float LowerLimitS = 0.025f;   // timespan 0.025 = 40 fps screen rate, low timeSpan and high FPS
-            const float UpperLimitS = 0.033f;   // timespan 0.033 = 30 fps screen rate, high timeSpan and low FPS
+            const float LowerLimitS = 1.0f / 60.0f; // 60 fps simulation speed
+            const float UpperLimitS = 1.0f / 30.0f; // 30 fps simulation speed
+            const double IntervalBetweenChangesLimitS = 1 * 60; // Prevent rapid cycling between precision levels
             const double IntervalBetweenDowngradesLimitS = 5 * 60; // Locks in low precision if < 5 mins between downgrades
 
             static AdhesionPrecisionLevel PrecisionLevel = AdhesionPrecisionLevel.High;
-            static double TimeOfLatestDowngrade = 0 - IntervalBetweenDowngradesLimitS; // Starts at -5 mins
+            static double TimeOfLatestChange = 0 - (IntervalBetweenChangesLimitS - 5); // Starts at -55 sec, allows changes after 5 seconds
+            static double TimeOfLatestDowngrade = 0 - IntervalBetweenDowngradesLimitS; // Starts at -5 mins, prevents forcing low adhesion immediately
 
-            // Tested by dropping the framerate below 30 fps interactively. Did this by opening and closing the HelpWindow after inserting
-            //   Threading.Thread.Sleep(40);
-            // into HelpWindow.PrepareFrame() temporarily.
-            public static bool IsPrecisionHigh(Axles axles, float elapsedSeconds, double gameTime)
+            /// <summary>
+            /// Sets the level of precision of the advanced adhesion system between "high" (Polach model; high
+            /// performance cost but high physical accuracy) and "low" (Pacha model; moderate performance cost but lower
+            /// accuracy) depending on the current simulation performance (if simulation seems to be struggling, drop
+            /// to low quality). Returns a bool indicating if the current adhesion precision is high.
+            /// </summary>
+            /// <param name="elapsedSeconds">Current simulation time step</param>
+            /// <param name="updateSeconds">Time required for simulation to complete an update, may be less than <paramref name="elapsedSeconds"/></param>
+            /// <param name="gameTime">The elapsed time in-game since the simulation started</param>
+            /// <returns>true boolean if precision is currently set to high (Polach model)</returns>
+            public static bool IsPrecisionHigh(float elapsedSeconds, float updateSeconds, double gameTime)
             {
-                // Switches between Polach (high precision) adhesion model and Pacha (low precision) adhesion model depending upon the PC performance
                 switch (PrecisionLevel)
                 {
                     case AdhesionPrecisionLevel.High:
-                        if (elapsedSeconds > UpperLimitS)
+                        // Only switch to low precision if ALL update rate is low AND the updater process is
+                        // at high load (90%+ of frame time is update time) AND it has been some time since
+                        // the previous precision change
+
+                        if (updateSeconds > UpperLimitS && updateSeconds > elapsedSeconds * 0.9f && gameTime - TimeOfLatestChange > IntervalBetweenChangesLimitS)
                         {
-                            var screenFrameRate = 1 / elapsedSeconds;
-                            var timeSincePreviousDowngradeS = gameTime - TimeOfLatestDowngrade;
+                            float simulationFrameRate = 1 / updateSeconds;
+                            double timeSincePreviousDowngradeS = gameTime - TimeOfLatestDowngrade;
+
                             if (timeSincePreviousDowngradeS < IntervalBetweenDowngradesLimitS)
                             {
+                                // If a switch from high to low precision happens too rapidly, that indicates excessive load
+                                // from the axle model, lock it to low precision
+                                TimeOfLatestDowngrade = gameTime;
+                                TimeOfLatestChange = gameTime;
                                 Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision permanently after {timeSincePreviousDowngradeS:F0} secs since previous switch (less than limit of {IntervalBetweenDowngradesLimitS})");
                                 PrecisionLevel = AdhesionPrecisionLevel.LowLocked;
                             }
                             else
                             {
                                 TimeOfLatestDowngrade = gameTime;
-                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision after low frame rate {screenFrameRate:F1} below limit {1 / UpperLimitS:F0}");
+                                TimeOfLatestChange = gameTime;
+                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision after low simulation rate {simulationFrameRate:F1} below limit {1 / UpperLimitS:F0}");
                                 PrecisionLevel = AdhesionPrecisionLevel.Low;
                             }
                         }
                         break;
-
                     case AdhesionPrecisionLevel.Low:
+                        // Only switch to high precision if ALL update rate is ok AND the updater process
+                        // is underloaded (70%- of frame time is update time) AND it has been some time
+                        // since the previous precision change
+
                         if (elapsedSeconds > 0 // When debugging step by step, elapsedSeconds == 0, so test for that
-                            && elapsedSeconds < LowerLimitS)
+                            && updateSeconds < LowerLimitS && updateSeconds < elapsedSeconds * 0.7f && gameTime - TimeOfLatestChange > IntervalBetweenChangesLimitS)
                         {
+                            var simulationFrameRate = 1 / updateSeconds;
+                            TimeOfLatestChange = gameTime;
+                            Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to high precision after high simulation rate {simulationFrameRate:F1} above limit {1 / LowerLimitS:F0}");
                             PrecisionLevel = AdhesionPrecisionLevel.High;
-                            var ScreenFrameRate = 1 / elapsedSeconds;
-                            Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to high precision after high frame rate {ScreenFrameRate:F1} above limit {1 / LowerLimitS:F0}");
                         }
                         break;
-
                     case AdhesionPrecisionLevel.LowLocked:
+                        // Stop considering changes in precision if locked to low adhesion
                         break;
                 }
-                return (PrecisionLevel == AdhesionPrecisionLevel.High);
+                return PrecisionLevel == AdhesionPrecisionLevel.High;
+            }
+
+            /// <summary>
+            /// Restores adhesion precision to its initial state
+            /// </summary>
+            /// <param name="gameTime">The elapsed time in-game since the simulation started</param>
+            public static void Reset(double gameTime)
+            {
+                PrecisionLevel = AdhesionPrecisionLevel.High;
+
+                TimeOfLatestChange = gameTime - (IntervalBetweenChangesLimitS - 5); // Starts at 55 sec in the past, allows changes after 5 seconds
+                TimeOfLatestDowngrade = gameTime - IntervalBetweenDowngradesLimitS; // Set to 5 mins in the past, prevents forcing low adhesion immediately
             }
         }
     }

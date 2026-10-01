@@ -76,6 +76,11 @@ namespace Orts.Simulation
         /// or jump forwards or jump backwards.
         /// </summary>
         public double ClockTime;
+        /// <summary>
+        /// Smoothed estimate of the time (in seconds) required for the updater process to complete its work.
+        /// Does not necessarily indicate framerate, as a different process may be the critical path.
+        /// </summary>
+        public float UpdaterTimeS;
         // while Simulator.Update() is running, objects are adjusted to this target time 
         // after Simulator.Update() is complete, the simulator state matches this time
 

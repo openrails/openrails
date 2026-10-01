@@ -2330,6 +2330,9 @@ namespace Orts.Simulation.RollingStocks
                     // SimpleControlPhysics and if locomotive is a control car advanced adhesion will be "disabled".
                     if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control)
                     {
+                        if (!AdvancedAdhesionModel) // Changing from simple adhesion to advanced adhesion
+                            Axles.AdhesionPrecision.Reset(Simulator.GameTime);
+
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
                     }
                     else

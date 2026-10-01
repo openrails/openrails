@@ -809,6 +809,7 @@ namespace Orts.Viewer3D
                 Camera.AttachedCar.Train.FormationReversed = false;
                 (Camera as TrackingCamera).SwapCameras();
             }
+            Simulator.UpdaterTimeS = UpdaterProcess.Profiler.Wall.Value / 100.0f * elapsedTime.ClockSeconds; // Let simulator know how long updates are taking
             Simulator.Update(elapsedTime.ClockSeconds);
             if (PlayerLocomotive.Train.BrakingTime == -2) // We just had a wagon with stuck brakes
             {
