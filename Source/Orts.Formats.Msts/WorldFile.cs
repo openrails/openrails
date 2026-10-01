@@ -508,7 +508,6 @@ namespace Orts.Formats.Msts
         public float Elevation;
         public uint CollideFlags;
         public JNodePosn JNodePosn;
-        public string ShapeTemplate;
 
         public TrackObj(SBR block, int detailLevel)
         {
@@ -528,7 +527,6 @@ namespace Orts.Formats.Msts
                 case TokenID.Elevation: Elevation = subBlock.ReadFloat(); break;
                 case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
                 case TokenID.FileName: FileName = subBlock.ReadString(); break;
-                case TokenID.ShapeTemplate: ShapeTemplate = subBlock.ReadString(); break;
                 case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
                 case TokenID.Position: Position = new STFPositionItem(subBlock); break;
                 case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
@@ -542,14 +540,10 @@ namespace Orts.Formats.Msts
 
     public class DyntrackObj : WorldObject
     {
-        const uint RoadStaticFlag = 0x00000100;
-
         public readonly uint SectionIdx;
         public readonly float Elevation;
         public readonly uint CollideFlags;
         public readonly TrackSections trackSections;
-        public readonly string ShapeTemplate;
-        public bool IsRoad { get { return (StaticFlags & RoadStaticFlag) != 0; } }
 
         public DyntrackObj(SBR block, int detailLevel)
         {
@@ -565,7 +559,6 @@ namespace Orts.Formats.Msts
                         case TokenID.SectionIdx: SectionIdx = subBlock.ReadUInt(); break;
                         case TokenID.Elevation: Elevation = subBlock.ReadFloat(); break;
                         case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
-                        case TokenID.ShapeTemplate: ShapeTemplate = subBlock.ReadString(); break;
                         case TokenID.StaticFlags: StaticFlags = subBlock.ReadUInt(); break;
                         case TokenID.Position: Position = new STFPositionItem(subBlock); break;
                         case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
@@ -583,7 +576,6 @@ namespace Orts.Formats.Msts
             this.SectionIdx = copy.SectionIdx;
             this.Elevation = copy.Elevation;
             this.CollideFlags = copy.CollideFlags;
-            this.ShapeTemplate = copy.ShapeTemplate;
             this.StaticFlags = copy.StaticFlags;
             this.Position = new STFPositionItem(copy.Position);
             this.QDirection = new STFQDirectionItem(copy.QDirection);

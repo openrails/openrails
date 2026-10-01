@@ -61,10 +61,6 @@ namespace Orts.Viewer3D
 
             bool dontRender = false; // Should this shape be left as a static object?
             bool removePhys = false; // Should superelevation physics be removed from this object?
-            string requestedTemplate = trackObj.ShapeTemplate?.Trim();
-            bool templateDisabled = string.Equals(requestedTemplate, "DISABLED",
-                StringComparison.OrdinalIgnoreCase);
-            bool explicitProcedural = false;
             SectionIdx[] SectionIdxs;
 
             // Using the track object, determine the track sections
@@ -94,46 +90,37 @@ namespace Orts.Viewer3D
             // 0 = centered, positive = rotation axis moves to inside of curve, negative = moves to outside of curve
             float rollOffsetM = 0.0f;
 
-            TrProfile trProfile = null;
-            if (templateDisabled)
-                dontRender = true;
-            else if (!string.IsNullOrEmpty(requestedTemplate))
-            {
-                explicitProcedural = TRPFile.TryResolveStaticTrackProfile(
-                    viewer.TRPs, requestedTemplate, out trProfile);
-                if (!explicitProcedural)
-                    dontRender = true;
-            }
-            else
-            {
-                // Preserve the legacy ORTS profile selection when no explicit template is present.
-                int trpIndex = DynamicTrackViewer.GetBestTrackProfile(viewer, shapeFilePath);
-                if (trpIndex >= 0 && trpIndex < viewer.TRPs.Count)
-                {
-                    trProfile = viewer.TRPs[trpIndex].TrackProfile;
-                    if (trProfile.ElevationType == TrProfile.SuperElevationMethod.None)
-                        dontRender = true;
-                }
-                else
-                    dontRender = true;
-            }
+            // Determine the track profile to use for this section based on the shape file
+            int trpIndex = DynamicTrackViewer.GetBestTrackProfile(viewer, shapeFilePath);
 
-            if (!dontRender && trProfile.ElevationType != TrProfile.SuperElevationMethod.None)
+            TrProfile trProfile = null;
+            // If a track profile is found (index exists), continue processing
+            if (trpIndex >= 0 && trpIndex < viewer.TRPs.Count)
             {
-                switch (trProfile.ElevationType)
+                trProfile = viewer.TRPs[trpIndex].TrackProfile;
+
+                // If this track profile has superelevation disabled, don't bother rendering anything
+                if (trProfile.ElevationType == TrProfile.SuperElevationMethod.None)
+                    dontRender = true;
+                else // Superelevation enabled, check the roll offset
                 {
-                    case TrProfile.SuperElevationMethod.Outside: // Only outside rail should elevate
-                        rollOffsetM = trProfile.TrackGaugeM / 2.0f;
-                        break;
-                    case TrProfile.SuperElevationMethod.Inside: // Only inside rail should elevate
-                        rollOffsetM = -trProfile.TrackGaugeM / 2.0f;
-                        break;
-                    case TrProfile.SuperElevationMethod.Both: // Both rails should elevate
-                    default:
-                        rollOffsetM = 0.0f;
-                        break;
+                    switch (trProfile.ElevationType)
+                    {
+                        case TrProfile.SuperElevationMethod.Outside: // Only outside rail should elevate
+                            rollOffsetM = trProfile.TrackGaugeM / 2.0f;
+                            break;
+                        case TrProfile.SuperElevationMethod.Inside: // Only inside rail should elevate
+                            rollOffsetM = -trProfile.TrackGaugeM / 2.0f;
+                            break;
+                        case TrProfile.SuperElevationMethod.Both: // Both rails should elevate
+                        default:
+                            rollOffsetM = 0.0f;
+                            break;
+                    }
                 }
             }
+            else // No track profile suitable, don't render with superelevation
+                dontRender = true;
 
             // Right now it's not confirmed if superelevation viewers are actually needed, so they are added to a temporary list
             List<DynamicTrackViewer> tempViewers = new List<DynamicTrackViewer>();
@@ -178,15 +165,13 @@ namespace Orts.Viewer3D
                     {
                         superElevationSections.Add(tmp);
 
-                        if (!dontRender && trProfile.ElevationType != TrProfile.SuperElevationMethod.None)
+                        if (!dontRender)
                         {
                             tmp.ElevOffsetM = rollOffsetM;
 
                             // Processing done, prepare to generate section with superelevation
                             tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile, tmp.VisElevTable, tmp.ElevOffsetM, reversed));
                         }
-                        else if (!dontRender)
-                            tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile));
                     }
                     else if (!dontRender) // Section doesn't have superelevation, prepare to generate it without superelevation
                         tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile));
@@ -202,11 +187,11 @@ namespace Orts.Viewer3D
                 return false;
             }
             // We are rendering superelevation, add all superelevation viewers to the global list to be rendered
-            else if ((superElevationSections.Count > 0 || explicitProcedural) && tempViewers.Count > 0)
+            else if (superElevationSections.Count > 0 && tempViewers.Count > 0)
                 dTrackList.AddRange(tempViewers);
 
-            // Explicit templates also replace static shapes which have no superelevated sections.
-            return superElevationSections.Count > 0 || explicitProcedural;
+            // If no sections with superelevation were found, WorldFile should render with static shapes
+            return superElevationSections.Count > 0;
         }
 
         /// <summary>
@@ -534,8 +519,6 @@ namespace Orts.Viewer3D
 
             // Right now it's not confirmed if superelevation viewers are actually needed, so they are added to a temporary list
             List<DynamicTrackViewer> tempViewers = new List<DynamicTrackViewer>();
-            TrProfile trProfile = TRPFile.ResolveDynamicTrackProfile(
-                viewer.TRPs, dTrackObj.ShapeTemplate, dTrackObj.IsRoad);
 
             // Iterate through all subsections
             foreach (DyntrackObj.TrackSection dSection in dTrackObj.trackSections)
@@ -571,13 +554,13 @@ namespace Orts.Viewer3D
                 localV = localProjectedV; // Move position to next subsection
 
                 // To determine if this section needs superelevation, search for it in the global superelevation dictionary
-                bool reversed = false;
-                TrVectorSection tmp = dTrackObj.IsRoad ? null :
-                    FindSuperElevationSection(viewer, section, dTrackObj.UID,
-                        root, nextRoot, out reversed);
+                TrVectorSection tmp = FindSuperElevationSection(viewer, section, dTrackObj.UID, root, nextRoot, out bool reversed);
 
                 if (tmp != null) // Section does have superelevation
                 {
+                    // FUTURE: Allow dynamic track to use track profiles other than the 0th one
+                    TrProfile trProfile = viewer.TRPs[0].TrackProfile;
+                    
                     // Superelevation is enabled, generate track section with superelevation
                     if (viewer.Simulator.UseSuperElevation)
                     {
@@ -609,8 +592,7 @@ namespace Orts.Viewer3D
                         tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile));
                 }
                 else // Section doesn't have superelevation, prepare to generate it without superelevation
-                    tempViewers.Add(new SuperElevationViewer(
-                        viewer, root, nextRoot, radius, length, trProfile));
+                    tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length));
             }
 
             // Add all the generated sections to the main list
