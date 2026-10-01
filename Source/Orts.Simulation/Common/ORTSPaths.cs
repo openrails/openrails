@@ -60,7 +60,7 @@ namespace Orts.Common
             {
                 if (path != null)
                 {
-                    var fullPath = Path.Combine(path, branch);
+                    var fullPath = Path.GetFullPath(Path.Combine(path, branch)).ToLowerInvariant();
                     if (File.Exists(fullPath))
                         return fullPath;
                 }

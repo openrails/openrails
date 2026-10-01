@@ -22,10 +22,13 @@
 
 using Orts.Common;
 using Orts.Processes;
+using Orts.Formats.Msts;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace Orts.Viewer3D.Processes
@@ -141,10 +144,10 @@ namespace Orts.Viewer3D.Processes
                 OpenAL.alListenerf(OpenAL.AL_GAIN, Program.Simulator.Paused ? 0 : (float)Game.Settings.SoundVolumePercent / 100f);
 
                 // Update activity sounds
-                if (viewer.Simulator.SoundNotify != Event.None)
+                if (viewer.Simulator.SoundNotify != Orts.Common.Event.None)
                 {
                     if (viewer.World.GameSounds != null) viewer.World.GameSounds.HandleEvent(viewer.Simulator.SoundNotify);
-                    viewer.Simulator.SoundNotify = Event.None;
+                    viewer.Simulator.SoundNotify = Orts.Common.Event.None;
                 }
 
                 // Update all sound in our list
@@ -350,6 +353,202 @@ namespace Orts.Viewer3D.Processes
             }
             while (ASyncUpdatePending > 0)
                 j = Interlocked.CompareExchange(ref ASyncUpdatePending, 0, 1);
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for ALL sound sources to the given bool
+        /// (default true)
+        /// </summary>
+        public void SetAllStale(bool stale = true)
+        {
+            lock (SoundSources)
+            {
+                foreach (List<SoundSourceBase> baseSources in SoundSources.Values)
+                {
+                    foreach (SoundSourceBase baseSource in baseSources)
+                    {
+                        // A track sound source actually contains multiple sound sources, need to account for that
+                        List<SoundSource> sources = new List<SoundSource>();
+
+                        if (baseSource is SoundSource standardSource)
+                        {
+                            sources.Add(standardSource);
+                        }
+                        else if (baseSource is TrackSoundSource trackSource)
+                        {
+                            sources.AddRange(trackSource.InSources);
+                            sources.AddRange(trackSource.OutSources);
+                        }
+
+                        foreach (SoundSource source in sources)
+                            source.StaleData = stale;
+
+                        baseSource.StaleData = stale;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for sound sources using any of the sound files from the given set of paths
+        /// </summary>
+        /// <returns>bool indicating if any sound source changed from fresh to stale</returns>
+        public bool MarkStale(HashSet<string> wavPaths)
+        {
+            // Each entry in the dictionary of SoundSources can have multiple SoundSource objects
+            // We need to iterate all of the SoundStreams in each SoundSource object to check if the referenced .wav files are used
+            bool found = false;
+
+            lock (SoundSources)
+            {
+                foreach (List<SoundSourceBase> baseSources in SoundSources.Values)
+                {
+                    foreach (SoundSourceBase baseSource in baseSources)
+                    {
+                        // A track sound source actually contains multiple sound sources, need to account for that
+                        List<SoundSource> sources = new List<SoundSource>();
+
+                        if (baseSource is SoundSource standardSource)
+                        {
+                            sources.Add(standardSource);
+                        }
+                        else if (baseSource is TrackSoundSource trackSource)
+                        {
+                            sources.AddRange(trackSource.InSources);
+                            sources.AddRange(trackSource.OutSources);
+                        }
+
+                        foreach (SoundSource source in sources)
+                        {
+                            HashSet<string> files = new HashSet<string>();
+
+                            // Files are stored in the sound streams, check for files there
+                            string[] pathArray = {source.SMSFolder ?? "",
+                                                Program.Simulator.RoutePath + @"\SOUND",
+                                                Program.Simulator.BasePath + @"\SOUND"};
+
+                            foreach (SoundStream stream in source.SoundStreams)
+                                foreach (ORTSTrigger trigger in stream.Triggers)
+                                    if (trigger.SoundCommand is ORTSSoundPlayCommand soundPlayCommand)
+                                        foreach (string file in soundPlayCommand.Files)
+                                            files.Add(ORTSPaths.GetFileFromFolders(pathArray, file)?.ToLowerInvariant()); // Full file path usually isn't given in the stream, has to be constructed
+
+                            // Some sources are just one sound file, check for this as well
+                            if (source.WavFolder != null && source.WavFileName != null)
+                                files.Add(Path.GetFullPath(Path.Combine(source.WavFolder, source.WavFileName)).ToLowerInvariant());
+
+                            string soundManager = "";
+                            if (source.SMSFolder != null && source.SMSFileName != null)
+                                soundManager = Path.GetFullPath(Path.Combine(source.SMSFolder, source.SMSFileName)).ToLowerInvariant();
+
+                            foreach (string sound in files)
+                            {
+                                if (!source.StaleData && wavPaths.Contains(sound))
+                                {
+                                    source.StaleData = true;
+                                    baseSource.StaleData = true;
+                                    found = true;
+
+                                    Trace.TraceInformation("Sound file {0} was updated on disk and will be reloaded.", sound);
+
+                                    // Also mark the sound management system file as stale if it hasn't already been marked
+                                    if (SharedSMSFileManager.SharedSMSFiles.ContainsKey(soundManager) && !SharedSMSFileManager.SharedSMSFiles[soundManager].StaleData)
+                                        SharedSMSFileManager.SharedSMSFiles[soundManager].StaleData = true;
+
+                                    break;
+                                }
+                            }
+
+                            if (source.StaleData)
+                                break;
+                        }
+                    }
+                    // Continue scanning next set of sound sources, there may be multiple matching sources
+                }
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Determines if any of the sound sources associated with the given object are stale
+        /// (returns false if there are no sound sources associated with the given object)
+        /// </summary>
+        /// <param name="owner">The object to which the sound sources are attached.</param>
+        /// <returns>bool indicating if any of the sound sources are stale</returns>
+        public bool GetStale(object owner)
+        {
+            bool found = false;
+
+            lock (SoundSources)
+            {
+                if (SoundSources.ContainsKey(owner))
+                {
+                    foreach (SoundSourceBase baseSource in SoundSources[owner])
+                    {
+                        if (baseSource.StaleData)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Checks all sound sources for stale sound management files and sets the stale data flag if any sound managers are stale
+        /// </summary>
+        /// <returns>bool indicating if any sound source changed from fresh to stale</returns>
+        public bool CheckStale()
+        {
+            // Each entry in the dictionary of SoundSources can have multiple SoundSource objects
+            // We need to iterate all of the SoundSource objects to check if stale .sms files are used
+            bool found = false;
+
+            lock (SoundSources)
+            {
+                foreach (List<SoundSourceBase> baseSources in SoundSources.Values)
+                {
+                    foreach (SoundSourceBase baseSource in baseSources)
+                    {
+                        // A track sound source actually contains multiple sound sources, need to account for that
+                        List<SoundSource> sources = new List<SoundSource>();
+
+                        if (baseSource is SoundSource standardSource)
+                        {
+                            sources.Add(standardSource);
+                        }
+                        else if (baseSource is TrackSoundSource trackSource)
+                        {
+                            sources.AddRange(trackSource.InSources);
+                            sources.AddRange(trackSource.OutSources);
+                        }
+
+                        foreach (SoundSource source in sources)
+                        {
+                            if (source.SMSFolder != null && source.SMSFileName != null)
+                            {
+                                string soundManager = Path.GetFullPath(Path.Combine(source.SMSFolder, source.SMSFileName)).ToLowerInvariant();
+
+                                if (!source.StaleData && SharedSMSFileManager.SharedSMSFiles.ContainsKey(soundManager) && SharedSMSFileManager.SharedSMSFiles[soundManager].StaleData)
+                                {
+                                    source.StaleData = true;
+                                    baseSource.StaleData = true;
+                                    found = true;
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    // Continue scanning next set of sound sources, there may be multiple matching sources
+                }
+            }
+
+            return found;
         }
     }
 }
