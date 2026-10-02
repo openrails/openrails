@@ -69,6 +69,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter terrainMaterialMapTexture;
         readonly EffectParameter terrainMaterialNoiseTexture;
         readonly EffectParameter terrainMaterialData;
+        readonly EffectParameter terrainMaterialMapSide;
 
         // glTF-PBR:
         readonly EffectParameter baseColorFactor;
@@ -310,10 +311,11 @@ namespace Orts.Viewer3D
         public Texture2D TerrainMaterialNoiseTexture { set { terrainMaterialNoiseTexture.SetValue(value); } }
 
         public void SetTerrainMaterialData(float inversePatchSize, float mapScale,
-            float mapOffsetX, float mapOffsetZ)
+            float mapOffsetX, float mapOffsetZ, float mapSide)
         {
             terrainMaterialData.SetValue(new Vector4(inversePatchSize, mapScale,
                 mapOffsetX, mapOffsetZ));
+            terrainMaterialMapSide.SetValue(mapSide);
         }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
@@ -379,6 +381,7 @@ namespace Orts.Viewer3D
             terrainMaterialMapTexture = Parameters["TerrainMaterialMapTexture"];
             terrainMaterialNoiseTexture = Parameters["TerrainMaterialNoiseTexture"];
             terrainMaterialData = Parameters["TerrainMaterialData"];
+            terrainMaterialMapSide = Parameters["TerrainMaterialMapSide"];
         }
     }
 

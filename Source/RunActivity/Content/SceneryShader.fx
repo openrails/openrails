@@ -83,6 +83,7 @@ cbuffer PerMaterial
     float ReferenceAlpha;
     float OverlayScale;
     float4 TerrainMaterialData; // x = inverse patch size, y = map scale, zw = map offset
+    float TerrainMaterialMapSide;
     int PixelShaderOptions;
 
     float4 BaseColorFactor; // linear color multiplier
@@ -1361,7 +1362,7 @@ bool _PSSameTerrainMaterial(float a, float b)
 
 float _PSSelectTerrainMaterial(float2 patchCoords)
 {
-	const float MapSide = 4096.0;
+	float MapSide = TerrainMaterialMapSide;
 	float2 mapCoords = saturate(patchCoords) * TerrainMaterialData.y + TerrainMaterialData.zw;
 	float2 mapPosition = clamp(mapCoords * MapSide, 0.0, MapSide);
 	float2 cell = floor(mapPosition - 0.5);

@@ -48,6 +48,7 @@ namespace Orts.Viewer3D
         int VisibleTileZ;
         TerrainMaterialFile TerrainMaterialLibrary;
         bool TerrainMaterialLibraryLoaded;
+        List<TerrainTile> RetiredProceduralTerrainTiles;
 
         [CallOnThread("Render")]
         public TerrainViewer(Viewer viewer)
@@ -110,6 +111,13 @@ namespace Orts.Viewer3D
                             new TerrainTile(Viewer, Viewer.LoTiles, tile, null))
                     ).ToList();
 
+                // The render thread can still hold a frame prepared from the old
+                // tile list. Keep outgoing procedural textures marked for this
+                // sweep so they cannot be disposed underneath that frame. They
+                // become eligible for collection at the next terrain transition.
+                RetiredProceduralTerrainTiles = terrainTiles
+                    .Where(tile => tile.ProceduralTerrainEligible &&
+                        !newTerrainTiles.Contains(tile)).ToList();
                 TerrainTiles = newTerrainTiles;
             }
         }
@@ -161,6 +169,16 @@ namespace Orts.Viewer3D
         {
             var tiles = TerrainTiles;
             foreach (var tile in tiles)
+            {
+                tile.Mark();
+                if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) break;
+            }
+
+            var retiredTiles = RetiredProceduralTerrainTiles;
+            RetiredProceduralTerrainTiles = null;
+            if (retiredTiles == null)
+                return;
+            foreach (var tile in retiredTiles)
             {
                 tile.Mark();
                 if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) break;
@@ -659,7 +677,6 @@ namespace Orts.Viewer3D
     /// </summary>
     sealed class ProceduralTerrainMaterial : TerrainMaterial
     {
-        const float ProceduralOverlayScale = 32f;
         readonly EffectTechnique TerrainTechnique;
         readonly EffectTechnique ProceduralTechnique;
         readonly Texture2D MaterialMapTexture;
@@ -724,13 +741,10 @@ namespace Orts.Viewer3D
                 }
 
                 shader.CurrentTechnique = ProceduralTechnique;
-                // Procedural detail settings are currently format-defined rather
-                // than inherited from the MSTS-compatible baked material.
-                shader.OverlayScale = ProceduralOverlayScale;
                 shader.TerrainMaterialMapTexture = MaterialMapTexture;
                 shader.TerrainMaterialNoiseTexture = NoiseTexture;
                 shader.SetTerrainMaterialData(InversePatchSize, MapScale,
-                    MapOffsetX, MapOffsetZ);
+                    MapOffsetX, MapOffsetZ, MaterialMapTexture.Width);
                 graphicsDevice.BlendState = BlendState.Opaque;
                 // The material masks are disjoint, so every visible procedural
                 // pixel must write terrain depth. Leaving later layers read-only
@@ -742,6 +756,8 @@ namespace Orts.Viewer3D
                 {
                     ProceduralTerrainTile.Layer layer = Patch.Layers[i];
                     shader.ImageTexture = layer.Texture;
+                    shader.OverlayTexture = layer.DetailTexture ?? PatchTextureOverlay;
+                    shader.OverlayScale = layer.DetailScale;
                     shader.ReferenceAlpha = layer.Id;
                     DrawPasses(shader, item, graphicsDevice);
                 }
@@ -770,7 +786,11 @@ namespace Orts.Viewer3D
             Viewer.TextureManager.Mark(MaterialMapTexture);
             Viewer.TextureManager.Mark(NoiseTexture);
             foreach (ProceduralTerrainTile.Layer layer in Patch.Layers)
+            {
                 Viewer.TextureManager.Mark(layer.Texture);
+                if (layer.DetailTexture != null)
+                    Viewer.TextureManager.Mark(layer.DetailTexture);
+            }
         }
     }
 

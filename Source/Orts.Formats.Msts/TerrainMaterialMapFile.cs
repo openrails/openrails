@@ -11,11 +11,13 @@ namespace Orts.Formats.Msts
 {
     public sealed class TerrainMaterialMapFile
     {
-        public const int Side = 4096;
+        public const int MinimumSide = 2048;
+        public const int DefaultSide = 4096;
+        public const int MaximumSide = 8192;
         public const int HeaderSize = 20;
-        public const int DecodedSize = Side * Side;
-        public const int MaximumFileSize = DecodedSize + 65536;
+        public const int MaximumFileSize = MaximumSide * MaximumSide + 65536;
 
+        public readonly int Side;
         public readonly byte[] MaterialIds;
 
         public sealed class PatchCoverage
@@ -34,25 +36,41 @@ namespace Orts.Formats.Msts
             var info = new FileInfo(filename);
             if (!info.Exists || info.Length <= HeaderSize || info.Length > MaximumFileSize)
                 throw new InvalidDataException("Unsupported procedural terrain material map size");
-            MaterialIds = Decode(File.ReadAllBytes(filename));
+            int side;
+            MaterialIds = Decode(File.ReadAllBytes(filename), out side);
+            Side = side;
         }
 
         public TerrainMaterialMapFile(byte[] file)
         {
-            MaterialIds = Decode(file);
+            int side;
+            MaterialIds = Decode(file, out side);
+            Side = side;
         }
 
         public static byte[] Decode(byte[] file)
         {
+            int side;
+            return Decode(file, out side);
+        }
+
+        public static byte[] Decode(byte[] file, out int side)
+        {
             if (file == null)
                 throw new ArgumentNullException(nameof(file));
+            side = 0;
             if (file.Length <= HeaderSize || file.Length > MaximumFileSize ||
                 Encoding.ASCII.GetString(file, 0, 8) != "TSREPMAP" ||
-                ReadUInt32(file, 8) != 1 || ReadUInt32(file, 12) != Side ||
-                ReadUInt32(file, 16) != Side)
+                ReadUInt32(file, 8) != 1)
                 throw new InvalidDataException("Unsupported procedural terrain material map header or size");
 
-            byte[] decoded = new byte[DecodedSize];
+            uint width = ReadUInt32(file, 12);
+            uint height = ReadUInt32(file, 16);
+            if (width != height || width < MinimumSide || width > MaximumSide ||
+                (width & (width - 1)) != 0)
+                throw new InvalidDataException("Unsupported procedural terrain material map dimensions");
+            side = checked((int)width);
+            byte[] decoded = new byte[checked(side * side)];
             using (var input = new MemoryStream(file, HeaderSize, file.Length - HeaderSize, false))
             using (var compressed = new ZLibStream(input, CompressionMode.Decompress))
             {
@@ -68,6 +86,47 @@ namespace Orts.Formats.Msts
                     throw new InvalidDataException("Procedural terrain material map exceeds its declared size");
             }
             return decoded;
+        }
+
+        TerrainMaterialMapFile(int side, byte[] materialIds)
+        {
+            Side = side;
+            MaterialIds = materialIds;
+        }
+
+        public TerrainMaterialMapFile WithMaximumSide(int maximumSide)
+        {
+            if (maximumSide < MinimumSide)
+                throw new ArgumentOutOfRangeException(nameof(maximumSide));
+            int targetSide = Side;
+            while (targetSide > maximumSide)
+                targetSide /= 2;
+            if (targetSide == Side)
+                return this;
+            return new TerrainMaterialMapFile(targetSide,
+                ReduceNearest(MaterialIds, Side, targetSide));
+        }
+
+        public static byte[] ReduceNearest(byte[] source, int sourceSide, int targetSide)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (sourceSide <= 0 || targetSide <= 0 || sourceSide % targetSide != 0 ||
+                source.Length != checked(sourceSide * sourceSide))
+                throw new ArgumentOutOfRangeException(nameof(targetSide));
+
+            int factor = sourceSide / targetSide;
+            var result = new byte[checked(targetSide * targetSide)];
+            int sampleOffset = factor / 2;
+            for (int targetZ = 0; targetZ < targetSide; ++targetZ)
+            {
+                int sourceOffset = (targetZ * factor + sampleOffset) * sourceSide +
+                    sampleOffset;
+                int targetOffset = targetZ * targetSide;
+                for (int targetX = 0; targetX < targetSide; ++targetX)
+                    result[targetOffset + targetX] = source[sourceOffset + targetX * factor];
+            }
+            return result;
         }
 
         public PatchCoverage[] AnalyzePatches(int patchCount)

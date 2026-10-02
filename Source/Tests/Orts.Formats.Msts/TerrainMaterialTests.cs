@@ -143,20 +143,29 @@ namespace Tests.Orts.Formats.Msts
         {
             string text = "SIMISA@@@@@@@@@@JINX0t1t______\n\n" +
                 "TSRE_Terrain_Materials ( Version ( 1 ) NextUiD ( 3 ) " +
-                "Material ( UiD ( 1 ) Name ( \"Grass\" ) Texture ( \"grass.ace\" ) ) " +
+                "Material ( UiD ( 1 ) Name ( \"Grass\" ) Texture ( \"grass.ace\" ) " +
+                "DetailTexture ( \"grass-detail.ace\" ) DetailScale ( 48.5 ) ) " +
                 "Material ( UiD ( 2 ) Name ( \"Rock\" ) Texture ( \"ground/rock.dds\" ) ) )";
             using (var fixture = new TemporaryFile(text))
             {
                 var file = new TerrainMaterialFile(fixture.FileName);
                 Assert.Equal(3u, file.NextUid);
                 Assert.Equal("Grass", file.Materials[1].Name);
+                Assert.Equal("grass-detail.ace", file.Materials[1].DetailTexture);
+                Assert.Equal(48.5f, file.Materials[1].DetailScale);
                 Assert.Equal("ground/rock.dds", file.Materials[2].Texture);
+                Assert.Equal(TerrainMaterialDefinition.DefaultDetailTexture,
+                    file.Materials[2].DetailTexture);
+                Assert.Equal(TerrainMaterialDefinition.DefaultDetailScale,
+                    file.Materials[2].DetailScale);
             }
         }
 
         [Theory]
         [InlineData("Material ( UiD ( 1 ) Name ( \"A\" ) Texture ( \"a.ace\" ) ) Material ( UiD ( 1 ) Name ( \"B\" ) Texture ( \"b.ace\" ) )")]
         [InlineData("Material ( UiD ( 1 ) Name ( \"A\" ) Texture ( \"../a.ace\" ) )")]
+        [InlineData("Material ( UiD ( 1 ) Name ( \"A\" ) Texture ( \"a.ace\" ) DetailTexture ( \"../detail.ace\" ) )")]
+        [InlineData("Material ( UiD ( 1 ) Name ( \"A\" ) Texture ( \"a.ace\" ) DetailScale ( 0 ) )")]
         public void TerrainMaterialCatalogueRejectsAmbiguousOrUnsafeDefinitions(string materials)
         {
             string text = "SIMISA@@@@@@@@@@JINX0t1t______\n\n" +
@@ -168,21 +177,50 @@ namespace Tests.Orts.Formats.Msts
         [Fact]
         public void PmapDecoderRequiresExactBoundedOutput()
         {
-            byte[] ids = new byte[TerrainMaterialMapFile.DecodedSize];
+            byte[] ids = new byte[TerrainMaterialMapFile.DefaultSide *
+                TerrainMaterialMapFile.DefaultSide];
             ids[0] = 3;
             ids[ids.Length - 1] = 9;
             byte[] encoded = EncodePmap(ids);
             Assert.Equal(ids, TerrainMaterialMapFile.Decode(encoded));
 
-            byte[] shortMap = EncodePmap(new byte[1024]);
+            byte[] shortMap = EncodePmap(TerrainMaterialMapFile.DefaultSide,
+                compressed => compressed.Write(new byte[1024], 0, 1024));
             Assert.Throws<InvalidDataException>(() => TerrainMaterialMapFile.Decode(shortMap));
+        }
+
+        [Theory]
+        [InlineData(2048)]
+        [InlineData(4096)]
+        [InlineData(8192)]
+        public void PmapDecoderAcceptsSupportedPowerOfTwoDimensions(int side)
+        {
+            var map = new TerrainMaterialMapFile(EncodeUniformPmap(side, 7));
+            Assert.Equal(side, map.Side);
+            Assert.Equal(side * side, map.MaterialIds.Length);
+            Assert.Equal((byte)7, map.MaterialIds[0]);
+            Assert.Equal((byte)7, map.MaterialIds[map.MaterialIds.Length - 1]);
+        }
+
+        [Fact]
+        public void PmapReductionUsesCenterNearestSample()
+        {
+            byte[] source = {
+                4, 4, 9, 8,
+                4, 2, 8, 9,
+                7, 6, 3, 3,
+                6, 7, 3, 5,
+            };
+            Assert.Equal(new byte[] { 2, 9, 7, 5 },
+                TerrainMaterialMapFile.ReduceNearest(source, 4, 2));
         }
 
         [Fact]
         public void PatchAnalysisSortsCoverageAndIncludesBoundaryHalo()
         {
-            byte[] ids = Enumerable.Repeat((byte)1, TerrainMaterialMapFile.DecodedSize).ToArray();
-            int patchSide = TerrainMaterialMapFile.Side / 16;
+            byte[] ids = Enumerable.Repeat((byte)1, TerrainMaterialMapFile.DefaultSide *
+                TerrainMaterialMapFile.DefaultSide).ToArray();
+            int patchSide = TerrainMaterialMapFile.DefaultSide / 16;
             ids[0] = 2;
             ids[patchSide] = 3;
 
@@ -198,16 +236,38 @@ namespace Tests.Orts.Formats.Msts
 
         static byte[] EncodePmap(byte[] ids)
         {
+            int side = (int)Math.Sqrt(ids.Length);
+            Assert.Equal(ids.Length, side * side);
+            return EncodePmap(side, compressed => compressed.Write(ids, 0, ids.Length));
+        }
+
+        static byte[] EncodeUniformPmap(int side, byte value)
+        {
+            return EncodePmap(side, compressed =>
+            {
+                var chunk = Enumerable.Repeat(value, 64 * 1024).ToArray();
+                int remaining = side * side;
+                while (remaining > 0)
+                {
+                    int count = Math.Min(remaining, chunk.Length);
+                    compressed.Write(chunk, 0, count);
+                    remaining -= count;
+                }
+            });
+        }
+
+        static byte[] EncodePmap(int side, Action<Stream> writeIds)
+        {
             using (var result = new MemoryStream())
             using (var writer = new BinaryWriter(result, Encoding.ASCII, true))
             {
                 writer.Write(Encoding.ASCII.GetBytes("TSREPMAP"));
                 writer.Write(1u);
-                writer.Write((uint)TerrainMaterialMapFile.Side);
-                writer.Write((uint)TerrainMaterialMapFile.Side);
+                writer.Write((uint)side);
+                writer.Write((uint)side);
                 writer.Flush();
                 using (var compressed = new ZLibStream(result, CompressionLevel.Fastest, true))
-                    compressed.Write(ids, 0, ids.Length);
+                    writeIds(compressed);
                 return result.ToArray();
             }
         }

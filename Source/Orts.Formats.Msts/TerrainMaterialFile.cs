@@ -10,15 +10,23 @@ namespace Orts.Formats.Msts
 {
     public sealed class TerrainMaterialDefinition
     {
+        public const string DefaultDetailTexture = "microtex.ace";
+        public const float DefaultDetailScale = 32f;
+
         public readonly uint Uid;
         public readonly string Name;
         public readonly string Texture;
+        public readonly string DetailTexture;
+        public readonly float DetailScale;
 
-        public TerrainMaterialDefinition(uint uid, string name, string texture)
+        public TerrainMaterialDefinition(uint uid, string name, string texture,
+            string detailTexture, float detailScale)
         {
             Uid = uid;
             Name = name;
             Texture = texture;
+            DetailTexture = detailTexture;
+            DetailScale = detailScale;
         }
     }
 
@@ -92,9 +100,13 @@ namespace Orts.Formats.Msts
             bool uidSeen = false;
             bool nameSeen = false;
             bool textureSeen = false;
+            bool detailTextureSeen = false;
+            bool detailScaleSeen = false;
             uint uid = 0;
             string name = null;
             string texture = null;
+            string detailTexture = TerrainMaterialDefinition.DefaultDetailTexture;
+            float detailScale = TerrainMaterialDefinition.DefaultDetailScale;
 
             stf.MustMatch("(");
             stf.ParseBlock(new[] {
@@ -116,12 +128,27 @@ namespace Orts.Formats.Msts
                     textureSeen = true;
                     texture = stf.ReadStringBlock(null);
                 }),
+                new STFReader.TokenProcessor("detailtexture", () => {
+                    if (detailTextureSeen)
+                        throw new STFException(stf, "Duplicate terrain material DetailTexture");
+                    detailTextureSeen = true;
+                    detailTexture = stf.ReadStringBlock(null);
+                }),
+                new STFReader.TokenProcessor("detailscale", () => {
+                    if (detailScaleSeen)
+                        throw new STFException(stf, "Duplicate terrain material DetailScale");
+                    detailScaleSeen = true;
+                    detailScale = stf.ReadFloatBlock(STFReader.UNITS.None, null);
+                }),
             });
 
             if (!uidSeen || uid == 0 || !nameSeen || String.IsNullOrEmpty(name) ||
-                !textureSeen || !IsSafeRelativePath(texture) || materials.ContainsKey(uid))
+                !textureSeen || !IsSafeRelativePath(texture) ||
+                !IsSafeRelativePath(detailTexture) || Single.IsNaN(detailScale) ||
+                Single.IsInfinity(detailScale) || detailScale <= 0 || materials.ContainsKey(uid))
                 return "Invalid or duplicate terrain material definition";
-            materials.Add(uid, new TerrainMaterialDefinition(uid, name, texture));
+            materials.Add(uid, new TerrainMaterialDefinition(uid, name, texture,
+                detailTexture, detailScale));
             return null;
         }
 
