@@ -313,7 +313,20 @@ namespace Orts.Viewer3D
 
                 // Get the position of the scenery object into ORTS coordinate space.
                 WorldPosition worldMatrix;
-                if (worldObject.Matrix3x3 != null && worldObject.Position != null)
+                if (worldObject is TelepoleObj)
+                {
+                    worldMatrix = new WorldPosition
+                    {
+                        TileX = WFile.TileX,
+                        TileZ = WFile.TileZ,
+                    };
+                    if (worldObject.Position != null)
+                        worldMatrix.Location = new Vector3(
+                            worldObject.Position.X,
+                            worldObject.Position.Y,
+                            worldObject.Position.Z);
+                }
+                else if (worldObject.Matrix3x3 != null && worldObject.Position != null)
                     worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.Matrix3x3);
                 else if (worldObject.QDirection != null && worldObject.Position != null)
                     worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.QDirection);
@@ -384,8 +397,14 @@ namespace Orts.Viewer3D
                         }
                         else
                         {
+                            bool isMovingTable = containsMovingTable &&
+                                Program.Simulator.MovingTables.Any(movingTable =>
+                                    worldObject.UID == movingTable.UID &&
+                                    WFileName == movingTable.WFile);
+
                             // See if superelevation should be used on this piece of track
-                            if (viewer.Simulator.UseSuperElevation
+                            if (!isMovingTable
+                                && viewer.Simulator.UseSuperElevation
                                 && SuperElevationManager.DecomposeStaticSuperElevation(viewer, trackObj, worldMatrix, dTrackList, shapeFilePath))
                             {
                                 // Don't add scenery for this section of track, dynamic superelevated track will be created instead
@@ -433,11 +452,31 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(DyntrackObj))
                     {
-                        if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
-                            Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        DyntrackObj dyntrackObj = (DyntrackObj)worldObject;
+                        if (!dyntrackObj.IsRoad &&
+                            viewer.Simulator.Settings.Wire == true &&
+                            viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
+                            Wire.DecomposeDynamicWire(viewer, dTrackList, dyntrackObj, worldMatrix);
                         // Add DyntrackDrawers for individual subsections
-                        SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        SuperElevationManager.DecomposeDynamicSuperElevation(
+                            viewer, dTrackList, dyntrackObj, worldMatrix);
 
+                    }
+                    else if (worldObject.GetType() == typeof(RulerObj))
+                    {
+                        RulerShape.Decompose(viewer, dTrackList,
+                            sceneryObjects, (RulerObj)worldObject,
+                            worldMatrix, shapeFilePath,
+                            shadowCaster ? ShapeFlags.ShadowCaster :
+                                ShapeFlags.None);
+                    }
+                    else if (worldObject.GetType() == typeof(TelepoleObj))
+                    {
+                        TelepoleShape.Decompose(viewer, dTrackList,
+                            sceneryObjects, (TelepoleObj)worldObject,
+                            WFile.TileX, WFile.TileZ,
+                            shadowCaster ? ShapeFlags.ShadowCaster :
+                                ShapeFlags.None);
                     }
                     // Objects other than tracks
                     else if (worldObject.GetType() == typeof(ForestObj))
