@@ -677,11 +677,14 @@ namespace Orts.Viewer3D
     /// </summary>
     sealed class ProceduralTerrainMaterial : TerrainMaterial
     {
+        const float ProceduralTerrainViewingDistance = 1000f;
+
         readonly EffectTechnique TerrainTechnique;
         readonly EffectTechnique ProceduralTechnique;
         readonly Texture2D MaterialMapTexture;
         readonly Texture2D NoiseTexture;
         readonly ProceduralTerrainTile.Patch Patch;
+        readonly float PatchRadius;
         readonly float InversePatchSize;
         readonly float MapScale;
         readonly float MapOffsetX;
@@ -698,6 +701,7 @@ namespace Orts.Viewer3D
             Patch = patch;
             TerrainTechnique = Viewer.MaterialManager.SceneryShader.Techniques["Terrain"];
             ProceduralTechnique = Viewer.MaterialManager.SceneryShader.Techniques["ProceduralTerrain"];
+            PatchRadius = patchSize * 0.7071f;
             InversePatchSize = 1f / patchSize;
             MapScale = 1f / patchCount;
             MapOffsetX = (float)patchX / patchCount;
@@ -731,7 +735,16 @@ namespace Orts.Viewer3D
                 shader.OverlayScale = OverlayScale;
                 shader.PixelShaderOptions = (uint)PixelShaderOptions.HasNormals;
 
-                if (Patch.UseBakedBase)
+                Vector3 xnaLocation = item.XNAMatrix.Translation;
+                var mstsLocation = new Vector3(xnaLocation.X, xnaLocation.Y, -xnaLocation.Z);
+                bool useProceduralTerrain = Viewer.Camera.InRange(mstsLocation, PatchRadius,
+                    ProceduralTerrainViewingDistance);
+
+                // Keep the 3 x 3 procedural maps resident, but outside the close
+                // viewing radius draw only the saved patch texture. Testing the
+                // patch's bounding circle avoids switching while part of the patch
+                // is still within the detailed area.
+                if (!useProceduralTerrain || Patch.UseBakedBase)
                 {
                     shader.CurrentTechnique = TerrainTechnique;
                     shader.ImageTexture = PatchTexture;
@@ -739,6 +752,9 @@ namespace Orts.Viewer3D
                     graphicsDevice.DepthStencilState = DepthStencilState.Default;
                     DrawPasses(shader, item, graphicsDevice);
                 }
+
+                if (!useProceduralTerrain)
+                    continue;
 
                 shader.CurrentTechnique = ProceduralTechnique;
                 shader.TerrainMaterialMapTexture = MaterialMapTexture;
