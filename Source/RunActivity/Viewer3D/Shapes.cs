@@ -1832,21 +1832,32 @@ namespace Orts.Viewer3D
     /// </summary>
     public class MutableShapePrimitive : ShapePrimitive
     {
+        readonly SharedShape.VertexBufferSet.ShapeVertex[] VertexData;
+
         /// <remarks>
         /// Buffers cannot be expanded, so take care to properly set <paramref name="maxVertices"/> and <paramref name="maxIndices"/>,
         /// which define the maximum sizes of the vertex and index buffers, respectively.
         /// </remarks>
         public MutableShapePrimitive(Material material, int maxVertices, int maxIndices, int[] hierarchy, int hierarchyIndex)
             : base(material: material,
-                   vertexBufferSet: new SharedShape.VertexBufferSet(new VertexPositionNormalTexture[maxVertices], material.Viewer.GraphicsDevice),
+                   vertexBufferSet: new SharedShape.VertexBufferSet(maxVertices, material.Viewer.GraphicsDevice),
                    indexData: new ushort[maxIndices],
                    graphicsDevice: material.Viewer.GraphicsDevice,
                    hierarchy: hierarchy,
-                   hierarchyIndex: hierarchyIndex) { }
+                   hierarchyIndex: hierarchyIndex)
+        {
+            VertexData = new SharedShape.VertexBufferSet.ShapeVertex[maxVertices];
+        }
 
         public void SetVertexData(VertexPositionNormalTexture[] data, int minVertexIndex, int numVertices, int primitiveCount)
         {
-            VertexBuffer.SetData(data);
+            for (var i = 0; i < numVertices; i++)
+            {
+                var vertex = data[minVertexIndex + i];
+                VertexData[i] = new SharedShape.VertexBufferSet.ShapeVertex(vertex.Position, vertex.Normal, vertex.TextureCoordinate, Color.White, Color.Black);
+            }
+
+            VertexBuffer.SetData(VertexData, 0, numVertices);
             PrimitiveCount = primitiveCount;
         }
 
@@ -1962,7 +1973,7 @@ namespace Orts.Viewer3D
 
     public class SharedShape : IDisposable
     {
-        static List<string> ShapeWarnings = new List<string>();
+        static readonly HashSet<string> ShapeWarnings = new HashSet<string>();
 
         // This data is common to all instances of the shape
         public List<string> MatrixNames = new List<string>();
@@ -1972,6 +1983,7 @@ namespace Orts.Viewer3D
         public LodControl[] LodControls;
         public bool HasNightSubObj;
         public int RootSubObjectIndex = 0;
+        readonly HashSet<int> CheckedSrcUVLightConfigurations = new HashSet<int>();
         //public bool negativeBogie = false;
         public string SoundFileName = "";
         public float CustomAnimationFPS = 8;
@@ -2068,7 +2080,7 @@ namespace Orts.Viewer3D
             {
                 debugShapeHierarchy.AppendFormat("  LState {0,-2}: flags={1,-8:X8} uv_ops={2,-2}\n", i, sFile.shape.light_model_cfgs[i].flags, sFile.shape.light_model_cfgs[i].uv_ops.Count);
                 for (var j = 0; j < sFile.shape.light_model_cfgs[i].uv_ops.Count; ++j)
-                    debugShapeHierarchy.AppendFormat("    UV OP {0,-2}: texture_address_mode={1,-2}\n", j, sFile.shape.light_model_cfgs[i].uv_ops[j].TexAddrMode);
+                    debugShapeHierarchy.AppendFormat("    UV OP {0,-2}: type={1,-24} texture_address_mode={2,-2}\n", j, sFile.shape.light_model_cfgs[i].uv_ops[j].GetType().Name, sFile.shape.light_model_cfgs[i].uv_ops[j].TexAddrMode);
             }
             Console.Write(debugShapeHierarchy.ToString());
 #endif
@@ -2192,6 +2204,11 @@ namespace Orts.Viewer3D
             static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
                 { "Tex", SceneryMaterialOptions.ShaderFullBright },
                 { "TexDiff", SceneryMaterialOptions.Diffuse },
+                { "DetailMod2X", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.DetailMod2X },
+                { "GlossMap", SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.GlossMap },
+                { "AlphRefMap", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse | SceneryMaterialOptions.AlphRefMap },
+                { "NightLight", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.NightTexture | SceneryMaterialOptions.NightLight },
+                { "nightlight", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.NightTexture | SceneryMaterialOptions.NightLight },
                 { "BlendATex", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.ShaderFullBright},
                 { "BlendATexDiff", SceneryMaterialOptions.AlphaBlendingBlend | SceneryMaterialOptions.Diffuse },
                 { "AddATex", SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.ShaderFullBright},
@@ -2264,6 +2281,10 @@ namespace Orts.Viewer3D
                     }
 
                     if (lightModelConfiguration.uv_ops.Count > 0)
+                    {
+                        if (sharedShape.CheckedSrcUVLightConfigurations.Add(vertexState.LightCfgIdx))
+                            WarnUnsupportedSrcUVIdx(sharedShape.FilePath, lightModelConfiguration);
+
                         if (lightModelConfiguration.uv_ops[0].TexAddrMode - 1 >= 0 && lightModelConfiguration.uv_ops[0].TexAddrMode - 1 < UVTextureAddressModeMap.Length)
                             options |= UVTextureAddressModeMap[lightModelConfiguration.uv_ops[0].TexAddrMode - 1];
                         else if (!ShapeWarnings.Contains("texture_addressing_mode:" + lightModelConfiguration.uv_ops[0].TexAddrMode))
@@ -2271,6 +2292,7 @@ namespace Orts.Viewer3D
                             Trace.TraceInformation("Skipped unknown texture addressing mode {1} first seen in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[0].TexAddrMode);
                             ShapeWarnings.Add("texture_addressing_mode:" + lightModelConfiguration.uv_ops[0].TexAddrMode);
                         }
+                    }
 
                     if (primitiveState.alphatestmode == 1)
                         options |= SceneryMaterialOptions.AlphaTest;
@@ -2283,13 +2305,18 @@ namespace Orts.Viewer3D
                         ShapeWarnings.Add("shader_name:" + sFile.shape.shader_names[primitiveState.ishader]);
                     }
 
-                    if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
+                    if (vertexState.LightMatIdx == -1)
+                        options |= SceneryMaterialOptions.BakedVertexLighting;
+                    else if (12 + vertexState.LightMatIdx >= 0 && 12 + vertexState.LightMatIdx < VertexLightModeMap.Length)
                         options |= VertexLightModeMap[12 + vertexState.LightMatIdx];
                     else if (!ShapeWarnings.Contains("lighting_model:" + vertexState.LightMatIdx))
                     {
                         Trace.TraceInformation("Skipped unknown lighting model index {1} first seen in shape {0}", sharedShape.FilePath, vertexState.LightMatIdx);
                         ShapeWarnings.Add("lighting_model:" + vertexState.LightMatIdx);
                     }
+
+                    if ((options & SceneryMaterialOptions.NightLight) != 0)
+                        options = (options & ~(SceneryMaterialOptions.ShaderMask | SceneryMaterialOptions.BakedVertexLighting)) | SceneryMaterialOptions.ShaderFullBright;
 
                     if ((textureFlags & Helpers.TextureFlags.Night) != 0)
                         options |= SceneryMaterialOptions.NightTexture;
@@ -2302,10 +2329,42 @@ namespace Orts.Viewer3D
                     {
                         var texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
                         var imageName = sFile.shape.images[texture.iImage];
+                        string detailTexturePath = null;
+                        var detailTextureAddressMode = 1;
+                        var detailMipMapBias = 0f;
+                        if ((options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap)) != 0)
+                        {
+                            if (primitiveState.tex_idxs.Length > 1)
+                            {
+                                var detailTexture = sFile.shape.textures[primitiveState.tex_idxs[1]];
+                                var detailImageName = sFile.shape.images[detailTexture.iImage];
+                                detailTexturePath = String.IsNullOrEmpty(sharedShape.ReferencePath)
+                                    ? Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, detailImageName)
+                                    : Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, detailImageName);
+                                detailMipMapBias = detailTexture.MipMapLODBias;
+
+                                if (lightModelConfiguration.uv_ops.Count > 1)
+                                    if (lightModelConfiguration.uv_ops[1].TexAddrMode - 1 >= 0 && lightModelConfiguration.uv_ops[1].TexAddrMode - 1 < UVTextureAddressModeMap.Length)
+                                        detailTextureAddressMode = lightModelConfiguration.uv_ops[1].TexAddrMode;
+                                    else if (!ShapeWarnings.Contains("texture_addressing_mode_1:" + lightModelConfiguration.uv_ops[1].TexAddrMode))
+                                    {
+                                        Trace.TraceInformation("Skipped unknown texture addressing mode {1} for second texture stage first seen in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[1].TexAddrMode);
+                                        ShapeWarnings.Add("texture_addressing_mode_1:" + lightModelConfiguration.uv_ops[1].TexAddrMode);
+                                    }
+                            }
+                            else if (!ShapeWarnings.Contains("detail_mod_2x_missing_texture"))
+                            {
+                                Trace.TraceInformation("Skipped missing second detail/environment texture first seen in shape {0}", sharedShape.FilePath);
+                                ShapeWarnings.Add("detail_mod_2x_missing_texture");
+                            }
+
+                            if (detailTexturePath == null)
+                                options &= ~(SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap);
+                        }
                         if (String.IsNullOrEmpty(sharedShape.ReferencePath))
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias);
+                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias, detailTextureName: detailTexturePath, detailMipMapBias: detailMipMapBias, detailTextureAddressMode: detailTextureAddressMode);
                         else
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
+                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias, detailTextureName: detailTexturePath, detailMipMapBias: detailMipMapBias, detailTextureAddressMode: detailTextureAddressMode);
                     }
                     else
                     {
@@ -2338,7 +2397,16 @@ namespace Orts.Viewer3D
                         foreach (var index in new[] { vertex_idx.a, vertex_idx.b, vertex_idx.c })
                             indexData.Add((ushort)index);
 
+                    var uvScale = GetUVScale(GetUVOp(lightModelConfiguration, 0));
+                    var detailUVScale = GetUVScale(GetUVOp(lightModelConfiguration, 1) ?? GetUVOp(lightModelConfiguration, 0));
+                    var uvOpReflectMapFull = IsUVOpReflectMapFull(GetUVOp(lightModelConfiguration, 0));
+                    var detailUVOpReflectMapFull = IsUVOpReflectMapFull(GetUVOp(lightModelConfiguration, 1));
+
                     ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
+                    ShapePrimitives[primitiveIndex].UVScale = uvScale;
+                    ShapePrimitives[primitiveIndex].DetailUVScaleRatio = GetUVScaleRatio(detailUVScale, uvScale);
+                    ShapePrimitives[primitiveIndex].UVOpReflectMapFull = uvOpReflectMapFull;
+                    ShapePrimitives[primitiveIndex].DetailUVOpReflectMapFull = detailUVOpReflectMapFull;
                     ShapePrimitives[primitiveIndex].SortIndex = ++totalPrimitiveIndex;
                     ++primitiveIndex;
 #if DEBUG_SHAPE_NORMALS
@@ -2397,6 +2465,71 @@ namespace Orts.Viewer3D
 #endif
             }
 
+            static uv_op GetUVOp(light_model_cfg lightModelConfiguration, int textureIndex)
+            {
+                return textureIndex >= 0 && textureIndex < lightModelConfiguration.uv_ops.Count ? lightModelConfiguration.uv_ops[textureIndex] : null;
+            }
+
+            static void WarnUnsupportedSrcUVIdx(string shapeFilePath, light_model_cfg lightModelConfiguration)
+            {
+                for (var i = 0; i < lightModelConfiguration.uv_ops.Count; ++i)
+                {
+                    var uvOp = lightModelConfiguration.uv_ops[i];
+                    var srcUVIdx = GetSrcUVIdx(uvOp);
+                    if (srcUVIdx == null || srcUVIdx == 0)
+                        continue;
+
+                    var warningKey = String.Format("uv_op_src_uv_idx:{0}:{1}", uvOp.GetType().Name, srcUVIdx);
+                    if (ShapeWarnings.Contains(warningKey))
+                        continue;
+
+                    Trace.TraceInformation("Unsupported SrcUVIdx {2} for {1} first seen in shape {0}; Open Rails currently uses vertex_uvs[0].", shapeFilePath, uvOp.GetType().Name, srcUVIdx);
+                    ShapeWarnings.Add(warningKey);
+                }
+            }
+
+            static int? GetSrcUVIdx(uv_op uvOp)
+            {
+                var copy = uvOp as uv_op_copy;
+                if (copy != null)
+                    return copy.SrcUVIdx;
+
+                var uniformScale = uvOp as uv_op_uniformscale;
+                if (uniformScale != null)
+                    return uniformScale.SrcUVIdx;
+
+                var nonUniformScale = uvOp as uv_op_nonuniformscale;
+                if (nonUniformScale != null)
+                    return nonUniformScale.SrcUVIdx;
+
+                return null;
+            }
+
+            static Vector2 GetUVScale(uv_op uvOp)
+            {
+                var uniformScale = uvOp as uv_op_uniformscale;
+                if (uniformScale != null)
+                    return new Vector2(uniformScale.Scale, uniformScale.Scale);
+
+                var nonUniformScale = uvOp as uv_op_nonuniformscale;
+                if (nonUniformScale != null)
+                    return new Vector2(nonUniformScale.ScaleU, nonUniformScale.ScaleV);
+
+                return Vector2.One;
+            }
+
+            static bool IsUVOpReflectMapFull(uv_op uvOp)
+            {
+                return uvOp is uv_op_reflectmapfull;
+            }
+
+            static Vector2 GetUVScaleRatio(Vector2 uvScale, Vector2 baseUVScale)
+            {
+                return new Vector2(
+                    baseUVScale.X != 0 ? uvScale.X / baseUVScale.X : uvScale.X,
+                    baseUVScale.Y != 0 ? uvScale.Y / baseUVScale.Y : uvScale.Y);
+            }
+
             [CallOnThread("Loader")]
             internal void Mark()
             {
@@ -2417,6 +2550,33 @@ namespace Orts.Viewer3D
 
         public class VertexBufferSet
         {
+            public struct ShapeVertex
+            {
+                public Vector3 Position;
+                public Vector3 Normal;
+                public Vector2 TextureCoordinate;
+                public Color Color1;
+                public Color Color2;
+
+                public ShapeVertex(Vector3 position, Vector3 normal, Vector2 textureCoordinate, Color color1, Color color2)
+                {
+                    Position = position;
+                    Normal = normal;
+                    TextureCoordinate = textureCoordinate;
+                    Color1 = color1;
+                    Color2 = color2;
+                }
+
+                public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(new[]
+                {
+                    new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
+                    new VertexElement(sizeof(float) * 3, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0),
+                    new VertexElement(sizeof(float) * 6, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0),
+                    new VertexElement(sizeof(float) * 8, VertexElementFormat.Color, VertexElementUsage.Color, 0),
+                    new VertexElement(sizeof(float) * 8 + sizeof(uint), VertexElementFormat.Color, VertexElementUsage.Color, 1),
+                });
+            }
+
             public VertexBuffer Buffer;
 
 #if DEBUG_SHAPE_NORMALS
@@ -2427,8 +2587,18 @@ namespace Orts.Viewer3D
 #endif
 
             public VertexBufferSet(VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice)
+                : this(CreateVertexData(vertexData), graphicsDevice)
             {
-                Buffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), vertexData.Length, BufferUsage.WriteOnly);
+            }
+
+            public VertexBufferSet(int vertexCount, GraphicsDevice graphicsDevice)
+            {
+                Buffer = new VertexBuffer(graphicsDevice, ShapeVertex.VertexDeclaration, vertexCount, BufferUsage.WriteOnly);
+            }
+
+            public VertexBufferSet(ShapeVertex[] vertexData, GraphicsDevice graphicsDevice)
+            {
+                Buffer = new VertexBuffer(graphicsDevice, ShapeVertex.VertexDeclaration, vertexData.Length, BufferUsage.WriteOnly);
                 Buffer.SetData(vertexData);
             }
 
@@ -2452,26 +2622,37 @@ namespace Orts.Viewer3D
             {
             }
 
-            static VertexPositionNormalTexture[] CreateVertexData(sub_object sub_object, shape shape)
+            public static ShapeVertex[] CreateVertexData(VertexPositionNormalTexture[] vertexData)
+            {
+                return (from vertex in vertexData
+                        select new ShapeVertex(vertex.Position, vertex.Normal, vertex.TextureCoordinate, Color.White, Color.Black)).ToArray();
+            }
+
+            static ShapeVertex[] CreateVertexData(sub_object sub_object, shape shape)
             {
                 // TODO - deal with vertex sets that have various numbers of texture coordinates - ie 0, 1, 2 etc
                 return (from vertex vertex in sub_object.vertices
-                        select XNAVertexPositionNormalTextureFromMSTS(vertex, shape)).ToArray();
+                        select XNAShapeVertexFromMSTS(vertex, shape)).ToArray();
             }
 
-            static VertexPositionNormalTexture XNAVertexPositionNormalTextureFromMSTS(vertex vertex, shape shape)
+            static ShapeVertex XNAShapeVertexFromMSTS(vertex vertex, shape shape)
             {
                 var position = shape.points[vertex.ipoint];
                 var normal = shape.normals[vertex.inormal];
                 // TODO use a simpler vertex description when no UV's in use
                 var texcoord = vertex.vertex_uvs.Length > 0 ? shape.uv_points[vertex.vertex_uvs[0]] : new uv_point(0, 0);
 
-                return new VertexPositionNormalTexture()
-                {
-                    Position = new Vector3(position.X, position.Y, -position.Z),
-                    Normal = new Vector3(normal.X, normal.Y, -normal.Z),
-                    TextureCoordinate = new Vector2(texcoord.U, texcoord.V),
-                };
+                return new ShapeVertex(
+                    new Vector3(position.X, position.Y, -position.Z),
+                    new Vector3(normal.X, normal.Y, -normal.Z),
+                    new Vector2(texcoord.U, texcoord.V),
+                    XNAColorFromMSTS(vertex.Color1),
+                    XNAColorFromMSTS(vertex.Color2));
+            }
+
+            static Color XNAColorFromMSTS(uint color)
+            {
+                return new Color((byte)(color >> 16), (byte)(color >> 8), (byte)color, (byte)(color >> 24));
             }
 
 #if DEBUG_SHAPE_NORMALS

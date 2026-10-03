@@ -252,8 +252,8 @@ namespace Orts.Viewer3D
     public class SharedMaterialManager
     {
         readonly Viewer Viewer;
-        IDictionary<(string, string, int, float, Effect), Material> Materials = new Dictionary<(string, string, int, float, Effect), Material>();
-        IDictionary<(string, string, int, float, Effect), bool> MaterialMarks = new Dictionary<(string, string, int, float, Effect), bool>();
+        IDictionary<(string, string, string, int, float, Effect, float, int), Material> Materials = new Dictionary<(string, string, string, int, float, Effect, float, int), Material>();
+        IDictionary<(string, string, string, int, float, Effect, float, int), bool> MaterialMarks = new Dictionary<(string, string, string, int, float, Effect, float, int), bool>();
 
         public readonly LightConeShader LightConeShader;
         public readonly LightGlowShader LightGlowShader;
@@ -317,9 +317,9 @@ namespace Orts.Viewer3D
 
         }
 
-        public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null)
+        public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null, string detailTextureName = null, float detailMipMapBias = 0f, int detailTextureAddressMode = 1)
         {
-            var materialKey = (materialName, textureName?.ToLowerInvariant(), options, mipMapBias, effect);
+            var materialKey = (materialName, textureName?.ToLowerInvariant(), detailTextureName?.ToLowerInvariant(), options, mipMapBias, effect, detailMipMapBias, detailTextureAddressMode);
             if (!Materials.ContainsKey(materialKey))
             {
                 switch (materialName)
@@ -352,7 +352,7 @@ namespace Orts.Viewer3D
                         Materials[materialKey] = new PrecipitationMaterial(Viewer);
                         break;
                     case "Scenery":
-                        Materials[materialKey] = new SceneryMaterial(Viewer, textureName, (SceneryMaterialOptions)options, mipMapBias);
+                        Materials[materialKey] = new SceneryMaterial(Viewer, textureName, (SceneryMaterialOptions)options, mipMapBias, detailTextureName, detailMipMapBias, detailTextureAddressMode);
                         break;
                     case "ShadowMap":
                         Materials[materialKey] = new ShadowMapMaterial(Viewer);
@@ -579,7 +579,7 @@ namespace Orts.Viewer3D
     {
         public readonly Viewer Viewer;
         public readonly string Key;
-        internal (string, string, int, float, Effect) MarkKey;
+        internal (string, string, string, int, float, Effect, float, int) MarkKey;
 
         protected Material(Viewer viewer, string key)
         {
@@ -717,6 +717,16 @@ namespace Orts.Viewer3D
         TextureAddressModeMask = 0x600,
         // Night texture
         NightTexture = 0x800,
+        // Modulate base texture with detail texture and double the result.
+        DetailMod2X = 0x1000,
+        // Draw only when the night texture variant is active.
+        NightLight = 0x2000,
+        // Modulate scenery with baked MSTS per-vertex lighting.
+        BakedVertexLighting = 0x4000,
+        // Add a second environment-map texture to the lit base texture.
+        GlossMap = 0x8000,
+        // Blend a second environment-map texture by the inverse alpha of the base texture.
+        AlphRefMap = 0x10000,
         // Texture to be shown in tunnels and underground (used for 3D cab night textures)
         UndergroundTexture = 0x40000000,
     }
@@ -727,9 +737,16 @@ namespace Orts.Viewer3D
         readonly float MipMapBias;
         protected Texture2D Texture;
         private readonly string TexturePath;
+        protected Texture2D DetailTexture;
+        private readonly string DetailTexturePath;
+        readonly float DetailMipMapBias;
+        readonly int DetailTextureAddressMode;
         protected Texture2D NightTexture;
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
         IEnumerator<EffectPass> ShaderPassesDarkShade;
+        IEnumerator<EffectPass> ShaderPassesDetailMod2X;
+        IEnumerator<EffectPass> ShaderPassesGlossMap;
+        IEnumerator<EffectPass> ShaderPassesAlphRefMap;
         IEnumerator<EffectPass> ShaderPassesFullBright;
         IEnumerator<EffectPass> ShaderPassesHalfBright;
         IEnumerator<EffectPass> ShaderPassesImage;
@@ -742,13 +759,17 @@ namespace Orts.Viewer3D
         };
         private static readonly Dictionary<TextureAddressMode, Dictionary<float, SamplerState>> SamplerStates = new Dictionary<TextureAddressMode, Dictionary<float, SamplerState>>();
 
-        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
-            : base(viewer, String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
+        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias, string detailTexturePath, float detailMipMapBias, int detailTextureAddressMode)
+            : base(viewer, String.Format("{0}:{1}:{2:X}:{3}:{4}:{5}", texturePath, detailTexturePath, options, mipMapBias, detailMipMapBias, detailTextureAddressMode))
         {
             Options = options;
             MipMapBias = mipMapBias;
             TexturePath = texturePath;
+            DetailTexturePath = detailTexturePath;
+            DetailMipMapBias = detailMipMapBias;
+            DetailTextureAddressMode = detailTextureAddressMode;
             Texture = SharedMaterialManager.MissingTexture;
+            DetailTexture = SharedMaterialManager.MissingTexture;
             NightTexture = SharedMaterialManager.MissingTexture;
             // <CSComment> if "trainset" is in the path (true for night textures for 3DCabs) deferred load of night textures is disabled 
             if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && ((!viewer.IsDaytime && !viewer.IsNighttime)
@@ -776,6 +797,9 @@ namespace Orts.Viewer3D
                 }
             }
             else Texture = Viewer.TextureManager.Get(texturePath, true);
+
+            if (!String.IsNullOrEmpty(DetailTexturePath))
+                DetailTexture = Viewer.TextureManager.Get(DetailTexturePath, true);
 
             // Record the number of bits in the alpha channel of the original ace file
             var texture = SharedMaterialManager.MissingTexture;
@@ -821,6 +845,9 @@ namespace Orts.Viewer3D
             var shader = Viewer.MaterialManager.SceneryShader;
             var level9_3 = Viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3);
             if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = shader.Techniques[level9_3 ? "DarkShadeLevel9_3" : "DarkShadeLevel9_1"].Passes.GetEnumerator();
+            if (ShaderPassesDetailMod2X == null) ShaderPassesDetailMod2X = shader.Techniques[level9_3 ? "DetailMod2XLevel9_3" : "DetailMod2XLevel9_1"].Passes.GetEnumerator();
+            if (ShaderPassesGlossMap == null) ShaderPassesGlossMap = shader.Techniques[level9_3 ? "GlossMapLevel9_3" : "GlossMapLevel9_1"].Passes.GetEnumerator();
+            if (ShaderPassesAlphRefMap == null) ShaderPassesAlphRefMap = shader.Techniques[level9_3 ? "AlphRefMapLevel9_3" : "AlphRefMapLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesFullBright == null) ShaderPassesFullBright = shader.Techniques[level9_3 ? "FullBrightLevel9_3" : "FullBrightLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = shader.Techniques[level9_3 ? "HalfBrightLevel9_3" : "HalfBrightLevel9_1"].Passes.GetEnumerator();
             if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques[level9_3 ? "ImageLevel9_3" : "ImageLevel9_1"].Passes.GetEnumerator();
@@ -874,7 +901,22 @@ namespace Orts.Viewer3D
             }
 
 
-            switch (Options & SceneryMaterialOptions.ShaderMask)
+            if ((Options & SceneryMaterialOptions.DetailMod2X) != 0)
+            {
+                shader.CurrentTechnique = shader.Techniques[level9_3 ? "DetailMod2XLevel9_3" : "DetailMod2XLevel9_1"];
+                ShaderPasses = ShaderPassesDetailMod2X;
+            }
+            else if ((Options & SceneryMaterialOptions.GlossMap) != 0)
+            {
+                shader.CurrentTechnique = shader.Techniques[level9_3 ? "GlossMapLevel9_3" : "GlossMapLevel9_1"];
+                ShaderPasses = ShaderPassesGlossMap;
+            }
+            else if ((Options & SceneryMaterialOptions.AlphRefMap) != 0)
+            {
+                shader.CurrentTechnique = shader.Techniques[level9_3 ? "AlphRefMapLevel9_3" : "AlphRefMapLevel9_1"];
+                ShaderPasses = ShaderPassesAlphRefMap;
+            }
+            else switch (Options & SceneryMaterialOptions.ShaderMask)
             {
                 case SceneryMaterialOptions.ShaderImage:
                     shader.CurrentTechnique = shader.Techniques[level9_3 ? "ImageLevel9_3" : "ImageLevel9_1"];
@@ -916,8 +958,7 @@ namespace Orts.Viewer3D
                     throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.SpecularMask value.");
             }
 
-            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
-                (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f))
+            if (IsNightTextureActive())
             {
                 shader.ImageTexture = NightTexture;
                 shader.ImageTextureIsNight = true;
@@ -927,6 +968,15 @@ namespace Orts.Viewer3D
                 shader.ImageTexture = Texture;
                 shader.ImageTextureIsNight = false;
             }
+
+            if ((Options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap)) != 0)
+                shader.DetailTexture = DetailTexture;
+
+            shader.VertexLightingEnabled = (Options & SceneryMaterialOptions.BakedVertexLighting) != 0;
+            var daylight = GetDaylightFactor();
+            shader.VertexLightingDay = daylight;
+            // multiply by 0.5f, it is a heuristics to match MSTS look
+            shader.NightLightModifier = (Options & SceneryMaterialOptions.NightLight) != 0 ? (1 - daylight) * 0.5f : 1;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -940,10 +990,16 @@ namespace Orts.Viewer3D
                 {
                     shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
+                    shader.UVScale = item.RenderPrimitive.UVScale;
+                    shader.DetailUVScaleRatio = item.RenderPrimitive.DetailUVScaleRatio;
+                    shader.UVOpReflectMapFull = item.RenderPrimitive.UVOpReflectMapFull;
+                    shader.DetailUVOpReflectMapFull = item.RenderPrimitive.DetailUVOpReflectMapFull;
                     ShaderPasses.Current.Apply();
 
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
                     graphicsDevice.SamplerStates[0] = GetShadowTextureAddressMode();
+                    if ((Options & (SceneryMaterialOptions.DetailMod2X | SceneryMaterialOptions.GlossMap | SceneryMaterialOptions.AlphRefMap)) != 0)
+                        graphicsDevice.SamplerStates[1] = GetDetailTextureAddressMode();
 
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
@@ -957,6 +1013,13 @@ namespace Orts.Viewer3D
             shader.LightingDiffuse = 1;
             shader.LightingSpecular = 0;
             shader.ReferenceAlpha = 0;
+            shader.VertexLightingEnabled = false;
+            shader.VertexLightingDay = 1;
+            shader.NightLightModifier = 1;
+            shader.UVScale = Vector2.One;
+            shader.DetailUVScaleRatio = Vector2.One;
+            shader.UVOpReflectMapFull = false;
+            shader.DetailUVOpReflectMapFull = false;
 
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -968,34 +1031,62 @@ namespace Orts.Viewer3D
         /// <returns></returns>
         public override bool GetBlending()
         {
+            if ((Options & SceneryMaterialOptions.NightLight) != 0)
+                return true;
+
             bool alphaTestRequested = (Options & SceneryMaterialOptions.AlphaTest) != 0;            // the artist requested alpha testing for this material
             bool alphaBlendRequested = (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0;   // the artist specified a blend capable shader
+            bool vertexAlphaRequested = (Options & SceneryMaterialOptions.BakedVertexLighting) != 0; // MSTS vertex colors may supply alpha even when the ACE has none
 
             return alphaBlendRequested                                   // the material is using a blend capable shader   
                     && (AceAlphaBits > 1                                    // and the original ace has more than 1 bit of alpha
-                          || (AceAlphaBits == 1 && !alphaTestRequested));    //  or its just 1 bit, but with no alphatesting, we must blend it anyway
+                          || (AceAlphaBits == 1 && !alphaTestRequested)      //  or its just 1 bit, but with no alphatesting, we must blend it anyway
+                          || vertexAlphaRequested);                         //  or vertex colors may provide alpha
 
             // To summarize, assuming we are using a blend capable shader ..
-            //     0 bits of alpha - never blend
+            //     0 bits of alpha - only blend if vertex colors may provide alpha
             //     1 bit of alpha - only blend if the alpha test wasn't requested
             //     >1 bit of alpha - always blend
         }
 
         public override Texture2D GetShadowTexture()
         {
-            var timeOffset = ((float)KeyLengthRemainder()) / 5000f; // TODO for later use for pseudorandom texture switch time
-            if (NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
-                (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f))
+            if (IsNightTextureActive())
                 return NightTexture;
 
             return Texture;
         }
 
+        private bool IsNightTextureActive()
+        {
+            return NightTexture != null && NightTexture != SharedMaterialManager.MissingTexture && (((Options & SceneryMaterialOptions.UndergroundTexture) != 0 &&
+                (Viewer.MaterialManager.sunDirection.Y < -0.085f || Viewer.Camera.IsUnderground)) || Viewer.MaterialManager.sunDirection.Y < 0.0f - ((float)KeyLengthRemainder()) / 5000f);
+        }
+
+        private float GetDaylightFactor()
+        {
+            if (Viewer.Camera.IsUnderground)
+                return 0;
+
+            const float startNightTrans = 0.1f;
+            const float finishNightTrans = -0.1f;
+            return MathHelper.Clamp((Viewer.MaterialManager.sunDirection.Y - finishNightTrans) / (startNightTrans - finishNightTrans), 0, 1);
+        }
+
         public override SamplerState GetShadowTextureAddressMode()
         {
-            var mipMapBias = MipMapBias < -1 ? -1 : MipMapBias;
+            return GetTextureAddressMode(Options, MipMapBias);
+        }
+
+        SamplerState GetDetailTextureAddressMode()
+        {
+            return GetTextureAddressMode(DetailTextureAddressMode, DetailMipMapBias);
+        }
+
+        static SamplerState GetTextureAddressMode(SceneryMaterialOptions options, float mipMapBias)
+        {
             TextureAddressMode textureAddressMode;
-            switch (Options & SceneryMaterialOptions.TextureAddressModeMask)
+            switch (options & SceneryMaterialOptions.TextureAddressModeMask)
             {
                 case SceneryMaterialOptions.TextureAddressModeWrap:
                     textureAddressMode = TextureAddressMode.Wrap; break;
@@ -1008,6 +1099,30 @@ namespace Orts.Viewer3D
                 default:
                     throw new InvalidDataException("Options has unexpected SceneryMaterialOptions.TextureAddressModeMask value.");
             }
+
+            return GetTextureAddressMode(textureAddressMode, mipMapBias);
+        }
+
+        static SamplerState GetTextureAddressMode(int textureAddressMode, float mipMapBias)
+        {
+            switch (textureAddressMode)
+            {
+                case 1:
+                    return GetTextureAddressMode(TextureAddressMode.Wrap, mipMapBias);
+                case 2:
+                    return GetTextureAddressMode(TextureAddressMode.Mirror, mipMapBias);
+                case 3:
+                    return GetTextureAddressMode(TextureAddressMode.Clamp, mipMapBias);
+                case 4:
+                    return GetTextureAddressMode(TextureAddressMode.Border, mipMapBias);
+                default:
+                    throw new InvalidDataException("Texture address mode has unexpected value.");
+            }
+        }
+
+        static SamplerState GetTextureAddressMode(TextureAddressMode textureAddressMode, float mipMapBias)
+        {
+            mipMapBias = mipMapBias < -1 ? -1 : mipMapBias;
 
             if (!SamplerStates.ContainsKey(textureAddressMode))
                 SamplerStates.Add(textureAddressMode, new Dictionary<float, SamplerState>());
@@ -1023,12 +1138,12 @@ namespace Orts.Viewer3D
                 });
 
             return SamplerStates[textureAddressMode][mipMapBias];
-
         }
 
         public override void Mark()
         {
             Viewer.TextureManager.Mark(Texture);
+            Viewer.TextureManager.Mark(DetailTexture);
             Viewer.TextureManager.Mark(NightTexture);
             base.Mark();
         }
@@ -1087,7 +1202,7 @@ namespace Orts.Viewer3D
                 foreach (var item in renderItems)
                 {
                     var wvp = item.XNAMatrix * viewproj;
-                    shader.SetData(ref wvp, item.Material.GetShadowTexture());
+                    shader.SetData(ref wvp, item.Material.GetShadowTexture(), item.RenderPrimitive.UVScale);
                     ShaderPasses.Current.Apply();
                     // SamplerStates can only be set after the ShaderPasses.Current.Apply().
                     graphicsDevice.SamplerStates[0] = item.Material.GetShadowTextureAddressMode();
@@ -1192,7 +1307,7 @@ namespace Orts.Viewer3D
         public readonly int HierarchyIndex;
 
         public ScreenMaterial(Viewer viewer, string key, int hierarchyIndex)
-            : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0)
+            : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0, null, 0, 1)
         {
             HierarchyIndex = hierarchyIndex;
         }

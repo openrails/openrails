@@ -22,8 +22,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-// TODO - UV_OPS
-
 namespace Orts.Formats.Msts
 {
     public class ShapeFile
@@ -736,35 +734,32 @@ namespace Orts.Formats.Msts
     public class uv_op_uniformscale : uv_op
     {
         public int SrcUVIdx;
-        public float UnknownParameter3;
-        public float UnknownParameter4;
+        public float Scale;
 
         public uv_op_uniformscale(SBR block)
         {
             block.VerifyID(TokenID.uv_op_uniformscale);
             TexAddrMode = block.ReadInt();
             SrcUVIdx = block.ReadInt();
-            UnknownParameter3 = block.ReadFloat();
+            Scale = block.ReadFloat();
             block.VerifyEndOfBlock();
-            block.TraceInformation(String.Format("{0} was treated as uv_op_copy", block.ID.ToString()));
         }
     }
 
     public class uv_op_nonuniformscale : uv_op
     {
         public int SrcUVIdx;
-        public float UnknownParameter3;
-        public float UnknownParameter4;
+        public float ScaleU;
+        public float ScaleV;
 
         public uv_op_nonuniformscale(SBR block)
         {
             block.VerifyID(TokenID.uv_op_nonuniformscale);
             TexAddrMode = block.ReadInt();
             SrcUVIdx = block.ReadInt();
-            UnknownParameter3 = block.ReadFloat();
-            UnknownParameter4 = block.ReadFloat();
+            ScaleU = block.ReadFloat();
+            ScaleV = block.ReadFloat();
             block.VerifyEndOfBlock();
-            block.TraceInformation(String.Format("{0} was treated as uv_op_copy", block.ID.ToString()));
         }
     }
 
