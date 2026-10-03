@@ -1445,7 +1445,7 @@ namespace Menu
                             break;
                     }
 
-                        if (!string.IsNullOrEmpty(valueComboboxToSetTo))
+                    if (!string.IsNullOrEmpty(valueComboboxToSetTo))
                     {
                         if (comboBox.DropDownStyle == ComboBoxStyle.DropDown) 
                             comboBox.Text = valueComboboxToSetTo;
