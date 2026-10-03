@@ -774,7 +774,7 @@ namespace Orts.Viewer3D
                     shader.ImageTexture = layer.Texture;
                     shader.OverlayTexture = layer.DetailTexture ?? PatchTextureOverlay;
                     shader.OverlayScale = layer.DetailScale;
-                    shader.ReferenceAlpha = layer.Id;
+                    shader.ReferenceAlpha = layer.Id / 255f;
                     DrawPasses(shader, item, graphicsDevice);
                 }
             }
