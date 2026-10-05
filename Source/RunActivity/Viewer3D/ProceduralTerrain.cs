@@ -83,26 +83,18 @@ namespace Orts.Viewer3D
                 if (!mapPath.StartsWith(directoryPrefix, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("Procedural terrain map is outside the tile directory");
 
-                var totalTimer = Stopwatch.StartNew();
-                var stageTimer = Stopwatch.StartNew();
                 var nativeMap = new TerrainMaterialMapFile(mapPath);
-                double decodeMilliseconds = stageTimer.Elapsed.TotalMilliseconds;
 
-                stageTimer.Restart();
                 int maximumMapSide = MaximumRuntimeMapSide(viewer);
                 var map = nativeMap.WithMaximumSide(maximumMapSide);
-                double reduceMilliseconds = stageTimer.Elapsed.TotalMilliseconds;
 
-                stageTimer.Restart();
                 TerrainMaterialMapFile.PatchCoverage[] coverage = map.AnalyzePatches(tile.PatchCount);
-                double analysisMilliseconds = stageTimer.Elapsed.TotalMilliseconds;
 
                 var globalCounts = new long[256];
                 foreach (TerrainMaterialMapFile.PatchCoverage patch in coverage)
                     foreach (KeyValuePair<byte, int> material in patch.Materials)
                         globalCounts[material.Key] += material.Value;
 
-                stageTimer.Restart();
                 var sources = new Dictionary<byte, Layer>();
                 foreach (int id in Enumerable.Range(0, globalCounts.Length)
                     .Where(id => globalCounts[id] > 0)
@@ -132,14 +124,10 @@ namespace Orts.Viewer3D
                     if (sources.Count == MaximumDetailedSourceTexturesPerTile)
                         break;
                 }
-                double sourceMilliseconds = stageTimer.Elapsed.TotalMilliseconds;
-
                 if (sources.Count == 0)
                     return null;
 
                 var patches = new Patch[coverage.Length];
-                int passTotal = 0;
-                int passMaximum = 0;
                 bool anyDetailedPatch = false;
                 for (int i = 0; i < coverage.Length; ++i)
                 {
@@ -150,8 +138,6 @@ namespace Orts.Viewer3D
                     bool useBakedBase = layers.Length != coverage[i].Materials.Count;
                     patches[i] = new Patch(layers, useBakedBase);
                     anyDetailedPatch |= layers.Length > 0;
-                    passTotal += layers.Length + (useBakedBase ? 1 : 0);
-                    passMaximum = Math.Max(passMaximum, layers.Length + (useBakedBase ? 1 : 0));
                 }
                 if (!anyDetailedPatch)
                     return null;
@@ -159,28 +145,16 @@ namespace Orts.Viewer3D
                 var info = new FileInfo(mapPath);
                 string mapKey = String.Format("generated:terrain-map:{0}:{1}:{2}:{3}",
                     info.FullName, info.Length, info.LastWriteTimeUtc.Ticks, map.Side);
-                bool mapTextureCreated = false;
-                stageTimer.Restart();
                 Texture2D mapTexture = viewer.TextureManager.GetGenerated(mapKey, device =>
                 {
-                    mapTextureCreated = true;
                     var texture = new Texture2D(device, map.Side,
                         map.Side, false, SurfaceFormat.Alpha8);
                     texture.SetData(map.MaterialIds);
                     return texture;
                 });
-                double mapTextureMilliseconds = stageTimer.Elapsed.TotalMilliseconds;
                 Texture2D noiseTexture = viewer.TextureManager.GetGenerated(
                     "generated:terrain-material-noise:v3", CreateNoiseTexture);
 
-                totalTimer.Stop();
-                Trace.TraceInformation(
-                    "Procedural terrain {0}: map {1}->{2}, {3} source textures, {4:F2} average passes, {5} maximum passes; decode {6:F1} ms, reduce {7:F1} ms, analyze {8:F1} ms, sources {9:F1} ms, map texture {10:F1} ms ({11}), total {12:F1} ms",
-                    Path.GetFileName(tile.TerrainFilePath), nativeMap.Side, map.Side,
-                    sources.Count, (double)passTotal / patches.Length, passMaximum,
-                    decodeMilliseconds, reduceMilliseconds, analysisMilliseconds,
-                    sourceMilliseconds, mapTextureMilliseconds,
-                    mapTextureCreated ? "created" : "cached", totalTimer.Elapsed.TotalMilliseconds);
                 return new ProceduralTerrainTile(mapTexture, noiseTexture, patches, tile.PatchCount);
             }
             catch (Exception error)
