@@ -157,7 +157,9 @@ namespace Orts.Viewer3D
                     TileZ = tileZ,
                     XNAMatrix = matrix,
                 };
-                position.Normalize();
+                // Keep generated poles relative to their owning world tile,
+                // like ordinary world objects and Ruler node shapes. Model
+                // instancing is batched per world file and assumes one tile.
                 sceneryObjects.Add(new StaticShape(viewer,
                     shapeFilePath, position, shapeFlags));
             }
