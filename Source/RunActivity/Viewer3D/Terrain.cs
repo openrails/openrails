@@ -720,7 +720,6 @@ namespace Orts.Viewer3D
             ref Matrix xnaProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            graphicsDevice.Indices = TerrainPrimitive.SharedPatchIndexBuffer;
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearWrap;
             graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Overlay] = OverlaySamplerState;
