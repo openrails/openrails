@@ -296,6 +296,7 @@ namespace Orts.Parsers.Msts
         TrackObj = 0x00040005,
         Dyntrack = 0x00040006,
         Forest = 0x00040008,
+        Telepole = 0x00040009,
         CollideObject = 0x0004000B,
         Wagon = 0x0004000D,
         Engine = 0x0004000E,
@@ -1720,6 +1721,7 @@ namespace Orts.Parsers.Msts
 
         // Proposed TSRE namespace (6), with the same reserved local range.
         Ruler = 0x00060800,
+        ShapeTemplate = 0x00060801,
 
         // Procedural terrain extensions.
         TSRETerrainMaterialBuffer = 0x00061000,

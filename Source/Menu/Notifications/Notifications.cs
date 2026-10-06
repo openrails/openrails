@@ -24,6 +24,8 @@ namespace Menu.Notifications
     {
         public List<Notification> NotificationList = new List<Notification>();
         public List<Check> CheckList = new List<Check>();
+
+        // Given a function that replaces parameters in a string, replace all parameters in the notifications and checks
         internal void ReplaceParameters(Func<string, string> replaceFunc)
         {
             NotificationList?.ForEach(item => item.ReplaceParameters(replaceFunc));
@@ -70,6 +72,14 @@ namespace Menu.Notifications
     {
     }
     class Refresh : ValueItem
+    {
+    }
+    /// <summary>
+    /// This item indicates that the notification is missing an item type, and is silently ignored.
+    /// The item allows new types of notification elements to be introduced without breaking older versions of Open Rails.
+    /// Instead of BindToType() returning null and raising an exception, the notification is simply ignored and not displayed.
+    /// </summary>
+    class MissingItem : Item
     {
     }
     abstract class ValueItem : Item

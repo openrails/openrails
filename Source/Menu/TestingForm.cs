@@ -28,6 +28,7 @@ using GNU.Gettext.WinForms;
 using ORTS.Common;
 using ORTS.Menu;
 using ORTS.Settings;
+using static Menu.Notifications.NotificationPage;
 using Activity = ORTS.Menu.Activity;
 using Path = System.IO.Path;
 
@@ -151,12 +152,12 @@ namespace Menu
 
         void buttonSummary_Click(object sender, EventArgs e)
         {
-            Process.Start(SummaryFilePath);
+            Process.Start(new ProcessStartInfo { FileName = SummaryFilePath, UseShellExecute = true });
         }
 
         void buttonDetails_Click(object sender, EventArgs e)
         {
-            Process.Start(LogFilePath);
+            Process.Start(new ProcessStartInfo { FileName = LogFilePath, UseShellExecute = true });
         }
 
         void TestMarkedActivities(IEnumerable<DataGridViewRow> rows)

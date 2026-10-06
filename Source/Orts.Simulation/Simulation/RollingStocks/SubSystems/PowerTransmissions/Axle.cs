@@ -895,15 +895,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double fa = SlipCharacteristicsPolach(a + dx) - SlipCharacteristicsPolach(a);
             double fb = SlipCharacteristicsPolach(b + dx) - SlipCharacteristicsPolach(b);
 
-            double SlipSpeedMpS = AxleSpeedMpS - TrainSpeedMpS;
-
-            if (SlipSpeedMpS == 0)
-            {
-                // For display purposes threshold = 0 when no slip speed
-                WheelSlipThresholdMpS = 0;
-                return;
-            }
-
             if (fa * fb > 0)
             {
                 // If sign does not change, bisection fails

@@ -1133,6 +1133,20 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
+        /// Immediately stops playback of all sounds in the queue and clears wave data
+        /// </summary>
+        public void ForceResetQueue()
+        {
+            for (int i = 0; i < QUEUELENGHT; i++)
+            {
+                SoundQueue[i].PlayState = PlayState.NOP;
+                SoundQueue[i].SoundPiece = null;
+            }
+
+            QueueHeader = QueueTail = 0;
+        }
+
+        /// <summary>
         /// Start OpenAL playback
         /// </summary>
         private void Start()

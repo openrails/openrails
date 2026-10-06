@@ -50,21 +50,42 @@ namespace ORTS.Scripting.Api
                 return DieselEngineState.Unavailable;
             }
         }
-        protected float DieselEngineOutputPowerW => DieselEngines.MaxOutputPowerW;
+        /// <summary>
+        /// The status of the diesel generator that provides electric train supply power
+        /// </summary>
+        /// <returns>
+        /// PowerSupplyState.Unavailable if no engines can provide ETS.
+        /// PowerSupplyState.PowerOff if an engine can provide ETS, but is not running or is at insufficient RPM.
+        /// PowerSupplyState.PowerOn if an engine can provide ETS, and is running at sufficient RPM to do so.
+        /// </returns>
+        public PowerSupplyState CurrentElectricTrainSupplyGeneratorState()
+        {
+            PowerSupplyState state = PowerSupplyState.Unavailable;
+
+            foreach (DieselEngine de in DieselEngines)
+            {
+                if (de.ProvidesETS)
+                {
+                    if (de.State == DieselEngineState.Running && de.RealRPM >= DieselEngineMinRpmForElectricTrainSupply)
+                    {
+                        // At least one engine is ready to provide ETS, skip checking others
+                        state = PowerSupplyState.PowerOn;
+                        break;
+                    }
+                    else if (state == PowerSupplyState.Unavailable)
+                    {
+                        // This engine could provide ETS, but isn't ready
+                        state = PowerSupplyState.PowerOff;
+                    }
+                }
+            }
+
+            return state;
+        }
+        protected float DieselEnginesOutputPowerW => DieselEngines.MaxOutputPowerW;
+        protected float DieselEnginesAvailableTractionPowerW => DieselEngines.AvailableTractionPowerW;
 
         public float DieselEngineMinRpmForElectricTrainSupply => DpsHost.DieselEngineMinRpmForElectricTrainSupply;
-
-        public float DieselEngineMinRpm
-        {
-            get
-            {
-                return DpsHost.DieselEngineMinRpm;
-            }
-            set
-            {
-                DpsHost.DieselEngineMinRpm = value;
-            }
-        }
 
         /// <summary>
         /// Current state of the circuit breaker
