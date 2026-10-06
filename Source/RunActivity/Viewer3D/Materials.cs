@@ -170,6 +170,30 @@ namespace Orts.Viewer3D
             }
         }
 
+        /// <summary>
+        /// Gets a runtime-generated texture which participates in the normal texture
+        /// mark/sweep lifetime. The key must describe both the source and its revision.
+        /// </summary>
+        public Texture2D GetGenerated(string key, Func<GraphicsDevice, Texture2D> factory)
+        {
+            if (Thread.CurrentThread.Name != "Loader Process")
+                Trace.TraceError("SharedTextureManager.GetGenerated incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
+            if (String.IsNullOrEmpty(key))
+                throw new ArgumentException("A generated texture requires a cache key", nameof(key));
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            string textureKey = key.ToLowerInvariant();
+            Texture2D texture;
+            if (Textures.TryGetValue(textureKey, out texture))
+                return texture;
+            texture = factory(GraphicsDevice);
+            if (texture == null)
+                throw new InvalidOperationException("Generated texture factory returned no texture");
+            Textures.Add(textureKey, texture);
+            return texture;
+        }
+
         // Internal callers expect a new `Texture2D` for every load so we must also provide a new missing texture for each.
         internal static Texture2D GetInternalMissingTexture(GraphicsDevice graphicsDevice)
         {

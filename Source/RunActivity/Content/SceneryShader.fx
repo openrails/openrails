@@ -82,6 +82,8 @@ cbuffer PerMaterial
     float VegetationAmbientModifier;
     float ReferenceAlpha;
     float OverlayScale;
+    float4 TerrainMaterialData; // x = inverse patch size, y = map scale, zw = map offset
+    float TerrainMaterialMapSide;
     int PixelShaderOptions;
 
     float4 BaseColorFactor; // linear color multiplier
@@ -154,6 +156,12 @@ SamplerState SpecularSampler;
 
 Texture2D    SpecularColorTexture; // rgb: specular color in sRGB, a: unused
 SamplerState SpecularColorSampler;
+
+Texture2D    TerrainMaterialMapTexture;
+SamplerState TerrainMaterialMapSampler;
+
+Texture2D    TerrainMaterialNoiseTexture;
+SamplerState TerrainMaterialNoiseSampler;
 
 Texture2DArray ShadowMapArray;
 SamplerState LinearClampSampler
@@ -254,6 +262,7 @@ struct VERTEX_OUTPUT
 	float4 Normal_Light : TEXCOORD2; // normal x, y, z; light dot
 	float4 Shadow       : TEXCOORD3; // Level9_1<shadow map texture and depth x, y, z> Level9_3<abs position x, y, z, w>
 	float  Fog          : TEXCOORD4; // fog fade
+	float2 TerrainCoords : TEXCOORD5; // patch-local coordinates for procedural terrain
 };
 
 struct VERTEX_OUTPUT_PBR
@@ -572,6 +581,13 @@ VERTEX_OUTPUT VSTerrain(in VERTEX_INPUT In)
 	_VSNormalProjection(In.Normal, World, Out.Position, Out.RelPosition, Out.Normal_Light);
 	_VSLightsAndShadows(In.Position, World, length(Out.Position.xyz), Out.Fog, Out.Shadow);
 	Out.TexCoords.xy = In.TexCoords;
+	return Out;
+}
+
+VERTEX_OUTPUT VSProceduralTerrain(in VERTEX_INPUT In)
+{
+	VERTEX_OUTPUT Out = VSTerrain(In);
+	Out.TerrainCoords = In.Position.xz * TerrainMaterialData.x + 0.5;
 	return Out;
 }
 
@@ -1339,6 +1355,83 @@ PIXEL_OUTPUT PSTerrain(in VERTEX_OUTPUT In)
     return Out;
 }
 
+bool _PSSameTerrainMaterial(float a, float b)
+{
+	return abs(a - b) < (0.5 / 255.0);
+}
+
+float _PSSelectTerrainMaterial(float2 patchCoords)
+{
+	float MapSide = TerrainMaterialMapSide;
+	float2 mapCoords = saturate(patchCoords) * TerrainMaterialData.y + TerrainMaterialData.zw;
+	float2 mapPosition = clamp(mapCoords * MapSide, 0.0, MapSide);
+	float2 cell = floor(mapPosition - 0.5);
+	float2 fraction = mapPosition - 0.5 - cell;
+	float2 texel = 1.0 / MapSide;
+
+	float4 ids;
+	ids.x = TerrainMaterialMapTexture.Sample(TerrainMaterialMapSampler, (cell + float2(0.5, 0.5)) * texel).a;
+	ids.y = TerrainMaterialMapTexture.Sample(TerrainMaterialMapSampler, (cell + float2(1.5, 0.5)) * texel).a;
+	ids.z = TerrainMaterialMapTexture.Sample(TerrainMaterialMapSampler, (cell + float2(0.5, 1.5)) * texel).a;
+	ids.w = TerrainMaterialMapTexture.Sample(TerrainMaterialMapSampler, (cell + float2(1.5, 1.5)) * texel).a;
+	float4 weights = float4(
+		(1.0 - fraction.x) * (1.0 - fraction.y),
+		fraction.x * (1.0 - fraction.y),
+		(1.0 - fraction.x) * fraction.y,
+		fraction.x * fraction.y);
+
+	// The texture stores the high byte of TSRE's deterministic 32-bit hash.
+	float probability = (TerrainMaterialNoiseTexture.Sample(TerrainMaterialNoiseSampler, patchCoords).a * 255.0 + 0.5) / 256.0;
+	float support = weights.x;
+	if (_PSSameTerrainMaterial(ids.y, ids.x)) support += weights.y;
+	if (_PSSameTerrainMaterial(ids.z, ids.x)) support += weights.z;
+	if (_PSSameTerrainMaterial(ids.w, ids.x)) support += weights.w;
+	if (probability < support) return ids.x;
+	probability -= support;
+
+	if (!_PSSameTerrainMaterial(ids.y, ids.x)) {
+		support = weights.y;
+		if (_PSSameTerrainMaterial(ids.z, ids.y)) support += weights.z;
+		if (_PSSameTerrainMaterial(ids.w, ids.y)) support += weights.w;
+		if (probability < support) return ids.y;
+		probability -= support;
+	}
+	if (!_PSSameTerrainMaterial(ids.z, ids.x) && !_PSSameTerrainMaterial(ids.z, ids.y)) {
+		support = weights.z;
+		if (_PSSameTerrainMaterial(ids.w, ids.z)) support += weights.w;
+		if (probability < support) return ids.z;
+	}
+	return ids.w;
+}
+
+PIXEL_OUTPUT _PSProceduralTerrainColor(in VERTEX_OUTPUT In)
+{
+	float4 Color = ImageTexture.Sample(ImageSampler, In.TerrainCoords);
+	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness,
+		saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(true, In) + (PixelShaderOptions & PIXEL_OPTION_MSTS_IS_NIGHT)));
+	litColor = lerp(litColor, _PSGetOvercastColor(Color, In), Overcast.x);
+	litColor *= NightColorModifier;
+	litColor.rgb *= OverlayTexture.Sample(OverlaySampler, In.TerrainCoords * OverlayScale).rgb * 2;
+	litColor += _PSApplyMstsLights(Color.rgb, In, _PSGetShadowEffect(true, In));
+	_PSApplyFog(litColor, In);
+	_PSSceneryFade(Color, In);
+#ifdef DEBUG_SHADOW_COLORS
+	_PSApplyShadowColor(litColor, In);
+#endif
+
+	PIXEL_OUTPUT Out;
+	Out.Color = float4(litColor, Color.a);
+	Out.Bloom = float4(0, 0, 0, 1);
+	return Out;
+}
+
+PIXEL_OUTPUT PSProceduralTerrain(in VERTEX_OUTPUT In)
+{
+	float selectedMaterial = _PSSelectTerrainMaterial(In.TerrainCoords);
+	clip((0.5 / 255.0) - abs(selectedMaterial - ReferenceAlpha));
+	return _PSProceduralTerrainColor(In);
+}
+
 PIXEL_OUTPUT PSDarkShade(in VERTEX_OUTPUT In)
 {
     float4 Color = ImageTexture.Sample(ImageSampler, In.TexCoords.xy);
@@ -1509,6 +1602,13 @@ technique HalfBright {
 	pass Pass_0 {
 		VertexShader = compile vs_4_0 VSGeneral();
 		PixelShader = compile ps_4_0 PSHalfBright();
+	}
+}
+
+technique ProceduralTerrain {
+	pass Pass_0 {
+		VertexShader = compile vs_4_0 VSProceduralTerrain();
+		PixelShader = compile ps_4_0 PSProceduralTerrain();
 	}
 }
 

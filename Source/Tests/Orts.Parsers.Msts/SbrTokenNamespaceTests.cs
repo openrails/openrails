@@ -114,6 +114,11 @@ namespace Tests.Orts.Parsers.Msts
             Assert.Equal(0x00060800u, (uint)TokenID.Ruler);
             Assert.Equal(0x00060801u, (uint)TokenID.ShapeTemplate);
             Assert.Equal(0x00040009u, (uint)TokenID.Telepole);
+            Assert.Equal(0x00061000u, (uint)TokenID.TSRETerrainMaterialBuffer);
+            Assert.Equal(0x00061001u, (uint)TokenID.TSRETerrainBakedMaterial);
+            Assert.Equal(0x00061002u, (uint)TokenID.TSRETerrainMaterialMap);
+            Assert.Equal(0x00061003u, (uint)TokenID.TSRETerrainBakedMaterials);
+            Assert.Equal(0x00061004u, (uint)TokenID.TSRETerrainMaterials);
             Assert.Equal(0x0004000Du, (uint)TokenID.Wagon);
             Assert.Equal(0x0004000Eu, (uint)TokenID.Engine);
             Assert.Equal(0x000404D7u, (uint)TokenID.DEMPath);

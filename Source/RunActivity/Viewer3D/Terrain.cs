@@ -27,6 +27,7 @@ using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace Orts.Viewer3D
@@ -45,6 +46,9 @@ namespace Orts.Viewer3D
         int TileZ;
         int VisibleTileX;
         int VisibleTileZ;
+        TerrainMaterialFile TerrainMaterialLibrary;
+        bool TerrainMaterialLibraryLoaded;
+        List<TerrainTile> RetiredProceduralTerrainTiles;
 
         [CallOnThread("Render")]
         public TerrainViewer(Viewer viewer)
@@ -60,6 +64,7 @@ namespace Orts.Viewer3D
             {
                 TileX = VisibleTileX;
                 TileZ = VisibleTileZ;
+                LoadTerrainMaterialLibrary();
                 var terrainTiles = TerrainTiles;
                 var newTerrainTiles = new List<TerrainTile>();
 
@@ -89,14 +94,60 @@ namespace Orts.Viewer3D
                 // Now we turn each unique (distinct) loaded tile in to a terrain tile.
                 newTerrainTiles = tiles
                     .Where(t => t != null).Distinct()
-                    .Select(tile => terrainTiles.FirstOrDefault(tt => tt.TileX == tile.TileX && tt.TileZ == tile.TileZ && tt.Size == tile.Size) ?? new TerrainTile(Viewer, Viewer.Tiles, tile))
+                    .Select(tile =>
+                    {
+                        bool proceduralTerrainEligible = UsesProceduralTerrain(tile);
+                        return terrainTiles.FirstOrDefault(tt => tt.TileX == tile.TileX &&
+                            tt.TileZ == tile.TileZ && tt.Size == tile.Size &&
+                            tt.ProceduralTerrainEligible == proceduralTerrainEligible) ??
+                            new TerrainTile(Viewer, Viewer.Tiles, tile,
+                                proceduralTerrainEligible ? TerrainMaterialLibrary : null);
+                    })
                     .Union(loTiles
                         .Where(t => t != null).Distinct()
-                        .Select(tile => terrainTiles.FirstOrDefault(tt => tt.TileX == tile.TileX && tt.TileZ == tile.TileZ && tt.Size == tile.Size) ?? new TerrainTile(Viewer, Viewer.LoTiles, tile))
+                        .Select(tile => terrainTiles.FirstOrDefault(tt => tt.TileX == tile.TileX &&
+                            tt.TileZ == tile.TileZ && tt.Size == tile.Size &&
+                            !tt.ProceduralTerrainEligible) ??
+                            new TerrainTile(Viewer, Viewer.LoTiles, tile, null))
                     ).ToList();
 
+                // The render thread can still hold a frame prepared from the old
+                // tile list. Keep outgoing procedural textures marked for this
+                // sweep so they cannot be disposed underneath that frame. They
+                // become eligible for collection at the next terrain transition.
+                RetiredProceduralTerrainTiles = terrainTiles
+                    .Where(tile => tile.ProceduralTerrainEligible &&
+                        !newTerrainTiles.Contains(tile)).ToList();
                 TerrainTiles = newTerrainTiles;
             }
+        }
+
+        void LoadTerrainMaterialLibrary()
+        {
+            if (TerrainMaterialLibraryLoaded)
+                return;
+            TerrainMaterialLibraryLoaded = true;
+            string path = Path.Combine(Viewer.Simulator.RoutePath, "terrainmaterials.dat");
+            if (!File.Exists(path))
+                return;
+            try
+            {
+                TerrainMaterialLibrary = new TerrainMaterialFile(path);
+            }
+            catch (Exception error)
+            {
+                Trace.TraceWarning("Ignoring procedural terrain material catalogue {0}: {1}",
+                    path, error.Message);
+            }
+        }
+
+        bool UsesProceduralTerrain(Tile tile)
+        {
+            // Nine 4096-square Alpha8 maps are already about 144 MiB. Keep the
+            // first implementation to the current high-resolution 3 x 3 area.
+            return TerrainMaterialLibrary != null && tile.TerrainMaterials != null &&
+                tile.TerrainMaterials.IsValid && tile.Size == 1 &&
+                Math.Abs(tile.TileX - TileX) <= 1 && Math.Abs(tile.TileZ - TileZ) <= 1;
         }
 
         [CallOnThread("Updater")]
@@ -122,6 +173,16 @@ namespace Orts.Viewer3D
                 tile.Mark();
                 if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) break;
             }
+
+            var retiredTiles = RetiredProceduralTerrainTiles;
+            RetiredProceduralTerrainTiles = null;
+            if (retiredTiles == null)
+                return;
+            foreach (var tile in retiredTiles)
+            {
+                tile.Mark();
+                if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) break;
+            }
         }
 
         [CallOnThread("Updater")]
@@ -136,27 +197,33 @@ namespace Orts.Viewer3D
     public class TerrainTile
     {
         public readonly int TileX, TileZ, Size, PatchCount;
+        public readonly bool ProceduralTerrainEligible;
 
         readonly TerrainPrimitive[,] TerrainPatches;
         readonly WaterPrimitive WaterTile;
 
-        public TerrainTile(Viewer viewer, TileManager tileManager, Tile tile)
+        public TerrainTile(Viewer viewer, TileManager tileManager, Tile tile,
+            TerrainMaterialFile terrainMaterialLibrary)
         {
             TileX = tile.TileX;
             TileZ = tile.TileZ;
             Size = tile.Size;
             PatchCount = tile.PatchCount;
+            ProceduralTerrainEligible = terrainMaterialLibrary != null;
 
             // Terrain needs the next tiles over from its east (X+) and south (Z-) edges.
             viewer.Tiles.Load(TileX + tile.Size, TileZ, false);
             viewer.Tiles.Load(TileX + tile.Size, TileZ - 1, false);
             viewer.Tiles.Load(TileX, TileZ - 1, false);
 
+            ProceduralTerrainTile proceduralTerrain = terrainMaterialLibrary == null ? null :
+                ProceduralTerrainTile.TryCreate(viewer, tile, terrainMaterialLibrary);
             TerrainPatches = new TerrainPrimitive[PatchCount, PatchCount];
             for (var x = 0; x < PatchCount; ++x)
                 for (var z = 0; z < PatchCount; ++z)
                     if (tile.GetPatch(x, z).DrawingEnabled)
-                        TerrainPatches[x, z] = new TerrainPrimitive(viewer, tileManager, tile, x, z);
+                        TerrainPatches[x, z] = new TerrainPrimitive(viewer, tileManager, tile,
+                            x, z, proceduralTerrain);
 
             if (tile.ContainsWater)
                 WaterTile = new WaterPrimitive(viewer, tile);
@@ -210,7 +277,8 @@ namespace Orts.Viewer3D
         readonly Tile Tile;
         readonly terrain_patchset_patch Patch;
 
-        public TerrainPrimitive(Viewer viewer, TileManager tileManager, Tile tile, int x, int z)
+        internal TerrainPrimitive(Viewer viewer, TileManager tileManager, Tile tile, int x, int z,
+            ProceduralTerrainTile proceduralTerrain)
         {
             Viewer = viewer;
             TileX = tile.TileX;
@@ -235,11 +303,33 @@ namespace Orts.Viewer3D
             var terrainMaterial = tile.Size > 2 ? "TerrainSharedDistantMountain" : PatchIndexBuffer == null ? "TerrainShared" : "Terrain";
             var ts = Tile.Shaders[Patch.ShaderIndex].terrain_texslots;
             var uv = Tile.Shaders[Patch.ShaderIndex].terrain_uvcalcs;
+            bool hasProceduralTerrainData = tile.TerrainMaterials != null &&
+                tile.TerrainMaterials.IsValid;
+            Func<string, string> resolveTerrainTexture = name =>
+                Helpers.GetTerrainTextureFile(viewer.Simulator, name);
+            if (hasProceduralTerrainData)
+                resolveTerrainTexture = name => Helpers.GetProceduralTerrainTextureFile(
+                    viewer.Simulator, name);
+            string terrainTextures;
             if (ts.Length > 1)
-                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename) +
-                    (uv[1].D != 0 && uv[1].D != 32 ? "\0" + uv[1].D.ToString(): ""));
+                terrainTextures = resolveTerrainTexture(ts[0].Filename) + "\0" +
+                    resolveTerrainTexture(ts[1].Filename) +
+                    (uv[1].D != 0 && uv[1].D != 32 ? "\0" + uv[1].D.ToString() : "");
             else
-                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "microtex.ace"));
+                terrainTextures = resolveTerrainTexture(ts[0].Filename) + "\0" +
+                    resolveTerrainTexture("microtex.ace");
+
+            ProceduralTerrainTile.Patch proceduralPatch = proceduralTerrain?.GetPatch(x, z);
+            if (proceduralPatch != null && proceduralPatch.Layers.Length > 0)
+            {
+                Texture2D defaultTexture = PatchIndexBuffer == null && Helpers.IsSnow(viewer.Simulator) ?
+                    SharedMaterialManager.DefaultSnowTexture : SharedMaterialManager.MissingTexture;
+                PatchMaterial = new ProceduralTerrainMaterial(viewer, terrainTextures, defaultTexture,
+                    proceduralTerrain.MaterialMapTexture, proceduralTerrain.NoiseTexture,
+                    proceduralPatch, PatchSize, x, z, tile.PatchCount);
+            }
+            else
+                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, terrainTextures);
 
             if (!SharedPatchIndexBuffers.ContainsKey(PatchSampleCount))
                 SetupSharedData(Viewer.GraphicsDevice, PatchSampleCount);
@@ -501,18 +591,17 @@ namespace Orts.Viewer3D
     public class TerrainMaterial : Material
     {
         EffectTechnique Technique;
-        readonly Texture2D PatchTexture;
-        readonly Texture2D PatchTextureOverlay;
-        readonly float OverlayScale;
+        protected readonly Texture2D PatchTexture;
+        protected readonly Texture2D PatchTextureOverlay;
+        protected readonly float OverlayScale;
         readonly PixelShaderOptions PixelShaderOptions;
-        static readonly SamplerState OverlaySamplerState = new SamplerState
+        protected static readonly SamplerState OverlaySamplerState = new SamplerState
         {
             AddressU = TextureAddressMode.Wrap,
             AddressV = TextureAddressMode.Wrap,
             Filter = TextureFilter.Linear,
             MipMapLevelOfDetailBias = 0
         };
-
 
         public TerrainMaterial(Viewer viewer, string terrainTexture, Texture2D defaultTexture)
             : base(viewer, terrainTexture)
@@ -570,9 +659,154 @@ namespace Orts.Viewer3D
 
         public override void Mark()
         {
+            MarkTerrainTextures();
+            base.Mark();
+        }
+
+        protected void MarkTerrainTextures()
+        {
             Viewer.TextureManager.Mark(PatchTexture);
             Viewer.TextureManager.Mark(PatchTextureOverlay);
-            base.Mark();
+        }
+    }
+
+    /// <summary>
+    /// Draws a bounded number of source terrain textures through a categorical
+    /// material-ID mask. If any possible material is unavailable or omitted, the
+    /// saved MSTS terrain texture is drawn first and remains visible in those pixels.
+    /// </summary>
+    sealed class ProceduralTerrainMaterial : TerrainMaterial
+    {
+        const float ProceduralTerrainViewingDistance = 1000f;
+
+        readonly EffectTechnique TerrainTechnique;
+        readonly EffectTechnique ProceduralTechnique;
+        readonly Texture2D MaterialMapTexture;
+        readonly Texture2D NoiseTexture;
+        readonly ProceduralTerrainTile.Patch Patch;
+        readonly float PatchRadius;
+        readonly float InversePatchSize;
+        readonly float MapScale;
+        readonly float MapOffsetX;
+        readonly float MapOffsetZ;
+
+        public ProceduralTerrainMaterial(Viewer viewer, string terrainTexture,
+            Texture2D defaultTexture, Texture2D materialMapTexture, Texture2D noiseTexture,
+            ProceduralTerrainTile.Patch patch, int patchSize, int patchX, int patchZ,
+            int patchCount)
+            : base(viewer, terrainTexture, defaultTexture)
+        {
+            MaterialMapTexture = materialMapTexture;
+            NoiseTexture = noiseTexture;
+            Patch = patch;
+            TerrainTechnique = Viewer.MaterialManager.SceneryShader.Techniques["Terrain"];
+            ProceduralTechnique = Viewer.MaterialManager.SceneryShader.Techniques["ProceduralTerrain"];
+            PatchRadius = patchSize * 0.7071f;
+            InversePatchSize = 1f / patchSize;
+            MapScale = 1f / patchCount;
+            MapOffsetX = (float)patchX / patchCount;
+            MapOffsetZ = (float)patchZ / patchCount;
+
+            SetSortingEffectId(ProceduralTechnique);
+        }
+
+        // Rendering is ordered per patch in Render(), so no common state belongs here.
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice,
+            IEnumerable<RenderItem> renderItems, ref Matrix xnaViewMatrix,
+            ref Matrix xnaProjectionMatrix)
+        {
+            var shader = Viewer.MaterialManager.SceneryShader;
+            graphicsDevice.Indices = TerrainPrimitive.SharedPatchIndexBuffer;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearWrap;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.Overlay] = OverlaySamplerState;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.TerrainMaterialMap] = SamplerState.PointClamp;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.TerrainMaterialNoise] = SamplerState.PointWrap;
+
+            foreach (RenderItem item in renderItems)
+            {
+                shader.SetMatrix(item.XNAMatrix);
+                shader.ZBias = item.RenderPrimitive.ZBias;
+                shader.OverlayTexture = PatchTextureOverlay;
+                shader.OverlayScale = OverlayScale;
+                shader.PixelShaderOptions = (uint)PixelShaderOptions.HasNormals;
+
+                Vector3 xnaLocation = item.XNAMatrix.Translation;
+                var mstsLocation = new Vector3(xnaLocation.X, xnaLocation.Y, -xnaLocation.Z);
+                bool useProceduralTerrain = Viewer.Camera.InRange(mstsLocation, PatchRadius,
+                    ProceduralTerrainViewingDistance);
+
+                // Keep the 3 x 3 procedural maps resident, but outside the close
+                // viewing radius draw only the saved patch texture. Testing the
+                // patch's bounding circle avoids switching while part of the patch
+                // is still within the detailed area.
+                if (!useProceduralTerrain || Patch.UseBakedBase)
+                {
+                    shader.CurrentTechnique = TerrainTechnique;
+                    shader.ImageTexture = PatchTexture;
+                    graphicsDevice.BlendState = BlendState.NonPremultiplied;
+                    graphicsDevice.DepthStencilState = DepthStencilState.Default;
+                    DrawPasses(shader, item, graphicsDevice);
+                }
+
+                if (!useProceduralTerrain)
+                    continue;
+
+                shader.CurrentTechnique = ProceduralTechnique;
+                shader.TerrainMaterialMapTexture = MaterialMapTexture;
+                shader.TerrainMaterialNoiseTexture = NoiseTexture;
+                shader.SetTerrainMaterialData(InversePatchSize, MapScale,
+                    MapOffsetX, MapOffsetZ, MaterialMapTexture.Width);
+                graphicsDevice.BlendState = BlendState.Opaque;
+                // The material masks are disjoint, so every visible procedural
+                // pixel must write terrain depth. Leaving later layers read-only
+                // lets subsequently drawn terrain show through those pixels.
+                // The baked and procedural passes use identical geometry and the
+                // default LessEqual comparison accepts their equal depth values.
+                graphicsDevice.DepthStencilState = DepthStencilState.Default;
+                for (int i = 0; i < Patch.Layers.Length; ++i)
+                {
+                    ProceduralTerrainTile.Layer layer = Patch.Layers[i];
+                    shader.ImageTexture = layer.Texture;
+                    shader.OverlayTexture = layer.DetailTexture ?? PatchTextureOverlay;
+                    shader.OverlayScale = layer.DetailScale;
+                    shader.ReferenceAlpha = layer.Id / 255f;
+                    DrawPasses(shader, item, graphicsDevice);
+                }
+            }
+        }
+
+        static void DrawPasses(SceneryShader shader, RenderItem item,
+            GraphicsDevice graphicsDevice)
+        {
+            foreach (EffectPass pass in shader.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                item.RenderPrimitive.Draw(graphicsDevice);
+            }
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+        }
+
+        public override void Mark()
+        {
+            MarkTerrainTextures();
+            Viewer.TextureManager.Mark(MaterialMapTexture);
+            Viewer.TextureManager.Mark(NoiseTexture);
+            foreach (ProceduralTerrainTile.Layer layer in Patch.Layers)
+            {
+                Viewer.TextureManager.Mark(layer.Texture);
+                if (layer.DetailTexture != null)
+                    Viewer.TextureManager.Mark(layer.DetailTexture);
+            }
         }
     }
 
