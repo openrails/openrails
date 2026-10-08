@@ -1887,7 +1887,7 @@ namespace Orts.Viewer3D
                 case SoundVariable.ControlType.WheelRPM: return pS.TopM((float)(car.AbsWheelSpeedMpS / (2 * Math.PI * car.WheelRadiusM)));
                 case SoundVariable.ControlType.DriveWheelRPM: return pS.TopM((float)(Math.Abs(car.DriveWheelSpeedMpS) / (2 * Math.PI * car.WheelRadiusM)));
                 case SoundVariable.ControlType.ConcreteSleepers: return SharedSMSFileManager.ConcreteSleepers;
-                case SoundVariable.ControlType.SteamLocomotiveMEP: return car.SteamLocomotiveMEPPSI;
+                case SoundVariable.ControlType.SteamLocomotiveNormalisedMEP: return car.SteamLocomotiveNormalisedMEPPSI;
                 case SoundVariable.ControlType.CarInTunnel: return car.TrackSoundInTunnelTriggered;
                 case SoundVariable.ControlType.CarDistanceTrack: return car.CarTrackControlledDistanceM;
                 case SoundVariable.ControlType.CarTunnelDistance: return car.CarTunnelDistanceM;
