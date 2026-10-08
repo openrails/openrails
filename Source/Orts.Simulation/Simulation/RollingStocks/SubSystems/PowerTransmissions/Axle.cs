@@ -390,8 +390,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     {
                         // Diesel and electric locomotives have a threshold time set
                         // just long enough to ignore artificial slip indications
-                        axle.WheelSlipThresholdTimeS = 0.25f;
-                        axle.WheelSlipWarningThresholdTimeS = 0.25f;
+                        axle.WheelSlipThresholdTimeS = 0.2f;
+                        axle.WheelSlipWarningThresholdTimeS = 0.2f;
                     }
                 }
                 if (axle.DriveType == AxleDriveType.NotDriven)
@@ -1464,38 +1464,68 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 UpdateSimpleAdhesion(elapsedSeconds);
             }
-            if ((SlipPercent > (Car is MSTSLocomotive loco && loco.SlipControlSystem == MSTSLocomotive.SlipControlType.Full && Math.Abs(DriveForceN) > BrakeRetardForceN ? (200 - SlipWarningTresholdPercent) : 100)))
-            {
-                // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
-                IsWheelSlip = IsWheelSlipWarning = true;
 
-                // Wait some time before indicating the HuD wheelslip to avoid false triggers
-                if (WheelSlipTimeS > WheelSlipThresholdTimeS)
-                {
-                    HuDIsWheelSlip = HuDIsWheelSlipWarning = true;
-                }
-                WheelSlipTimeS += elapsedSeconds;
+            // Determine instantaneous slip/slip warning state
+            if (SlipPercent > (Car is MSTSLocomotive loco && loco.SlipControlSystem == MSTSLocomotive.SlipControlType.Full && Math.Abs(DriveForceN) > BrakeRetardForceN ? (200 - SlipWarningTresholdPercent) : 100))
+            {
+                IsWheelSlip = IsWheelSlipWarning = true;
             }
             else if (SlipPercent > SlipWarningTresholdPercent)
             {
-                // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
                 IsWheelSlipWarning = true;
                 IsWheelSlip = false;
+            }
+            else
+            {
+                IsWheelSlipWarning = false;
+                IsWheelSlip = false;
+            }
 
-                // Wait some time before indicating wheelslip to avoid false triggers
-                if (WheelSlipWarningTimeS > WheelSlipWarningThresholdTimeS) HuDIsWheelSlipWarning = true;
-                HuDIsWheelSlip = false;
+            // Update timers to determine if current slip conditions should be shown on HUD
+            // Delay is present between showing/suppressing slip indications to account for
+            // potential instability in the axle model and to simulate processing time in
+            // locomotive circuits
+            if (IsWheelSlipWarning)
+            {
+                if (WheelSlipWarningTimeS > WheelSlipWarningThresholdTimeS)
+                {
+                    HuDIsWheelSlipWarning = true;
+                    WheelSlipWarningTimeS = WheelSlipWarningThresholdTimeS;
+                }
+                else
                 WheelSlipWarningTimeS += elapsedSeconds;
             }
             else
             {
+                if (WheelSlipWarningTimeS < 0)
+                {
                 HuDIsWheelSlipWarning = false;
-                HuDIsWheelSlip = false;
-                IsWheelSlipWarning = false;
-                IsWheelSlip = false;
-                WheelSlipWarningTimeS = WheelSlipTimeS = 0;
+                    WheelSlipWarningTimeS = 0;
+                }
+                else
+                    WheelSlipWarningTimeS -= elapsedSeconds;
             }
 
+            if (IsWheelSlip)
+            {
+                if (WheelSlipTimeS > WheelSlipThresholdTimeS)
+                {
+                    HuDIsWheelSlip = true;
+                    WheelSlipTimeS = WheelSlipThresholdTimeS;
+                }
+                else
+                    WheelSlipTimeS += elapsedSeconds;
+            }
+            else
+            {
+                if (WheelSlipTimeS < 0)
+                {
+                HuDIsWheelSlip = false;
+                    WheelSlipTimeS = 0;
+                }
+                else
+                    WheelSlipTimeS -= elapsedSeconds;
+            }
         }
 
         public void UpdateSimpleAdhesion(float elapsedClockSeconds)
