@@ -510,7 +510,7 @@ namespace Orts.Parsers.Msts
     {
         static long GetPosition(BinaryBlockReader sbr)
         {
-            if (sbr.InputStream.BaseStream is DeflateStream) return -1;
+            if (!sbr.InputStream.BaseStream.CanSeek) return -1;
             return sbr.InputStream.BaseStream.Position;
         }
 
