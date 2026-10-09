@@ -547,8 +547,6 @@ namespace Orts.Simulation.RollingStocks
             AFMFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 1.0f);
 
             TrainBrakeController = new ScriptedBrakeController(this);
-            EngineBrakeController = new ScriptedBrakeController(this);
-            BrakemanBrakeController = new ScriptedBrakeController(this);
             MultiPositionControllers = new List<MultiPositionController>();
             ThrottleController = new MSTSNotchController();
             DynamicBrakeController = new MSTSNotchController();
@@ -563,44 +561,7 @@ namespace Orts.Simulation.RollingStocks
         {
             base.LoadFromWagFile(wagFilePath);
 
-            // Assumes that CabViewList[0] is the front cab
-            // and that CabViewList[1] is the rear cab, if present.
-            // Could be extended to more than 2 cabs.
-            if (CVFFileName != null)
-            {
-                var cabView = BuildCabView(WagFilePath, CVFFileName);
-                if (cabView != null)
-                {
-                    CabViewList.Add(cabView);
-                    var reverseCVFFileName = Path.Combine(
-                        Path.GetDirectoryName(CVFFileName), // Some CVF paths begin with "..\..\", so Path.GetDirectoryName() is needed.
-                        Path.GetFileNameWithoutExtension(CVFFileName) + "_rv.cvf"
-                    );
-
-                    {
-                        cabView = BuildCabView(WagFilePath, reverseCVFFileName);
-                        if (cabView != null)
-                            CabViewList.Add(cabView);
-                    }
-                    // practically never happens, but never say never
-                    if (CabViewList.Count == 2 && CabViewList[1].CabViewType == CabViewType.Front && CabViewList[0].CabViewType == CabViewType.Rear)
-                    {
-                        cabView = CabViewList[1];
-                        CabViewList.Insert(0, cabView);
-                        CabViewList.RemoveAt(2);
-                    }
-                    // only one cabview, and it looks rear; insert a void one at first place to maintain fast indexing
-                    else if (CabViewList.Count == 1 && CabViewList[0].CabViewType == CabViewType.Rear)
-                    {
-                        UsingRearCab = true;
-                        CabViewList.Add(CabViewList[0]);
-                        CabViewList[0].CabViewType = CabViewType.Void;
-                    }
-                }
-                CabView3D = BuildCab3DView();
-                if (CabViewList.Count == 0 & CabView3D == null)
-                    Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
-            }
+            LoadCabViews(wagFilePath);
 
             DrvWheelWeightKg = InitialDrvWheelWeightKg;
 
@@ -647,6 +608,57 @@ namespace Orts.Simulation.RollingStocks
             MoveParamsToAxle();
         }
 
+        protected void LoadCabViews(string wagFilePath)
+        {
+            // Assumes that CabViewList[0] is the front cab
+            // and that CabViewList[1] is the rear cab, if present.
+            // Could be extended to more than 2 cabs.
+
+            // Remove any existing cab views that might be present (if hot reloading)
+            CabViewList.Clear();
+            CabView3D = null;
+
+            if (CVFFileName != null)
+            {
+                var cabView = BuildCabView(WagFilePath, CVFFileName);
+                if (cabView != null)
+                {
+                    CabViewList.Add(cabView);
+                    var reverseCVFFileName = Path.Combine(
+                        Path.GetDirectoryName(CVFFileName), // Some CVF paths begin with "..\..\", so Path.GetDirectoryName() is needed.
+                        Path.GetFileNameWithoutExtension(CVFFileName) + "_rv.cvf"
+                    );
+
+                    {
+                        cabView = BuildCabView(WagFilePath, reverseCVFFileName);
+                        if (cabView != null)
+                            CabViewList.Add(cabView);
+                    }
+                    // practically never happens, but never say never
+                    if (CabViewList.Count == 2 && CabViewList[1].CabViewType == CabViewType.Front && CabViewList[0].CabViewType == CabViewType.Rear)
+                    {
+                        cabView = CabViewList[1];
+                        CabViewList.Insert(0, cabView);
+                        CabViewList.RemoveAt(2);
+                    }
+                    // only one cabview, and it looks rear; insert a void one at first place to maintain fast indexing
+                    else if (CabViewList.Count == 1 && CabViewList[0].CabViewType == CabViewType.Rear)
+                    {
+                        UsingRearCab = true;
+                        CabViewList.Add(CabViewList[0]);
+                        CabViewList[0].CabViewType = CabViewType.Void;
+                    }
+                    else if (CabViewList.Count == 1)
+                        UsingRearCab = false;
+                }
+                CabView3D = BuildCab3DView();
+                if (CabViewList.Count == 0 & CabView3D == null)
+                    Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
+            }
+
+            StaleCab = false;
+        }
+
         protected void CheckCoherence()
         {
             if (ThrottleController == null)
@@ -658,7 +670,7 @@ namespace Orts.Simulation.RollingStocks
             DPThrottleController = (MSTSNotchController)ThrottleController.Clone();
 
             // need to test for Dynamic brake problem on 3DTS and SLI
-            if (DynamicBrakeController.IsValid())
+            if (DynamicBrakeController != null && DynamicBrakeController.IsValid())
             {
                 if (DynamicBrakeController.NotchCount() <= 3)
                 {
@@ -854,7 +866,7 @@ namespace Orts.Simulation.RollingStocks
             if (!File.Exists(cvfFilePath))
                 return null;
 
-            var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath);
+            var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath, Simulator.Settings.EnableHotReloading);
             var viewPoint = new ViewPoint();
             if (cvfFile.Locations.Count <= 0) return null; //check for Protrain's dummy cab
             // Set up camera locations for the cab views
@@ -937,7 +949,7 @@ namespace Orts.Simulation.RollingStocks
                         return null;
                 }
             }
-            var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath);
+            var cvfFile = new CabViewFile(cvfFilePath, cvfBasePath, Simulator.Settings.EnableHotReloading);
             if (!(this is MSTSSteamLocomotive))
                 InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
 
@@ -1031,8 +1043,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdynamicbrakepowerrampdownrate": DynamicBrakePowerRampDownWpS = stf.ReadFloatBlock(STFReader.UNITS.PowerRate, null); break;
                 case "engine(ortsdynamicbrakepowerrampdowntozerorate": DynamicBrakePowerRampDownToZeroWpS = stf.ReadFloatBlock(STFReader.UNITS.PowerRate, null); break;
 
-                case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
-                case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
+                case "engine(enginecontrollers(throttle": ThrottleController.Parse(stf); break;
+                case "engine(enginecontrollers(regulator": ThrottleController.Parse(stf); break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
                 case "engine(ortslocomotivedrivewheelonlybraking":
                     var wheelbraking = stf.ReadIntBlock(null);
@@ -1054,6 +1066,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortstrainbrakecontroller":
                 case "engine(enginecontrollers(brake_train":
                 case "engine(ortstraindynamicblendingtable":
+                    if (TrainBrakeController == null)
+                        TrainBrakeController = new ScriptedBrakeController(this);
                     TrainBrakeController.Parse(lowercasetoken, stf);
                     TrainBrakeFitted = true;
                     break;
@@ -1068,10 +1082,14 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsenginebrakescontrollerslowapplicationrate":
                 case "engine(enginecontrollers(brake_engine":
                 case "engine(ortsenginebrakecontroller":
+                    if (EngineBrakeController == null)
+                        EngineBrakeController = new ScriptedBrakeController(this);
                     EngineBrakeController.Parse(lowercasetoken, stf);
                     EngineBrakeFitted = true;
                     break;
                 case "engine(enginecontrollers(brake_brakeman":
+                    if (BrakemanBrakeController == null)
+                        BrakemanBrakeController = new ScriptedBrakeController(this);
                     BrakemanBrakeController.Parse(lowercasetoken, stf);
                     BrakemanBrakeFitted = true;
                     break;
@@ -1393,7 +1411,7 @@ namespace Orts.Simulation.RollingStocks
 
             ThrottleController = (MSTSNotchController)locoCopy.ThrottleController.Clone();
             SteamHeatController = (MSTSNotchController)locoCopy.SteamHeatController.Clone();
-            TrainBrakeController = locoCopy.TrainBrakeController.Clone(this);
+            TrainBrakeController = locoCopy.TrainBrakeController != null ? locoCopy.TrainBrakeController.Clone(this) : null;
             EngineBrakeController = locoCopy.EngineBrakeController != null ? locoCopy.EngineBrakeController.Clone(this) : null;
             BrakemanBrakeController = locoCopy.BrakemanBrakeController != null ? locoCopy.BrakemanBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
@@ -1618,18 +1636,30 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// Called just after the InitializeFromWagFile
         /// </summary>
-        public override void Initialize()
+        public override void Initialize(bool reinitialize = false)
         {
+            if (reinitialize && Train != null)
+            {
+                ThrottleController?.SetValue(Train.MUThrottlePercent / 100);
+                DynamicBrakeController?.SetValue(Train.MUDynamicBrakePercent / 100);
+            }
+            else
+            {
+                ThrottleController?.SetValue(ThrottleController.InitialValue);
+                DynamicBrakeController?.SetValue(DynamicBrakeController.InitialValue);
+            }
 
-            TrainBrakeController.Initialize();
+            SteamHeatController?.SetValue(SteamHeatController.InitialValue);
+
+            TrainBrakeController.Initialize(reinitialize);
             if (!TrainBrakeController.IsValid())
             {
                 TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
-                TrainBrakeController.Initialize();
+                TrainBrakeController.Initialize(reinitialize);
             }
             if (EngineBrakeController != null)
             {
-                EngineBrakeController.Initialize();
+                EngineBrakeController.Initialize(reinitialize);
                 if (!EngineBrakeController.IsValid() && !SteamEngineBrakeFitted)
                 {
                     EngineBrakeController = null;
@@ -1638,7 +1668,7 @@ namespace Orts.Simulation.RollingStocks
             }
             if (BrakemanBrakeController != null)
             {
-                BrakemanBrakeController.Initialize();
+                BrakemanBrakeController.Initialize(reinitialize);
                 if (!BrakemanBrakeController.IsValid())
                 {
                     BrakemanBrakeController = null;
@@ -1983,7 +2013,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            base.Initialize();
+            base.Initialize(reinitialize);
             if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;
 
 
@@ -2168,6 +2198,14 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            if (StaleCab) // Something about the cab view data is out of date
+            {
+                // Force reload the cab view data without reloading anything else
+                LoadCabViews(WagFilePath);
+
+                // Force reload the viewer so that changes in cab view are shown
+                StaleViewer = true;
+            }
 
             var gearloco = this as MSTSDieselLocomotive;
 
