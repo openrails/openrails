@@ -7263,18 +7263,18 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             #endregion
 
-                // Calculate the elapse time for the steam performance monitoring
-                if (Simulator.Settings.DataLogExclusiveSteamPerformance)
+            // Calculate the elapse time for the steam performance monitoring
+            if (Simulator.Settings.DataLogExclusiveSteamPerformance)
+            {
+                if (SpeedMpS > 0.05)
                 {
-                    if (SpeedMpS > 0.05)
-                    {
-                        SteamPerformanceTimeS += elapsedClockSeconds;
-                    }
-                    else if (SpeedMpS < 0.04)
-                    {
-                        SteamPerformanceTimeS = 0.0f;   // set time to zero if loco stops
-                    }
+                    SteamPerformanceTimeS += elapsedClockSeconds;
                 }
+                else if (SpeedMpS < 0.04)
+                {
+                    SteamPerformanceTimeS = 0.0f;   // set time to zero if loco stops
+                }
+            }
 
             // Derate when priming is occurring.
             if (BoilerIsPriming)
