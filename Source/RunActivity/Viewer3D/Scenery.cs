@@ -52,7 +52,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Orts.Viewer3D
 {
@@ -313,7 +312,20 @@ namespace Orts.Viewer3D
 
                 // Get the position of the scenery object into ORTS coordinate space.
                 WorldPosition worldMatrix;
-                if (worldObject.Matrix3x3 != null && worldObject.Position != null)
+                if (worldObject is TelepoleObj)
+                {
+                    worldMatrix = new WorldPosition
+                    {
+                        TileX = WFile.TileX,
+                        TileZ = WFile.TileZ,
+                    };
+                    if (worldObject.Position != null)
+                        worldMatrix.Location = new Vector3(
+                            worldObject.Position.X,
+                            worldObject.Position.Y,
+                            worldObject.Position.Z);
+                }
+                else if (worldObject.Matrix3x3 != null && worldObject.Position != null)
                     worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.Matrix3x3);
                 else if (worldObject.QDirection != null && worldObject.Position != null)
                     worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.QDirection);
@@ -384,8 +396,14 @@ namespace Orts.Viewer3D
                         }
                         else
                         {
+                            bool isMovingTable = containsMovingTable &&
+                                Program.Simulator.MovingTables.Any(movingTable =>
+                                    worldObject.UID == movingTable.UID &&
+                                    WFileName == movingTable.WFile);
+
                             // See if superelevation should be used on this piece of track
-                            if (viewer.Simulator.UseSuperElevation
+                            if (!isMovingTable
+                                && viewer.Simulator.UseSuperElevation
                                 && SuperElevationManager.DecomposeStaticSuperElevation(viewer, trackObj, worldMatrix, dTrackList, shapeFilePath))
                             {
                                 // Don't add scenery for this section of track, dynamic superelevated track will be created instead
@@ -433,11 +451,31 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(DyntrackObj))
                     {
-                        if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
-                            Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        DyntrackObj dyntrackObj = (DyntrackObj)worldObject;
+                        if (!dyntrackObj.IsRoad &&
+                            viewer.Simulator.Settings.Wire == true &&
+                            viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
+                            Wire.DecomposeDynamicWire(viewer, dTrackList, dyntrackObj, worldMatrix);
                         // Add DyntrackDrawers for individual subsections
-                        SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        SuperElevationManager.DecomposeDynamicSuperElevation(
+                            viewer, dTrackList, dyntrackObj, worldMatrix);
 
+                    }
+                    else if (worldObject.GetType() == typeof(RulerObj))
+                    {
+                        RulerShape.Decompose(viewer, dTrackList,
+                            sceneryObjects, (RulerObj)worldObject,
+                            worldMatrix, shapeFilePath,
+                            shadowCaster ? ShapeFlags.ShadowCaster :
+                                ShapeFlags.None);
+                    }
+                    else if (worldObject.GetType() == typeof(TelepoleObj))
+                    {
+                        TelepoleShape.Decompose(viewer, dTrackList,
+                            sceneryObjects, (TelepoleObj)worldObject,
+                            WFile.TileX, WFile.TileZ,
+                            shadowCaster ? ShapeFlags.ShadowCaster :
+                                ShapeFlags.None);
                     }
                     // Objects other than tracks
                     else if (worldObject.GetType() == typeof(ForestObj))
@@ -491,11 +529,20 @@ namespace Orts.Viewer3D
                         // preTestShape for lookup if it is an animated clock shape with subobjects named as clock hands 
                         StaticShape preTestShape = (new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
 
-                        // FirstOrDefault() checks for "animations( 0 )" as this is a valid entry in *.s files
-                        // and is included by MSTSexporter for Blender 2.8+ Release V4.0 or older
-                        var animNodes = preTestShape.SharedShape.Animations?.FirstOrDefault()?.anim_nodes ?? new List<anim_node>();
+                        var isAnimatedClock = false;
+                        var animationsCount = preTestShape.SharedShape.HasAnimations() ? preTestShape.SharedShape.GetAnimationNamesCount() : 0;
+                        for (var i = 0; i < animationsCount; i++)
+                        {
+                            if (!preTestShape.SharedShape.HasAnimation(i))
+                                continue;
+                            var animationName = preTestShape.SharedShape.MatrixNames[i];
+                            if (animationName.StartsWith("orts_", StringComparison.OrdinalIgnoreCase) && animationName.Substring(6, 10).Equals("hand_clock", StringComparison.OrdinalIgnoreCase))
+                            {
+                                isAnimatedClock = true;
+                                break;
+                            }
+                        }
 
-                        var isAnimatedClock = animNodes.Exists(node => Regex.IsMatch(node.Name, @"^orts_[hmsc]hand_clock", RegexOptions.IgnoreCase));
                         if (isAnimatedClock)
                         {
                             sceneryObjects.Add(new AnalogClockShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
@@ -563,6 +610,11 @@ namespace Orts.Viewer3D
                 {
                     // Only allow StaticShape and StaticTrackShape instances for now.
                     if (shape.GetType() != typeof(StaticShape) && shape.GetType() != typeof(StaticTrackShape))
+                        continue;
+
+                    if (shape.SharedShape is GltfShape gltfShape
+                        && (gltfShape.HasLights() ||
+                            gltfShape.LodControls.Any(lod => lod.DistanceLevels.Any(dl => dl.SubObjects.Any(so => so.ShapePrimitives.Any(sp => sp.Material is PbrMaterial mat && mat.HasNormalTexture))))))
                         continue;
 
                     // Must have a file path so we can collapse instances on something.
