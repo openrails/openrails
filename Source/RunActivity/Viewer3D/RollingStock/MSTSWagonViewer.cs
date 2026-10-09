@@ -111,9 +111,31 @@ namespace Orts.Viewer3D.RollingStock
         int bogieMatrix1, bogieMatrix2 = 0;
         FreightAnimationsViewer FreightAnimations;
 
+        // ORTS Flexible Connections
+        // Purpose: Own the vehicle-local Hose/Hook/Coupler coordinator in FlexibleConnectionViewer.cs.
+        private readonly FlexibleConnectionViewer FlexibleConnectionRenderer;
+        // ORTS Flexible Connections
+        // Purpose: Use the same TrainDrawer car-viewer dictionary for both endpoint marks
+        // throughout the reset, Connected and disconnected preparation passes.
+        private Dictionary<TrainCar, TrainCarViewer> FlexibleConnectionParticipants;
+
         public MSTSWagonViewer(Viewer viewer, MSTSWagon car)
             : base(viewer, car)
         {
+            // =====================================================================
+            // ORTS Flexible Connections
+            // Purpose: Create FlexibleConnectionViewer from parsed vehicle definitions when points exist.
+            // It owns Hose resources and delegates Hook/Coupler visuals; Hose Half geometry is lazy.
+            // =====================================================================
+            var flexibleConnectionConfig = car.FlexibleConnections;
+            if (flexibleConnectionConfig != null &&
+                (flexibleConnectionConfig.RearConnectionPoints.Count > 0 || flexibleConnectionConfig.FrontConnectionPoints.Count > 0))
+            {
+                FlexibleConnectionRenderer = new FlexibleConnectionViewer(
+                    viewer, flexibleConnectionConfig.Sides, flexibleConnectionConfig.Segments,
+                    Path.GetDirectoryName(car.WagFilePath), flexibleConnectionConfig);
+            }
+            // End ORTS Flexible Connections construction.
             
             string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
             string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
@@ -717,6 +739,11 @@ namespace Orts.Viewer3D.RollingStock
             BrakeRigging.UpdateFrameClamp(Math.Max(MSTSWagon.BrakeSystem.GetNormalizedCylTravel(), MSTSWagon.GetTrainHandbrakeStatus() ? 1.0f : 0.0f) * 10.0f, elapsedTime, 10.0f);
             UpdateAnimation(frame, elapsedTime);
 
+            // ORTS Flexible Connections
+            // Purpose: Prepare Connected visuals after animation; Trains.cs defers all disconnected
+            // visuals until every car viewer has completed this Connected pass.
+            PrepareFlexibleConnections(frame);
+
             var car = Car as MSTSWagon;
             // Steam leak in heating hose
             foreach (var drawer in HeatingHose)
@@ -1306,6 +1333,100 @@ namespace Orts.Viewer3D.RollingStock
 
         }
 
+        // =====================================================================
+        // ORTS Flexible Connections
+        // Purpose: Resolve physical neighbors and Front/Rear ends from consist order and Flipped.
+        // FlexibleConnectionViewer.GetPublishingCase selects the publisher; successful publication
+        // marks both endpoints. Hose endpoints are transformed into the local vehicle tile.
+        // Trains.cs brackets preparation with ResetFlexibleConnectionPoints and the disconnected pass.
+        // =====================================================================
+        internal void ResetFlexibleConnectionPoints(Dictionary<TrainCar, TrainCarViewer> participants)
+        {
+            FlexibleConnectionParticipants = participants;
+            FlexibleConnectionRenderer?.ResetConnectedPoints();
+        }
+
+        internal void PrepareFlexibleConnectionHalves(RenderFrame frame)
+        {
+            FlexibleConnectionRenderer?.PrepareHalfFrame(frame, MSTSWagon.WorldPosition, FlexibleConnectionEnd.Rear);
+            FlexibleConnectionRenderer?.PrepareHalfFrame(frame, MSTSWagon.WorldPosition, FlexibleConnectionEnd.Front);
+            FlexibleConnectionParticipants = null;
+        }
+
+        private void PrepareFlexibleConnections(RenderFrame frame)
+        {
+            if (FlexibleConnectionRenderer == null) return;
+            var train = MSTSWagon.Train;
+            if (train == null) return;
+            int carIndex = train.Cars.IndexOf(MSTSWagon);
+            if (carIndex < 0) return;
+            PrepareFlexibleConnectionEnd(frame, carIndex,
+                carIndex + (MSTSWagon.Flipped ? -1 : 1), FlexibleConnectionEnd.Rear);
+            PrepareFlexibleConnectionEnd(frame, carIndex,
+                carIndex + (MSTSWagon.Flipped ? 1 : -1), FlexibleConnectionEnd.Front);
+        }
+
+        private void PrepareFlexibleConnectionEnd(RenderFrame frame, int carIndex, int remoteIndex,
+            FlexibleConnectionEnd localEnd)
+        {
+            var train = MSTSWagon.Train;
+            if (remoteIndex < 0 || remoteIndex >= train.Cars.Count)
+                return;
+            var remoteCar = train.Cars[remoteIndex] as MSTSWagon;
+            if (remoteCar == null) return;
+            bool lowerIndex = carIndex < remoteIndex;
+            var remoteEnd = lowerIndex ?
+                (remoteCar.Flipped ? FlexibleConnectionEnd.Rear : FlexibleConnectionEnd.Front) :
+                (remoteCar.Flipped ? FlexibleConnectionEnd.Front : FlexibleConnectionEnd.Rear);
+            var connectionCase = FlexibleConnectionRenderer.GetPublishingCase(remoteCar, localEnd, remoteEnd, lowerIndex);
+            if (connectionCase == null) return;
+            float tileSize = (float)WorldPosition.TileSize;
+            foreach (var mapping in connectionCase.GetMappings(localEnd, remoteEnd))
+            {
+                FlexibleConnectionPoint remotePoint;
+                Material remoteMaterial;
+                // ORTS Flexible Connections
+                // Purpose: TryPrepareHook dispatches both Hook and Coupler before the Hose path.
+                // Mark endpoints only after successful publication; handled rigid failures do not fall through.
+                bool hookPublished;
+                if (FlexibleConnectionRenderer.TryPrepareHook(frame, mapping, MSTSWagon, remoteCar, remoteEnd, out remotePoint, out hookPublished))
+                {
+                    if (hookPublished)
+                    {
+                        FlexibleConnectionRenderer.MarkConnectedPoint(mapping.Point);
+                        TrainCarViewer hookRemoteViewer;
+                        if (FlexibleConnectionParticipants != null &&
+                            FlexibleConnectionParticipants.TryGetValue(remoteCar, out hookRemoteViewer))
+                            (hookRemoteViewer as MSTSWagonViewer)?.FlexibleConnectionRenderer?.MarkConnectedPoint(remotePoint);
+                    }
+                    continue;
+                }
+                if (!FlexibleConnectionRenderer.TryResolve(mapping, MSTSWagon, remoteCar, remoteEnd, out remotePoint, out remoteMaterial)) continue;
+                Vector3 localCa = mapping.Point.Position;
+                Vector3 localCb = remotePoint.Position;
+                localCa.Z = -localCa.Z;
+                localCb.Z = -localCb.Z;
+                Vector3 ca = Vector3.Transform(localCa, MSTSWagon.WorldPosition.XNAMatrix);
+                Vector3 cb = Vector3.Transform(localCb, remoteCar.WorldPosition.XNAMatrix);
+                cb.X += (remoteCar.WorldPosition.TileX - MSTSWagon.WorldPosition.TileX) * tileSize;
+                cb.Z -= (remoteCar.WorldPosition.TileZ - MSTSWagon.WorldPosition.TileZ) * tileSize;
+                bool published;
+                var result = FlexibleConnectionRenderer.PrepareFrame(frame, mapping, remotePoint, remoteMaterial, ca, cb,
+                    MSTSWagon.WorldPosition.TileX, MSTSWagon.WorldPosition.TileZ, out published);
+                if (published)
+                {
+                    FlexibleConnectionRenderer.MarkConnectedPoint(mapping.Point);
+                    TrainCarViewer remoteViewer;
+                    if (FlexibleConnectionParticipants != null &&
+                        FlexibleConnectionParticipants.TryGetValue(remoteCar, out remoteViewer))
+                        (remoteViewer as MSTSWagonViewer)?.FlexibleConnectionRenderer?.MarkConnectedPoint(remotePoint);
+                }
+                if (result.Status != FlexibleConnectionCatenaryStatus.Success)
+                    FlexibleConnectionRenderer.WarnGeometry(mapping, remoteCar, remoteEnd, result.Cause);
+            }
+        }
+        // End ORTS Flexible Connections endpoint preparation.
+
         /// <summary>
         /// Positions the coupler at the at the centre of the car (world position), and then rotates it to the end of the car.
         /// Returns a quaternion for the car.
@@ -1426,6 +1547,11 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void Unload()
         {
+            // ORTS Flexible Connections
+            // Purpose: RequestRetirement in FlexibleConnectionViewer.cs retires all three families.
+            // Frame references retain pending work; procedural GPU disposal belongs to Render.
+            FlexibleConnectionRenderer?.RequestRetirement();
+
             // Removing sound sources from sound update thread
             Viewer.SoundProcess.RemoveSoundSources(this);
 
@@ -1556,6 +1682,11 @@ namespace Orts.Viewer3D.RollingStock
             FrontAirHoseDisconnectedShape?.Mark();
             RearAirHoseShape?.Mark();
             RearAirHoseDisconnectedShape?.Mark();
+
+            // ORTS Flexible Connections
+            // Purpose: Mark owned Hose materials through FlexibleConnectionViewer.Mark.
+            // Trains.cs also marks retained materials and rigid assets through the lifetime manager.
+            FlexibleConnectionRenderer?.Mark();
 
             foreach (var pdl in ParticleDrawers.Values)
             {
