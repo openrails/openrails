@@ -157,9 +157,9 @@ namespace Orts.Simulation.Physics
         public bool WagonsAttached = false;    // Wagons are attached to train
         public float LeadPipePressurePSI;       // Keeps record of Lead locomootive brake pipe pressure
 
-        public bool IsWheelSlipWarninq;
+        public bool IsWheelSlipWarning;
         public bool IsWheelSlip;
-        public bool HuDIsWheelSlipWarninq;
+        public bool HuDIsWheelSlipWarning;
         public bool HuDIsWheelSlip;
         public bool IsBrakeSkid;
 
@@ -2153,7 +2153,7 @@ namespace Orts.Simulation.Physics
 
                 if (car.HuDIsWheelSlip)
                     hudwhlslp = true;
-                if (car.HuDIsWheelSlipWarninq)
+                if (car.HuDIsWheelSlipWarning)
                     hudwhlslpwrn = true;
 
                 if (car.BrakeSkid)
@@ -2187,10 +2187,10 @@ namespace Orts.Simulation.Physics
             MassKg = massKg;
 
             IsWheelSlip = whlslp;
-            IsWheelSlipWarninq = whlslpwrn;
+            IsWheelSlipWarning = whlslpwrn;
 
             HuDIsWheelSlip = hudwhlslp;
-            HuDIsWheelSlipWarninq = hudwhlslpwrn;
+            HuDIsWheelSlipWarning = hudwhlslpwrn;
 
             IsBrakeSkid = whlskd;
 

@@ -2979,7 +2979,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else
                     {
-                        if (HuDIsWheelSlipWarninq)
+                        if (HuDIsWheelSlipWarning)
                         {
                             if (WheelslipState != Wheelslip.Warning)
                             {
@@ -3310,7 +3310,7 @@ namespace Orts.Simulation.RollingStocks
                 WheelSlip = LocomotiveAxles.IsWheelSlip;
                 WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
                 HuDIsWheelSlip = LocomotiveAxles.HuDIsWheelSlip;
-                HuDIsWheelSlipWarninq = LocomotiveAxles.HuDIsWheelSlipWarning;
+                HuDIsWheelSlipWarning = LocomotiveAxles.HuDIsWheelSlipWarning;
             }
 
             WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;

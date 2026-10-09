@@ -991,7 +991,7 @@ namespace Orts.Viewer3D.WebServices
             }
 
             // Wheel
-            if (train.HuDIsWheelSlip || train.HuDIsWheelSlipWarninq || train.IsBrakeSkid)
+            if (train.HuDIsWheelSlip || train.HuDIsWheelSlipWarning || train.IsBrakeSkid)
             {
                 wheelLabelVisible = true;
                 clockWheelTime = viewer.Simulator.ClockTime;
@@ -1005,7 +1005,7 @@ namespace Orts.Viewer3D.WebServices
                     LastCol = Viewer.Catalog.GetString("slip") + ColorCode[Color.OrangeRed],
                 });
             }
-            else if (train.HuDIsWheelSlipWarninq)
+            else if (train.HuDIsWheelSlipWarning)
             {
                 AddLabel(new ListLabel
                 {
