@@ -67,6 +67,16 @@ namespace ORTS.Scripting.Api
         public bool OverchargeButtonPressed() => Host.OverchargeButtonPressed;
 
         /// <summary>
+        /// True if the neutral mode switch is on
+        /// </summary>
+        protected bool NeutralModeCommandSwitchOn { get => Host.NeutralModeCommandSwitchOn; set => Host.NeutralModeCommandSwitchOn = value; }
+
+        /// <summary>
+        /// True if the neutral mode is on
+        /// </summary>
+        protected bool NeutralModeOn { get => Host.NeutralModeOn; set => Host.NeutralModeOn = value; }
+
+        /// <summary>
         /// True if low voltage power supply is switched on.
         /// </summary>
         public bool IsLowVoltagePowerSupplyOn() => LocomotivePowerSupply.LowVoltagePowerSupplyOn;

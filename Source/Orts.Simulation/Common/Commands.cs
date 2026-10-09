@@ -765,7 +765,6 @@ namespace Orts.Common
         public override void Redo()
         {
             Receiver.SetBailOff(ToState);
-            // Report();
         }
 
         public override string ToString()
@@ -788,7 +787,6 @@ namespace Orts.Common
         public override void Redo()
         {
             Receiver.TrainBrakeController.QuickReleaseButtonPressed = ToState;
-            // Report();
         }
 
         public override string ToString()
@@ -811,7 +809,28 @@ namespace Orts.Common
         public override void Redo()
         {
             Receiver.TrainBrakeController.OverchargeButtonPressed = ToState;
-            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "off" : "on");
+        }
+    }
+
+    [Serializable()]
+    public sealed class BrakeNeutralModeCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public BrakeNeutralModeCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.TrainBrakeController.NeutralModeCommandSwitchOn = ToState;
         }
 
         public override string ToString()
