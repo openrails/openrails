@@ -7595,7 +7595,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 WheelSlip = LocomotiveAxles.IsWheelSlip;
                 WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
                 HuDIsWheelSlip = LocomotiveAxles.HuDIsWheelSlip;
-                HuDIsWheelSlipWarninq = LocomotiveAxles.HuDIsWheelSlipWarning;
+                HuDIsWheelSlipWarning = LocomotiveAxles.HuDIsWheelSlipWarning;
             }
 
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.

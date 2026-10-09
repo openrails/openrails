@@ -20,18 +20,12 @@
 
 using System;
 using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using ORTS.Common;
 using Orts.Parsers.Msts;
-using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
-using SharpDX.Direct2D1;
-using SharpDX.Direct3D9;
-using Orts.Formats.OR;
 using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
-using MonoGame.Framework.Utilities.Deflate;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -290,7 +284,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 return slip;
             }
         }
-        public double ResetTime;
         public Axles(TrainCar car)
         {
             Car = car;
@@ -345,7 +338,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public void Initialize()
         {
-            ResetTime = Car.Simulator.GameTime;
             int numForce = 0;
             int numMotor = 0;
             foreach (var axle in AxleList)
@@ -382,17 +374,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             Trace.TraceInformation("LocomotiveAxleRailDriveType set to Default value of {0}", axle.AxleRailTractionType);
                     }
 
-                    // set the wheel slip threshold times for different types of locomotives
-                    // Because of the irregular force around the wheel for a steam engine during a revolution, "response" time for warnings needs to be lower
+                    // Due to imprecision in the axle model, wheel slip may be detected when the wheels have yet to lose grip,
+                    // so a threshold is set to ignore all slips below a certain duration as those are likely false alarms
                     if (locomotive.EngineType == TrainCar.EngineTypes.Steam)
                     {
-                        axle.WheelSlipThresholdTimeS = 1;
-                        axle.WheelSlipWarningThresholdTimeS = axle.WheelSlipThresholdTimeS * 0.75f;
+                        // Because of the irregular force produced by steam locomotives,
+                        // a longer threshold is used to ignore situations like quarter-slips
+                        // Warning threshold is shorter to inform player when quarter-slips happen
+                        axle.WheelSlipThresholdTimeS = 1.0f;
+                        axle.WheelSlipWarningThresholdTimeS = axle.WheelSlipThresholdTimeS * 0.5f;
                     }
-                    else // diesel and electric locomotives
+                    else
                     {
-                        axle.WheelSlipThresholdTimeS = 1;
-                        axle.WheelSlipWarningThresholdTimeS = 1;
+                        // Diesel and electric locomotives have a threshold time set
+                        // just long enough to ignore artificial slip indications
+                        axle.WheelSlipThresholdTimeS = 0.2f;
+                        axle.WheelSlipWarningThresholdTimeS = 0.2f;
                     }
                 }
                 if (axle.DriveType == AxleDriveType.NotDriven)
@@ -438,7 +435,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public void InitializeMoving()
         {
-            ResetTime = Car.Simulator.GameTime;
             foreach (var axle in AxleList)
             {
                 axle.TrainSpeedMpS = Car.SpeedMpS;
@@ -486,7 +482,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="elapsedSeconds">Time span within the simulation cycle</param>
         public void Update(float elapsedSeconds)
         {
-            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(this, elapsedSeconds, Car.Simulator.GameTime);
+            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(elapsedSeconds, Car.Simulator.UpdaterTimeS, Car.Simulator.GameTime);
             foreach (var axle in AxleList)
             {
                 if (UsePolachAdhesion != PreviousUsePolachAdhesion) // There's been a transition
@@ -502,7 +498,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             return AxleList.GetEnumerator();
         }
 
-        static class AdhesionPrecision  // "static" so all "Axles" share the same level of precision
+        public static class AdhesionPrecision  // "static" so all "Axles" share the same level of precision
         {
             enum AdhesionPrecisionLevel
             {
@@ -521,54 +517,88 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
 
             // Adjustable limits
-            const float LowerLimitS = 0.025f;   // timespan 0.025 = 40 fps screen rate, low timeSpan and high FPS
-            const float UpperLimitS = 0.033f;   // timespan 0.033 = 30 fps screen rate, high timeSpan and low FPS
+            const float LowerLimitS = 1.0f / 60.0f; // 60 fps simulation speed
+            const float UpperLimitS = 1.0f / 30.0f; // 30 fps simulation speed
+            const double IntervalBetweenChangesLimitS = 1 * 60; // Prevent rapid cycling between precision levels
             const double IntervalBetweenDowngradesLimitS = 5 * 60; // Locks in low precision if < 5 mins between downgrades
 
             static AdhesionPrecisionLevel PrecisionLevel = AdhesionPrecisionLevel.High;
-            static double TimeOfLatestDowngrade = 0 - IntervalBetweenDowngradesLimitS; // Starts at -5 mins
+            static double TimeOfLatestChange = 0 - (IntervalBetweenChangesLimitS - 5); // Starts at -55 sec, allows changes after 5 seconds
+            static double TimeOfLatestDowngrade = 0 - IntervalBetweenDowngradesLimitS; // Starts at -5 mins, prevents forcing low adhesion immediately
 
-            // Tested by dropping the framerate below 30 fps interactively. Did this by opening and closing the HelpWindow after inserting
-            //   Threading.Thread.Sleep(40);
-            // into HelpWindow.PrepareFrame() temporarily.
-            public static bool IsPrecisionHigh(Axles axles, float elapsedSeconds, double gameTime)
+            /// <summary>
+            /// Sets the level of precision of the advanced adhesion system between "high" (Polach model; high
+            /// performance cost but high physical accuracy) and "low" (Pacha model; moderate performance cost but lower
+            /// accuracy) depending on the current simulation performance (if simulation seems to be struggling, drop
+            /// to low quality). Returns a bool indicating if the current adhesion precision is high.
+            /// </summary>
+            /// <param name="elapsedSeconds">Current simulation time step</param>
+            /// <param name="updateSeconds">Time required for simulation to complete an update, may be less than <paramref name="elapsedSeconds"/></param>
+            /// <param name="gameTime">The elapsed time in-game since the simulation started</param>
+            /// <returns>true boolean if precision is currently set to high (Polach model)</returns>
+            public static bool IsPrecisionHigh(float elapsedSeconds, float updateSeconds, double gameTime)
             {
-                // Switches between Polach (high precision) adhesion model and Pacha (low precision) adhesion model depending upon the PC performance
                 switch (PrecisionLevel)
                 {
                     case AdhesionPrecisionLevel.High:
-                        if (elapsedSeconds > UpperLimitS)
+                        // Only switch to low precision if ALL update rate is low AND the updater process is
+                        // at high load (90%+ of frame time is update time) AND it has been some time since
+                        // the previous precision change
+
+                        if (updateSeconds > UpperLimitS && updateSeconds > elapsedSeconds * 0.9f && gameTime - TimeOfLatestChange > IntervalBetweenChangesLimitS)
                         {
-                            var screenFrameRate = 1 / elapsedSeconds;
-                            var timeSincePreviousDowngradeS = gameTime - TimeOfLatestDowngrade;
+                            float simulationFrameRate = 1 / updateSeconds;
+                            double timeSincePreviousDowngradeS = gameTime - TimeOfLatestDowngrade;
+
                             if (timeSincePreviousDowngradeS < IntervalBetweenDowngradesLimitS)
                             {
+                                // If a switch from high to low precision happens too rapidly, that indicates excessive load
+                                // from the axle model, lock it to low precision
+                                TimeOfLatestDowngrade = gameTime;
+                                TimeOfLatestChange = gameTime;
                                 Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision permanently after {timeSincePreviousDowngradeS:F0} secs since previous switch (less than limit of {IntervalBetweenDowngradesLimitS})");
                                 PrecisionLevel = AdhesionPrecisionLevel.LowLocked;
                             }
                             else
                             {
                                 TimeOfLatestDowngrade = gameTime;
-                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision after low frame rate {screenFrameRate:F1} below limit {1 / UpperLimitS:F0}");
+                                TimeOfLatestChange = gameTime;
+                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision after low simulation rate {simulationFrameRate:F1} below limit {1 / UpperLimitS:F0}");
                                 PrecisionLevel = AdhesionPrecisionLevel.Low;
                             }
                         }
                         break;
-
                     case AdhesionPrecisionLevel.Low:
+                        // Only switch to high precision if ALL update rate is ok AND the updater process
+                        // is underloaded (70%- of frame time is update time) AND it has been some time
+                        // since the previous precision change
+
                         if (elapsedSeconds > 0 // When debugging step by step, elapsedSeconds == 0, so test for that
-                            && elapsedSeconds < LowerLimitS)
+                            && updateSeconds < LowerLimitS && updateSeconds < elapsedSeconds * 0.7f && gameTime - TimeOfLatestChange > IntervalBetweenChangesLimitS)
                         {
+                            var simulationFrameRate = 1 / updateSeconds;
+                            TimeOfLatestChange = gameTime;
+                            Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to high precision after high simulation rate {simulationFrameRate:F1} above limit {1 / LowerLimitS:F0}");
                             PrecisionLevel = AdhesionPrecisionLevel.High;
-                            var ScreenFrameRate = 1 / elapsedSeconds;
-                            Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to high precision after high frame rate {ScreenFrameRate:F1} above limit {1 / LowerLimitS:F0}");
                         }
                         break;
-
                     case AdhesionPrecisionLevel.LowLocked:
+                        // Stop considering changes in precision if locked to low adhesion
                         break;
                 }
-                return (PrecisionLevel == AdhesionPrecisionLevel.High);
+                return PrecisionLevel == AdhesionPrecisionLevel.High;
+            }
+
+            /// <summary>
+            /// Restores adhesion precision to its initial state
+            /// </summary>
+            /// <param name="gameTime">The elapsed time in-game since the simulation started</param>
+            public static void Reset(double gameTime)
+            {
+                PrecisionLevel = AdhesionPrecisionLevel.High;
+
+                TimeOfLatestChange = gameTime - (IntervalBetweenChangesLimitS - 5); // Starts at 55 sec in the past, allows changes after 5 seconds
+                TimeOfLatestDowngrade = gameTime - IntervalBetweenDowngradesLimitS; // Set to 5 mins in the past, prevents forcing low adhesion immediately
             }
         }
     }
@@ -875,7 +905,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool HuDIsWheelSlip { get; private set; }
         public bool IsWheelSlip { get; private set; }
         float WheelSlipTimeS;
-        public float WheelSlipThresholdTimeS = 1;
+        public float WheelSlipThresholdTimeS;
 
         /// <summary>
         /// Wheelslip threshold value used to indicate maximal effective slip
@@ -927,7 +957,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool HuDIsWheelSlipWarning { get; private set; }
         public bool IsWheelSlipWarning { get; private set; }
         float WheelSlipWarningTimeS;
-        public float WheelSlipWarningThresholdTimeS = 1;
+        public float WheelSlipWarningThresholdTimeS;
 
         /// <summary>
         /// Read only slip speed value in metric meters per second
@@ -967,7 +997,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Slip speed memorized from previous iteration
         /// </summary>
-        protected float previousSlipSpeedMpS;
+        protected float PreviousSlipSpeedMpS;
         /// <summary>
         /// Read only slip speed rate of change, in metric (meters per second) per second
         /// </summary>
@@ -986,7 +1016,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Relativ slip speed from previous iteration
         /// </summary>
-        protected float previousSlipPercent;
+        protected float PreviousSlipPercent;
         /// <summary>
         /// Read only relative slip speed rate of change, in percent per second
         /// </summary>
@@ -998,9 +1028,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
         }
 
-        double integratorError;
-        int waitBeforeSpeedingUp;
-        int waitBeforeChangingRate;
+        // Variables stored between frames for the axle integrator
+        double IntegratorError;
+        int WaitBeforeChangingRate;
 
         /// <summary>
         /// Read/Write relative slip speed warning threshold value, in percent of maximal effective slip
@@ -1016,7 +1046,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Nonparametric constructor of Axle class instance
         /// - sets motor parameter to null
-        /// - sets TtransmissionEfficiency to 1.0 (100%)
+        /// - sets TransmissionEfficiency to 1.0 (100%)
         /// - sets SlipWarningThresholdPercent to 70%
         /// - sets axle DriveType to ForceDriven
         /// - updates totalInertiaKgm2 parameter
@@ -1110,12 +1140,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="inf">The save stream to read from.</param>
         public void Restore(BinaryReader inf)
         {
-            previousSlipPercent = inf.ReadSingle();
-            previousSlipSpeedMpS = inf.ReadSingle();
+            PreviousSlipPercent = inf.ReadSingle();
+            PreviousSlipSpeedMpS = inf.ReadSingle();
             AxleForceN = inf.ReadSingle();
             AxleSpeedMpS = inf.ReadDouble();
             NumOfSubstepsPS = inf.ReadInt32();
-            integratorError = inf.ReadDouble();
+            IntegratorError = inf.ReadDouble();
         }
 
         /// <summary>
@@ -1124,12 +1154,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="outf">The save stream to write to.</param>
         public void Save(BinaryWriter outf)
         {
-            outf.Write(previousSlipPercent);
-            outf.Write(previousSlipSpeedMpS);
+            outf.Write(PreviousSlipPercent);
+            outf.Write(PreviousSlipSpeedMpS);
             outf.Write(AxleForceN);
             outf.Write(AxleSpeedMpS);
             outf.Write(NumOfSubstepsPS);
-            outf.Write(integratorError);
+            outf.Write(IntegratorError);
         }
 
         /// <summary>
@@ -1212,124 +1242,109 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         void Integrate(float elapsedClockSeconds)
         {
             if (elapsedClockSeconds <= 0) return;
-            double prevSpeedMpS = AxleSpeedMpS;
 
-            if (Axles.UsePolachAdhesion)
+            int upperSubStepLimit = 100;
+            int lowerSubStepLimit = 2;
+            int targetNumOfSubstepsPS = NumOfSubstepsPS;
+
+            double allowedError = 0.0001;
+
+            if (!Axles.UsePolachAdhesion)
             {
+                // Pacha adhesion generally requires fewer substeps and tolerates higher error than Polach
+                // Limit maximum substeps to reduce performance impact
+                upperSubStepLimit = 50;
 
-                float upperSubStepLimit = 100;
-                float lowerSubStepLimit = 1;
-
-                // use straight line graph approximation to increase substeps as slipspeed increases towards the threshold speed point
-                // Points are 1 = (0, upperLimit) and 2 = (threshold, lowerLimit)           
-                var AdhesGrad = ((upperSubStepLimit - lowerSubStepLimit) / (WheelSlipThresholdMpS - 0));
-                var targetNumOfSubstepsPS = Math.Abs((AdhesGrad * SlipSpeedMpS) + lowerSubStepLimit);
-                if (float.IsNaN((float)targetNumOfSubstepsPS)) targetNumOfSubstepsPS = 1;
-
-                if (SlipSpeedPercent > 100) // if in wheel slip then maximise the substeps
-                {
-                    targetNumOfSubstepsPS = upperSubStepLimit;
-                }
-
-                if (Math.Abs(integratorError) < 0.000277 && SlipSpeedPercent < 25 && Math.Abs(SlipSpeedMpS) < Math.Abs(previousSlipSpeedMpS))
-                {
-                    if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
-                    {
-                        NumOfSubstepsPS -= 2; // decrease substeps when under low slip conditions
-                        waitBeforeChangingRate = 30;
-                    }
-                }
-                else if (targetNumOfSubstepsPS > NumOfSubstepsPS) // increase substeps
-                {
-                    if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
-                    {
-
-                        if (SlipSpeedPercent > 70 || Math.Abs(SlipSpeedMpS) > Math.Abs(previousSlipSpeedMpS))
-                        {
-                            // this speeds up the substep increase if the slip speed approaches the threshold or has exceeded it, ie "critical conditions".
-                            NumOfSubstepsPS += 10;
-                            waitBeforeChangingRate = 5;
-                        }
-                        else
-                        {
-                            // this speeds ups the substeps under "non critical" conditions
-                            NumOfSubstepsPS += 3;
-                            waitBeforeChangingRate = 30;
-                        }
-
-                    }
-                }
-                else if (targetNumOfSubstepsPS < NumOfSubstepsPS) // decrease sub steps
-                {
-                    if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
-                    {
-                        NumOfSubstepsPS -= 3;
-                        waitBeforeChangingRate = 30;
-                    }
-                }
-
-                // keeps the substeps to a relevant upper and lower limits
-                if (NumOfSubstepsPS < lowerSubStepLimit)
-                    NumOfSubstepsPS = (int)lowerSubStepLimit;
-
-                if (NumOfSubstepsPS > upperSubStepLimit)
-                    NumOfSubstepsPS = (int)upperSubStepLimit;
-
+                allowedError = Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01, 0.001);
             }
-            else
+
+            double errorRatio = Math.Abs(IntegratorError) / allowedError;
+
+            // If near wheel slip then maximize the substeps to handle the rapid acceleration
+            if (SlipSpeedPercent > 95f)
             {
-                if (Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01f, 0.001f))
-                {
-                    ++NumOfSubstepsPS;
-                    waitBeforeSpeedingUp = 100;
-                }
+                targetNumOfSubstepsPS = upperSubStepLimit;
+
+                WaitBeforeChangingRate = 50;
+            }
+            else if (errorRatio > 1 && targetNumOfSubstepsPS < upperSubStepLimit)
+            {
+                // High integrator error despite substep intervention;
+                // number of substeps appears to be insufficient
+
+                // Immediately increase number of substeps to rapidly reduce errors
+                // Assume error is linearly related to number of substeps
+                targetNumOfSubstepsPS = (int)Math.Ceiling(errorRatio * NumOfSubstepsPS + 1);
+
+                WaitBeforeChangingRate = 50;
+            }
+            else if (errorRatio < 0.5 && --WaitBeforeChangingRate <= 0 && targetNumOfSubstepsPS > lowerSubStepLimit )
+            {
+                // Low integrator error, number of substeps could be reduced
+                // Gradually reduce number of substeps to give CPU headroom
+                targetNumOfSubstepsPS--;
+
+                // Allow substeps to decrease faster the lower integrator error is
+                if (errorRatio < 0.001)
+                    WaitBeforeChangingRate = 5;
+                else if (errorRatio < 0.01)
+                    WaitBeforeChangingRate = 10;
                 else
-                {
-                    if (--waitBeforeSpeedingUp <= 0)    //wait for a while before speeding up the integration
-                    {
-                        --NumOfSubstepsPS;
-                        waitBeforeSpeedingUp = 10;      //not so fast ;)
-                    }
-                }
-
-                NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1);
+                    WaitBeforeChangingRate = 25;
             }
+            // Finally, set the number of substeps to use. Actual substeps used in the next step may be higher.
+            NumOfSubstepsPS = MathHelper.Clamp(targetNumOfSubstepsPS, lowerSubStepLimit, upperSubStepLimit);
+
+            int remainingSubsteps = NumOfSubstepsPS;
+            double remainingTimeS = elapsedClockSeconds;
 
             double dt = elapsedClockSeconds / NumOfSubstepsPS;
             double hdt = dt / 2;
+            double portion = 1.0 / (NumOfSubstepsPS * 6.0);
+
             double driveForceSumN = 0;
             double axleMotiveForceSumN = 0;
             double axleBrakeForceSumN = 0;
             double axleFrictionForceSumN = 0;
-            for (int i = 0; i < NumOfSubstepsPS; i++)
+
+            do
             {
+                remainingSubsteps--;
+                remainingTimeS -= dt;
+
                 var k1 = GetAxleMotionVariation(AxleSpeedMpS, dt);
-
-                if (i == 0 && !Axles.UsePolachAdhesion)
-                {
-                    if (k1.Item1 * dt > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 10, 1) / 100)
-                    {
-                        NumOfSubstepsPS = Math.Min(NumOfSubstepsPS + 5, 50);
-                        dt = elapsedClockSeconds / NumOfSubstepsPS;
-                        hdt = dt / 2;
-                    }
-                }
-
                 var k2 = GetAxleMotionVariation(AxleSpeedMpS + k1.accelMpSS * hdt, hdt);
                 var k3 = GetAxleMotionVariation(AxleSpeedMpS + k2.accelMpSS * hdt, hdt);
                 var k4 = GetAxleMotionVariation(AxleSpeedMpS + k3.accelMpSS * dt, dt);
 
-                AxleSpeedMpS += (integratorError = (k1.accelMpSS + 2 * (k2.accelMpSS + k3.accelMpSS) + k4.accelMpSS) * dt / 6);
+                AxleSpeedMpS += (IntegratorError = (k1.accelMpSS + 2 * (k2.accelMpSS + k3.accelMpSS) + k4.accelMpSS) * dt / 6);
                 AxlePositionRad += (k1.angSpeedRadpS + 2 * (k2.angSpeedRadpS + k3.angSpeedRadpS) + k4.angSpeedRadpS) * dt / 6;
-                driveForceSumN += (k1.driveForceN + 2 * (k2.driveForceN + k3.driveForceN) + k4.driveForceN);
-                axleMotiveForceSumN += (k1.axleMotiveForceN + 2 * (k2.axleMotiveForceN + k3.axleMotiveForceN) + k4.axleMotiveForceN);
-                axleBrakeForceSumN += (k1.axleBrakeForceN + 2 * (k2.axleBrakeForceN + k3.axleBrakeForceN) + k4.axleBrakeForceN);
-                axleFrictionForceSumN += (k1.axleFrictionForceN + 2 * (k2.axleFrictionForceN + k3.axleFrictionForceN) + k4.axleFrictionForceN);
-            }
-            DriveForceN = (float)(driveForceSumN / (NumOfSubstepsPS * 6));
-            AxleMotiveForceN = (float)(axleMotiveForceSumN / (NumOfSubstepsPS * 6));
-            AxleBrakeForceN = (float)(axleBrakeForceSumN / (NumOfSubstepsPS * 6));
-            AxleFrictionForceN = (float)(axleFrictionForceSumN / (NumOfSubstepsPS * 6));
+                driveForceSumN += (k1.driveForceN + 2 * (k2.driveForceN + k3.driveForceN) + k4.driveForceN) * portion;
+                axleMotiveForceSumN += (k1.axleMotiveForceN + 2 * (k2.axleMotiveForceN + k3.axleMotiveForceN) + k4.axleMotiveForceN) * portion;
+                axleBrakeForceSumN += (k1.axleBrakeForceN + 2 * (k2.axleBrakeForceN + k3.axleBrakeForceN) + k4.axleBrakeForceN) * portion;
+                axleFrictionForceSumN += (k1.axleFrictionForceN + 2 * (k2.axleFrictionForceN + k3.axleFrictionForceN) + k4.axleFrictionForceN) * portion;
+
+                // Substep Intervention: Check integrator error during integration to see if it's acceptable.
+                // If mid-integration error is too high, add additional substeps before finishing integration.
+                if (remainingSubsteps <= NumOfSubstepsPS / 2 && remainingSubsteps > 0 &&
+                    NumOfSubstepsPS < upperSubStepLimit && Math.Abs(IntegratorError) > allowedError)
+                {
+                    // NOTE: Multiple integrator steps can be added, up to the limit
+                    NumOfSubstepsPS++;
+                    remainingSubsteps++;
+                    dt = remainingTimeS / remainingSubsteps;
+                    hdt = dt / 2;
+                    portion = (dt / elapsedClockSeconds) / 6;
+
+                    // Prevent substeps from being reduced for a modest time
+                    WaitBeforeChangingRate = 50;
+                }
+            } while (remainingSubsteps > 0);
+
+            DriveForceN = (float)driveForceSumN;
+            AxleMotiveForceN = (float)axleMotiveForceSumN;
+            AxleBrakeForceN = (float)axleBrakeForceSumN;
+            AxleFrictionForceN = (float)axleFrictionForceSumN;
             if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(AxleMotiveForceN) < AxleBrakeForceN + AxleFrictionForceN) AxleForceN = 0;
             else AxleForceN = (float)(AxleMotiveForceN - Math.Sign(TrainSpeedMpS) * (AxleBrakeForceN + AxleFrictionForceN));
             AxlePositionRad = MathHelper.WrapAngle((float)AxlePositionRad);
@@ -1348,9 +1363,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (double.IsNaN(AxleSpeedMpS)) AxleSpeedMpS = 0; // TODO: AxleSpeedMpS should always be a number, find the cause of the NaN
 
             // Calculate factor to reduce adhesion due to track gradient
-            float gradeAngle = (float)Math.Atan(Math.Abs(CurrentElevationPercent / 100.0f));
-            AxleGradientForceN = AxleWeightN * (float)Math.Cos(gradeAngle);
-            AxleGradientForceN = MathHelper.Clamp(AxleGradientForceN, 0, AxleWeightN);
+            // Vertical component of gravity force is sqrt(1 / (1 + slope^2))
+            float gradeRatio = (float)Math.Sqrt(1 / (1 + (CurrentElevationPercent * CurrentElevationPercent) / (100.0f * 100.0f)));
+            AxleGradientForceN = MathHelper.Clamp(AxleWeightN * gradeRatio, 0, AxleWeightN);
 
             bool advancedAdhesion = Car is MSTSLocomotive locomotive && locomotive.AdvancedAdhesionModel;
             advancedAdhesion &= DriveType != AxleDriveType.NotDriven; // Skip integrator for undriven axles to save CPU
@@ -1420,49 +1435,79 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                 if (elapsedSeconds > 0.0f)
                 {
-                    slipDerivationMpSS = (SlipSpeedMpS - previousSlipSpeedMpS) / elapsedSeconds;
-                    previousSlipSpeedMpS = SlipSpeedMpS;
+                    slipDerivationMpSS = (SlipSpeedMpS - PreviousSlipSpeedMpS) / elapsedSeconds;
+                    PreviousSlipSpeedMpS = SlipSpeedMpS;
 
-                    slipDerivationPercentpS = (SlipSpeedPercent - previousSlipPercent) / elapsedSeconds;
-                    previousSlipPercent = SlipSpeedPercent;
+                    slipDerivationPercentpS = (SlipSpeedPercent - PreviousSlipPercent) / elapsedSeconds;
+                    PreviousSlipPercent = SlipSpeedPercent;
                 }
             }
             else
             {
                 UpdateSimpleAdhesion(elapsedSeconds);
             }
-            if ((SlipPercent > (Car is MSTSLocomotive loco && loco.SlipControlSystem == MSTSLocomotive.SlipControlType.Full && Math.Abs(DriveForceN) > BrakeRetardForceN ? (200 - SlipWarningTresholdPercent) : 100)))
-            {
-                // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
-                IsWheelSlip = IsWheelSlipWarning = true;
 
-                // Wait some time before indicating the HuD wheelslip to avoid false triggers
-                if (WheelSlipTimeS > WheelSlipThresholdTimeS)
-                {
-                    HuDIsWheelSlip = HuDIsWheelSlipWarning = true;
-                }
-                WheelSlipTimeS += elapsedSeconds;
+            // Determine instantaneous slip/slip warning state
+            if (SlipPercent > (Car is MSTSLocomotive loco && loco.SlipControlSystem == MSTSLocomotive.SlipControlType.Full && Math.Abs(DriveForceN) > BrakeRetardForceN ? (200 - SlipWarningTresholdPercent) : 100))
+            {
+                IsWheelSlip = IsWheelSlipWarning = true;
             }
             else if (SlipPercent > SlipWarningTresholdPercent)
             {
-                // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
                 IsWheelSlipWarning = true;
                 IsWheelSlip = false;
-
-                // Wait some time before indicating wheelslip to avoid false triggers
-                if (WheelSlipWarningTimeS > WheelSlipWarningThresholdTimeS) HuDIsWheelSlipWarning = true;
-                HuDIsWheelSlip = false;
-                WheelSlipWarningTimeS += elapsedSeconds;
             }
             else
             {
-                HuDIsWheelSlipWarning = false;
-                HuDIsWheelSlip = false;
                 IsWheelSlipWarning = false;
                 IsWheelSlip = false;
-                WheelSlipWarningTimeS = WheelSlipTimeS = 0;
             }
 
+            // Update timers to determine if current slip conditions should be shown on HUD
+            // Delay is present between showing/suppressing slip indications to account for
+            // potential instability in the axle model and to simulate processing time in
+            // locomotive circuits
+            if (IsWheelSlipWarning)
+            {
+                if (WheelSlipWarningTimeS > WheelSlipWarningThresholdTimeS)
+                {
+                    HuDIsWheelSlipWarning = true;
+                    WheelSlipWarningTimeS = WheelSlipWarningThresholdTimeS;
+                }
+                else
+                    WheelSlipWarningTimeS += elapsedSeconds;
+            }
+            else
+            {
+                if (WheelSlipWarningTimeS < 0)
+                {
+                    HuDIsWheelSlipWarning = false;
+                    WheelSlipWarningTimeS = 0;
+                }
+                else
+                    WheelSlipWarningTimeS -= elapsedSeconds;
+            }
+
+            if (IsWheelSlip)
+            {
+                if (WheelSlipTimeS > WheelSlipThresholdTimeS)
+                {
+                    HuDIsWheelSlip = true;
+                    WheelSlipTimeS = WheelSlipThresholdTimeS;
+                }
+                else
+                    WheelSlipTimeS += elapsedSeconds;
+            }
+            else
+            {
+                if (WheelSlipTimeS < 0)
+                {
+                    HuDIsWheelSlip = false;
+                    WheelSlipTimeS = 0;
+                }
+                else
+                    WheelSlipTimeS -= elapsedSeconds;
+            }
         }
 
         public void UpdateSimpleAdhesion(float elapsedClockSeconds)
@@ -1498,8 +1543,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 // Simple adhesion, simple wheelslip conditions
                 if (Car is MSTSLocomotive locomotive && !locomotive.AdvancedAdhesionModel)
                 {
-                    if (!locomotive.AntiSlip && locomotive.SlipControlSystem != MSTSLocomotive.SlipControlType.Full) axleOutForceN *= locomotive.Adhesion1;
-                    else SlipPercent = 100;
+                    if (locomotive.SlipControlSystem != MSTSLocomotive.SlipControlType.Full)
+                        axleOutForceN *= locomotive.Adhesion1;
+                    else
+                        SlipPercent = 100;
                 }
                 else if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven)
                 {

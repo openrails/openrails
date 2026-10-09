@@ -4285,12 +4285,6 @@ namespace Orts.Simulation.AIs
                     ReverseFormation(false);
                 }
 
-                if (attachTrain.TrainType == TRAINTYPE.AI_PLAYERDRIVEN)
-                {
-                    foreach (var car in Cars)
-                        if (car is MSTSLocomotive) (car as MSTSLocomotive).AntiSlip = (attachTrain.LeadLocomotive as MSTSLocomotive).AntiSlip; // <CSComment> TODO Temporary patch until AntiSlip is re-implemented
-                }
-
                 var attachCar = Cars[0];
                 // Must save this because below the player locomotive passes to the other train
                 var isActualPlayerTrain = IsActualPlayerTrain;
@@ -6196,7 +6190,6 @@ namespace Orts.Simulation.AIs
                 {
                     var loco = car as MSTSLocomotive;
                     loco.LocomotiveAxles.InitializeMoving();
-                    loco.AntiSlip = false; // <CSComment> TODO Temporary patch until AntiSlip is re-implemented
                 }
                 if (car == Simulator.PlayerLocomotive) { leadLocomotiveIndex = j; }
                 j++;
