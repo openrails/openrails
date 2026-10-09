@@ -251,6 +251,8 @@ namespace Orts.Formats.Msts
             AngleofAttack,
             CarFriction,
             WheelRPM,
+            DriveWheelRPM,
+            SteamLocomotiveNormalisedMEP,
             ConcreteSleepers,
             CarInTunnel,
             CarDistanceTrack,
@@ -293,6 +295,8 @@ namespace Orts.Formats.Msts
                 case "angleofattack": Control = ControlType.AngleofAttack; break;
                 case "carfriction": Control = ControlType.CarFriction; break;
                 case "wheelrpm": Control = ControlType.WheelRPM; break;
+                case "drivewheelrpm": Control = ControlType.DriveWheelRPM; break;
+                case "steamlocomotivenormalisedmep": Control = ControlType.SteamLocomotiveNormalisedMEP; break;
                 case "concretesleepers": Control = ControlType.ConcreteSleepers; break;
                 case "carintunnel": Control = ControlType.CarInTunnel; break;
                 case "cardistancetrack": Control = ControlType.CarDistanceTrack; break;
@@ -339,7 +343,8 @@ namespace Orts.Formats.Msts
                     return STFReader.UNITS.Speed;
                 case ControlType.BrakeCyl:
                 case ControlType.BackPressure:
-                    // Brake cylinder and back pressure are PSI
+                case ControlType.SteamLocomotiveNormalisedMEP:
+                    // Brake cylinder, back pressure, and steam locomotive MEP are PSI
                     return STFReader.UNITS.PressureDefaultPSI;
                 case ControlType.TractiveEffort:
                 case ControlType.CurveForce:
@@ -351,6 +356,9 @@ namespace Orts.Formats.Msts
                     return STFReader.UNITS.Power;
                 case ControlType.EngineRPM:
                 case ControlType.WheelRPM:
+                    // TODO: Currently there is no STF unit type for rotation speed
+                    return STFReader.UNITS.None;
+                case ControlType.DriveWheelRPM:
                     // TODO: Currently there is no STF unit type for rotation speed
                     return STFReader.UNITS.None;
                 case ControlType.EngineTorque:

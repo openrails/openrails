@@ -122,6 +122,7 @@ namespace Orts.Simulation.RollingStocks
         public float[] EnginesRPM = new float[1];
         public float[] EnginesPower = new float[1];
         public float[] EnginesTorque = new float[1];
+        public float SteamLocomotiveNormalisedMEPPSI;
 
         // wag file data
         public string MainShapeFileName;
