@@ -284,7 +284,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 return slip;
             }
         }
-        public double ResetTime;
         public Axles(TrainCar car)
         {
             Car = car;
@@ -339,7 +338,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public void Initialize()
         {
-            ResetTime = Car.Simulator.GameTime;
             int numForce = 0;
             int numMotor = 0;
             foreach (var axle in AxleList)
@@ -437,7 +435,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public void InitializeMoving()
         {
-            ResetTime = Car.Simulator.GameTime;
             foreach (var axle in AxleList)
             {
                 axle.TrainSpeedMpS = Car.SpeedMpS;

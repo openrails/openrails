@@ -2697,6 +2697,42 @@ namespace Orts.Simulation.Physics
             }
         }
 
+        protected enum Wheelslip
+        {
+            None,
+            Warning,
+            Occurring
+        };
+        protected Wheelslip WheelslipState = Wheelslip.None;
+
+        public void ConfirmWheelslip()
+        {
+            if (HuDIsWheelSlip)
+            {
+                if (WheelslipState != Wheelslip.Occurring)
+                {
+                    WheelslipState = Wheelslip.Occurring;
+                    Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
+                }
+            }
+            else if (HuDIsWheelSlipWarning)
+            {
+                if (WheelslipState != Wheelslip.Warning)
+                {
+                    WheelslipState = Wheelslip.Warning;
+                    Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Warn1);
+                }
+            }
+            else
+            {
+                if (WheelslipState != Wheelslip.None)
+                {
+                    WheelslipState = Wheelslip.None;
+                    Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
+                }
+            }
+        }
+
         //================================================================================================//
         /// <summary>
         /// ProcessTunnels : check position of each car in train wrt tunnel

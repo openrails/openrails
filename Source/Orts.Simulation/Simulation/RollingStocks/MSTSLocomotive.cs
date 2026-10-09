@@ -2544,7 +2544,7 @@ namespace Orts.Simulation.RollingStocks
             if (IsLeadLocomotive())
 //            if (IsLeadLocomotive() || RemoteControlGroup == -1)
             {
-                ConfirmWheelslip(elapsedClockSeconds);
+                Train.ConfirmWheelslip();
                 if (ThrottleController.CurrentNotch < throttleCurrentNotch && ThrottleController.ToZero)
                     SignalEvent(Event.ThrottleChange);
                 ThrottlePercent = LocalThrottlePercent;
@@ -2951,66 +2951,6 @@ namespace Orts.Simulation.RollingStocks
                         break;
                 }
             }// end AI locomotive            
-        }
-
-        protected enum Wheelslip
-        {
-            None,
-            Warning,
-            Occurring
-        };
-
-        protected Wheelslip WheelslipState = Wheelslip.None;
-
-        public void ConfirmWheelslip(float elapsedClockSeconds)
-        {
-            if (elapsedClockSeconds > 0 && Simulator.GameTime - LocomotiveAxles.ResetTime > 5)
-            {
-                if (AdvancedAdhesionModel)
-                {
-                    // Wheelslip
-                    if (HuDIsWheelSlip)
-                    {
-                        if (WheelslipState != Wheelslip.Occurring)
-                        {
-                            WheelslipState = Wheelslip.Occurring;
-                            Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
-                        }
-                    }
-                    else
-                    {
-                        if (HuDIsWheelSlipWarning)
-                        {
-                            if (WheelslipState != Wheelslip.Warning)
-                            {
-                                WheelslipState = Wheelslip.Warning;
-                                Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Warn1);
-                            }
-                        }
-                        else
-                        {
-                            if (WheelslipState != Wheelslip.None)
-                            {
-                                WheelslipState = Wheelslip.None;
-                                Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (WheelSlip && (WheelslipState != Wheelslip.Occurring))
-                    {
-                        WheelslipState = Wheelslip.Occurring;
-                        Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
-                                            }
-                    if ((!WheelSlip) && (WheelslipState != Wheelslip.None))
-                    {
-                        WheelslipState = Wheelslip.None;
-                        Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -6032,10 +5972,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                        if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
-                            data = HuDIsWheelSlipWarninq ? 1 : 0;
-                        else
-                            data = HuDIsWheelSlip ? 1 : 0;
+                        data = Train.HuDIsWheelSlip ? 1 : 0;
                         break;
                     }
 
