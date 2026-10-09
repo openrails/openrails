@@ -93,6 +93,11 @@ namespace Orts.Viewer3D
             cars = Cars;
             if (PlayerCar != null && cars.ContainsKey(PlayerCar))
                 cars[PlayerCar].LoadForPlayer();
+
+            // ORTS Flexible Connections
+            // Purpose: Service queued remote Hose materials and Hook/Coupler shapes on Loader.
+            // FlexibleConnectionLifetimeManager in FlexibleConnectionViewer.cs delegates rigid asset loading.
+            Viewer.RenderProcess.FlexibleConnections.ProcessPendingMaterials();
         }
 
         [CallOnThread("Loader")]
@@ -106,6 +111,10 @@ namespace Orts.Viewer3D
                 if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) break;
             }
             CABTextureManager.Mark(Viewer);
+            // ORTS Flexible Connections
+            // Purpose: Mark retained Hose materials and Hook/Coupler assets before resource sweeping,
+            // including retired owners still referenced by frames; see FlexibleConnectionLifetimeManager.
+            Viewer.RenderProcess.FlexibleConnections.MarkMaterials();
         }
 
         [CallOnThread("Updater")]
@@ -140,8 +149,19 @@ namespace Orts.Viewer3D
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var cars = Cars;
+            // ORTS Flexible Connections
+            // Purpose: Finish resetting all instance-local point marks before any Connected publication.
+            // Pass this same car-viewer dictionary to MSTSWagonViewer for bilateral endpoint marking.
+            foreach (var car in cars.Values)
+                (car as MSTSWagonViewer)?.ResetFlexibleConnectionPoints(cars);
             foreach (var car in cars.Values)
                 car.PrepareFrame(frame, elapsedTime);
+            // ORTS Flexible Connections
+            // Purpose: Prepare disconnected visuals only after all Connected publications and before lights.
+            // FlexibleConnectionViewer handles Hose Half, Hook NotHookedShape and Coupler NotCoupledShape
+            // using their respective point-occupancy or local-publication rules.
+            foreach (var car in cars.Values)
+                (car as MSTSWagonViewer)?.PrepareFlexibleConnectionHalves(frame);
             // Do the lights separately for proper alpha sorting
             foreach (var car in cars.Values)
                 car.lightDrawer?.PrepareFrame(frame, elapsedTime);

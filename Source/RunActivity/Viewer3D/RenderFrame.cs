@@ -372,6 +372,55 @@ namespace Orts.Viewer3D
 
     public class RenderFrame
     {
+        // =====================================================================
+        // ORTS Flexible Connections
+        // Purpose: Retain procedural Hose snapshots until this frame's render items are cleared.
+        // FlexibleConnectionSnapshot in FlexibleConnectionViewer.cs protects sealed geometry and owner lifetime.
+        // =====================================================================
+        private RollingStock.FlexibleConnectionSnapshot FlexibleConnectionSnapshots;
+
+        internal void RegisterFlexibleConnectionSnapshot(RollingStock.FlexibleConnectionSnapshot snapshot)
+        {
+            // Updater owns this frame. Tokens form a preallocated intrusive list.
+            snapshot.NextInFrame = FlexibleConnectionSnapshots;
+            FlexibleConnectionSnapshots = snapshot;
+        }
+
+        private void ReleaseFlexibleConnectionSnapshots()
+        {
+            while (FlexibleConnectionSnapshots != null)
+            {
+                var snapshot = FlexibleConnectionSnapshots;
+                FlexibleConnectionSnapshots = snapshot.NextInFrame;
+                snapshot.Release(this);
+            }
+        }
+
+        // =====================================================================
+        // ORTS Flexible Connections
+        // Purpose: Retain Hook and Coupler assets until this frame's render items have been cleared.
+        // FlexibleConnectionHookFrameReference in FlexibleConnectionHookViewer.cs retains a rigid owner
+        // for either family; releasing this token delegates lifetime decisions to its resource manager.
+        // =====================================================================
+        private RollingStock.FlexibleConnectionHookFrameReference FlexibleConnectionHookReferences;
+
+        internal void RegisterFlexibleConnectionHookReference(RollingStock.FlexibleConnectionHookFrameReference reference)
+        {
+            reference.NextInFrame = FlexibleConnectionHookReferences;
+            FlexibleConnectionHookReferences = reference;
+        }
+
+        private void ReleaseFlexibleConnectionHookReferences()
+        {
+            while (FlexibleConnectionHookReferences != null)
+            {
+                var reference = FlexibleConnectionHookReferences;
+                FlexibleConnectionHookReferences = reference.NextInFrame;
+                reference.Release(this);
+            }
+        }
+        // End ORTS Flexible Connections frame references.
+
         readonly Game Game;
 
         // Shared shadow map data.
@@ -495,6 +544,14 @@ namespace Orts.Viewer3D
                     RenderShadowTerrainItems[shadowMapIndex].Clear();
                 }
             }
+            // ORTS Flexible Connections
+            // Purpose: Release procedural snapshot references after clearing render items; pending owners
+            // remain protected until their last frame reference is released.
+            ReleaseFlexibleConnectionSnapshots();
+            // ORTS Flexible Connections
+            // Purpose: Release rigid-owner references after clearing all render items; shared native
+            // shape resources remain governed by the resource manager and normal marking/sweeping.
+            ReleaseFlexibleConnectionHookReferences();
         }
 
         public void PrepareFrame(Viewer viewer)
