@@ -775,28 +775,28 @@ namespace Orts.Simulation
                     RearConnected = false;
                     if (ForwardConnectedTarget != -1)
                     {
-                        if (Math.Abs(MathHelper.WrapAngle(Angles[ForwardConnectedTarget] + YAngle)) < 0.005)
+                        GoToTarget = Clockwise;  // only set if not in auto mode
+                        TargetY = -Angles[ForwardConnectedTarget];
+                        if (Math.Abs(MathHelper.WrapAngle(Angles[ForwardConnectedTarget] + YAngle)) < 0.0001)
                         {
                             ForwardConnected = true;
-                            GoToTarget = Clockwise;  // only set if not in auto mode
                             Clockwise = false;
                             AutoClockwise = false;
                             ConnectedTrackEnd = ForwardConnectedTarget;
                             if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable forward connected"));
-                            TargetY = -Angles[ForwardConnectedTarget];
                         }
                     }
                     else if (RearConnectedTarget != -1)
                     {
-                        if (Math.Abs(MathHelper.WrapAngle(Angles[RearConnectedTarget] + YAngle + (float)Math.PI)) < 0.0055)
+                        GoToTarget = Clockwise;  // only set if not in auto mode
+                        TargetY = -MathHelper.WrapAngle(Angles[RearConnectedTarget] + MathHelper.Pi);
+                        if (Math.Abs(MathHelper.WrapAngle(Angles[RearConnectedTarget] + YAngle + MathHelper.Pi)) < 0.0001)
                         {
                             RearConnected = true;
-                            GoToTarget = Clockwise;  // only set if not in auto mode
                             Clockwise = false;
                             AutoClockwise = false;
                             ConnectedTrackEnd = RearConnectedTarget;
                             if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable backward connected"));
-                            TargetY = -MathHelper.WrapAngle(Angles[RearConnectedTarget] + (float)Math.PI);
                         }
                     }
                 }
@@ -806,28 +806,28 @@ namespace Orts.Simulation
                     RearConnected = false;
                     if (ForwardConnectedTarget != -1)
                     {
-                        if (Math.Abs(MathHelper.WrapAngle(Angles[ForwardConnectedTarget] + YAngle)) < 0.005)
+                        GoToTarget = Counterclockwise;  // only set if not in auto mode
+                        TargetY = -Angles[ForwardConnectedTarget];
+                        if (Math.Abs(MathHelper.WrapAngle(Angles[ForwardConnectedTarget] + YAngle)) < 0.0001)
                         {
                             ForwardConnected = true;
-                            GoToTarget = Counterclockwise;  // only set if not in auto mode
                             Counterclockwise = false;
                             AutoCounterclockwise = false;
                             ConnectedTrackEnd = ForwardConnectedTarget;
                             if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable forward connected"));
-                            TargetY = -Angles[ForwardConnectedTarget];
                         }
                     }
                     else if (RearConnectedTarget != -1)
                     {
-                        if (Math.Abs(MathHelper.WrapAngle(Angles[RearConnectedTarget] + YAngle + (float)Math.PI)) < 0.0055)
+                        GoToTarget = Counterclockwise;  // only set if not in auto mode
+                        TargetY = -MathHelper.WrapAngle(Angles[RearConnectedTarget] + MathHelper.Pi);
+                        if (Math.Abs(MathHelper.WrapAngle(Angles[RearConnectedTarget] + YAngle + MathHelper.Pi)) < 0.0001)
                         {
                             RearConnected = true;
-                            GoToTarget = Counterclockwise;  // only set if not in auto mode
                             Counterclockwise = false;
                             AutoCounterclockwise = false;
                             ConnectedTrackEnd = RearConnectedTarget;
                             if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable backward connected"));
-                            TargetY = -MathHelper.WrapAngle(Angles[RearConnectedTarget] + (float)Math.PI);
                         }
                     }
                 }
@@ -841,12 +841,12 @@ namespace Orts.Simulation
         public void TargetExactlyReached()
         {
             Traveller.TravellerDirection direction = ForwardConnected ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward;
-            direction = SaveForwardConnected ^ !MyTrackNodesOrientation[ConnectedTrackEnd]? direction : (direction == Traveller.TravellerDirection.Forward ? Traveller.TravellerDirection.Backward : Traveller.TravellerDirection.Forward);
+            direction = SaveForwardConnected ^ !MyTrackNodesOrientation.ElementAtOrDefault(ConnectedTrackEnd) ? direction : (direction == Traveller.TravellerDirection.Forward ? Traveller.TravellerDirection.Backward : Traveller.TravellerDirection.Forward);
             GoToTarget = false;
             if (TrainsOnMovingTable.Count == 1)
             {
                 var train = TrainsOnMovingTable[0].Train;
-                if (train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
+                if (train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE && ConnectedTrackEnd != -1)
                     train.ReenterTrackSections(MyTrackNodesIndex[ConnectedTrackEnd], MyTrVectorSectionsIndex[ConnectedTrackEnd], FinalFrontTravellerXNALocation, FinalRearTravellerXNALocation, direction);
             }
         }
@@ -905,7 +905,7 @@ namespace Orts.Simulation
             {
                 RecalculateTravellerXNALocations(absAnimationMatrix);
             }
-            if (GoToTarget) TargetExactlyReached();
+            if (GoToTarget && (ForwardConnected || RearConnected)) TargetExactlyReached();
         }
     }
 
