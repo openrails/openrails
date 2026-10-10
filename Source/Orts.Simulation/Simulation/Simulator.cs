@@ -36,6 +36,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axles;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation
@@ -76,11 +77,6 @@ namespace Orts.Simulation
         /// or jump forwards or jump backwards.
         /// </summary>
         public double ClockTime;
-        /// <summary>
-        /// Smoothed estimate of the time (in seconds) required for the updater process to complete its work.
-        /// Does not necessarily indicate framerate, as a different process may be the critical path.
-        /// </summary>
-        public float UpdaterTimeS;
         // while Simulator.Update() is running, objects are adjusted to this target time 
         // after Simulator.Update() is complete, the simulator state matches this time
 
@@ -826,7 +822,7 @@ namespace Orts.Simulation
         /// Executes in the UpdaterProcess thread.
         /// </summary>
         [CallOnThread("Updater")]
-        public void Update(float elapsedClockSeconds)
+        public void Update(float elapsedClockSeconds, float updateDurationSeconds)
         {
             // Advance the times.
             GameTime += elapsedClockSeconds;
@@ -846,6 +842,9 @@ namespace Orts.Simulation
 
             // Must be done before trains so that during turntable rotation train follows it
             if (ActiveMovingTable != null) ActiveMovingTable.Update();
+
+            // Update precision of advanced adhesion system before updating trains
+            AdhesionPrecision.UpdateAxlePrecision(elapsedClockSeconds, updateDurationSeconds, GameTime);
 
             // Represent conditions at the specified clock time.
             List<Train> movingTrains = new List<Train>();

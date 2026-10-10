@@ -482,7 +482,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="elapsedSeconds">Time span within the simulation cycle</param>
         public void Update(float elapsedSeconds)
         {
-            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(elapsedSeconds, Car.Simulator.UpdaterTimeS, Car.Simulator.GameTime);
+            UsePolachAdhesion = AdhesionPrecision.PrecisionLevel == AdhesionPrecision.AdhesionPrecisionLevel.High;
             foreach (var axle in AxleList)
             {
                 if (UsePolachAdhesion != PreviousUsePolachAdhesion) // There's been a transition
@@ -500,7 +500,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public static class AdhesionPrecision  // "static" so all "Axles" share the same level of precision
         {
-            enum AdhesionPrecisionLevel
+            public enum AdhesionPrecisionLevel
             {
                 /// <summary>
                 /// Initial level uses Polach algorithm
@@ -522,7 +522,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             const double IntervalBetweenChangesLimitS = 1 * 60; // Prevent rapid cycling between precision levels
             const double IntervalBetweenDowngradesLimitS = 5 * 60; // Locks in low precision if < 5 mins between downgrades
 
-            static AdhesionPrecisionLevel PrecisionLevel = AdhesionPrecisionLevel.High;
+            public static AdhesionPrecisionLevel PrecisionLevel = AdhesionPrecisionLevel.High;
             static double TimeOfLatestChange = 0 - (IntervalBetweenChangesLimitS - 5); // Starts at -55 sec, allows changes after 5 seconds
             static double TimeOfLatestDowngrade = 0 - IntervalBetweenDowngradesLimitS; // Starts at -5 mins, prevents forcing low adhesion immediately
 
@@ -530,13 +530,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             /// Sets the level of precision of the advanced adhesion system between "high" (Polach model; high
             /// performance cost but high physical accuracy) and "low" (Pacha model; moderate performance cost but lower
             /// accuracy) depending on the current simulation performance (if simulation seems to be struggling, drop
-            /// to low quality). Returns a bool indicating if the current adhesion precision is high.
+            /// to low quality).
             /// </summary>
             /// <param name="elapsedSeconds">Current simulation time step</param>
             /// <param name="updateSeconds">Time required for simulation to complete an update, may be less than <paramref name="elapsedSeconds"/></param>
             /// <param name="gameTime">The elapsed time in-game since the simulation started</param>
-            /// <returns>true boolean if precision is currently set to high (Polach model)</returns>
-            public static bool IsPrecisionHigh(float elapsedSeconds, float updateSeconds, double gameTime)
+            public static void UpdateAxlePrecision(float elapsedSeconds, float updateSeconds, double gameTime)
             {
                 switch (PrecisionLevel)
                 {
@@ -586,7 +585,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         // Stop considering changes in precision if locked to low adhesion
                         break;
                 }
-                return PrecisionLevel == AdhesionPrecisionLevel.High;
             }
 
             /// <summary>
