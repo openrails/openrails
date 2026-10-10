@@ -5972,7 +5972,9 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                        data = Train.HuDIsWheelSlip ? 1 : 0;
+                        // FUTURE: Implement "WHEELSLIP_TRAINLINED"
+                        // to show if ANY locomotive is wheelslipping, not just current one
+                        data = HuDIsWheelSlip ? 1 : 0;
                         break;
                     }
 
