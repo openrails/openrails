@@ -248,6 +248,15 @@ namespace Orts.Common
         BoilerBlowdownOn,
         BoilerBlowdownOff,
 
+        CylinderExhaust1ValveOpen,
+        CylinderExhaust1ValveClose,
+        CylinderExhaust2ValveOpen,
+        CylinderExhaust2ValveClose,
+        CylinderExhaust3ValveOpen,
+        CylinderExhaust3ValveClose,
+        CylinderExhaust4ValveOpen,
+        CylinderExhaust4ValveClose,
+
         WaterScoopRaiseLower,
         WaterScoopBroken,
 
@@ -575,6 +584,16 @@ namespace Orts.Common
                         case 263: return Event.WindowsOpen;
 
                         case 270: return Event.RequestStopAnnounce;
+
+                        // Steam Locomotive Exhaust valves
+                        case 280: return Event.CylinderExhaust1ValveOpen;
+                        case 281: return Event.CylinderExhaust1ValveClose;
+                        case 282: return Event.CylinderExhaust2ValveOpen;
+                        case 283: return Event.CylinderExhaust2ValveClose;
+                        case 284: return Event.CylinderExhaust3ValveOpen;
+                        case 285: return Event.CylinderExhaust3ValveClose;
+                        case 286: return Event.CylinderExhaust4ValveOpen;
+                        case 287: return Event.CylinderExhaust4ValveClose;
 
                         // Cruise Control
                         case 298: return Event.LeverFromZero;
