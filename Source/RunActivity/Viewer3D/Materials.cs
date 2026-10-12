@@ -144,12 +144,7 @@ namespace Orts.Viewer3D
                 case ".png":
                     using (var stream = File.OpenRead(path))
                     {
-                        var texture = srgb
-                            ? GetSrgbTexture(GraphicsDevice, stream)
-                            : Texture2D.FromStream(GraphicsDevice, stream);
-                        if (Debugger.IsAttached) texture.Name = path;
-                        //return Textures[textureKey] = texture; // FIXME: loads a wrong texture for some glTF files.
-                        return texture;
+                        return Get(path, stream, null, srgb);
                     }
                 default:
                     Trace.TraceWarning("Ignored unsupported texture file: {0}", path);
@@ -157,17 +152,34 @@ namespace Orts.Viewer3D
             }
         }
 
-        public Texture2D GetSrgbTexture(GraphicsDevice graphicsDevice, Stream stream)
+        public Texture2D Get(string textureKey, Stream stream, glTFLoader.Schema.Image.MimeTypeEnum? mimeType, bool srgb)
         {
-            using (var temp = Texture2D.FromStream(graphicsDevice, stream))
-            {
-                var srgbTex = new Texture2D(graphicsDevice, temp.Width, temp.Height, false, SurfaceFormat.ColorSRgb);
-                var data = new Color[temp.Width * temp.Height];
-                temp.GetData(data);
-                srgbTex.SetData(data);
+            textureKey = textureKey.ToLowerInvariant();
+            if (Textures.ContainsKey(textureKey)) return Textures[textureKey];
 
-                return srgbTex;
+            if (mimeType == glTFLoader.Schema.Image.MimeTypeEnum.image_vnd_ms_dds)
+            {
+                DDSLib.DDSFromStream(stream, GraphicsDevice, 0, true, out Texture2D texture, srgb);
+                Textures[textureKey] = texture;
             }
+            else if (srgb)
+            {
+                using (var temp = Texture2D.FromStream(GraphicsDevice, stream))
+                {
+                    var data = new Color[temp.Width * temp.Height];
+                    temp.GetData(data);
+                    Textures[textureKey] = new Texture2D(GraphicsDevice, temp.Width, temp.Height, false, SurfaceFormat.ColorSRgb);
+                    Textures[textureKey].SetData(data);
+                }
+            }
+            else 
+            {
+                Textures[textureKey] = Texture2D.FromStream(GraphicsDevice, stream);
+            }
+
+            if (Debugger.IsAttached) Textures[textureKey].Name = textureKey;
+            return Textures[textureKey];
+
         }
 
         // Internal callers expect a new `Texture2D` for every load so we must also provide a new missing texture for each.
@@ -601,9 +613,10 @@ namespace Orts.Viewer3D
             }
             if (BrdfLutTexture == null)
             {
-                using (var stream = File.OpenRead(Path.Combine(Viewer.Game.ContentPath, $"EnvMap/brdfLUT.png")))
+                var brdfLutPath = Path.Combine(Viewer.Game.ContentPath, "EnvMap/brdfLUT.png");
+                using (var stream = File.OpenRead(brdfLutPath))
                 {
-                    BrdfLutTexture = Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream);
+                    BrdfLutTexture = Viewer.TextureManager.Get(brdfLutPath, stream, null, true);
                 }
             }
 
@@ -1587,7 +1600,7 @@ namespace Orts.Viewer3D
                     var image = GltfFile.Images[(int)source];
                     if (image.Uri != null)
                     {
-                        var imagePath = source != null ? Path.Combine(ShapeFileDir, Uri.UnescapeDataString(image.Uri)) : "";
+                        var imagePath = Path.Combine(ShapeFileDir, Uri.UnescapeDataString(image.Uri));
 
                         // The standard accordance must be preserved, must not load a dds texture where only a jpg or png is allowed.
                         if (extensionFilter != null && !extensionFilter.Contains(Path.GetExtension(imagePath).ToLowerInvariant()))
@@ -1611,10 +1624,7 @@ namespace Orts.Viewer3D
                             {
                                 using (var stream = glTFLoader.Interface.OpenImageFile(GltfFile, (int)source, ShapeFilePath))
                                 {
-                                    var texture2D = srgbColors
-                                        ? Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream)
-                                        : Texture2D.FromStream(Viewer.GraphicsDevice, stream);
-                                    if (Debugger.IsAttached) texture2D.Name = imagePath;
+                                    var texture2D = Viewer.TextureManager.Get($"{ShapeFilePath}:{source}", stream, image.MimeType, srgbColors);
                                     return texture2D;
                                 }
                             }
@@ -1631,10 +1641,7 @@ namespace Orts.Viewer3D
                         {
                             using (var stream = glTFLoader.Interface.OpenImageFile(GltfFile, (int)source, ShapeFilePath))
                             {
-                                var texture2D = srgbColors
-                                    ? Viewer.TextureManager.GetSrgbTexture(Viewer.GraphicsDevice, stream)
-                                    : Texture2D.FromStream(Viewer.GraphicsDevice, stream);
-                                if (Debugger.IsAttached) texture2D.Name = $"{ShapeFilePath}:{image.BufferView}";
+                                var texture2D = Viewer.TextureManager.Get($"{ShapeFilePath}:{source}", stream, image.MimeType, srgbColors);
                                 return texture2D;
                             }
                         }
@@ -1854,6 +1861,20 @@ namespace Orts.Viewer3D
 
             if (SphericalHarmonics != null)
                 Viewer.MaterialManager.SetFrameSphericalHarmonics();
+        }
+
+        public override void Mark()
+        {
+            Viewer.TextureManager.Mark(MetallicRoughnessTexture);
+            Viewer.TextureManager.Mark(NormalTexture);
+            Viewer.TextureManager.Mark(OcclusionTexture);
+            Viewer.TextureManager.Mark(EmissiveTexture);
+            Viewer.TextureManager.Mark(ClearcoatTexture);
+            Viewer.TextureManager.Mark(ClearcoatRoughnessTexture);
+            Viewer.TextureManager.Mark(ClearcoatNormalTexture);
+            Viewer.TextureManager.Mark(SpecularTexture);
+            Viewer.TextureManager.Mark(SpecularColorTexture);
+            base.Mark();
         }
     }
 
