@@ -478,11 +478,14 @@ namespace Orts.Viewer3D
             {
                 var shadowMapSize = Game.Settings.ShadowMapResolution;
 
-                ShadowMap = ShadowMap ?? new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize,
-                    false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents, false, RenderProcess.ShadowMapCount);
-                ShadowMapRenderTarget = ShadowMapRenderTarget ?? (!Game.Settings.ShadowMapBlur ? ShadowMap :
-                    new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize,
-                    false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents, false, RenderProcess.ShadowMapCount));
+                ShadowMap ??= new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize,
+                    false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.DiscardContents, false, RenderProcess.ShadowMapCount);
+
+                if (Game.Settings.ShadowMapBlur)
+                {
+                    ShadowMapRenderTarget ??= new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize,
+                        false, SurfaceFormat.Rg32, DepthFormat.None, 0, RenderTargetUsage.DiscardContents, false, 1);
+                }
 
                 ShadowMapLightView = new Matrix[RenderProcess.ShadowMapCount];
                 ShadowMapLightProj = new Matrix[RenderProcess.ShadowMapCount];
@@ -858,7 +861,7 @@ namespace Orts.Viewer3D
 
         bool IsInShadowMap(int shadowMapIndex, Vector3 mstsLocation, float objectRadius, float objectViewingDistance)
         {
-            if (ShadowMapRenderTarget == null)
+            if (ShadowMap == null)
                 return false;
 
             mstsLocation.Z *= -1;
@@ -946,7 +949,7 @@ namespace Orts.Viewer3D
             ShadowMapShader?.SetPerShadowMap(ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare renderer for drawing the shadow map.
-            graphicsDevice.SetRenderTarget(ShadowMapRenderTarget, shadowMapIndex);
+            graphicsDevice.SetRenderTarget(ShadowMap, shadowMapIndex);
             graphicsDevice.Clear(ClearOptions.DepthBuffer | ClearOptions.Target, Color.White, 1, 0);
 
             // Prepare for normal (non-blocking) rendering of scenery.
