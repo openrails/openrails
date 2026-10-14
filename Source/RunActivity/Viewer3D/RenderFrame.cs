@@ -689,25 +689,23 @@ namespace Orts.Viewer3D
                     var viewingDistance = Game.Settings.ViewingDistance;
                     var shadowMapDiameter = RenderProcess.ShadowMapDiameter[shadowMapIndex];
                     var shadowMapLocation = XNACameraLocation + RenderProcess.ShadowMapDistance[shadowMapIndex] * cameraDirection;
-
-                    // Align shadow map location to grid so it doesn't "flutter" so much. This basically means aligning it along a
-                    // grid based on the size of a shadow texel (shadowMapSize / shadowMapSize) along the axes of the sun direction
-                    // and up/left.
-                    var shadowMapAlignmentGrid = (float)shadowMapDiameter / Game.Settings.ShadowMapResolution;
                     var shadowMapSize = Game.Settings.ShadowMapResolution;
-                    var adjustX = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisX, shadowMapLocation), shadowMapAlignmentGrid);
-                    var adjustY = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisY, shadowMapLocation), shadowMapAlignmentGrid);
-                    shadowMapLocation.X -= shadowMapAlignAxisX.X * adjustX;
-                    shadowMapLocation.Y -= shadowMapAlignAxisX.Y * adjustX;
-                    shadowMapLocation.Z -= shadowMapAlignAxisX.Z * adjustX;
-                    shadowMapLocation.X -= shadowMapAlignAxisY.X * adjustY;
-                    shadowMapLocation.Y -= shadowMapAlignAxisY.Y * adjustY;
-                    shadowMapLocation.Z -= shadowMapAlignAxisY.Z * adjustY;
 
-                    ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + viewingDistance * SteppedSolarDirection, shadowMapLocation, Vector3.Up);
-                    ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, 0, viewingDistance + shadowMapDiameter / 2);
+                    var texelSize = (float)shadowMapDiameter / shadowMapSize;
+                    var rawLightView = Matrix.CreateLookAt(shadowMapLocation + viewingDistance * SteppedSolarDirection, shadowMapLocation, ShadowMapY);
+                    var lightSpaceLocation = Vector3.Transform(shadowMapLocation, rawLightView);
+
+                    lightSpaceLocation.X = (float)Math.Floor(lightSpaceLocation.X / texelSize) * texelSize;
+                    lightSpaceLocation.Y = (float)Math.Floor(lightSpaceLocation.Y / texelSize) * texelSize;
+                    lightSpaceLocation.Z = (float)Math.Floor(lightSpaceLocation.Z / texelSize) * texelSize;
+
+                    var invLightView = Matrix.Invert(rawLightView);
+                    var snappedShadowMapLocation = Vector3.Transform(lightSpaceLocation, invLightView);
+
+                    ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(snappedShadowMapLocation + viewingDistance * SteppedSolarDirection, snappedShadowMapLocation, ShadowMapY);
+                    ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, 0, viewingDistance + shadowMapDiameter / 2.0f);
                     ShadowMapLightViewProjShadowProj[shadowMapIndex] = ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex] * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / shadowMapSize, 0.5f + 0.5f / shadowMapSize, 0, 1);
-                    ShadowMapCenter[shadowMapIndex] = shadowMapLocation;
+                    ShadowMapCenter[shadowMapIndex] = snappedShadowMapLocation;
                 }
             }
         }
