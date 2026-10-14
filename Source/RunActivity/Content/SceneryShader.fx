@@ -718,15 +718,20 @@ void _PSApplyShadowColor(inout float3 Color, in VERTEX_OUTPUT In)
 float _PSGetShadowEffect(uniform bool NormalLighting, in VERTEX_OUTPUT In)
 {
 	float3 moments = _PSGetShadowEffectMoments(In);
-	bool not_shadowed = moments.z - moments.x < 0.00005;
 	float E_x2 = moments.y;
 	float Ex_2 = moments.x * moments.x;
-	float variance = clamp(E_x2 - Ex_2, 0.00005, 1.0);
-	float m_d = moments.z - moments.x;
-	float p = pow50(variance / (variance + m_d * m_d));
-	if (NormalLighting)
-		return saturate(not_shadowed + p) * saturate(In.Normal_Light.w * 5 - 2);
-	return saturate(not_shadowed + p);
+	float variance = max(E_x2 - Ex_2, 0.00005);
+	float distance = moments.z - moments.x;
+    float not_shadowed = step(distance, 0.00005);
+    
+	float p = pow50(variance / (variance + distance * distance));
+    p = saturate((p - 0.2) / (1.0 - 0.2));
+    
+    float shadow = saturate(not_shadowed + p);
+    float lightFactor = saturate(In.Normal_Light.w * 5.0 - 2.0);
+    float finalMultiplier = lerp(1.0, lightFactor, NormalLighting);
+
+    return shadow * finalMultiplier;
 }
 
 // Gets the overcast color.

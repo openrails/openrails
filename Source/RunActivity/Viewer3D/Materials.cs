@@ -2168,15 +2168,16 @@ namespace Orts.Viewer3D
             graphicsDevice.SetVertexBuffer(BlurVertexBuffer);
 
             var passes = shader.CurrentTechnique.Passes;
-            for (int i = 0; i < passes.Count; i++)
-            {
-                shader.SetBlurData(renderTarget, shadowMapIndex);
-                passes[i].Apply();
-                graphicsDevice.SetRenderTarget(shadowMap, shadowMapIndex);
-                graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
 
-                graphicsDevice.SetRenderTarget(null);
-            }
+            graphicsDevice.SetRenderTarget(renderTarget, 0);
+            shader.SetBlurData(shadowMap, shadowMapIndex);
+            passes[0].Apply();
+            graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            graphicsDevice.SetRenderTarget(shadowMap, shadowMapIndex);
+            shader.SetBlurData(renderTarget, 0);
+            passes[1].Apply();
+            graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            graphicsDevice.SetRenderTarget(null);
 
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
             graphicsDevice.DepthStencilState = DepthStencilState.Default;

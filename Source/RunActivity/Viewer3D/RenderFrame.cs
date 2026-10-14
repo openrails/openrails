@@ -478,11 +478,14 @@ namespace Orts.Viewer3D
             {
                 var shadowMapSize = Game.Settings.ShadowMapResolution;
 
-                ShadowMap = ShadowMap ?? new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize,
-                    false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents, false, RenderProcess.ShadowMapCount);
-                ShadowMapRenderTarget = ShadowMapRenderTarget ?? (!Game.Settings.ShadowMapBlur ? ShadowMap :
-                    new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize,
-                    false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents, false, RenderProcess.ShadowMapCount));
+                ShadowMap ??= new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize,
+                    false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.DiscardContents, false, RenderProcess.ShadowMapCount);
+
+                if (Game.Settings.ShadowMapBlur)
+                {
+                    ShadowMapRenderTarget ??= new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize,
+                        false, SurfaceFormat.Rg32, DepthFormat.None, 0, RenderTargetUsage.DiscardContents, false, 1);
+                }
 
                 ShadowMapLightView = new Matrix[RenderProcess.ShadowMapCount];
                 ShadowMapLightProj = new Matrix[RenderProcess.ShadowMapCount];
@@ -686,25 +689,23 @@ namespace Orts.Viewer3D
                     var viewingDistance = Game.Settings.ViewingDistance;
                     var shadowMapDiameter = RenderProcess.ShadowMapDiameter[shadowMapIndex];
                     var shadowMapLocation = XNACameraLocation + RenderProcess.ShadowMapDistance[shadowMapIndex] * cameraDirection;
-
-                    // Align shadow map location to grid so it doesn't "flutter" so much. This basically means aligning it along a
-                    // grid based on the size of a shadow texel (shadowMapSize / shadowMapSize) along the axes of the sun direction
-                    // and up/left.
-                    var shadowMapAlignmentGrid = (float)shadowMapDiameter / Game.Settings.ShadowMapResolution;
                     var shadowMapSize = Game.Settings.ShadowMapResolution;
-                    var adjustX = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisX, shadowMapLocation), shadowMapAlignmentGrid);
-                    var adjustY = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisY, shadowMapLocation), shadowMapAlignmentGrid);
-                    shadowMapLocation.X -= shadowMapAlignAxisX.X * adjustX;
-                    shadowMapLocation.Y -= shadowMapAlignAxisX.Y * adjustX;
-                    shadowMapLocation.Z -= shadowMapAlignAxisX.Z * adjustX;
-                    shadowMapLocation.X -= shadowMapAlignAxisY.X * adjustY;
-                    shadowMapLocation.Y -= shadowMapAlignAxisY.Y * adjustY;
-                    shadowMapLocation.Z -= shadowMapAlignAxisY.Z * adjustY;
 
-                    ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + viewingDistance * SteppedSolarDirection, shadowMapLocation, Vector3.Up);
-                    ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, 0, viewingDistance + shadowMapDiameter / 2);
+                    var texelSize = (float)shadowMapDiameter / shadowMapSize;
+                    var rawLightView = Matrix.CreateLookAt(shadowMapLocation + viewingDistance * SteppedSolarDirection, shadowMapLocation, ShadowMapY);
+                    var lightSpaceLocation = Vector3.Transform(shadowMapLocation, rawLightView);
+
+                    lightSpaceLocation.X = (float)Math.Floor(lightSpaceLocation.X / texelSize) * texelSize;
+                    lightSpaceLocation.Y = (float)Math.Floor(lightSpaceLocation.Y / texelSize) * texelSize;
+                    lightSpaceLocation.Z = (float)Math.Floor(lightSpaceLocation.Z / texelSize) * texelSize;
+
+                    var invLightView = Matrix.Invert(rawLightView);
+                    var snappedShadowMapLocation = Vector3.Transform(lightSpaceLocation, invLightView);
+
+                    ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(snappedShadowMapLocation + viewingDistance * SteppedSolarDirection, snappedShadowMapLocation, ShadowMapY);
+                    ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, 0, viewingDistance + shadowMapDiameter / 2.0f);
                     ShadowMapLightViewProjShadowProj[shadowMapIndex] = ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex] * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / shadowMapSize, 0.5f + 0.5f / shadowMapSize, 0, 1);
-                    ShadowMapCenter[shadowMapIndex] = shadowMapLocation;
+                    ShadowMapCenter[shadowMapIndex] = snappedShadowMapLocation;
                 }
             }
         }
@@ -858,7 +859,7 @@ namespace Orts.Viewer3D
 
         bool IsInShadowMap(int shadowMapIndex, Vector3 mstsLocation, float objectRadius, float objectViewingDistance)
         {
-            if (ShadowMapRenderTarget == null)
+            if (ShadowMap == null)
                 return false;
 
             mstsLocation.Z *= -1;
@@ -946,7 +947,7 @@ namespace Orts.Viewer3D
             ShadowMapShader?.SetPerShadowMap(ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare renderer for drawing the shadow map.
-            graphicsDevice.SetRenderTarget(ShadowMapRenderTarget, shadowMapIndex);
+            graphicsDevice.SetRenderTarget(ShadowMap, shadowMapIndex);
             graphicsDevice.Clear(ClearOptions.DepthBuffer | ClearOptions.Target, Color.White, 1, 0);
 
             // Prepare for normal (non-blocking) rendering of scenery.
