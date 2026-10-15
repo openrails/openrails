@@ -1,13 +1,19 @@
-﻿// ORTS Flexible Connections
+﻿// COPYRIGHT 2026 by the Open Rails project.
 //
-// Purpose: Solve a static catenary centerline independently of rendering resources.
-// Responsibilities: Validate endpoints and length, solve the curve, and sample arc positions.
-// Key components: Calculate resets a caller-owned FlexibleConnectionCatenaryResult and
-//   fills its point buffer; TryEvaluateAtArcLength samples the retained solved context.
-// Related files: FlexibleConnectionViewer.cs builds Hose geometry from these samples;
-//   FlexibleConnectionHookViewer.cs and FlexibleConnectionCouplerViewer.cs use them as a guide.
-// Lifecycle: Reuse caller-owned work buffers synchronously during frame preparation;
-//   this file neither allocates GPU resources nor publishes work buffers to Render.
+// This file is part of Open Rails.
+//
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using Microsoft.Xna.Framework;
@@ -23,10 +29,9 @@ namespace Orts.Viewer3D.RollingStock
         NumericalFailure
     }
 
-    // =====================================================================
-    // ORTS Flexible Connections
-    // Purpose: Value-only context for extra samples of an already solved curve.
-    // =====================================================================
+    /// <summary>
+    /// Stores value-only data for evaluating additional arc positions on an already solved curve.
+    /// </summary>
     internal struct FlexibleConnectionArcContext
     {
         internal bool Valid;
@@ -35,6 +40,9 @@ namespace Orts.Viewer3D.RollingStock
         internal double Horizontal, PositionTolerance;
     }
 
+    /// <summary>
+    /// Stores reusable catenary output and diagnostics; Points is populated only after successful validation.
+    /// </summary>
     internal sealed class FlexibleConnectionCatenaryResult
     {
         internal FlexibleConnectionCatenaryStatus Status;
@@ -43,8 +51,6 @@ namespace Orts.Viewer3D.RollingStock
         // Populated only after all validation succeeds.
         internal Vector3[] Points;
 
-        // ORTS Flexible Connections
-        // Purpose: No references or allocations are retained by the extra evaluator.
         internal FlexibleConnectionArcContext ArcContext;
 
         internal double Distance = double.NaN;
@@ -62,15 +68,14 @@ namespace Orts.Viewer3D.RollingStock
         internal double MinimumSegmentLength = double.NaN;
         internal double MaximumSegmentLength = double.NaN;
 
-        // ORTS Flexible Connections
-        // Purpose: Restore fresh-result state before reusing this calculation storage.
+        /// <summary>
+        /// Clears all output from the previous calculation before storage is reused.
+        /// </summary>
         internal void Reset()
         {
             Status = FlexibleConnectionCatenaryStatus.Success;
             Cause = string.Empty;
             Points = null;
-            // ORTS Flexible Connections
-            // Purpose: Early failures must never expose the preceding pair's solution.
             ArcContext = default(FlexibleConnectionArcContext);
             Distance = double.NaN;
             Horizontal = double.NaN;
@@ -87,6 +92,9 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
+    /// <summary>
+    /// Solves and samples a static catenary without owning rendering resources.
+    /// </summary>
     internal static class FlexibleConnectionCatenary
     {
         private const int MaximumIterations = 64;
@@ -94,9 +102,12 @@ namespace Orts.Viewer3D.RollingStock
         private const double RootRelativeTolerance = 1e-10;
         private const double FloatRelativePrecision = 1.1920928955078125e-7;
 
-        // ORTS Flexible Connections
-        // Purpose: Use caller-owned storage; consume the result before the next call.
-        // pointBuffer must contain segmentCount + 1 entries and remain updater-only.
+        /// <summary>
+        /// Resets and fills caller-owned result storage and point buffers for synchronous consumption.
+        /// </summary>
+        /// <remarks>
+        /// The pointBuffer must contain segmentCount + 1 entries. Consume the result before the next call. The working buffers must not be shared concurrently or published as mutable render-frame data.
+        /// </remarks>
         internal static FlexibleConnectionCatenaryResult Calculate(
             Vector3 ca,
             Vector3 cb,
@@ -147,7 +158,7 @@ namespace Orts.Viewer3D.RollingStock
 
             double scale = Math.Max(1.0, length);
 
-            // Numerical tolerance of this prototype, not a physical constant.
+            // Numerical tolerance, not a physical constant.
             double minimumHorizontal = 1e-6 * scale;
 
             if (distance <= minimumHorizontal)
@@ -509,8 +520,6 @@ namespace Orts.Viewer3D.RollingStock
             result.Status = FlexibleConnectionCatenaryStatus.Success;
             result.Cause = string.Empty;
 
-            // ORTS Flexible Connections
-            // Purpose: Publish only after all original calculation checks succeeded.
             result.ArcContext = new FlexibleConnectionArcContext
             {
                 Valid = true, Start = ca, End = cb, Length = length,
@@ -521,11 +530,12 @@ namespace Orts.Viewer3D.RollingStock
             return result;
         }
 
-        // =====================================================================
-        // ORTS Flexible Connections
-        // Purpose: Evaluate extra arc samples from the solved context without solving again.
-        // Keep these stable expressions aligned with the original sampling loop.
-        // =====================================================================
+        /// <summary>
+        /// Evaluates an additional arc position from a valid solved context without running the solver again.
+        /// </summary>
+        /// <remarks>
+        /// Keep the stable expressions aligned with the original sampling loop.
+        /// </remarks>
         internal static bool TryEvaluateAtArcLength(
             ref FlexibleConnectionArcContext context, double s, out Vector3 point)
         {

@@ -1,13 +1,19 @@
-// ORTS Flexible Connections
+// COPYRIGHT 2026 by the Open Rails project.
 //
-// Purpose: Define screw-coupling content and Coupler-specific geometric admission.
-// Responsibilities: Validate Coupler properties and ordered rigid assets, independently
-//   of Hook admission rules; this cosmetic model does not change native physics or slack.
-// Key components: FlexibleConnectionCouplerParser reads profiles;
-//   FlexibleConnectionCouplerGeometry.Prepare supplies lengths and remaining reach bounds.
-// Related files: FlexibleConnection.cs selects the family; FlexibleConnectionHook.cs
-//   provides shared data types; FlexibleConnectionCouplerViewer.cs consumes the configuration.
-// Lifecycle: Load content once; prepare geometric input before shared rigid-chain construction.
+// This file is part of Open Rails.
+//
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,6 +35,9 @@ namespace Orts.Simulation.RollingStocks
         public const double MinimumCouplerOrientationCrossMagnitude = 1e-4;
     }
 
+    /// <summary>
+    /// Stores validated Coupler properties and ordered rigid assets.
+    /// </summary>
     public sealed class FlexibleConnectionCouplerConfig
     {
         public readonly int? Links;
@@ -43,6 +52,9 @@ namespace Orts.Simulation.RollingStocks
         }
     }
 
+    /// <summary>
+    /// Parses and validates Coupler-specific profile declarations.
+    /// </summary>
     internal sealed class FlexibleConnectionCouplerParser
     {
         private readonly HashSet<string> Seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -145,6 +157,9 @@ namespace Orts.Simulation.RollingStocks
         }
     }
 
+    /// <summary>
+    /// Prepares Coupler piece lengths and strict remaining-reach bounds for rigid-chain construction.
+    /// </summary>
     public static class FlexibleConnectionCouplerGeometry
     {
         public static FlexibleConnectionHookGeometryStatus Prepare(double horizontal, double height,

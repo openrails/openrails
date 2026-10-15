@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -372,54 +372,36 @@ namespace Orts.Viewer3D
 
     public class RenderFrame
     {
-        // =====================================================================
-        // ORTS Flexible Connections
-        // Purpose: Retain procedural Hose snapshots until this frame's render items are cleared.
-        // FlexibleConnectionSnapshot in FlexibleConnectionViewer.cs protects sealed geometry and owner lifetime.
-        // =====================================================================
-        private RollingStock.FlexibleConnectionSnapshot FlexibleConnectionSnapshots;
+        private RenderFrameRetention Retentions;
+        private bool ClearingRetentions;
 
-        internal void RegisterFlexibleConnectionSnapshot(RollingStock.FlexibleConnectionSnapshot snapshot)
+        /// <summary>
+        /// Registers an available receipt unless the frame is clearing or a previous Clear was interrupted.
+        /// </summary>
+        /// <returns>True if the receipt was linked; otherwise false without changing the frame's list.</returns>
+        /// <remarks>
+        /// The producer must handle rejection before considering its resource published.
+        /// </remarks>
+        internal bool TryRegisterRetention(RenderFrameRetention retention)
         {
-            // Updater owns this frame. Tokens form a preallocated intrusive list.
-            snapshot.NextInFrame = FlexibleConnectionSnapshots;
-            FlexibleConnectionSnapshots = snapshot;
+            if (ClearingRetentions || retention == null || !retention.TryRegister(this, Retentions))
+                return false;
+            Retentions = retention;
+            return true;
         }
 
-        private void ReleaseFlexibleConnectionSnapshots()
+        /// <summary>
+        /// Returns registered receipts in reverse registration order.
+        /// </summary>
+        private void ReleaseRetentions()
         {
-            while (FlexibleConnectionSnapshots != null)
+            while (Retentions != null)
             {
-                var snapshot = FlexibleConnectionSnapshots;
-                FlexibleConnectionSnapshots = snapshot.NextInFrame;
-                snapshot.Release(this);
+                var retention = Retentions;
+                Retentions = retention.NextInFrame;
+                retention.Release(this);
             }
         }
-
-        // =====================================================================
-        // ORTS Flexible Connections
-        // Purpose: Retain Hook and Coupler assets until this frame's render items have been cleared.
-        // FlexibleConnectionHookFrameReference in FlexibleConnectionHookViewer.cs retains a rigid owner
-        // for either family; releasing this token delegates lifetime decisions to its resource manager.
-        // =====================================================================
-        private RollingStock.FlexibleConnectionHookFrameReference FlexibleConnectionHookReferences;
-
-        internal void RegisterFlexibleConnectionHookReference(RollingStock.FlexibleConnectionHookFrameReference reference)
-        {
-            reference.NextInFrame = FlexibleConnectionHookReferences;
-            FlexibleConnectionHookReferences = reference;
-        }
-
-        private void ReleaseFlexibleConnectionHookReferences()
-        {
-            while (FlexibleConnectionHookReferences != null)
-            {
-                var reference = FlexibleConnectionHookReferences;
-                FlexibleConnectionHookReferences = reference.NextInFrame;
-                reference.Release(this);
-            }
-        }
-        // End ORTS Flexible Connections frame references.
 
         readonly Game Game;
 
@@ -514,8 +496,17 @@ namespace Orts.Viewer3D
             );
         }
 
+        /// <summary>
+        /// Clears render-item collections before returning the frame's retained CPU resources.
+        /// </summary>
+        /// <remarks>
+        /// Reentrant calls are rejected. An exception leaves the frame unavailable for further registration or clearing. Independent retentions have no family-specific release ordering guarantee.
+        /// </remarks>
         public void Clear()
         {
+            if (ClearingRetentions)
+                throw new InvalidOperationException("Render frame clearing is already in progress or failed.");
+            ClearingRetentions = true;
             // Attempt to clean up unused materials over time (max 1 per RenderPrimitiveSequence).
             for (var i = 0; i < RenderItems.Length; i++)
             {
@@ -544,14 +535,8 @@ namespace Orts.Viewer3D
                     RenderShadowTerrainItems[shadowMapIndex].Clear();
                 }
             }
-            // ORTS Flexible Connections
-            // Purpose: Release procedural snapshot references after clearing render items; pending owners
-            // remain protected until their last frame reference is released.
-            ReleaseFlexibleConnectionSnapshots();
-            // ORTS Flexible Connections
-            // Purpose: Release rigid-owner references after clearing all render items; shared native
-            // shape resources remain governed by the resource manager and normal marking/sweeping.
-            ReleaseFlexibleConnectionHookReferences();
+            ReleaseRetentions();
+            ClearingRetentions = false;
         }
 
         public void PrepareFrame(Viewer viewer)

@@ -1,13 +1,19 @@
-﻿// ORTS Flexible Connections
+﻿// COPYRIGHT 2026 by the Open Rails project.
 //
-// Purpose: Parse and validate vehicle-local cosmetic connection definitions.
-// Responsibilities: Resolve profiles, physical points and owner-selected Cases for
-//   Hose, Hook and Coupler. Shared configuration is treated as read-only after parsing.
-// Key components: FlexibleConnectionConfig parses and validates; ParseProfile delegates
-//   rigid-family properties to FlexibleConnectionHookParser and FlexibleConnectionCouplerParser.
-// Related files: MSTSWagon.cs stores and shares this configuration on cached copies;
-//   FlexibleConnectionViewer.cs consumes it through MSTSWagonViewer.cs.
-// Lifecycle: Build definitions during vehicle loading; keep per-frame state in viewers.
+// This file is part of Open Rails.
+//
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 using System;
@@ -18,23 +24,20 @@ namespace Orts.Simulation.RollingStocks
 {
 
 
-    // =====================================================================
-    // ORTS Flexible Connections
-    // Purpose: Parse local definitions and independently validate topology contexts.
-    // Treat this shared configuration as read-only after parsing; occupancy belongs to viewers.
-    // =====================================================================
+    /// <summary>
+    /// Parses and validates vehicle-local connection definitions, which are shared as read-only data after loading.
+    /// </summary>
     public class FlexibleConnectionConfig
     {
-        // ORTS Flexible Connections
-        // Purpose: Change Sides in the vehicle configuration to change faces; 4 remains the compatibility fallback.
+        /// <summary>
+        /// Preserves the four-sided compatibility default when Sides is absent or invalid.
+        /// </summary>
         private const int DefaultSides = 4;
         private const int MinimumSides = 3;
         private const int MaximumSides = 64;
 
         public int Sides { get; private set; } = DefaultSides;
 
-        // ORTS Flexible Connections
-        // Purpose: Configure longitudinal subdivisions for the whole vehicle.
         private const int DefaultSegments = 16;
         private const int MinimumSegments = 2;
         private const int MaximumSegments = 128;
@@ -63,12 +66,10 @@ namespace Orts.Simulation.RollingStocks
             internal string ID, Profile;
             internal Vector3 Position;
             internal bool Valid;
-            // ORTS Flexible Connections
-            // Purpose: Retain point-local disconnected shape syntax until profile resolution.
+            // Retain point-local disconnected shape syntax until profile resolution.
             internal string NotHookedShapeName;
             internal bool NotHookedDeclared, NotHookedValid = true;
-            // ORTS Flexible Connections
-            // Purpose: Preserve point-local Coupler syntax and invalid declarations until resolution.
+            // Preserve point-local Coupler syntax and invalid declarations until resolution.
             internal string NotCoupledShapeName;
             internal bool NotCoupledDeclared, NotCoupledValid = true;
         }
@@ -136,21 +137,13 @@ namespace Orts.Simulation.RollingStocks
             string texture = null;
             var type = FlexibleConnectionDisconnectedType.None;
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            // ORTS Flexible Connections
-            // Purpose: Classify only after reading all properties, independently of token order.
+            // Classify only after reading all properties, independently of token order.
             var hookParser = new FlexibleConnectionHookParser();
-            // ORTS Flexible Connections
-            // Purpose: Delegate the exclusive family and ordered rigid assets to their own parser.
             var couplerParser = new FlexibleConnectionCouplerParser();
             stf.ParseBlock(new[] {
-                // ORTS Flexible Connections
-                // Purpose: Delegate strict Hook blocks without changing Hose readers or duplicates.
-                // Purpose: Keep Coupler parsing segregated; Links is classified after all properties.
                 new STFReader.TokenProcessor("iscoupler", () => couplerParser.Read(stf, "IsCoupler", name)),
                 new STFReader.TokenProcessor("couplershapes", () => couplerParser.Read(stf, "CouplerShapes", name)),
                 new STFReader.TokenProcessor("notcoupledshape", () => couplerParser.RejectPointProperty(stf, name)),
-                // ORTS Flexible Connections
-                // Purpose: Delegate strict, Hook-only ChainParity parsing.
                 new STFReader.TokenProcessor("chainparity", () => hookParser.Read(stf, "ChainParity", name)),
                 new STFReader.TokenProcessor("ishook", () => hookParser.Read(stf, "IsHook", name)),
                 new STFReader.TokenProcessor("links", () => hookParser.Read(stf, "Links", name)),
@@ -166,11 +159,7 @@ namespace Orts.Simulation.RollingStocks
                 new STFReader.TokenProcessor("fittingradius", () => { Duplicate(stf, seen, "FittingRadius", name); fr = stf.ReadFloatBlock(STFReader.UNITS.Distance, float.NaN); }),
                 new STFReader.TokenProcessor("fittingextrude", () => { Duplicate(stf, seen, "FittingExtrude", name); e = stf.ReadFloatBlock(STFReader.UNITS.Distance, float.NaN); })
             });
-            // =====================================================================
-            // ORTS Flexible Connections
-            // Purpose: Keep receiver-only Hook profiles valid; Hose retains its validation.
-            // =====================================================================
-            // Purpose: Resolve family before Links range; never send a Coupler into Hose validation.
+            // Resolve the family before validating Links against its family-specific range.
             FlexibleConnectionHookConfig hook = null;
             FlexibleConnectionCouplerConfig coupler;
             bool familyValid = couplerParser.Resolve(stf, name, hookParser, seen.Count != 0, out coupler);
@@ -190,7 +179,7 @@ namespace Orts.Simulation.RollingStocks
                     STFException.TraceWarning(stf, "LocalProfile '" + name + "' invalid: Length must be positive, Radius 0.0001m..0.5m, and a fitting needs valid dimensions with FittingLength + FittingExtrude < local Length. Profile rejected.");
                 profile = valid && fittingValid ? new FlexibleConnectionLocalProfile(name, type, length, radius, texture,
                     f > 0f ? new FlexibleConnectionFittingConfig(f, fr, e) : null, initial, final) : null;
-            } // ORTS Flexible Connections: end of unchanged Hose validation path.
+            }
             if (LocalProfiles.ContainsKey(name))
             {
                 STFException.TraceWarning(stf, "Duplicate LocalProfile '" + name + "'. This profile identity is invalid.");
@@ -215,11 +204,7 @@ namespace Orts.Simulation.RollingStocks
                     stf.StepBackOneItem();
                     if (!string.Equals(first, "Position", StringComparison.OrdinalIgnoreCase) &&
                         !string.Equals(first, "Profile", StringComparison.OrdinalIgnoreCase) &&
-                        // ORTS Flexible Connections
-                        // Purpose: Permit the new point property before Position/Profile as well.
                         !string.Equals(first, "NotHookedShape", StringComparison.OrdinalIgnoreCase) &&
-                        // ORTS Flexible Connections
-                        // Purpose: Allow the point-local disconnected asset in any property order.
                         !string.Equals(first, "NotCoupledShape", StringComparison.OrdinalIgnoreCase))
                     {
                         STFException.TraceWarning(stf, end + ":" + id + ": invalid point syntax. Use Position (...) and Profile (...). Point rejected.");
@@ -229,9 +214,6 @@ namespace Orts.Simulation.RollingStocks
                     {
                         bool supported = true;
                         var processors = new List<STFReader.TokenProcessor> {
-                            // ORTS Flexible Connections
-                            // Purpose: Read one unique disconnected asset per physical point.
-                            // Purpose: Reuse strict single-shape filename syntax, retaining failures.
                             new STFReader.TokenProcessor("notcoupledshape", () => {
                                 string shape;
                                 bool valid = FlexibleConnectionHookParser.ReadNotHookedShape(stf, out shape);
@@ -274,11 +256,7 @@ namespace Orts.Simulation.RollingStocks
                         }
                         stf.ParseBlock(processors);
                         point.Valid = supported && ValidID(id, true) && Finite(point.Position.X) && Finite(point.Position.Y) && Finite(point.Position.Z) && !string.IsNullOrWhiteSpace(point.Profile);
-                        // ORTS Flexible Connections
-                        // Purpose: Preserve a failed new declaration until point resolution.
                         point.Valid &= point.NotHookedValid;
-                        // ORTS Flexible Connections
-                        // Purpose: A malformed disconnected declaration invalidates the whole point.
                         point.Valid &= point.NotCoupledValid;
                     }
                 }
@@ -295,11 +273,8 @@ namespace Orts.Simulation.RollingStocks
         FlexibleConnectionHalfEndpoint[] ResolvePoints(STFReader stf, FlexibleConnectionEnd end)
         {
             var halves = new List<FlexibleConnectionHalfEndpoint>();
-            // =====================================================================
-            // ORTS Flexible Connections
-            // Purpose: Allow one publisher-capable Coupler point plus passive
+            // Allow one publisher-capable Coupler point plus passive
             //          receiver-only Coupler points on the same vehicle end.
-            // =====================================================================
             int couplerPublishers = 0;
             foreach (var candidate in PendingPoints[(int)end].Values)
             {
@@ -319,15 +294,12 @@ namespace Orts.Simulation.RollingStocks
                     STFException.TraceWarning(stf, "ConnectionPoint " + end + ":" + pending.ID + " has invalid Position or missing/invalid Profile '" + pending.Profile + "'. Point rejected.");
                     continue;
                 }
-                // ORTS Flexible Connections
-                // Purpose: Reject misuse locally; never rescue a disconnected visual from an invalid point.
+                // Reject misuse locally; never rescue a disconnected visual from an invalid point.
                 if (pending.NotHookedDeclared && profile.Hook == null)
                 {
                     STFException.TraceWarning(stf, "ConnectionPoint " + end + ":" + pending.ID + ": NotHookedShape requires a Hook Profile. Point rejected.");
                     continue;
                 }
-                // ORTS Flexible Connections
-                // Purpose: Validate disconnected ownership and the per-end limit without affecting Hook/Hose.
                 if (pending.NotCoupledDeclared && profile.Family != FlexibleConnectionFamily.Coupler)
                 {
                     STFException.TraceWarning(stf, "ConnectionPoint " + end + ":" + pending.ID + ": NotCoupledShape requires a Coupler Profile. Point rejected.");
@@ -341,8 +313,6 @@ namespace Orts.Simulation.RollingStocks
             return halves.ToArray();
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Isolate compact Case syntax from the native STF tokenizer.
         static bool ValidID(string value, bool point)
         {
             if (string.IsNullOrWhiteSpace(value)) return false;
@@ -495,8 +465,6 @@ namespace Orts.Simulation.RollingStocks
             Sides = sides;
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Validate each declaration during loading; the last wins.
         void ParseSegments(STFReader stf)
         {
             // An invalid sentinel also catches empty or malformed declarations.
@@ -526,8 +494,9 @@ namespace Orts.Simulation.RollingStocks
             return FlexibleConnectionDisconnectedType.None;
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Read one or two Half angles atomically; invalid blocks restore the full 0/90 fallback.
+        /// <summary>
+        /// Reads one or two Half angles atomically, restoring the complete default pair for an invalid declaration.
+        /// </summary>
         static void ParseFallAngle(STFReader stf, out float initialDegrees, out float finalDegrees)
         {
             initialDegrees = 0f;
@@ -600,17 +569,14 @@ namespace Orts.Simulation.RollingStocks
         }
     }
 
-    // ORTS Flexible Connections
-    // Purpose: Immutable local definitions; sharing a profile never shares a physical point.
     public enum FlexibleConnectionEnd { Rear, Front }
     public enum FlexibleConnectionDisconnectedType { None, Half }
+    /// <summary>
+    /// Stores shared connection properties without per-point publication state.
+    /// </summary>
     public sealed class FlexibleConnectionLocalProfile
     {
-        // ORTS Flexible Connections
-        // Purpose: Optional Hook configuration is the family discriminator; Hose constructor is preserved.
         public readonly FlexibleConnectionHookConfig Hook;
-        // ORTS Flexible Connections
-        // Purpose: Explicit family identity keeps rigid Coupler profiles out of all Hose resource paths.
         public readonly FlexibleConnectionCouplerConfig Coupler;
         public FlexibleConnectionFamily Family { get { return Coupler != null ? FlexibleConnectionFamily.Coupler :
             Hook != null ? FlexibleConnectionFamily.Hook : FlexibleConnectionFamily.Hose; } }
@@ -626,13 +592,12 @@ namespace Orts.Simulation.RollingStocks
             string texture, FlexibleConnectionFittingConfig fitting, float initial, float final)
         { Name = name; Type = type; LengthM = length; RadiusM = radius; TextureName = texture; Fitting = fitting; FallAngleDegrees = initial; FallFinalAngleDegrees = final; }
     }
+    /// <summary>
+    /// Defines a physical vehicle endpoint, its profile and its point-local disconnected assets.
+    /// </summary>
     public sealed class FlexibleConnectionPoint
     {
-        // ORTS Flexible Connections
-        // Purpose: Disconnected Hook assets belong to individual points, not shared profiles.
         public readonly string NotHookedShapeName;
-        // ORTS Flexible Connections
-        // Purpose: Keep disconnected Coupler asset identity attached to its physical point.
         public readonly string NotCoupledShapeName;
         public FlexibleConnectionPoint(string id, FlexibleConnectionEnd end, Vector3 position,
             FlexibleConnectionLocalProfile profile, string notHookedShapeName, string notCoupledShapeName)
@@ -669,6 +634,9 @@ namespace Orts.Simulation.RollingStocks
         public FlexibleConnectionPoint Point { get; internal set; }
         public FlexibleConnectionMapping(string local, string remote) { LocalPoint = local; RemotePoint = remote; }
     }
+    /// <summary>
+    /// Stores connection mappings for a selected owner and target, separated by physical end combination.
+    /// </summary>
     public sealed class FlexibleConnectionCase
     {
         public readonly string DestinationID;

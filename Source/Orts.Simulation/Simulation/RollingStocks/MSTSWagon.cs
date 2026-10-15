@@ -283,9 +283,9 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public MSTSDieselLocomotive DieselLocomotiveIdentification { get; private set; }
 
-        // ORTS Flexible Connections
-        // Purpose: Store parsed vehicle definitions for MSTSWagonViewer; see FlexibleConnectionConfig
-        // in FlexibleConnection.cs. Shared definitions are treated as read-only after parsing.
+        /// <summary>
+        /// Stores parsed connection definitions shared as read-only data by cached vehicle copies.
+        /// </summary>
         public FlexibleConnectionConfig FlexibleConnections;
 
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string, List<ParticleEmitterData>>();
@@ -1307,8 +1307,6 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsreararticulation": RearArticulation = stf.ReadIntBlock(null); break;
                 case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                // ORTS Flexible Connections
-                // Purpose: Delegate ORTSFlexibleConnections parsing and validation to FlexibleConnectionConfig.
                 case "wagon(ortsflexibleconnections":
                     FlexibleConnections = new FlexibleConnectionConfig(stf);
                     break;
@@ -1893,9 +1891,7 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxles.Copy(copy.LocomotiveAxles);
             MoveParamsToAxle();
 
-            // ORTS Flexible Connections
-            // Purpose: Share the parsed FlexibleConnectionConfig when copying a cached vehicle;
-            // instance-local publication and occupancy state remain in the viewer.
+            // Share parsed definitions; per-vehicle runtime state belongs to the viewer.
             FlexibleConnections = copy.FlexibleConnections;
         }
 

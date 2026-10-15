@@ -1,15 +1,19 @@
-﻿// ORTS Flexible Connections
+﻿// COPYRIGHT 2026 by the Open Rails project.
 //
-// Purpose: Coordinate Hose, Hook and Coupler visuals for one vehicle.
-// Responsibilities: Select publishing Cases, resolve local/remote profiles, track point
-//   occupancy, and build continuous Hose meshes with two material ranges and local Halves.
-// Key components: FlexibleConnectionViewer delegates rigid families; FlexibleConnectionLifetime
-//   builds sealed snapshots; FlexibleConnectionLifetimeManager coordinates resource retirement.
-// Related files: MSTSWagonViewer.cs supplies physical endpoints; FlexibleConnection.cs supplies
-//   configuration; FlexibleConnectionCatenary.cs supplies Hose samples. Hook/Coupler viewers
-//   implement rigid visuals. Trains.cs, RenderFrame.cs and RenderProcess.cs drive resource lifetime.
-// Lifecycle: Loader resolves materials and rigid assets; Updater prepares and seals geometry;
-//   Render prepares/releases procedural GPU resources. Frame references protect retired owners.
+// This file is part of Open Rails.
+//
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -23,6 +27,9 @@ using ORTS.Common;
 
 namespace Orts.Viewer3D.RollingStock
 {
+    /// <summary>
+    /// Coordinates vehicle-local Hose, Hook and Coupler publication and endpoint occupancy.
+    /// </summary>
     internal sealed class FlexibleConnectionViewer
     {
         private const float MinimumLengthM = 0.0001f;
@@ -31,11 +38,7 @@ namespace Orts.Viewer3D.RollingStock
         private readonly Vector3[] CatenaryPoints;
         private readonly FlexibleConnectionConfig Configuration;
         private readonly FlexibleConnectionLifetime Lifetime;
-        // ORTS Flexible Connections
-        // Purpose: Keep Hook visuals and mixed-family diagnostics outside the Hose path.
         private readonly FlexibleConnectionHookViewer HookViewer;
-        // ORTS Flexible Connections
-        // Purpose: Keep the new visual family and its stable mismatch warnings outside Hook/Hose.
         private readonly FlexibleConnectionCouplerViewer CouplerViewer;
         private readonly Dictionary<FlexibleConnectionMapping, FlexibleConnectionCouplerBinding> CouplerBindings =
             new Dictionary<FlexibleConnectionMapping, FlexibleConnectionCouplerBinding>();
@@ -58,8 +61,6 @@ namespace Orts.Viewer3D.RollingStock
         {
             ConnectedFront.Clear();
             ConnectedRear.Clear();
-            // ORTS Flexible Connections
-            // Purpose: Reset only local successful-publication state; occupancy marks retain their existing semantics.
             CouplerViewer?.ResetPublication();
         }
 
@@ -68,8 +69,9 @@ namespace Orts.Viewer3D.RollingStock
             (point.End == FlexibleConnectionEnd.Front ? ConnectedFront : ConnectedRear).Add(point.ID);
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Only the local Case owner may publish; equal Owners use consist order once.
+        /// <summary>
+        /// Selects the local publishing Case, resolving equal-owner ties by consist order.
+        /// </summary>
         internal FlexibleConnectionCase GetPublishingCase(MSTSWagon remote,
             FlexibleConnectionEnd localEnd, FlexibleConnectionEnd remoteEnd, bool lowerIndex)
         {
@@ -100,8 +102,6 @@ namespace Orts.Viewer3D.RollingStock
             return declared && localCase.Valid ? localCase : null;
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Prepare immutable local resources once; remote files are requested through Loader.
         internal FlexibleConnectionViewer(Viewer viewer, int sides, int segments, string wagonFolder,
             FlexibleConnectionConfig configuration)
         {
@@ -110,11 +110,7 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var id in configuration.FrontConnectionPoints.Keys) ConnectedFront.Add(id);
             foreach (var id in configuration.RearConnectionPoints.Keys) ConnectedRear.Add(id);
             ResetConnectedPoints();
-            // =====================================================================
-            // ORTS Flexible Connections
-            // Purpose: Classify once; Hook-only vehicles allocate no Hose resources.
-            // =====================================================================
-            // Purpose: Classify all three families before allocating any Hose resources.
+            // Classify all families before allocating Hose resources.
             bool hasHook = false, hasCoupler = false, hasHose = false;
             foreach (var point in configuration.FrontConnectionPoints.Values)
             {
@@ -135,37 +131,29 @@ namespace Orts.Viewer3D.RollingStock
             CatenaryPoints = new Vector3[segments + 1];
             FallbackMaterial = new SolidColorMaterial(viewer, 1f, 1f, 1f, 0f);
             foreach (var profile in configuration.LocalProfiles.Values)
-                // ORTS Flexible Connections
-                // Purpose: Hook profiles never request Hose textures or radius-derived geometry.
-                // Purpose: Explicit Hose admission excludes both rigid shape families.
+                // Only Hose profiles use procedural textures and radius-based geometry.
                 if (profile != null && profile.Family == FlexibleConnectionFamily.Hose)
                 {
                     ProfileMaterials.Add(profile, LoadProfileMaterial(profile, wagonFolder));
                     ProfileScales.Add(profile, (float)(2.0 * profile.RadiusM * Math.Cos(Math.PI / sides)));
                 }
-            // ORTS Flexible Connections
-            // Purpose: Preserve Hose lifetimes while excluding Hook points from Hose topology construction.
             var hosePoints = new List<FlexibleConnectionPoint>();
             foreach (var point in configuration.ConnectedPoints)
-                // ORTS Flexible Connections
-                // Purpose: Coupler points never enter procedural Hose topology/resources.
                 if (point.Profile.Family == FlexibleConnectionFamily.Hose) hosePoints.Add(point);
-            Lifetime = viewer.RenderProcess.FlexibleConnections.Register(this, hosePoints, sides, segments);
+            Lifetime = viewer.Game.FlexibleConnections.Register(this, hosePoints, sides, segments);
         }
 
-        // =====================================================================
-        // ORTS Flexible Connections
-        // Purpose: Handle either Hook family before Hose compatibility/material resolution.
-        // A failed Hook publication remains handled and cannot fall through to Hose.
-        // =====================================================================
+        /// <summary>
+        /// Handles rigid-family publication before the Hose path, including handled failures.
+        /// </summary>
+        /// <returns>True when the rigid-family path handled the mapping, even if no visual was published.</returns>
         internal bool TryPrepareHook(RenderFrame frame, FlexibleConnectionMapping mapping, MSTSWagon local,
             MSTSWagon remote, FlexibleConnectionEnd remoteEnd, out FlexibleConnectionPoint point, out bool published)
         {
             point = null; published = false;
             if (remote.FlexibleConnections != null)
                 remote.FlexibleConnections.GetConnectionPoints(remoteEnd).TryGetValue(mapping.RemotePoint, out point);
-            // ORTS Flexible Connections
-            // Purpose: Reuse the native dispatch contract; a failed/mixed Coupler never falls through to Hose.
+            // A handled Coupler failure must not fall through to the Hose path.
             bool localCoupler = mapping.Point.Profile.Family == FlexibleConnectionFamily.Coupler;
             bool remoteCoupler = point != null && point.Profile.Family == FlexibleConnectionFamily.Coupler;
             if (localCoupler || remoteCoupler)
@@ -228,8 +216,6 @@ namespace Orts.Viewer3D.RollingStock
             return material != null;
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Report numerical failures once per neighbor/context/cause, not once per frame.
         internal void WarnGeometry(FlexibleConnectionMapping mapping, MSTSWagon remote, FlexibleConnectionEnd end, string cause)
         {
             RemoteBinding binding;
@@ -264,8 +250,6 @@ namespace Orts.Viewer3D.RollingStock
                 local.ToString("R", System.Globalization.CultureInfo.InvariantCulture), remote.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Solve once and publish one retained snapshot with two material draw ranges.
         internal FlexibleConnectionCatenaryResult PrepareFrame(RenderFrame frame, FlexibleConnectionMapping mapping,
             FlexibleConnectionPoint remotePoint, Material remoteMaterial, Vector3 ca, Vector3 cb, int tileX, int tileZ,
             out bool published)
@@ -370,11 +354,8 @@ namespace Orts.Viewer3D.RollingStock
         internal void PrepareHalfFrame(RenderFrame frame, WorldPosition position, FlexibleConnectionEnd end)
         {
             var connected = end == FlexibleConnectionEnd.Front ? ConnectedFront : ConnectedRear;
-            // ORTS Flexible Connections
-            // Purpose: NotHooked uses the final point marks even when there are no Hose Half endpoints.
             HookViewer?.PrepareDisconnected(frame, position, end, connected);
-            // ORTS Flexible Connections
-            // Purpose: Coupler uses local publication, never bilateral Connected, to hide its hanging asset.
+            // Coupler uses local publication, never bilateral Connected, to hide its hanging asset.
             CouplerViewer?.PrepareDisconnected(frame, position, end);
             bool needed = false;
             foreach (var endpoint in Configuration.GetHalfEndpoints(end))
@@ -400,8 +381,6 @@ namespace Orts.Viewer3D.RollingStock
                 0f, -(position.TileZ - Viewer.Camera.TileZ) * tileSize);
             foreach (var resource in half.Resources)
             {
-                // ORTS Flexible Connections
-                // Purpose: Publish only points without an effective Connected in this preparation.
                 if (resource.End != end) continue;
                 if (connected.Contains(resource.PointID)) continue;
                 Matrix placement;
@@ -416,23 +395,20 @@ namespace Orts.Viewer3D.RollingStock
         }
 
 
-        // ORTS Flexible Connections
-        // Purpose: Request retirement for Hose, Hook and Coupler owners; rigid-only viewers
-        // have no Hose lifetime. Existing frame references protect pending render work.
-        // Coupler uses the same rigid-resource manager as Hook, with its own owner.
+        /// <summary>
+        /// Retires all local connection owners while preserving resources required by outstanding work.
+        /// </summary>
         internal void RequestRetirement() { Lifetime?.RequestRetirement(); HookViewer?.RequestRetirement(); CouplerViewer?.RequestRetirement(); }
         internal void Mark()
         {
-            // ORTS Flexible Connections
-            // Purpose: Mark Hose materials here; the shared rigid-resource manager marks Hook
-            // and Coupler assets, including those retained by frames after owner retirement.
             FallbackMaterial?.Mark();
             foreach (var material in ProfileMaterials.Values) material.Mark();
         }
     }
 
-    // ORTS Flexible Connections
-    // Purpose: Loader publishes a completed material using a volatile ready flag; pending is not failure.
+    /// <summary>
+    /// Publishes a completed Loader material request through its readiness flag.
+    /// </summary>
     internal sealed class FlexibleConnectionMaterialRequest
     {
         internal readonly FlexibleConnectionLocalProfile Profile;
@@ -444,8 +420,9 @@ namespace Orts.Viewer3D.RollingStock
         { Profile = profile; Folder = folder; }
     }
 
-    // ORTS Flexible Connections
-    // Purpose: Original ring/frame workspace shared by plain and fitted continuous mesh construction.
+    /// <summary>
+    /// Builds continuous Hose geometry using reusable cross-section and frame workspace.
+    /// </summary>
     internal sealed class FlexibleConnectionGeometry
     {
         internal readonly int Sides;
@@ -637,11 +614,6 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
-    // =====================================================================
-    // ORTS Flexible Connections
-    // Purpose: Preplanned local fitting bands on the existing catenary. The continuous mesh builder,
-    // original samples and cross-section resolution remain independent.
-    // =====================================================================
     internal enum FlexibleConnectionFittingSurface
     {
         Hose, EntryTransition, Fitting, ExitTransition, EntryShoulder, ExitShoulder
@@ -692,16 +664,16 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
-    // ORTS Flexible Connections
-    // Purpose: Share index layouts by band count and material split, within one owner.
+    /// <summary>
+    /// Shares immutable index layouts and two material ranges for a continuous mesh.
+    /// </summary>
     internal sealed class FlexibleConnectionFittingTopology
     {
         internal readonly int VertexCount;
         internal readonly ushort[] Indices;
         internal IndexBuffer IndexBuffer;
 
-        // ORTS Flexible Connections
-        // Purpose: Two material ranges over one continuous mesh and one immutable index buffer.
+        // Two material ranges over one continuous mesh and one immutable index buffer.
         internal readonly int FirstIndexCount;
         internal FlexibleConnectionFittingTopology(int sides, int bands, int firstBands)
         {
@@ -744,6 +716,9 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
+    /// <summary>
+    /// Plans plain or fitted Hose bands and owns reusable Updater-only construction workspace.
+    /// </summary>
     internal sealed class FlexibleConnectionFittingPlan
     {
         private readonly int Sides, Segments;
@@ -759,8 +734,6 @@ namespace Orts.Viewer3D.RollingStock
         private bool Warned;
         private readonly string Label;
 
-        // ORTS Flexible Connections
-        // Purpose: Derive symmetric connected dimensions from one compatible local profile.
         internal static FlexibleConnectionFittingPlan Create(
             FlexibleConnectionPoint point, bool withFitting, int sides, int segments,
             Dictionary<long, FlexibleConnectionFittingTopology> topologies)
@@ -1057,11 +1030,6 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
-    // =====================================================================
-    // ORTS Flexible Connections
-    // Purpose: Rigid local Half meshes. All geometry is constructed once, lazily.
-    // The anchor is OPEN; only the outward terminal has a cap.
-    // =====================================================================
     internal enum FlexibleConnectionHalfGpuState { Pending, Preparing, Ready, Failed }
 
     internal sealed class FlexibleConnectionHalfTopology
@@ -1105,8 +1073,12 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
-    // ORTS Flexible Connections
-    // Purpose: Use local lengths/fitting and full local UV, preserving the historical Half curve and grid.
+    /// <summary>
+    /// Builds a rigid local Half mesh with an open anchor and a capped terminal.
+    /// </summary>
+    /// <remarks>
+    /// Geometry is constructed once, lazily.
+    /// </remarks>
     internal static class FlexibleConnectionHalfGeometry
     {
         internal static bool TryBuild(FlexibleConnectionHalfEndpoint endpoint, int sides, int segments,
@@ -1118,12 +1090,10 @@ namespace Orts.Viewer3D.RollingStock
             double length = 2.0 * half;
             double bendRadius = half / (1.0 + Math.PI / 2.0);
             double bendEnd = Math.PI * bendRadius / 2.0;
-            // ORTS Flexible Connections
-            // Purpose: Apply Half FallAngle only at lazy construction; preserve the original zero-angle arithmetic.
+            // Preserve the zero-angle arithmetic when constructing the Half mesh.
             float fallAngleDegrees = endpoint.Profile.FallAngleDegrees;
             double alpha = 0.0, bendDrop = 0.0, bendOutward = 0.0;
-            // ORTS Flexible Connections
-            // Purpose: Generalize only nonvertical endings, retaining all existing 90-degree arithmetic.
+            // Preserve the vertical-ending arithmetic when the final angle is 90 degrees.
             float finalAngleDegrees = endpoint.Profile.FallFinalAngleDegrees;
             double finalSin = 0.0, finalCos = 0.0;
             if (finalAngleDegrees < 90f)
@@ -1228,9 +1198,7 @@ namespace Orts.Viewer3D.RollingStock
             for (int i = 0; i < unique.Count; i++)
             {
                 double arc = unique[i];
-                // ORTS Flexible Connections
-                // Purpose: Explicit vertical Half at 90 degrees; stable circular differences for positive angles.
-                // Purpose: Follow the configured terminal tangent, including explicit straight equal-angle Halves.
+                // Follow the terminal tangent; equal angles produce a straight Half.
                 if (finalAngleDegrees < 90f)
                 {
                     if (fallAngleDegrees == finalAngleDegrees)
@@ -1349,8 +1317,7 @@ namespace Orts.Viewer3D.RollingStock
                 }
             }
             var terminal = bands[bands.Count - 1].End;
-            // ORTS Flexible Connections
-            // Purpose: Match the oriented terminal ring; retain the exact fixed normal for 90-degree endings.
+            // Match the oriented terminal ring; retain the exact fixed normal for 90-degree endings.
             Vector3 terminalNormal = finalAngleDegrees < 90f
                 ? new Vector3(0f, (float)-finalSin, (float)finalCos) : -Vector3.UnitY;
             for (int j = 0; j < sides; j++)
@@ -1399,8 +1366,6 @@ namespace Orts.Viewer3D.RollingStock
         internal VertexBuffer Buffer;
         internal VertexBufferBinding[] Bindings;
 
-        // ORTS Flexible Connections
-        // Purpose: Retain immutable point identity for filtered publication from the shared Half bundle.
         internal readonly FlexibleConnectionEnd End;
         internal readonly string PointID;
 
@@ -1494,10 +1459,10 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
-    // ORTS Flexible Connections
-    // Purpose: Frame-owned CPU snapshots and deferred Render-thread GPU lifetime.
-    // All ownership transitions use the manager gate; mathematical work stays outside.
-    internal sealed class FlexibleConnectionSnapshot
+    /// <summary>
+    /// Retains sealed procedural geometry for a frame while delegating resource accounting to its owner.
+    /// </summary>
+    internal sealed class FlexibleConnectionSnapshot : RenderFrameRetention
     {
         internal readonly FlexibleConnectionLifetime Owner;
         internal readonly FlexibleConnectionSlots Connection;
@@ -1507,13 +1472,10 @@ namespace Orts.Viewer3D.RollingStock
         internal readonly VertexPositionNormalTexture[] PlainVertices;
         internal long Version;
         internal RenderFrame Frame;
-        internal FlexibleConnectionSnapshot NextInFrame;
         internal bool Building;
         internal Vector3 Origin;
         internal readonly VertexPositionNormalTexture[] Vertices;
 
-        // ORTS Flexible Connections
-        // Purpose: Keep both paths preallocated; only sealed snapshot state reaches Render.
         internal readonly VertexPositionNormalTexture[] FittingVertices;
         internal FlexibleConnectionFittingTopology ActiveTopology;
 
@@ -1522,8 +1484,6 @@ namespace Orts.Viewer3D.RollingStock
             Owner = owner;
             Connection = connection;
             Vertices = owner.Geometry.CreateVertices();
-            // ORTS Flexible Connections
-            // Purpose: No extra vertex array exists for a point without a fitting.
             if (connection.Fitting != null)
                 FittingVertices = connection.Fitting.CreateVertices();
             PlainVertices = connection.Plain.CreateVertices();
@@ -1531,8 +1491,7 @@ namespace Orts.Viewer3D.RollingStock
             PrimitiveB = new FlexibleConnectionPrimitive(this, true);
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Half uses frame retention tokens without allocating Connected mesh arrays.
+        // Half uses frame retention tokens without allocating Connected mesh arrays.
         internal readonly FlexibleConnectionHalfResource HalfResource;
 
         internal FlexibleConnectionSnapshot(FlexibleConnectionLifetime owner, FlexibleConnectionHalfResource resource)
@@ -1541,19 +1500,21 @@ namespace Orts.Viewer3D.RollingStock
             HalfResource = resource;
         }
 
-        internal void Release(RenderFrame frame)
+        protected override void ReleaseCore(RenderFrame frame)
         {
             Owner.Manager.Release(this, frame);
         }
     }
 
+    /// <summary>
+    /// Owns two reusable CPU snapshots and one shared GPU vertex buffer for a local connection point.
+    /// </summary>
     internal sealed class FlexibleConnectionSlots
     {
         internal readonly FlexibleConnectionSnapshot First;
         internal readonly FlexibleConnectionSnapshot Second;
 
-        // ORTS Flexible Connections
-        // Purpose: Stable per-point plan; workspace remains updater-only.
+        // Stable per-point plan; workspace remains updater-only.
         internal readonly FlexibleConnectionFittingPlan Plain, Fitting;
         internal bool WarnedBase;
 
@@ -1563,8 +1524,6 @@ namespace Orts.Viewer3D.RollingStock
         internal long PublishedVersion;
         internal long UploadedVersion;
 
-        // ORTS Flexible Connections
-        // Purpose: Set the optional plan before allocating the two snapshots.
         internal FlexibleConnectionSlots(FlexibleConnectionLifetime owner, FlexibleConnectionFittingPlan plain, FlexibleConnectionFittingPlan fitting)
         {
             Plain = plain;
@@ -1575,8 +1534,7 @@ namespace Orts.Viewer3D.RollingStock
 
         internal void PrepareOnRenderThread(GraphicsDevice graphicsDevice, int vertexCount)
         {
-            // ORTS Flexible Connections
-            // Purpose: One GPU buffer accommodates either geometry without runtime recreation.
+            // One GPU buffer accommodates either geometry without runtime recreation.
             vertexCount = Math.Max(vertexCount, Plain.Topology.VertexCount);
             if (Fitting != null)
                 vertexCount = Math.Max(vertexCount, Fitting.Topology.VertexCount);
@@ -1598,9 +1556,9 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
-    // ORTS Flexible Connections
-    // Purpose: Stable per-slot draw proxies keep overlapping frames on their own snapshots.
-    // Both proxies share the single connection-owned GPU buffer.
+    /// <summary>
+    /// Draws one material range from a retained snapshot without reading mutable construction workspace.
+    /// </summary>
     internal sealed class FlexibleConnectionPrimitive : RenderPrimitive
     {
         private readonly FlexibleConnectionSnapshot Snapshot;
@@ -1619,8 +1577,7 @@ namespace Orts.Viewer3D.RollingStock
             if (connection.VertexBuffer == null)
                 throw new InvalidOperationException("Flexible Connection GPU resources are not prepared or have been released.");
 
-            // ORTS Flexible Connections
-            // Purpose: Select only frame-owned data; never inspect mutable updater plans here.
+            // Select only frame-owned data; never inspect mutable updater plans here.
             var topology = Snapshot.ActiveTopology;
             var vertices = Snapshot.ActiveVertices;
             var indexBuffer = topology.IndexBuffer;
@@ -1641,6 +1598,9 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
+    /// <summary>
+    /// Owns a vehicle's procedural resources and reservations until retirement permits Render-thread disposal.
+    /// </summary>
     internal sealed class FlexibleConnectionLifetime
     {
         internal readonly FlexibleConnectionLifetimeManager Manager;
@@ -1649,15 +1609,12 @@ namespace Orts.Viewer3D.RollingStock
         internal readonly Dictionary<FlexibleConnectionPoint, FlexibleConnectionSlots> Connections =
             new Dictionary<FlexibleConnectionPoint, FlexibleConnectionSlots>();
         internal readonly FlexibleConnectionGeometry Geometry;
-        // ORTS Flexible Connections
-        // Purpose: Share immutable continuous topologies by band count and material boundary.
         private readonly Dictionary<long, FlexibleConnectionFittingTopology> FittingTopologies =
             new Dictionary<long, FlexibleConnectionFittingTopology>();
         internal bool Retired;
         internal bool Prepared;
         internal int FrameReferences;
-        // ORTS Flexible Connections
-        // Purpose: Half readiness is independent of the original one-time GPU preparation.
+        // Half readiness is independent of the original one-time GPU preparation.
         internal bool HalfBuildAttempted;
         internal FlexibleConnectionHalfBundle Half;
 
@@ -1668,8 +1625,6 @@ namespace Orts.Viewer3D.RollingStock
             Manager = manager;
             Visual = visual;
             Geometry = new FlexibleConnectionGeometry(sides, segments);
-            // ORTS Flexible Connections
-            // Purpose: Share one Connected resource across mappings using the same local point.
             foreach (var point in points)
             {
                 var plain = FlexibleConnectionFittingPlan.Create(point, false, sides, segments, FittingTopologies);
@@ -1678,8 +1633,6 @@ namespace Orts.Viewer3D.RollingStock
             }
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Use the solved context only during synchronous geometry construction.
         internal FlexibleConnectionSnapshot BuildSnapshot(
             RenderFrame frame, FlexibleConnectionPoint point, FlexibleConnectionCatenaryResult result,
             float scaleXY, float minimumLength, Material materialA, Material materialB)
@@ -1744,8 +1697,6 @@ namespace Orts.Viewer3D.RollingStock
         {
             try
             {
-                // ORTS Flexible Connections
-                // Purpose: Allocate static fitting indices once on Render under existing lifetime.
                 foreach (var topology in FittingTopologies.Values)
                     topology.Prepare(graphicsDevice);
                 foreach (var connection in Connections.Values)
@@ -1763,22 +1714,31 @@ namespace Orts.Viewer3D.RollingStock
         {
             foreach (var connection in Connections.Values)
                 connection.ReleaseOnRenderThread();
-            // ORTS Flexible Connections
-            // Purpose: Release shared fitting indices after the existing reference retirement.
             foreach (var topology in FittingTopologies.Values)
                 topology.Release();
-            // ORTS Flexible Connections
-            // Purpose: Retire cached Half GPU resources with the same protected owner.
             if (Half != null) Half.Release();
             // The shared native dummy buffer is not owned here.
         }
     }
 
-    internal sealed class FlexibleConnectionLifetimeManager
+    /// <summary>
+    /// Coordinates connection resource loading, marking, frame retention and terminal Render-thread cleanup.
+    /// </summary>
+    /// <remarks>
+    /// Loader handles loading and marking. Updater publishes and releases frame references. Render prepares and disposes procedural GPU resources. Existing manager gates protect resource accounting.
+    /// </remarks>
+    internal sealed class FlexibleConnectionLifetimeManager : Orts.Viewer3D.Processes.IRenderResourceParticipant
     {
-        // ORTS Flexible Connections
-        // Purpose: Service Hook and Coupler owners through the shared rigid-resource manager
-        // in FlexibleConnectionHookViewer.cs, independently of procedural Hose GPU resources.
+        void Orts.Viewer3D.Processes.IRenderResourceParticipant.ProcessPending(GraphicsDevice graphicsDevice)
+        {
+            ProcessPending(graphicsDevice);
+        }
+
+        void Orts.Viewer3D.Processes.IRenderResourceParticipant.Close()
+        {
+            Close();
+        }
+
         internal readonly FlexibleConnectionHookResourceManager Hooks = new FlexibleConnectionHookResourceManager();
         private readonly object Gate = new object();
         private readonly List<FlexibleConnectionLifetime> Owners =
@@ -1797,8 +1757,9 @@ namespace Orts.Viewer3D.RollingStock
             return owner;
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Reserve and load remote materials outside Draw and outside the manager lock.
+        /// <summary>
+        /// Queues a remote material request for Loader processing outside drawing and the manager lock.
+        /// </summary>
         internal FlexibleConnectionMaterialRequest RequestMaterial(FlexibleConnectionLifetime owner,
             FlexibleConnectionLocalProfile profile, string folder)
         {
@@ -1816,8 +1777,6 @@ namespace Orts.Viewer3D.RollingStock
         // Loader only; retired owners cannot gain new publications. An in-flight load holds one reservation.
         internal void ProcessPendingMaterials()
         {
-            // ORTS Flexible Connections
-            // Purpose: Service Hook and Coupler shape requests even when no Hose material is pending.
             Hooks.ProcessPending();
             while (true)
             {
@@ -1860,8 +1819,7 @@ namespace Orts.Viewer3D.RollingStock
         // Loader only, between the native mark reset and sweep. Include retired owners with retained frames.
         internal void MarkMaterials()
         {
-            // ORTS Flexible Connections
-            // Purpose: Mark outside the Hose lock; retain Hook and Coupler assets used by pending frames.
+            // Mark outside the Hose lock; retain Hook and Coupler assets used by pending frames.
             Hooks.Mark();
             lock (Gate)
                 foreach (var owner in Owners)
@@ -1889,8 +1847,8 @@ namespace Orts.Viewer3D.RollingStock
                 if (slots.First.Frame == frame || slots.Second.Frame == frame)
                     return null;
 
-                var slot = slots.First.Frame == null && !slots.First.Building ? slots.First :
-                    slots.Second.Frame == null && !slots.Second.Building ? slots.Second : null;
+                var slot = slots.First.Frame == null && !slots.First.Building && slots.First.IsAvailable ? slots.First :
+                    slots.Second.Frame == null && !slots.Second.Building && slots.Second.IsAvailable ? slots.Second : null;
                 if (slot == null)
                     return null;
 
@@ -1906,7 +1864,8 @@ namespace Orts.Viewer3D.RollingStock
             {
                 Debug.Assert(slot.Building && slot.Frame == null);
                 slot.Building = false;
-                if (!valid || Closed || slot.Owner.Retired)
+                // Admit the receipt before publishing; rejection cancels only this build reservation.
+                if (!valid || Closed || slot.Owner.Retired || !frame.TryRegisterRetention(slot))
                 {
                     slot.Owner.FrameReferences--;
                     return false;
@@ -1915,16 +1874,12 @@ namespace Orts.Viewer3D.RollingStock
                 // Seal only complete geometry. Reusable catenary work buffers are never published to Render.
                 slot.Version = ++slot.Connection.PublishedVersion;
                 slot.Frame = frame;
-                frame.RegisterFlexibleConnectionSnapshot(slot);
                 return true;
             }
         }
 
-        // =====================================================================
-        // ORTS Flexible Connections
-        // Purpose: CPU lazy reservations and Half frame references use the existing gate.
+        // CPU lazy reservations and Half frame references use the existing gate.
         // Resource construction and GPU work never hold this lock.
-        // =====================================================================
         internal bool BeginHalfBuild(FlexibleConnectionLifetime owner)
         {
             lock (Gate)
@@ -1963,14 +1918,14 @@ namespace Orts.Viewer3D.RollingStock
                 if (Closed || owner.Retired || owner.Half == null ||
                     owner.Half.State == FlexibleConnectionHalfGpuState.Failed) return false;
                 if (resource.First.Frame == frame || resource.Second.Frame == frame) return false;
-                var token = resource.First.Frame == null ? resource.First :
-                    resource.Second.Frame == null ? resource.Second : null;
-                if (token == null) return false;
+                var token = resource.First.Frame == null && resource.First.IsAvailable ? resource.First :
+                    resource.Second.Frame == null && resource.Second.IsAvailable ? resource.Second : null;
+                // Reject unavailable receipts before incrementing any Half retention counts.
+                if (token == null || !frame.TryRegisterRetention(token)) return false;
                 owner.FrameReferences++;
                 owner.Half.FrameReferences++;
                 resource.FrameReferences++;
                 token.Frame = frame;
-                frame.RegisterFlexibleConnectionSnapshot(token);
                 return true;
             }
         }
@@ -1981,11 +1936,8 @@ namespace Orts.Viewer3D.RollingStock
             {
                 if (slot.Frame != frame)
                     return;
-                slot.NextInFrame = null;
                 slot.Frame = null;
                 slot.Owner.FrameReferences--;
-                // ORTS Flexible Connections
-                // Purpose: Release only the Half-specific references for a Half token.
                 if (slot.HalfResource != null)
                 {
                     slot.HalfResource.FrameReferences--;
@@ -2007,8 +1959,7 @@ namespace Orts.Viewer3D.RollingStock
             {
                 FlexibleConnectionLifetime pending = null;
                 bool release = false;
-                // ORTS Flexible Connections
-                // Purpose: A Prepared owner may have newly registered Half work.
+                // A Prepared owner may have newly registered Half work.
                 FlexibleConnectionHalfBundle halfPending = null;
                 lock (Gate)
                 {
@@ -2032,8 +1983,7 @@ namespace Orts.Viewer3D.RollingStock
                             pending = owner;
                             break;
                         }
-                        // ORTS Flexible Connections
-                        // Purpose: Retired owners can prepare Half only for already published frames.
+                        // Retired owners can prepare Half only for already published frames.
                         if (owner.Half != null && owner.Half.State == FlexibleConnectionHalfGpuState.Pending &&
                             (!owner.Retired || owner.Half.FrameReferences > 0))
                         {
@@ -2050,8 +2000,6 @@ namespace Orts.Viewer3D.RollingStock
                     return;
                 if (release)
                     pending.ReleaseOnRenderThread();
-                // ORTS Flexible Connections
-                // Purpose: GPU creation is exclusively on Render, never in a primitive's Draw.
                 else if (halfPending != null)
                 {
                     bool ready = false;
@@ -2081,8 +2029,7 @@ namespace Orts.Viewer3D.RollingStock
             lock (Gate)
                 Closed = true;
 
-            // ORTS Flexible Connections
-            // Purpose: Close Hook and Coupler admission before any empty-Hose early return.
+            // Close Hook and Coupler admission before any empty-Hose early return.
             Hooks.Close();
             while (true)
             {

@@ -1,15 +1,19 @@
-// ORTS Flexible Connections
+// COPYRIGHT 2026 by the Open Rails project.
 //
-// Purpose: Publish Hook rigid-chain visuals and retain native shape resources safely.
-// Responsibilities: Resolve Hook assets, use a catenary guide to place fixed-length pieces,
-//   apply ChainParity, and prepare point-local NotHookedShape visuals when disconnected.
-// Key components: FlexibleConnectionHookViewer prepares visuals;
-//   FlexibleConnectionHookResourceManager serves both Hook and Coupler owners.
-// Related files: FlexibleConnectionViewer.cs delegates publication and services the manager;
-//   FlexibleConnectionHook.cs constructs joints; FlexibleConnectionCatenary.cs supplies the guide;
-//   RenderFrame.cs retains FlexibleConnectionHookFrameReference tokens for both rigid families.
-// Lifecycle: Loader loads SharedShape assets; Updater submits placements; Draw consumes them.
-//   Retired owners remain marked while frames or pending loads still reference their resources.
+// This file is part of Open Rails.
+//
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,9 +24,6 @@ using ORTS.Common;
 
 namespace Orts.Viewer3D.RollingStock
 {
-    // ---------------------------------------------------------------------
-    // Stable runtime warning contexts; never format successful-frame messages.
-    // ---------------------------------------------------------------------
     [Flags]
     internal enum FlexibleConnectionHookWarning
     {
@@ -54,9 +55,9 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Per-viewer reusable geometry and render plan. No arrays reach Draw.
-    // ---------------------------------------------------------------------
+    /// <summary>
+    /// Stores reusable placement workspace consumed during frame preparation, not by Draw.
+    /// </summary>
     internal sealed class FlexibleConnectionHookRenderPlan
     {
         internal readonly WorldPosition[] Placements = new WorldPosition[FlexibleConnectionHookConstants.MaximumLinks];
@@ -69,6 +70,9 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
+    /// <summary>
+    /// Publishes Hook chains and point-local disconnected shapes using shared native shape resources.
+    /// </summary>
     internal sealed class FlexibleConnectionHookViewer
     {
         private readonly Viewer Viewer;
@@ -94,7 +98,7 @@ namespace Orts.Viewer3D.RollingStock
         internal FlexibleConnectionHookViewer(Viewer viewer, FlexibleConnectionConfig config, string folder)
         {
             Viewer = viewer;
-            Manager = viewer.RenderProcess.FlexibleConnections.Hooks;
+            Manager = viewer.Game.FlexibleConnections.Hooks;
             Owner = Manager.Register(viewer, folder);
             var points = new List<FlexibleConnectionPoint>();
             foreach (var point in config.FrontConnectionPoints.Values) if (point.Profile.Hook != null) points.Add(point);
@@ -130,8 +134,8 @@ namespace Orts.Viewer3D.RollingStock
             if (!config.CanPublish)
             { binding.Warn(local, FlexibleConnectionHookWarning.MissingPublisherData, "publisher needs Links, LinkShape and HookShape; receiver-only Profile cannot publish"); return false; }
 
-            // Same tile convention as the frozen Hose path. SharedShape applies
-            // the camera offset later; it must not be applied twice here.
+            // Use the Hose tile convention. SharedShape applies the camera offset later;
+            // applying it here would offset the shape twice.
             Vector3 a = mapping.Point.Position, b = remotePoint.Position;
             a.Z = -a.Z; b.Z = -b.Z;
             a = Vector3.Transform(a, local.WorldPosition.XNAMatrix);
@@ -196,8 +200,7 @@ namespace Orts.Viewer3D.RollingStock
                 double sx = Joints[i + 1].X - Joints[i].X, sy = Joints[i + 1].Y - Joints[i].Y;
                 var direction = new Vector3((float)(hx * sx), (float)sy, (float)(hz * sx));
                 Matrix placement;
-                // ORTS Flexible Connections
-                // Purpose: Apply ChainParity to every Hook piece, including the central HookShape.
+                // Apply ChainParity to every Hook piece, including the central HookShape.
                 if (!TryPlacement(shapeConfig, start, finish, direction, normal, ((i + config.ChainParity) & 1) != 0, out placement))
                 { binding.Warn(local, FlexibleConnectionHookWarning.Placement, "rigid placement or endpoint closure is invalid"); return false; }
                 Vector3 p1 = shapeConfig.P1, p2 = shapeConfig.P2;
@@ -284,8 +287,6 @@ namespace Orts.Viewer3D.RollingStock
             }
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Share local-plane to world conversion without changing Hook arithmetic.
         internal static Vector3 WorldJoint(Vector3 origin, double hx, double hz, FlexibleConnectionHookVector joint)
         { return new Vector3((float)(origin.X + hx * joint.X), (float)(origin.Y + joint.Y), (float)(origin.Z + hz * joint.X)); }
 
@@ -295,14 +296,11 @@ namespace Orts.Viewer3D.RollingStock
         private static bool TryPlacement(FlexibleConnectionHookShapeConfig config, Vector3 start, Vector3 finish,
             Vector3 direction, Vector3 normal, bool quarterTurn, out Matrix placement)
         {
-            // ORTS Flexible Connections
-            // Purpose: Hook retains its metadata, tolerance, normal and quarter-turn policy.
             return TryRigidPlacement(config.P1, config.P2, start, finish, direction, normal, quarterTurn,
                 FlexibleConnectionHookConstants.GeometryTolerance, out placement);
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Share rigid placement only; callers supply their own transverse axis and tolerance.
+        // Share rigid placement only; callers supply their own transverse axis and tolerance.
         internal static bool TryRigidPlacement(Vector3 p1, Vector3 p2, Vector3 start, Vector3 finish,
             Vector3 direction, Vector3 normal, bool quarterTurn, double tolerance, out Matrix placement)
         {
@@ -336,8 +334,6 @@ namespace Orts.Viewer3D.RollingStock
         private bool ValidRenderPlacement(FlexibleConnectionHookResource resource, WorldPosition location)
         { return ValidRenderPlacement(Viewer, resource, location); }
 
-        // ORTS Flexible Connections
-        // Purpose: Share native matrix preflight; no change to Hook camera/tile handling.
         internal static bool ValidRenderPlacement(Viewer viewer, FlexibleConnectionHookResource resource, WorldPosition location)
         {
             var placement = location.XNAMatrix;
@@ -355,8 +351,7 @@ namespace Orts.Viewer3D.RollingStock
         private static bool Near(Vector3 a, Vector3 b)
         { return Near(a, b, FlexibleConnectionHookConstants.GeometryTolerance); }
 
-        // ORTS Flexible Connections
-        // Purpose: Endpoint acceptance is shared; each family supplies its own tolerance in metres.
+        // Endpoint acceptance is shared; each family supplies its own tolerance in metres.
         internal static bool Near(Vector3 a, Vector3 b, double tolerance)
         {
             double x = (double)a.X - b.X, y = (double)a.Y - b.Y, z = (double)a.Z - b.Z;
@@ -364,8 +359,6 @@ namespace Orts.Viewer3D.RollingStock
                 x * x + y * y + z * z <= tolerance * tolerance;
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Reuse finite normalization after Coupler has checked its angular degeneracy threshold.
         internal static bool Normalize(ref Vector3 value)
         {
             double length = Math.Sqrt((double)value.X * value.X + (double)value.Y * value.Y + (double)value.Z * value.Z);
@@ -383,10 +376,6 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Native SharedShape resource records and frame references.
-    // These records never own/dispose the shared GPU buffers.
-    // ---------------------------------------------------------------------
     internal enum FlexibleConnectionHookResourceState { Pending, Loading, Ready, Failed }
 
     internal sealed class FlexibleConnectionHookResource
@@ -406,36 +395,36 @@ namespace Orts.Viewer3D.RollingStock
         internal readonly List<FlexibleConnectionHookFrameReference> References = new List<FlexibleConnectionHookFrameReference>();
         internal bool Retired;
         internal int FrameReferences, Loading;
-        // ORTS Flexible Connections
-        // Purpose: Share the existing frame-safe owner; preserve Hook's diagnostic label by default.
         internal readonly string Family;
         internal FlexibleConnectionHookOwner(Viewer viewer, string folder, string family)
         { Viewer = viewer; Folder = folder; Family = family; }
     }
 
-    internal sealed class FlexibleConnectionHookFrameReference
+    /// <summary>
+    /// Reuses a frame retention receipt for one rigid-resource owner.
+    /// </summary>
+    internal sealed class FlexibleConnectionHookFrameReference : RenderFrameRetention
     {
         private readonly FlexibleConnectionHookResourceManager Manager;
         internal readonly FlexibleConnectionHookOwner Owner;
         internal RenderFrame Frame;
-        internal FlexibleConnectionHookFrameReference NextInFrame;
         internal FlexibleConnectionHookFrameReference(FlexibleConnectionHookResourceManager manager, FlexibleConnectionHookOwner owner)
         { Manager = manager; Owner = owner; }
-        internal void Release(RenderFrame frame) { Manager.Release(this, frame); }
+        protected override void ReleaseCore(RenderFrame frame) { Manager.Release(this, frame); }
     }
 
-    // ---------------------------------------------------------------------
-    // Resource lifecycle. No nested Hose lock, no IO under Gate, no Draw load.
-    // Ready fields are immutable; Gate publishes and observes them together.
-    // ---------------------------------------------------------------------
+    /// <summary>
+    /// Loads and marks shared rigid assets and retains their owners while frames or loads remain outstanding.
+    /// </summary>
+    /// <remarks>
+    /// SharedShape GPU buffers are not owned by these records. Loading runs outside Gate; ready resource fields are published under Gate.
+    /// </remarks>
     internal sealed class FlexibleConnectionHookResourceManager
     {
         private readonly object Gate = new object();
         private readonly List<FlexibleConnectionHookOwner> Owners = new List<FlexibleConnectionHookOwner>();
         private bool Closed;
 
-        // ORTS Flexible Connections
-        // Purpose: Coupler uses the same Loader/frame references; only the warning label differs.
         internal FlexibleConnectionHookOwner Register(Viewer viewer, string folder, string family = "Hook")
         {
             var owner = new FlexibleConnectionHookOwner(viewer, folder, family);
@@ -498,8 +487,7 @@ namespace Orts.Viewer3D.RollingStock
                 string failure = null;
                 try
                 {
-                    // ORTS Flexible Connections
-                    // Purpose: Supply the native rolling-stock texture context while retaining the physical shape path for diagnostics.
+                    // Supply the native rolling-stock texture context while retaining the physical shape path for diagnostics.
                     string referencePath = pendingOwner.Folder + @"\";
                     shape = pendingOwner.Viewer.ShapeManager.Get(pending.Path + '\0' + referencePath);
                     if (!ValidateShape(shape, out products)) failure = "empty or unusable static shape structure";
@@ -523,8 +511,6 @@ namespace Orts.Viewer3D.RollingStock
                     else pending.State = FlexibleConnectionHookResourceState.Failed;
                     RemoveRetired(pendingOwner);
                 }
-                // ORTS Flexible Connections
-                // Purpose: Identify Coupler load failures while retaining the existing Hook warning text.
                 if (report) Trace.TraceWarning("Flexible connection {2} shape '{0}' is unusable: {1}. No automatic retry.", pending.Path, failure, pendingOwner.Family);
             }
         }
@@ -577,16 +563,17 @@ namespace Orts.Viewer3D.RollingStock
                 foreach (var reference in owner.References)
                 {
                     if (ReferenceEquals(reference.Frame, frame)) return true;
-                    if (reference.Frame == null) available = reference;
+                    if (reference.Frame == null && reference.IsAvailable) available = reference;
                 }
                 if (available == null)
                 {
                     available = new FlexibleConnectionHookFrameReference(this, owner);
                     owner.References.Add(available);
                 }
+                // Admit the receipt before publishing its owner reference.
+                if (!frame.TryRegisterRetention(available)) return false;
                 available.Frame = frame;
                 owner.FrameReferences++;
-                frame.RegisterFlexibleConnectionHookReference(available);
                 return true;
             }
         }
@@ -597,7 +584,6 @@ namespace Orts.Viewer3D.RollingStock
             {
                 if (!ReferenceEquals(reference.Frame, frame)) return;
                 reference.Frame = null;
-                reference.NextInFrame = null;
                 reference.Owner.FrameReferences--;
                 RemoveRetired(reference.Owner);
             }

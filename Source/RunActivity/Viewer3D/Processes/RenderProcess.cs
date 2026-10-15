@@ -33,11 +33,10 @@ namespace Orts.Viewer3D.Processes
     {
         public const int ShadowMapCountMaximum = 4;
 
-        // ORTS Flexible Connections
-        // Purpose: Own FlexibleConnectionLifetimeManager from FlexibleConnectionViewer.cs.
-        // Procedural GPU work runs on Render; Trains.cs invokes its Loader and marking services.
-        internal readonly Orts.Viewer3D.RollingStock.FlexibleConnectionLifetimeManager FlexibleConnections =
-            new Orts.Viewer3D.RollingStock.FlexibleConnectionLifetimeManager();
+        /// <summary>
+        /// Coordinates registered Game-lifetime resource participants on Render.
+        /// </summary>
+        internal readonly RenderResourceCoordinator Resources = new RenderResourceCoordinator();
 
         public Point DisplaySize { get; private set; }
         public GraphicsDevice GraphicsDevice { get { return Game.GraphicsDevice; } }
@@ -299,10 +298,7 @@ namespace Orts.Viewer3D.Processes
 
         internal void BeginDraw()
         {
-            // ORTS Flexible Connections
-            // Purpose: Prepare/release deferred procedural GPU resources on Render before drawing,
-            // including retired owners with retained frames. Native rigid shapes are loaded through Loader.
-            FlexibleConnections.ProcessPending(GraphicsDevice);
+            Resources.ProcessPending(GraphicsDevice);
 
             if (Game.State == null)
                 return;
@@ -369,10 +365,7 @@ namespace Orts.Viewer3D.Processes
 
         internal void Stop()
         {
-            // ORTS Flexible Connections
-            // Purpose: Close procedural and rigid-owner managers before worker termination, rejecting
-            // later registrations/publications; FlexibleConnectionLifetimeManager.Close handles terminal cleanup.
-            FlexibleConnections.Close();
+            Resources.Close();
 
             Game.WatchdogProcess.Unregister(WatchdogToken);
 

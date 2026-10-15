@@ -1,15 +1,19 @@
-// ORTS Flexible Connections
+// COPYRIGHT 2026 by the Open Rails project.
 //
-// Purpose: Publish a complete rigid screw coupling with publisher-up orientation.
-// Responsibilities: Apply Coupler admission and fixed-length joint construction, place ordered
-//   assets, and use local publication state to control point-local NotCoupledShape visuals.
-// Key components: FlexibleConnectionCouplerViewer.PrepareConnected publishes rigid pieces;
-//   PrepareDisconnected handles the local disconnected asset.
-// Related files: FlexibleConnectionCoupler.cs provides admission; FlexibleConnectionHook.cs
-//   provides BuildRigidChain; FlexibleConnectionCatenary.cs supplies the geometric guide.
-//   FlexibleConnectionHookViewer.cs provides shared placement and shape-retention services.
-// Lifecycle: FlexibleConnectionViewer.cs delegates preparation; shared Loader/frame references
-//   retain native shapes until retirement is safe. No coupling physics or slack is changed.
+// This file is part of Open Rails.
+//
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -50,6 +54,9 @@ namespace Orts.Viewer3D.RollingStock
         }
     }
 
+    /// <summary>
+    /// Publishes Coupler assemblies and controls disconnected visuals from local publication state.
+    /// </summary>
     internal sealed class FlexibleConnectionCouplerViewer
     {
         private readonly Viewer Viewer;
@@ -76,7 +83,7 @@ namespace Orts.Viewer3D.RollingStock
         internal FlexibleConnectionCouplerViewer(Viewer viewer, FlexibleConnectionConfig config, string folder)
         {
             Viewer = viewer;
-            Manager = viewer.RenderProcess.FlexibleConnections.Hooks;
+            Manager = viewer.Game.FlexibleConnections.Hooks;
             Owner = Manager.Register(viewer, folder, "Coupler");
             var points = new List<FlexibleConnectionPoint>();
             foreach (var point in config.FrontConnectionPoints.Values)

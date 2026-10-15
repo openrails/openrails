@@ -1,13 +1,19 @@
-// ORTS Flexible Connections
+// COPYRIGHT 2026 by the Open Rails project.
 //
-// Purpose: Define Hook content and construct deterministic planar rigid chains.
-// Responsibilities: Validate Hook-only tokens, asset endpoints and ChainParity;
-//   compute fixed-length joints without changing native coupling physics.
-// Key components: FlexibleConnectionHookParser validates profiles; FlexibleConnectionHookGeometry.Prepare
-//   checks Hook admission; FlexibleConnectionHookGeometry.BuildRigidChain constructs joints.
-// Related files: FlexibleConnection.cs invokes the parser; FlexibleConnectionHookViewer.cs
-//   supplies a catenary guide. FlexibleConnectionCouplerViewer.cs shares BuildRigidChain.
-// Lifecycle: Parse once on loading; callers supply reusable geometry buffers per frame.
+// This file is part of Open Rails.
+//
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,9 +23,6 @@ using Orts.Parsers.Msts;
 
 namespace Orts.Simulation.RollingStocks
 {
-    // ---------------------------------------------------------------------
-    // Hook constants and immutable content data
-    // ---------------------------------------------------------------------
     public static class FlexibleConnectionHookConstants
     {
         public const int MinimumLinks = 5;
@@ -43,39 +46,35 @@ namespace Orts.Simulation.RollingStocks
         }
     }
 
+    /// <summary>
+    /// Stores validated Hook assets, piece count and alternating roll phase.
+    /// </summary>
     public sealed class FlexibleConnectionHookConfig
     {
-        // ORTS Flexible Connections
-        // Purpose: Store the Hook sequence roll phase; zero preserves existing alternation.
+        /// <summary>
+        /// Selects the alternating quarter-turn phase for every Hook piece; zero preserves the default phase.
+        /// </summary>
         public readonly int ChainParity;
         public readonly int? Links;
         public readonly FlexibleConnectionHookShapeConfig LinkShape, HookShape;
         public bool CanPublish { get { return Links.HasValue && LinkShape != null && HookShape != null; } }
 
-        // ORTS Flexible Connections
-        // Purpose: Retain the validated ChainParity with the immutable Hook configuration.
         internal FlexibleConnectionHookConfig(int? links, FlexibleConnectionHookShapeConfig link, FlexibleConnectionHookShapeConfig hook, int chainParity)
         { Links = links; LinkShape = link; HookShape = hook; ChainParity = chainParity; }
     }
 
-    // ---------------------------------------------------------------------
-    // Strict Hook parsing; malformed declarations cannot be rehabilitated.
-    // The existing Hose duplicate policy is intentionally not used here.
-    // ---------------------------------------------------------------------
+    /// <summary>
+    /// Parses Hook declarations strictly; invalid or duplicate declarations remain invalid.
+    /// </summary>
     internal sealed class FlexibleConnectionHookParser
     {
         private readonly HashSet<string> Seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private bool Invalid;
         private int IsHook;
-        // ORTS Flexible Connections
-        // Purpose: Default absent ChainParity to the existing zero-phase alternation.
         private int ChainParity = 0;
-        // ORTS Flexible Connections
-        // Purpose: Share strict Links syntax; defer its range until the profile family is known.
+        // Share strict Links syntax; defer its range until the profile family is known.
         internal int? Links { get; private set; }
         internal bool HasInvalidData { get { return Invalid; } }
-        // ORTS Flexible Connections
-        // Purpose: Include ChainParity in Hook exclusivity, including Coupler family validation.
         internal bool HasHookDeclarations { get { return Seen.Contains("IsHook") || Seen.Contains("LinkShape") || Seen.Contains("HookShape") || Seen.Contains("ChainParity"); } }
         private FlexibleConnectionHookShapeConfig Link, Hook;
 
@@ -84,8 +83,7 @@ namespace Orts.Simulation.RollingStocks
             bool unique = Seen.Add(token);
             List<string> items;
             bool valid = ReadBlock(stf, out items);
-            // ORTS Flexible Connections
-            // Purpose: Accept one integer 0 or 1 only; retain existing sticky invalid/duplicate handling.
+            // Accept one integer 0 or 1 only; retain existing sticky invalid/duplicate handling.
             if (token == "ChainParity")
             {
                 int value = 0;
@@ -128,15 +126,11 @@ namespace Orts.Simulation.RollingStocks
         internal bool Resolve(STFReader stf, string profile, bool hasHoseTokens, out FlexibleConnectionHookConfig hook)
         {
             hook = null;
-            // ORTS Flexible Connections
-            // Purpose: Preserve Hook's range after the shared Links token has been read.
             if (Links.HasValue && (Links.Value < FlexibleConnectionHookConstants.MinimumLinks || Links.Value > FlexibleConnectionHookConstants.MaximumLinks))
             {
                 Invalid = true;
                 STFException.TraceWarning(stf, "Hook Profile '" + profile + "': duplicate or invalid Links. Profile rejected.");
             }
-            // ORTS Flexible Connections
-            // Purpose: Reject ChainParity on profiles that do not activate Hook.
             bool hookFields = Seen.Contains("Links") || Seen.Contains("LinkShape") || Seen.Contains("HookShape") || Seen.Contains("ChainParity");
             if ((IsHook == 1 && hasHoseTokens) || (IsHook != 1 && hookFields))
             {
@@ -144,8 +138,6 @@ namespace Orts.Simulation.RollingStocks
                 STFException.TraceWarning(stf, "Profile '" + profile + "': incompatible Hook/Hose properties. Profile rejected.");
             }
             if (Invalid) return false;
-            // ORTS Flexible Connections
-            // Purpose: Publish the validated roll phase without changing Hook geometry inputs.
             if (IsHook == 1) hook = new FlexibleConnectionHookConfig(Links, Link, Hook, ChainParity);
             return true;
         }
@@ -168,8 +160,7 @@ namespace Orts.Simulation.RollingStocks
         private static bool ParseShape(List<string> items, out FlexibleConnectionHookShapeConfig shape)
         { return ParseRigidShape(items, FlexibleConnectionHookConstants.GeometryTolerance, out shape); }
 
-        // ORTS Flexible Connections
-        // Purpose: Share canonical rigid asset syntax; Hook keeps its original tolerance wrapper.
+        // Parse canonical rigid-asset metadata using the caller's endpoint tolerance.
         internal static bool ParseRigidShape(List<string> items, double tolerance, out FlexibleConnectionHookShapeConfig shape)
         {
             shape = null;
@@ -209,8 +200,7 @@ namespace Orts.Simulation.RollingStocks
             return FlexibleConnectionHookGeometry.Finite(shape.Length) && shape.Length > 0;
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Share balanced, strict leaf-block reading without changing Hook recovery.
+        // Read a balanced leaf block without accepting nested content as valid fields.
         internal static bool ReadBlock(STFReader stf, out List<string> items)
         {
             items = new List<string>();
@@ -231,10 +221,6 @@ namespace Orts.Simulation.RollingStocks
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Rigid chain geometry: double coordinates in the vertical A-B plane.
-    // No rendering types, history, physics, scaling or alternative solver.
-    // ---------------------------------------------------------------------
     public struct FlexibleConnectionHookVector
     {
         public double X, Y;
@@ -246,6 +232,9 @@ namespace Orts.Simulation.RollingStocks
         Success, InvalidInput, Degenerate, ExcessiveSlope, InsufficientLength, OutOfReach, NumericalFailure
     }
 
+    /// <summary>
+    /// Validates Hook reach and constructs planar rigid chains from fixed piece lengths.
+    /// </summary>
     public static class FlexibleConnectionHookGeometry
     {
         public static bool Finite(double value) { return !double.IsNaN(value) && !double.IsInfinity(value); }
@@ -286,18 +275,14 @@ namespace Orts.Simulation.RollingStocks
             double[] lengths, double[] suffixMin, double[] suffixMax,
             FlexibleConnectionHookVector[] guide, FlexibleConnectionHookVector[] joints)
         {
-            // ORTS Flexible Connections
-            // Purpose: Enforce Hook piece-count admission before shared fixed-length construction.
             if (count < FlexibleConnectionHookConstants.MinimumLinks || count > FlexibleConnectionHookConstants.MaximumLinks)
                 return FlexibleConnectionHookGeometryStatus.InvalidInput;
             return BuildRigidChain(horizontal, height, count, lengths, suffixMin, suffixMax, guide, joints);
         }
 
-        // ORTS Flexible Connections
-        // Purpose: Construct a planar chain of supplied fixed lengths for Hook or Coupler.
-        // Callers provide validated family admission, suffix reach bounds and a geometric guide.
-        // Each joint preserves remaining reach; circle intersections select the guide-nearest
-        // candidate with deterministic tie-breaking. The guide does not set piece lengths.
+        /// <summary>
+        /// Constructs fixed-length joints within the supplied remaining-reach bounds, using the guide to choose deterministic joint positions.
+        /// </summary>
         public static FlexibleConnectionHookGeometryStatus BuildRigidChain(double horizontal, double height, int count,
             double[] lengths, double[] suffixMin, double[] suffixMax,
             FlexibleConnectionHookVector[] guide, FlexibleConnectionHookVector[] joints)
