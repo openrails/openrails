@@ -16914,6 +16914,22 @@ namespace Orts.Simulation.Physics
             return locoUnpowered;
         }
 
+        /// <summary>
+        /// Get the position (index) of the train car using the car-id.
+        /// Returns a valid index. When the car-id is not found, returns the first car (0),
+        /// or if defaultToEnd is true, the last car (Count - 1).
+        /// </summary>
+        public int GetCarPositionByCarID( string carID, bool defaultToEnd = false)
+        {
+            int carIdx = Cars.FindIndex(x => x.CarID == carID);
+            if (carIdx < 0)
+            {
+                Debug.WriteLine($"Warning: car {carID} not found in train {Name}");
+                carIdx = defaultToEnd ? Cars.Count - 1 : 0;
+            }
+            return carIdx;
+        }
+
         //================================================================================================//
         /// <summary>
         /// Routed train class : train class plus valid route direction indication
