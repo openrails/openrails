@@ -63,7 +63,8 @@ cbuffer PerFramePS
 {
     float4x4 ShadowMatrices[4]; // world -> light view -> light projection -> shadow map projection
     float4 ShadowMapLimit;
-    float3 Fog; // linear color of fog
+    float3 Fog; // msts .s color of fog
+    float3 FogPbr; // pbr linear color of fog
     float3 Overcast; // lower saturation & brightness when overcast, x: overcast, y: ambient intensity, z: day-night blend factor
     float ZFar;
     float NumLights; // The number of the lights used
@@ -332,7 +333,8 @@ void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 void _VSLightsAndShadows(in float4 InPosition, in float4x4 WorldTransform, in float distance, inout float fog, inout float4 shadow)
 {
 	// Fog fading
-	fog = (2.0 / (1.0 + exp(distance * ViewerPos.w * -2.0))) - 1.0;
+    float c = distance * ViewerPos.w;
+    fog = saturate(1.0 - exp(-c * c));
 
 	// Absolute position for shadow mapping
 	shadow = mul(InPosition, WorldTransform);
@@ -1294,8 +1296,10 @@ PIXEL_OUTPUT PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace)
 	// Contributions from the OpenRails environment:
 	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
 	//litColor = lerp(litColor, _PSGetOvercastColor(Color, InGeneral), Overcast.x);
+
 	// And fogging is last.
-	_PSApplyFog(litColor, InGeneral);
+    litColor = lerp(litColor, FogPbr.rgb, InGeneral.Fog);
+
 #ifdef DEBUG_SHADOW_COLORS
 	_PSApplyShadowColor(litColor, InGeneral);
 #endif
