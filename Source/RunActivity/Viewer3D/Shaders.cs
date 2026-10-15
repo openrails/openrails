@@ -53,6 +53,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter zBias;
         readonly EffectParameter lightingSpecular;
         readonly EffectParameter fog;
+        readonly EffectParameter fogPbr;
         readonly EffectParameter zFar;
         readonly EffectParameter overcast;
         readonly EffectParameter viewerPos;
@@ -216,7 +217,7 @@ namespace Orts.Viewer3D
 
         public Vector3 Overcast { set { overcast.SetValue(value); } }
 
-        public Color Fog { set { fog.SetValue(value.ToVector3()); } }
+        public Color Fog { set { var v = value.ToVector3(); fog.SetValue(v); fogPbr.SetValue(new Vector3(MathF.Pow(v.X, 2.2f), MathF.Pow(v.Y, 2.2f), MathF.Pow(v.Z, 2.2f))); } }
 
         public bool ImageTextureIsNight { set { _imageTextureIsNight = value; } }
 
@@ -312,6 +313,7 @@ namespace Orts.Viewer3D
             zBias = Parameters["ZBias"];
             lightingSpecular = Parameters["LightingSpecular"];
             fog = Parameters["Fog"];
+            fogPbr = Parameters["FogPbr"];
             zFar = Parameters["ZFar"];
             overcast = Parameters["Overcast"];
             viewerPos = Parameters["ViewerPos"];
