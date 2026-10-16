@@ -33,6 +33,7 @@ using ORTS.Common;
 using ORTS.Menu;
 using ORTS.Settings;
 using ORTS.Updater;
+using static Menu.Notifications.NotificationPage;
 using Activity = ORTS.Menu.Activity;
 using Path = ORTS.Menu.Path;
 
@@ -263,7 +264,7 @@ namespace Menu
 
                 var item = new ToolStripMenuItem($"Online documents (opens browser)", null, (object sender2, EventArgs e2) =>
                     {
-                        Process.Start("https://www.openrails.org/learn/docs-list/");
+                        Process.Start(new ProcessStartInfo { FileName = "https://www.openrails.org/learn/documents/", UseShellExecute = true });
                     }
                 );
                 contextMenuStripDocuments.Items.Add(new ToolStripSeparator());
@@ -298,7 +299,7 @@ namespace Menu
                     docs.Add(new ToolStripMenuItem($"{name}{ext}{codeLabel}", null, (object sender2, EventArgs e2) =>
                     {
                         var docPath = (sender2 as ToolStripItem).Tag as string;
-                        Process.Start(docPath);
+                        Process.Start(new ProcessStartInfo { FileName = docPath, UseShellExecute = true });
                     })
                     { Tag = filePath });
                 }
@@ -343,9 +344,15 @@ namespace Menu
                 return null;
             }, _ =>
             {
-                NotificationManager.CheckNotifications();
-                UpdateNotificationPageAlert();
+                LoadNotifications();
             });
+        }
+
+        private void LoadNotifications()
+        {
+            NotificationManager.CheckNotifications();
+            ShowNotificationPages();
+            UpdateNotificationPageAlert();
         }
 
         // Event raised by Retry button in NotificationPages so user can retry updates following an error notification.
@@ -369,6 +376,17 @@ namespace Menu
                 SystemInfo.GPUs,
                 SystemInfo.Direct3DFeatureLevels
             });
+        }
+
+        public virtual void OnRefreshUpdates(EventArgs e)
+        {
+            var currentChannel = UpdateManager.ChannelName;
+            // Force a Refresh of the notifications, which will check for updates and show the notification pages if there are any new notifications.
+            UpdateManager.SetChannel(currentChannel); // The 'Refresh' button is only available for the 'Unstable' mode.
+            UpdateManager.Check();
+
+            // Reload the notifications and show them as the 'Latest version available' may have changed.
+            LoadNotifications();
         }
 
         void LoadLanguage()
@@ -485,6 +503,7 @@ namespace Menu
         {
             UpdateTimetableSet();
             ShowTimetableList();
+            ShowTimetableEnvironment();  // Analoguous to activity change; may need to reload from menu selection (settings)
             ShowDetails();
         }
         #endregion
@@ -977,20 +996,7 @@ namespace Menu
                 comboBoxStartAt.Items.Clear();
                 foreach (var place in Paths.Select(p => p.Start).Distinct().OrderBy(s => s.ToString()))
                     comboBoxStartAt.Items.Add(place);
-                if (comboBoxStartAt.Items.Count > 0)
-                {
-                    comboBoxStartAt.SelectedIndex = 0;
-                }
-                // Because this list is unique names, we have to do some extra work to select it.
-                if (Settings.Menu_Selection.Length >= (int)UserSettings.Menu_SelectionIndex.Path)
-                {
-                    var pathFilePath = Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Path];
-                    var path = Paths.FirstOrDefault(p => p.FilePath == pathFilePath);
-                    if (path != null)
-                        SelectComboBoxItem<string>(comboBoxStartAt, s => s == path.Start);
-                    else if (comboBoxStartAt.Items.Count > 0)
-                        comboBoxStartAt.SelectedIndex = 0;
-                }
+                UpdateFromMenuSelection<Path>(comboBoxStartAt, UserSettings.Menu_SelectionIndex.Path, c => c.FilePath);
             }
             else
             {
@@ -1382,10 +1388,20 @@ namespace Menu
             string value = GetValueFromMenuSelection(index);
             if (!string.IsNullOrEmpty(value))
             {
-                if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
-                    comboBox.Text = value;
+                // index 5 is both Path and Day
+                if (comboBox == comboBoxStartAt || comboBox == comboBoxHeadTo)
+                {
+                    var path = Paths.Find(x => x.FilePath.Equals(value, StringComparison.OrdinalIgnoreCase));
+                    if (path == null) value = "";
+                    else if (comboBox == comboBoxStartAt) value = path.Start;
+                    else value = path.End;
+                    searchInComboBoxAndSet(comboBox, value);
+                }
                 else
-                    SelectComboBoxItem<T>(comboBox, item => map(item) == value);
+                {
+                    if (comboBox.DropDownStyle == ComboBoxStyle.DropDown) comboBox.Text = value;
+                    else SelectComboBoxItem<T>(comboBox, item => map(item) == value);
+                }
             }
             else
             {
@@ -1396,24 +1412,25 @@ namespace Menu
                 {
                     var route = routes[SelectedFolder.Name];
                     string valueComboboxToSetTo = "";
-                    string conditionalSecondValue = "";
                     switch (index)
                     {
                         case UserSettings.Menu_SelectionIndex.Route:
                             valueComboboxToSetTo = route.Start.Route;
                             break;
-                        case UserSettings.Menu_SelectionIndex.Activity:
+                        case UserSettings.Menu_SelectionIndex.Activity:  // also matches TimetableSet (in timetable mode)
                             valueComboboxToSetTo = route.Start.Activity;
                             break;
-                        case UserSettings.Menu_SelectionIndex.Locomotive:
+                        case UserSettings.Menu_SelectionIndex.Locomotive:  // also matches Timetable (in timetable mode)
                             valueComboboxToSetTo = route.Start.Locomotive;
                             break;
                         case UserSettings.Menu_SelectionIndex.Consist:
                             valueComboboxToSetTo = route.Start.Consist;
                             break;
-                        case UserSettings.Menu_SelectionIndex.Path:
-                            valueComboboxToSetTo = route.Start.StartingAt;
-                            conditionalSecondValue = route.Start.HeadingTo;
+                        case UserSettings.Menu_SelectionIndex.Path:  // also matches Day (in timetable mode)
+                            if (comboBox == comboBoxStartAt) valueComboboxToSetTo = route.Start.StartingAt;
+                            else if (comboBox == comboBoxHeadTo) valueComboboxToSetTo = route.Start.HeadingTo;
+                            else if (comboBox == comboBoxTimetableDay) valueComboboxToSetTo = route.Start.HeadingTo;  // also used for Day
+                            else valueComboboxToSetTo = "";  // should never happen
                             break;
                         case UserSettings.Menu_SelectionIndex.Time:
                             valueComboboxToSetTo = route.Start.Time;
@@ -1428,19 +1445,7 @@ namespace Menu
                             break;
                     }
 
-                    if (index == UserSettings.Menu_SelectionIndex.Path)
-                    {
-                        if (!string.IsNullOrEmpty(valueComboboxToSetTo))
-                            searchInComboBoxAndSet(comboBoxStartAt, valueComboboxToSetTo);
-                        else
-                            SetToDefault(comboBoxStartAt, index, map, defaultValue);
-
-                        if (!string.IsNullOrEmpty(conditionalSecondValue))
-                            searchInComboBoxAndSet(comboBoxHeadTo, conditionalSecondValue);
-                        else
-                            SetToDefault(comboBoxHeadTo, index, map, defaultValue);
-                    }
-                    else if (!string.IsNullOrEmpty(valueComboboxToSetTo))
+                    if (!string.IsNullOrEmpty(valueComboboxToSetTo))
                     {
                         if (comboBox.DropDownStyle == ComboBoxStyle.DropDown) 
                             comboBox.Text = valueComboboxToSetTo;
@@ -1744,18 +1749,14 @@ namespace Menu
         // 3 should be enough, but is there a way to get unlimited buttons?
         public void Button0_Click(object sender, EventArgs e)
         {
-            if (NotificationManager.Notifications == null) // button0 used for "Retry"
-            {
-                NotificationManager.CheckNotifications();
-                ShowNotificationPages();
-            }
-            else NotificationManager.Page.DoButton(UpdateManager, 0);
+            NotificationManager.Page.DoButton(UpdateManager, 0);
         }
 
         public void Button1_Click(object sender, EventArgs e)
         {
             NotificationManager.Page.DoButton(UpdateManager, 1);
         }
+
         public void Button2_Click(object sender, EventArgs e)
         {
             NotificationManager.Page.DoButton(UpdateManager, 2);

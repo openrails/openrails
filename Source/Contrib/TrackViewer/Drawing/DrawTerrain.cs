@@ -1,4 +1,4 @@
-// COPYRIGHT 2014, 2018 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -623,7 +623,7 @@ namespace ORTS.TrackViewer.Drawing
             }
 
             string path = terrtexPath + filename;
-            if (System.IO.File.Exists(path))
+            if (File.Exists(path))
             {
                 //The message delegate has quite some overhead, so print it only so often to keep the user informed
                 if (loadedAceFilesCounter % 100 == 0)
@@ -631,7 +631,22 @@ namespace ORTS.TrackViewer.Drawing
                     messageDelegate(String.Format(TrackViewer.catalog.GetString("Loading terrain ace-files {0}-{1} (scaled down with a factor {2})"), loadedAceFilesCounter, loadedAceFilesCounter + 99, CurrentScaleFactor));
                 }
                 loadedAceFilesCounter++;
-                var originalTexture = Orts.Formats.Msts.AceFile.Texture2DFromFile(this.device, path);
+
+                Texture2D originalTexture;
+                try
+                {
+                    if (Path.GetExtension(path) == ".dds")
+                        DDSLib.DDSFromFile(path, device, true, out originalTexture);
+                    else if (Path.GetExtension(path) == ".ace")
+                        originalTexture = AceFile.Texture2DFromFile(device, path);
+                    else
+                        return false;
+                }
+                catch
+                {
+                    return false;
+                }
+
                 var reducableTexture = new ReducableTexture2D(device, originalTexture);
                 reducableTexture.ReduceToFactor(CurrentScaleFactor);
                 this[filename] = reducableTexture;

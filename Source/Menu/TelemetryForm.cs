@@ -36,6 +36,16 @@ namespace Menu
             GettextResourceManager catalog = new GettextResourceManager("Menu");
             Localizer.Localize(this, catalog);
 
+            // It appears that `GNU.gettext` fails to apply translations to combobox items and long text values in `.resx` files.
+            // Therefore, we must use `Catalog.GetString()` to manually apply them for now.
+            comboBoxSystem.Items.AddRange(new[] {
+                catalog.GetParticularString("Telemetry system state combobox", "Undecided (off)"),
+                catalog.GetParticularString("Telemetry system state combobox", "Off"),
+                catalog.GetParticularString("Telemetry system state combobox", "On"),
+            });
+            label2.Text = catalog.GetString("We receive lots of feedback via our forums and website, but that is still a minority of Open Rails users - about 25,000 of you. We would like to expand feedback to a wider range of our users so that we can have more confidence making changes and minimise the chance of you having a bad experience. Anonymous data collection is how we're approaching this for technical feedback.");
+            label5.Text = catalog.GetString("If enabled, anonymous data will be collected and uploaded to our telemetry server software (Open Source just like Open Rails). Although your IP address will unavoidably be captured during upload, the telemetry server software takes special steps to prevent your data being associated with your IP address afterwards. The telemetry server software will then analyse the data and make public reports from it. These reports are carefully designed to avoid singling out any user or small group of users.");
+
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
             // Vista and later should use 9pt "Segoe UI". We'll use the
             // Message Box font to allow for user-customizations, though.

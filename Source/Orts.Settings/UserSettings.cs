@@ -206,8 +206,8 @@ namespace ORTS.Settings
         // Data logger settings:
         [Default("comma")]
         public string DataLoggerSeparator { set; get; }
-        [Default("route")]
-        public string DataLogSpeedUnits { get; set; }
+        [Default(false)]
+        public bool DataLogUseInternalUnits { get; set; }
         [Default(false)]
         public bool DataLogStart { get; set; }
         [Default(true)]
@@ -218,6 +218,8 @@ namespace ORTS.Settings
         public bool DataLogExclusiveSteamPerformance { get; set; }
         [Default(false)]
         public bool DataLogExclusiveSteamPowerCurve { get; set; }
+        [Default(0)]
+        public int DataLoggerInterval { get; set; }
         [Default(false)]
         public bool VerboseConfigurationMessages { get; set; }
 

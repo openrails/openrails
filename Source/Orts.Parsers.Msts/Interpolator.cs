@@ -32,23 +32,36 @@ namespace Orts.Parsers.Msts
         float[] Y2;
         int Size;       // number of values populated
         int PrevIndex;  // used to speed up repeated evaluations with similar x values
-        public Interpolator(int n)
+
+        public enum RoundingMode
+        {
+            Continuous, // No rounding, output of interpolator will be interpolated (default)
+            RoundUp, // Input to interpolator will be rounded up to the next defined input equal or more (no interpolation occurrs)
+            RoundDown, // Input to interpolator will be rounded down to the next defined input equal or less (no interpolation occurrs)
+            RoundNearest // Input to interpolator will be rounded to the closest defined input (no interpolation occurrs)
+        }
+        public RoundingMode XRounding = RoundingMode.Continuous; // how do we round the current X-Value relative to the defined X-values?
+
+        public Interpolator(int n, RoundingMode round = RoundingMode.Continuous)
         {
             X = new float[n];
             Y = new float[n];
+            XRounding = round;
         }
-        public Interpolator(float[] x, float[] y)
+        public Interpolator(float[] x, float[] y, RoundingMode round = RoundingMode.Continuous)
         {
             X = x;
             Y = y;
             Size = X.Length;
+            XRounding = round;
         }
         public Interpolator(Interpolator other)
         {
             X = other.X;
             Y = other.Y;
-            Y2= other.Y2;
+            Y2 = other.Y2;
             Size = other.Size;
+            XRounding = other.XRounding;
         }
         public Interpolator(STFReader stf)
         {
@@ -76,33 +89,74 @@ namespace Orts.Parsers.Msts
         {
             get
             {
+                float y;
+
                 if (x < X[PrevIndex] || x > X[PrevIndex + 1])
                 {
                     if (x < X[1])
-                        PrevIndex= 0;
-                    else if (x > X[Size-2])
-                        PrevIndex= Size-2;
+                        PrevIndex = 0;
+                    else if (x > X[Size - 2])
+                        PrevIndex = Size - 2;
                     else
                     {
-                        int i= 0;
-                        int j= Size-1;
-                        while (j-i > 1)
+                        int i = 0;
+                        int j = Size - 1;
+                        while (j - i > 1)
                         {
-                            int k= (i+j)/2;
+                            int k = (i + j) / 2;
                             if (X[k] > x)
-                                j= k;
+                                j = k;
                             else
-                                i= k;
+                                i = k;
                         }
-                        PrevIndex= i;
+                        PrevIndex = i;
                     }
                 }
-                float d= X[PrevIndex+1] - X[PrevIndex];
-                float a= (X[PrevIndex+1]-x)/d;
-                float b= (x-X[PrevIndex])/d;
-                float y= a*Y[PrevIndex] + b*Y[PrevIndex+1];
-                if (Y2 != null && a>=0 && b>=0)
-                    y+= ((a*a*a-a)*Y2[PrevIndex] + (b*b*b-b)*Y2[PrevIndex+1])*d*d/6;
+                if (XRounding == RoundingMode.Continuous) // Continuous rounding mode, use interpolation
+                {
+                    float d = X[PrevIndex + 1] - X[PrevIndex];
+                    float a = (X[PrevIndex + 1] - x) / d;
+                    float b = (x - X[PrevIndex]) / d;
+                    y = a * Y[PrevIndex] + b * Y[PrevIndex + 1];
+                    if (Y2 != null && a >= 0 && b >= 0)
+                        y += ((a * a * a - a) * Y2[PrevIndex] + (b * b * b - b) * Y2[PrevIndex + 1]) * d * d / 6;
+                }
+                else // Other rounding modes do not use interpolation, snap to predefined values
+                {
+                    int lowIndex = PrevIndex; // Next index of array X with value below x
+                    int highIndex = lowIndex + 1; // Next index of array X with value above x
+
+                    if (x > X[highIndex]) // Consider PrevIndex is limited to second highest index, check if max index should be used
+                    {
+                        lowIndex = highIndex;
+                        highIndex = Math.Min(lowIndex + 1, Size - 1);
+                    }
+                    else if (x < X[lowIndex]) // Conversely, consider values below the PrevIndex, check if min index should be used
+                    {
+                        highIndex = lowIndex;
+                        lowIndex = Math.Max(highIndex - 1, 0);
+                    }
+                    // If given x value is exact, use that exact value regardless of rounding mode
+                    if (x == X[highIndex])
+                        y = Y[highIndex];
+                    else if (x == X[lowIndex])
+                        y = Y[lowIndex];
+                    else
+                    {
+                        switch (XRounding)
+                        {
+                            case RoundingMode.RoundDown: y = Y[lowIndex]; break;
+                            case RoundingMode.RoundUp: y = Y[highIndex]; break;
+                            case RoundingMode.RoundNearest:
+                                if (x - X[lowIndex] < X[highIndex] - x)
+                                    y = Y[lowIndex]; // x is closer to the lower value
+                                else
+                                    y = Y[highIndex]; // x is closer to the higher value (or equidistant)
+                                break;
+                            default: y = Y[0]; break;
+                        }
+                    }
+                }
                 return y;
             }
             set
@@ -114,10 +168,23 @@ namespace Orts.Parsers.Msts
         }
         public float MinX() { return X[0]; }
         public float MaxX() { return X[Size-1]; }
+
+        public float MinY()
+        {
+            return MinY(out _);
+        }
+        public float MinY(out float x)
+        {
+            int mini = 0;
+            for (int i = 1; i < Size; i++)
+                if (Y[mini] > Y[i])
+                    mini = i;
+            x = X[mini];
+            return Y[mini];
+        }
         public float MaxY()
         {
-            float x;
-            return MaxY(out x);
+            return MaxY(out _);
         }
         public float MaxY(out float x)
         {
@@ -196,6 +263,7 @@ namespace Orts.Parsers.Msts
         // restore game state
         public Interpolator(BinaryReader inf)
         {
+            XRounding = (RoundingMode)inf.ReadInt32();
             Size = inf.ReadInt32();
             X = new float[Size];
             Y = new float[Size];
@@ -215,6 +283,7 @@ namespace Orts.Parsers.Msts
         // save game state
         public void Save(BinaryWriter outf)
         {
+            outf.Write((int)XRounding);
             outf.Write(Size);
             for (int i = 0; i < Size; i++)
             {
@@ -251,9 +320,9 @@ namespace Orts.Parsers.Msts
     /// </summary>
     public class InterpolatorDiesel2D
     {
-        float[] X;  // must be in increasing order
-        Interpolator[] Y;
-        int Size;       // number of values populated
+        public float[] X;  // must be in increasing order
+        public Interpolator[] Y;
+        public int Size;       // number of values populated
         int PrevIndex;  // used to speed up repeated evaluations with similar x values
         bool HasNegativeValues; // set when negative Y values present (e.g. in old triphase locos)
         public InterpolatorDiesel2D(int n)

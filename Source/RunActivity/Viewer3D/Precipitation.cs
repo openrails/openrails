@@ -496,14 +496,14 @@ namespace Orts.Viewer3D
             : base(viewer, null)
         {
             // TODO: This should happen on the loader thread.
-            RainTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Raindrop.png"));
-            SnowTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Snowflake.png"));
+            RainTexture = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Raindrop.png"));
+            SnowTexture = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Snowflake.png"));
             DynamicPrecipitationTexture[0] = SnowTexture;
             DynamicPrecipitationTexture[11] = RainTexture;
             for (int i = 1; i <= 10; i++)
             {
                 var path = "Raindrop" + i.ToString() + ".png";
-                DynamicPrecipitationTexture[11 - i] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, path));
+                DynamicPrecipitationTexture[11 - i] = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, path));
             }
         }
 

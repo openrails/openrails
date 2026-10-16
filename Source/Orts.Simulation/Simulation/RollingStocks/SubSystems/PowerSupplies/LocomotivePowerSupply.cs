@@ -58,10 +58,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public PowerSupplyState AuxiliaryPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool AuxiliaryPowerSupplyOn => AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
 
-        public PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
+        public virtual PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool ElectricTrainSupplyOn => ElectricTrainSupplyState == PowerSupplyState.PowerOn;
         public bool FrontElectricTrainSupplyCableConnected { get; set; }
-        public float ElectricTrainSupplyPowerW
+        public virtual float ElectricTrainSupplyPowerW
         {
             get
             {
@@ -70,11 +70,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     if (car == null) continue;
                     if (!(car is MSTSWagon wagon)) continue;
-                    if (!(wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)) continue;
-                    result += wagon.PassengerCarPowerSupply.ElectricTrainSupplyPowerW / wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Count;
+                    if (wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)
+                    {
+                        result += wagon.PassengerCarPowerSupply.ElectricTrainSupplyPowerW / wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Count;
+                    }
+                    else if (wagon is MSTSLocomotive locomotive && locomotive.LocomotivePowerSupply is ScriptedControlCarPowerSupply control && control.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive))
+                    {
+                        result += control.ElectricTrainSupplyPowerW / control.ElectricTrainSupplyConnectedLocomotives.Count;
+                    }
+
                 }
                 return result;
             }
+            set { }
         }
 
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
@@ -276,6 +284,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public void HandleEvent(PowerSupplyEvent evt, int id)
         {
             AbstractScript?.HandleEvent(evt, id);
+        }
+
+        public void HandleEventFromControlCar(PowerSupplyEvent evt)
+        {
+            AbstractScript?.HandleEventFromControlCar(evt);
+        }
+
+        public void HandleEventFromControlCar(PowerSupplyEvent evt, int id)
+        {
+            AbstractScript?.HandleEventFromControlCar(evt, id);
         }
 
         public void HandleEventFromTcs(PowerSupplyEvent evt)

@@ -35,14 +35,19 @@ namespace Orts.Common.Scripting
     public class ScriptManager
     {
         readonly IDictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
-        static readonly string[] ReferenceAssemblies = new[]
-        {
-            typeof(System.Object).Assembly.Location,
-            typeof(System.Diagnostics.Debug).Assembly.Location,
-            typeof(ORTS.Common.ElapsedTime).Assembly.Location,
-            typeof(ORTS.Scripting.Api.Timer).Assembly.Location,
-            typeof(System.Linq.Enumerable).Assembly.Location,
-        };
+        static readonly string[] ReferenceAssemblies =
+            ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))
+                .Split(Path.PathSeparator)
+                .Where(path => string.Equals(
+                    Path.GetDirectoryName(path),
+                    Path.GetDirectoryName(typeof(object).Assembly.Location),
+                    StringComparison.OrdinalIgnoreCase))
+                .Concat(new[]
+                {
+                    typeof(ORTS.Common.ElapsedTime).Assembly.Location,
+                    typeof(ORTS.Scripting.Api.Timer).Assembly.Location,
+                })
+                .ToArray();
         static MetadataReference[] References = ReferenceAssemblies.Select(r => MetadataReference.CreateFromFile(r)).ToArray();
         static CSharpCompilationOptions CompilationOptions = new CSharpCompilationOptions(
             OutputKind.DynamicallyLinkedLibrary,

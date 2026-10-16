@@ -1,12 +1,35 @@
+name: Release pull request
+
 on:
   push:
     branches:
       - "release/*"
+
 jobs:
   release-pr:
     runs-on: ubuntu-latest
     steps:
-      - name: Create PR
-        uses: funivan/github-autopr@0.2.0
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - name: Create pull request
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+            const head = context.ref.replace('refs/heads/', '')
+            const base = 'master'
+            const pulls = await github.rest.pulls.list({
+              owner,
+              repo,
+              head,
+              base,
+              state: 'open',
+            })
+            if (pulls.data.length === 0) {
+              await github.rest.pulls.create({
+                owner,
+                repo,
+                head,
+                base,
+                title: 'Merge ' + head + ' to ' + base,
+              })
+            }

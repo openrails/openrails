@@ -162,15 +162,16 @@
             this.tabPageDataLogger = new System.Windows.Forms.TabPage();
             this.checkDataLogSteamPowerCurve = new System.Windows.Forms.CheckBox();
             this.pbDataLoggerOptions = new System.Windows.Forms.PictureBox();
-            this.comboDataLogSpeedUnits = new System.Windows.Forms.ComboBox();
             this.comboDataLoggerSeparator = new System.Windows.Forms.ComboBox();
-            this.label19 = new System.Windows.Forms.Label();
+            this.checkDataLogUseInternalUnits = new System.Windows.Forms.CheckBox();
             this.label18 = new System.Windows.Forms.Label();
             this.checkDataLogPerformance = new System.Windows.Forms.CheckBox();
             this.checkDataLogger = new System.Windows.Forms.CheckBox();
             this.label17 = new System.Windows.Forms.Label();
             this.checkDataLogPhysics = new System.Windows.Forms.CheckBox();
             this.checkDataLogSteamPerformance = new System.Windows.Forms.CheckBox();
+            this.dataLoggerInterval = new System.Windows.Forms.NumericUpDown();
+            this.dataLoggerIntervalLabel = new System.Windows.Forms.Label();
             this.checkVerboseConfigurationMessages = new System.Windows.Forms.CheckBox();
             this.tabPageEvaluate = new System.Windows.Forms.TabPage();
             this.checkListDataLogTSContents = new System.Windows.Forms.CheckedListBox();
@@ -296,6 +297,7 @@
             this.groupBoxReverseRDLevers.SuspendLayout();
             this.tabPageDataLogger.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbDataLoggerOptions)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataLoggerInterval)).BeginInit();
             this.tabPageEvaluate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).BeginInit();
             this.tabPageSystem.SuspendLayout();
@@ -2053,15 +2055,16 @@
             // 
             this.tabPageDataLogger.Controls.Add(this.checkDataLogSteamPowerCurve);
             this.tabPageDataLogger.Controls.Add(this.pbDataLoggerOptions);
-            this.tabPageDataLogger.Controls.Add(this.comboDataLogSpeedUnits);
             this.tabPageDataLogger.Controls.Add(this.comboDataLoggerSeparator);
-            this.tabPageDataLogger.Controls.Add(this.label19);
+            this.tabPageDataLogger.Controls.Add(this.checkDataLogUseInternalUnits);
             this.tabPageDataLogger.Controls.Add(this.label18);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogPerformance);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogger);
             this.tabPageDataLogger.Controls.Add(this.label17);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogPhysics);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogSteamPerformance);
+            this.tabPageDataLogger.Controls.Add(this.dataLoggerInterval);
+            this.tabPageDataLogger.Controls.Add(this.dataLoggerIntervalLabel);
             this.tabPageDataLogger.Controls.Add(this.checkVerboseConfigurationMessages);
             this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
             this.tabPageDataLogger.Name = "tabPageDataLogger";
@@ -2091,16 +2094,6 @@
             this.pbDataLoggerOptions.TabStop = false;
             this.pbDataLoggerOptions.Click += new System.EventHandler(this.HelpIcon_Click);
             // 
-            // comboDataLogSpeedUnits
-            // 
-            this.comboDataLogSpeedUnits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboDataLogSpeedUnits.FormattingEnabled = true;
-            this.comboDataLogSpeedUnits.Location = new System.Drawing.Point(5, 62);
-            this.comboDataLogSpeedUnits.Margin = new System.Windows.Forms.Padding(2);
-            this.comboDataLogSpeedUnits.Name = "comboDataLogSpeedUnits";
-            this.comboDataLogSpeedUnits.Size = new System.Drawing.Size(121, 21);
-            this.comboDataLogSpeedUnits.TabIndex = 3;
-            // 
             // comboDataLoggerSeparator
             // 
             this.comboDataLoggerSeparator.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -2111,15 +2104,16 @@
             this.comboDataLoggerSeparator.Size = new System.Drawing.Size(121, 21);
             this.comboDataLoggerSeparator.TabIndex = 1;
             // 
-            // label19
+            // checkDataLogUseInternalUnits
             // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(131, 65);
-            this.label19.Margin = new System.Windows.Forms.Padding(3);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(63, 13);
-            this.label19.TabIndex = 4;
-            this.label19.Text = "Speed units";
+            this.checkDataLogUseInternalUnits.AutoSize = true;
+            this.checkDataLogUseInternalUnits.Location = new System.Drawing.Point(6, 65);
+            this.checkDataLogUseInternalUnits.Name = "checkDataLogUseInternalUnits";
+            this.checkDataLogUseInternalUnits.Size = new System.Drawing.Size(107, 17);
+            this.checkDataLogUseInternalUnits.TabIndex = 3;
+            this.checkDataLogUseInternalUnits.Text = "Use internal units";
+            this.toolTip1.SetToolTip(this.checkDataLogUseInternalUnits, "When checked, use units used by the software (i.e. no conversion).");
+            this.checkDataLogUseInternalUnits.UseVisualStyleBackColor = true;
             // 
             // label18
             // 
@@ -2183,6 +2177,36 @@
             this.checkDataLogSteamPerformance.TabIndex = 9;
             this.checkDataLogSteamPerformance.Text = "Log steam performance data (exclusive)";
             this.checkDataLogSteamPerformance.UseVisualStyleBackColor = true;
+            // 
+            // dataLoggerInterval
+            // 
+            this.dataLoggerInterval.Increment = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.dataLoggerInterval.Location = new System.Drawing.Point(310, 40);
+            this.dataLoggerInterval.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.dataLoggerInterval.Maximum = new decimal(new int[] {
+            60000,
+            0,
+            0,
+            0});
+            this.dataLoggerInterval.Name = "dataLoggerInterval";
+            this.dataLoggerInterval.Size = new System.Drawing.Size(54, 20);
+            this.dataLoggerInterval.TabIndex = 25;
+            this.dataLoggerInterval.ThousandsSeparator = true;
+            this.toolTip1.SetToolTip(this.dataLoggerInterval, "Interval at which to log data. In milliseconds, 0 means log at frame rate.");
+            // 
+            // dataLoggerIntervalLabel
+            // 
+            this.dataLoggerIntervalLabel.AutoSize = true;
+            this.dataLoggerIntervalLabel.Location = new System.Drawing.Point(370, 42);
+            this.dataLoggerIntervalLabel.Margin = new System.Windows.Forms.Padding(3);
+            this.dataLoggerIntervalLabel.Name = "dataLoggerIntervalLabel";
+            this.dataLoggerIntervalLabel.Size = new System.Drawing.Size(117, 13);
+            this.dataLoggerIntervalLabel.TabIndex = 26;
+            this.dataLoggerIntervalLabel.Text = "Logging Interval (msec)";
             // 
             // checkVerboseConfigurationMessages
             // 
@@ -3094,6 +3118,7 @@
             this.tabPageDataLogger.ResumeLayout(false);
             this.tabPageDataLogger.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbDataLoggerOptions)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataLoggerInterval)).EndInit();
             this.tabPageEvaluate.ResumeLayout(false);
             this.tabPageEvaluate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).EndInit();
@@ -3170,6 +3195,7 @@
         private System.Windows.Forms.TabPage tabPageDataLogger;
         private System.Windows.Forms.ComboBox comboDataLoggerSeparator;
         private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.CheckBox checkDataLogUseInternalUnits;
         private System.Windows.Forms.CheckBox checkDataLogPhysics;
         private System.Windows.Forms.CheckBox checkDataLogPerformance;
         private System.Windows.Forms.CheckBox checkDataLogSteamPerformance;
@@ -3191,8 +3217,6 @@
         private System.Windows.Forms.Panel panelRDButtons;
         private System.Windows.Forms.CheckBox checkDataLogger;
         private System.Windows.Forms.Label label18;
-        private System.Windows.Forms.ComboBox comboDataLogSpeedUnits;
-        private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TabPage tabPageEvaluate;
         private System.Windows.Forms.CheckedListBox checkListDataLogTSContents;
         private System.Windows.Forms.Label labelDataLogTSInterval;
@@ -3331,5 +3355,7 @@
         private System.Windows.Forms.PictureBox pbAdhesionFactorCorrection;
         private System.Windows.Forms.PictureBox pbAdhesionFactorRandomChange;
         private System.Windows.Forms.CheckBox checkDataLogSteamPowerCurve;
+        private System.Windows.Forms.NumericUpDown dataLoggerInterval;
+        private System.Windows.Forms.Label dataLoggerIntervalLabel;
     }
 }

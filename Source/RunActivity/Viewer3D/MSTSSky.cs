@@ -504,7 +504,7 @@ namespace Orts.Viewer3D
                 for (int i = 0; i < Viewer.ENVFile.SkyLayers.Count; i++)
                 {
                     mstsSkyTexture[i] = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskytexture[i].TextureName.ToString();
-                    MSTSSkyTexture.Add(Orts.Formats.Msts.AceFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
+                    MSTSSkyTexture.Add(Viewer.TextureManager.Get(mstsSkyTexture[i], true));
                     if( i == 0 )
                     {
                         MSTSDayTexture = MSTSSkyTexture[i];
@@ -520,7 +520,7 @@ namespace Orts.Viewer3D
                     }
                     else
                     {
-                        MSTSSkyCloudTexture.Add(Orts.Formats.Msts.AceFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
+                        MSTSSkyCloudTexture.Add(Viewer.TextureManager.Get(mstsSkyTexture[i]));
                         mstscloudtexturex = mstsskytexture[i].TileX;
                         mstscloudtexturey = mstsskytexture[i].TileY;
                     }
@@ -533,8 +533,8 @@ namespace Orts.Viewer3D
             }
             else
             {
-                MSTSSkyTexture.Add(SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png")));
-                MSTSSkyStarTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_N.png"));
+                MSTSSkyTexture.Add(SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png")));
+                MSTSSkyStarTexture = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_N.png"));
             }
             if (viewer.ENVFile.SkySatellites != null)
             {
@@ -547,9 +547,9 @@ namespace Orts.Viewer3D
                 MSTSSkyMoonTexture = Viewer.TextureManager.Get(mstsSkyMoonTexture);
             }
             else
-                MSTSSkyMoonTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.png"));
+                MSTSSkyMoonTexture = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.png"));
 
-            MSTSSkyMoonMask = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMask.png")); //ToDo:  No MSTS equivalent - will need to be fixed in MSTSSky.cs
+            MSTSSkyMoonMask = SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMask.png")); //ToDo:  No MSTS equivalent - will need to be fixed in MSTSSky.cs
             //MSTSSkyCloudTexture[0] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Clouds01.png"));
 
             ShaderPassesSky = MSTSSkyShader.Techniques["Sky"].Passes.GetEnumerator();
@@ -672,6 +672,16 @@ namespace Orts.Viewer3D
         // These should be user defined in the Environment files (future)
         static Vector3 startColor = new Vector3(0.647f, 0.651f, 0.655f); // Original daytime fog color - must be preserved!
         static Vector3 finishColor = new Vector3(0.05f, 0.05f, 0.05f); //Darkest nighttime fog color
+
+        public override void Mark()
+        {
+            Viewer.TextureManager.Mark(MSTSDayTexture);
+            Viewer.TextureManager.Mark(MSTSSkyStarTexture);
+            Viewer.TextureManager.Mark(MSTSSkyMoonTexture);
+            Viewer.TextureManager.Mark(MSTSSkyMoonMask);
+            Viewer.TextureManager.Mark(MSTSSkyCloudTexture[0]);
+            base.Mark();
+        }
 
         /// <summary>
         /// This function darkens the fog color as night begins to fall

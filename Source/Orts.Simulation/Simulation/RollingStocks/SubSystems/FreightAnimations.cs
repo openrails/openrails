@@ -61,11 +61,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public const float FullSuperpositionTolerance = 0.2f;
 
         // additions to manage consequences of variable weight on friction and brake forces
-        public float EmptyORTSDavis_A = -9999;
-        public float EmptyORTSDavis_B = -9999;
-        public float EmptyORTSDavis_C = -9999;
+        public float? EmptyORTSDavis_A = null;
+        public float? EmptyORTSDavis_B = null;
+        public float? EmptyORTSDavis_C = null;
         public float EmptyORTSWagonFrontalAreaM2 = -9999;
-        public float EmptyORTSDavisDragConstant = -9999;
+        public float? EmptyORTSDavisDragConstant = null;
         public float EmptyMaxBrakeForceN = -9999;
         public float EmptyMaxBrakeShoeForceN = -9999;
         public float EmptyMaxHandbrakeForceN = -9999;
@@ -101,14 +101,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }),
                 new STFReader.TokenProcessor("doublestacker", ()=>{ DoubleStacker = stf.ReadBoolBlock(true);}),
                 // additions to manage consequences of variable weight on friction and brake forces
-                new STFReader.TokenProcessor("emptyortsdavis_a", ()=>{ EmptyORTSDavis_A = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-                new STFReader.TokenProcessor("emptyortsdavis_b", ()=>{ EmptyORTSDavis_B = stf.ReadFloatBlock(STFReader.UNITS.Resistance, -1); }),
-                new STFReader.TokenProcessor("emptyortsdavis_c", ()=>{ EmptyORTSDavis_C = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, -1); }),
+                new STFReader.TokenProcessor("emptyortsdavis_a", ()=>{ EmptyORTSDavis_A = stf.ReadFloatBlock(STFReader.UNITS.Force, 0.0f); }),
+                new STFReader.TokenProcessor("emptyortsdavis_b", ()=>{ EmptyORTSDavis_B = stf.ReadFloatBlock(STFReader.UNITS.Resistance, 0.0f); }),
+                new STFReader.TokenProcessor("emptyortsdavis_c", ()=>{ EmptyORTSDavis_C = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, 0.0f); }),
                 new STFReader.TokenProcessor("emptyortswagonfrontalarea", ()=>{ EmptyORTSWagonFrontalAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, -1); }),
-                new STFReader.TokenProcessor("emptyortsdavisdragconstant", ()=>{ EmptyORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, -1); }),
+                new STFReader.TokenProcessor("emptyortsdavisdragconstant", ()=>{ EmptyORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, 0.0f); }),
                 new STFReader.TokenProcessor("emptymaxbrakeforce", ()=>{ EmptyMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("emptymaxbrakeshoeforce", ()=>{ EmptyMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("emptymaxhandbrakeforce", ()=>{ EmptyMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
+                new STFReader.TokenProcessor("emptycenterofgravity_y", ()=>{ /*Alternate spelling*/ EmptyCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
                 new STFReader.TokenProcessor("emptycentreofgravity_y", ()=>{ EmptyCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
                 new STFReader.TokenProcessor("emptybrakerelayvalveratio", ()=>{ EmptyRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, -1); }),
                 new STFReader.TokenProcessor("emptybrakerelayvalveinshot", ()=>{ EmptyInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, -1); }),
@@ -984,11 +985,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public IntakePoint LinkedIntakePoint = null;
 
         // additions to manage consequences of variable weight on friction and brake forces
-        public float FullORTSDavis_A = -9999;
-        public float FullORTSDavis_B = -9999;
-        public float FullORTSDavis_C = -9999;
+        public float? FullORTSDavis_A = null;
+        public float? FullORTSDavis_B = null;
+        public float? FullORTSDavis_C = null;
         public float FullORTSWagonFrontalAreaM2 = -9999;
-        public float FullORTSDavisDragConstant = -9999;
+        public float? FullORTSDavisDragConstant = null;
         public float FullMaxBrakeForceN = -9999;
         public float FullMaxBrakeShoeForceN = -9999;
         public float FullMaxHandbrakeForceN = -9999;
@@ -1013,14 +1014,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 new STFReader.TokenProcessor("fullatstart", ()=>{ FullAtStart = stf.ReadBoolBlock(true);}),
 
                 // additions to manage consequences of variable weight on friction and brake forces
-                new STFReader.TokenProcessor("fullortsdavis_a", ()=>{ FullORTSDavis_A = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-                new STFReader.TokenProcessor("fullortsdavis_b", ()=>{ FullORTSDavis_B = stf.ReadFloatBlock(STFReader.UNITS.Resistance, -1); }),
-                new STFReader.TokenProcessor("fullortsdavis_c", ()=>{ FullORTSDavis_C = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, -1); }),
+                new STFReader.TokenProcessor("fullortsdavis_a", ()=>{ FullORTSDavis_A = stf.ReadFloatBlock(STFReader.UNITS.Force, 0.0f); }),
+                new STFReader.TokenProcessor("fullortsdavis_b", ()=>{ FullORTSDavis_B = stf.ReadFloatBlock(STFReader.UNITS.Resistance, 0.0f); }),
+                new STFReader.TokenProcessor("fullortsdavis_c", ()=>{ FullORTSDavis_C = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, 0.0f); }),
                 new STFReader.TokenProcessor("fullortswagonfrontalarea", ()=>{ FullORTSWagonFrontalAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, -1); }),
-                new STFReader.TokenProcessor("fullortsdavisdragconstant", ()=>{ FullORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, -1); }),
+                new STFReader.TokenProcessor("fullortsdavisdragconstant", ()=>{ FullORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, 0.0f); }),
                 new STFReader.TokenProcessor("fullmaxbrakeforce", ()=>{ FullMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("fullmaxbrakeshoeforce", ()=>{ FullMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("fullmaxhandbrakeforce", ()=>{ FullMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
+                new STFReader.TokenProcessor("fullcenterofgravity_y", ()=>{ /*Alternate spelling*/ FullCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
                 new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
                 new STFReader.TokenProcessor("fullbrakerelayvalveratio", ()=>{ FullRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, -1); }),
                 new STFReader.TokenProcessor("fullbrakerelayvalveinshot", ()=>{ FullInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, -1); })
@@ -1081,11 +1083,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float ZOffset = 0;
 
         // additions to manage consequences of variable weight on friction and brake forces
-        public float FullStaticORTSDavis_A = -9999;
-        public float FullStaticORTSDavis_B = -9999;
-        public float FullStaticORTSDavis_C = -9999;
+        public float? FullStaticORTSDavis_A = null;
+        public float? FullStaticORTSDavis_B = null;
+        public float? FullStaticORTSDavis_C = null;
         public float FullStaticORTSWagonFrontalAreaM2 = -9999;
-        public float FullStaticORTSDavisDragConstant = -9999;
+        public float? FullStaticORTSDavisDragConstant = null;
         public float FullStaticMaxBrakeForceN = -9999;
         public float FullStaticMaxBrakeShoeForceN = -9999;
         public float FullStaticMaxHandbrakeForceN = -9999;
@@ -1139,14 +1141,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
             }),
             // additions to manage consequences of variable weight on friction and brake forces
-            new STFReader.TokenProcessor("fullortsdavis_a", ()=>{ FullStaticORTSDavis_A = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-            new STFReader.TokenProcessor("fullortsdavis_b", ()=>{ FullStaticORTSDavis_B = stf.ReadFloatBlock(STFReader.UNITS.Resistance, -1); }),
-            new STFReader.TokenProcessor("fullortsdavis_c", ()=>{ FullStaticORTSDavis_C = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, -1); }),
+            new STFReader.TokenProcessor("fullortsdavis_a", ()=>{ FullStaticORTSDavis_A = stf.ReadFloatBlock(STFReader.UNITS.Force, 0.0f); }),
+            new STFReader.TokenProcessor("fullortsdavis_b", ()=>{ FullStaticORTSDavis_B = stf.ReadFloatBlock(STFReader.UNITS.Resistance, 0.0f); }),
+            new STFReader.TokenProcessor("fullortsdavis_c", ()=>{ FullStaticORTSDavis_C = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, 0.0f); }),
             new STFReader.TokenProcessor("fullortswagonfrontalarea", ()=>{ FullStaticORTSWagonFrontalAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, -1); }),
-            new STFReader.TokenProcessor("fullortsdavisdragconstant", ()=>{ FullStaticORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, -1); }),
+            new STFReader.TokenProcessor("fullortsdavisdragconstant", ()=>{ FullStaticORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, 0.0f); }),
             new STFReader.TokenProcessor("fullmaxbrakeforce", ()=>{ FullStaticMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
             new STFReader.TokenProcessor("fullmaxbrakeshoeforce", ()=>{ FullStaticMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
             new STFReader.TokenProcessor("fullmaxhandbrakeforce", ()=>{ FullStaticMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
+            new STFReader.TokenProcessor("fullcenterofgravity_y", ()=>{ /*Alternate spelling*/ FullStaticCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
             new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullStaticCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
             new STFReader.TokenProcessor("fullbrakerelayvalveratio", ()=>{ FullStaticRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, -1); }),
             new STFReader.TokenProcessor("fullbrakerelayvalveinshot", ()=>{ FullStaticInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, -1); })

@@ -1,0 +1,120 @@
+﻿<Window x:Class="Orts.TimetableEditor.Views.DisposeView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Orts.TimetableEditor.Views"
+        xmlns:ViewModel="clr-namespace:Orts.TimetableEditor.ViewModel"
+        xmlns:Converters="clr-namespace:Orts.TimetableEditor.Converters"
+        mc:Ignorable="d"
+        Title="DisposeView" Height="450" Width="800" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <ViewModel:DisposeViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <Converters:BooleanToVisibilityConverter x:Key="boolVisConverter"></Converters:BooleanToVisibilityConverter>
+        <Converters:BooleanToVisibilityConverterHidden x:Key="boolVisHiddenConverters"></Converters:BooleanToVisibilityConverterHidden>
+    </Window.Resources>    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="22"/>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.ColumnSpan="3"  Orientation="Horizontal">
+            <TextBlock Text="Dispose action:" Margin="3 0" VerticalAlignment="Center"/>
+            <RadioButton Content="$forms" Margin="3 0" VerticalAlignment="Center" GroupName="dispose" IsChecked="{Binding DisposeForms}"/>
+            <RadioButton Content="$triggers" Margin="3 0" VerticalAlignment="Center" GroupName="dispose" IsChecked="{Binding DisposeTriggers}"/>
+            <RadioButton Content="$static" Margin="3 0" VerticalAlignment="Center" GroupName="dispose" IsChecked="{Binding DisposeStatic}"/>
+            <RadioButton Content="$stable" Margin="3 0" VerticalAlignment="Center" GroupName="dispose" IsChecked="{Binding DisposeStable}"/>
+            <RadioButton Content="$pool" Margin="3 0" VerticalAlignment="Center" GroupName="dispose" IsChecked="{Binding DisposePool}"/>
+            <RadioButton Content="$attach" Margin="3 0" VerticalAlignment="Center" GroupName="dispose" IsChecked="{Binding DisposeAttach}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal">
+            <TextBlock Text="Command:" Height="20"/>
+            <ComboBox ItemsSource="{Binding PossibleCommands}" SelectedItem="{Binding SelectedPossibleCommand}" Width="150" Height="22" Margin="5 0"/>
+            <Button Width="32" Command="{Binding AddCommand}" ToolTip="Add Command">
+                <Image Width="24" Height="24" Source="/Images/Add_24x24.png"/>
+            </Button>
+            <Button Width="32" Command="{Binding RemoveCommand}" ToolTip="Remove Command">
+                <Image Width="24" Height="24" Source="/Images/Remove_24x24.png"/>
+            </Button>
+        </StackPanel>
+        <ListView Grid.Row="2" Grid.ColumnSpan="3" ItemsSource="{Binding Commands}" SelectedItem="{Binding SelectedCommand}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Command" Width="100" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Command-Value" Width="215">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="32"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding Value}" Visibility="{Binding HasValue, Converter={StaticResource boolVisHiddenConverters}}"/>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" Visibility="{Binding HasItems, Converter={StaticResource boolVisHiddenConverters}}" Width="80"/>
+                                    <Button Grid.Column="2" Width="32" Content="Set" Visibility="{Binding HasItems, Converter={StaticResource boolVisHiddenConverters}}" Command="{Binding SetValue}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Parameter" Width="460">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Visibility="{Binding CanHaveParameters, Converter={StaticResource boolVisConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="350"/>
+                                        <ColumnDefinition Width="80"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="22"/>
+                                        <RowDefinition Height="32"/>
+                                        <RowDefinition Height="32"/>
+                                    </Grid.RowDefinitions>
+                                    <ListView Grid.RowSpan="3" ItemsSource="{Binding Parameters}" SelectedItem="{Binding SelectedParameter}">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Parameter" DisplayMemberBinding="{Binding ParameterName}" Width="100"/>
+                                                <GridViewColumn Header="Parameter-Value" Width="215">
+                                                    <GridViewColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="90"/>
+                                                                    <ColumnDefinition Width="80"/>
+                                                                    <ColumnDefinition Width="32"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBox Text="{Binding ParameterValue}" Visibility="{Binding HasValue, Converter={StaticResource boolVisConverter}}"/>
+                                                                <ComboBox Grid.Column="1" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" Visibility="{Binding HasItems, Converter={StaticResource boolVisConverter}}"/>
+                                                                <Button Grid.Column="2" Content="Set" Command="{Binding SetValue}" Visibility="{Binding HasItems, Converter={StaticResource boolVisConverter}}"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </GridViewColumn.CellTemplate>
+                                                </GridViewColumn>
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding PossibleParameters}" SelectedItem="{Binding SelectedPossibleParameter}"/>
+                                    <Button Grid.Row="1" Grid.Column="1" Command="{Binding AddParameter}" Width="32" ToolTip="Add Parameter">
+                                        <Image Width="24" Height="24" Source="/Images/Add_24x24.png"/>
+                                    </Button>
+                                    <Button Grid.Row="2" Grid.Column="1" Command="{Binding RemoveParameter}" Width="32" ToolTip="Remove Parameter">
+                                        <Image Width="24" Height="24" Source="/Images/Remove_24x24.png"/>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</Window>

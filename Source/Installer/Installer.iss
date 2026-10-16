@@ -1,15 +1,11 @@
-;Open Rails installer                                 
-;12-Jul-2021
-;Chris Jakeman
+; Open Rails installer
 
-; Assuming that Build.cmd is run from its directory then, in the same directory, this installer for "stable" requires file:
-;   ".NET Framework 4.7.2 web installer\ndp472-kb4054531-web.exe"
-; which can be downloaded from:
-;   http://go.microsoft.com/fwlink/?LinkId=863262
-; and creates:
-;   Open Rails/Program/*
-;   Source/Installer/Output/OpenRailsSetup.exe
-; Build.cmd for "stable" will move OpenRailSetup.exe back into .\OpenRails-<mode>-Setup.exe.
+; Build the installer by running `Build.cmd stable`:
+; - Installer created in `./Output/OpenRailsSetup.exe`
+; - `Build.cmd` will move that to `../OpenRails-<mode>-Setup.exe`.
+
+; From https://github.com/DomGries/InnoDependencyInstaller
+#include "CodeDependencies.iss"
 
 #define MyAppName "Open Rails"
 #include "Version.iss"  ; provides the version number
@@ -17,8 +13,6 @@
 #define MyAppManualName "Open Rails manual"
 #define MyAppSourceName "Download Open Rails source code"
 #define MyAppBugName "Report a bug in Open Rails"
-
-#define DotNETName "Microsoft .NET Framework 4.7.2"
 
 #define MyAppURL "https://openrails.org"
 #define MyAppSourceURL "http://openrails.org/download/source/"
@@ -29,9 +23,6 @@
 
 #define MyAppProgPath "..\..\Program"
 #define MyAppDocPath "..\..\Program\Documentation"
-
-#define NetRedistPath "..\..\.NET Framework 4.7.2 web installer"
-#define NetRedist "ndp472-kb4054531-web.exe" ; Has to be lower-case to match download
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -69,8 +60,8 @@ Uninstallable   =yes
 UninstallDisplayIcon ={app}\{#MyAppExeName}
 OutputBaseFilename =OpenRailsSetup
 
-; Windows 7 SP1 Correct value, so ignore final warning message from Build > Compile
-MinVersion      =6.1sp1
+; Windows 10 Version 1909 (November 2019 Update)
+MinVersion      =10.0.18363
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -103,10 +94,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-; Don't install these prerequisites until after the licence file has been accepted.
-; .NET Framework redistributable
-Source: {#NetRedistPath}\{#NetRedist}; DestDir: {tmp}; Flags: deleteafterinstall; AfterInstall: InstallFrameworkNet472; Check: IsNotInstalledFrameworkNet472
-
 ; The game itself
 ; Readme.txt is copied from Source\RunActivity\Readme.txt
 Source: {#MyAppProgPath}\*; Excludes: Readme*.txt; DestDir: {app}; Flags: ignoreversion recursesubdirs
@@ -126,46 +113,9 @@ Filename: "{app}\{#MyAppExeName}"; StatusMsg: "Installing Open Rails ..."; Descr
  
 
 [Code]
-function IsNotInstalledFrameworkNet472: Boolean;
-var
-  data: Cardinal;
-  StatusText: string;
+function InitializeSetup: Boolean;
 begin
-  // Gets left on screen while file is unpacked.
-  StatusText := WizardForm.StatusLabel.Caption;
-  WizardForm.StatusLabel.Caption := 'Checking for prerequisite {#DotNETName}...';
-  Result := true; // Result is a pre-declared return value
-  if (RegQueryDWordValue(HKLM, 'Software\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', data)) then begin
-    // "or" operator doesn't work
-    if (IntToStr(data) = '461808') then Result := false; // v4.7.2
-    if (IntToStr(data) = '461814') then Result := false; // v4.7.2
-    if (IntToStr(data) = '528040') then Result := false; // v4.8
-    if (IntToStr(data) = '528372') then Result := false; // v4.8
-    if (IntToStr(data) = '528049') then Result := false; // v4.8
-  end;
-  if (Result = true) then 
-    WizardForm.StatusLabel.Caption := 'Installing Open Rails ...';
-end;
+  Dependency_AddDotNet60Desktop; // .NET Desktop Runtime 6.0
 
-procedure InstallFrameworkNet472;
-var
-  StatusText: string;
-  ResultCode: Integer;
-begin
-  StatusText := WizardForm.StatusLabel.Caption;
-  WizardForm.StatusLabel.Caption := 'Installing {#DotNETName} (takes about 8 mins and downloads 82MB)...';
-  WizardForm.ProgressGauge.Style := npbstMarquee;
-  try
-    begin
-      // Install the package
-      if not Exec(ExpandConstant('{tmp}\{#NetRedist}'), ' /q /noreboot', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
-      begin
-        // Tell the user why the installation failed
-        MsgBox('Installing {#DotNETName} failed with code: ' + IntToStr(ResultCode) + '.', mbError, MB_OK);
-      end;
-    end;
-  finally
-    WizardForm.StatusLabel.Caption := StatusText;
-    WizardForm.ProgressGauge.Style := npbstNormal;
-  end;
+  Result := True;
 end;

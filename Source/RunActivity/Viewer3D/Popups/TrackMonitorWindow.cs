@@ -309,10 +309,10 @@ namespace Orts.Viewer3D.Popups
         {
             if (SignalAspects == null)
                 // TODO: This should happen on the loader thread.
-                SignalAspects = SharedTextureManager.Get(owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(owner.Viewer.ContentPath, "SignalAspects.png"));
+                SignalAspects = SharedTextureManager.LoadInternal(owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(owner.Viewer.ContentPath, "SignalAspects.png"));
             if (TrackMonitorImages == null)
                 // TODO: This should happen on the loader thread.
-                TrackMonitorImages = SharedTextureManager.Get(owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(owner.Viewer.ContentPath, "TrackMonitorImages.png"));
+                TrackMonitorImages = SharedTextureManager.LoadInternal(owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(owner.Viewer.ContentPath, "TrackMonitorImages.png"));
 
             Viewer = owner.Viewer;
             StateProperty = Viewer.Settings.GetSavingProperty<int>("TrackMonitorDisplayMode");
@@ -913,7 +913,7 @@ namespace Orts.Viewer3D.Popups
                 var labelPoint = new Point(offset.X + speedTextOffset, offset.Y + newLabelPosition + textOffset[forward ? 0 : 1]);
                 var speedString = FormatStrings.FormatSpeedLimitNoUoM(allowedSpeed, metric);
                 Font.Draw(spriteBatch, labelPoint, speedString, thisItem.SpeedObjectType == Train.TrainObjectItem.SpeedItemType.Standard ? (thisItem.IsWarning ? Color.Yellow : Color.White) :
-                    (thisItem.SpeedObjectType == Train.TrainObjectItem.SpeedItemType.TempRestrictedStart ? Color.Red : Color.LightGreen));
+                    (thisItem.SpeedObjectType == Train.TrainObjectItem.SpeedItemType.TempRestrictedStart ? Color.OrangeRed : Color.LightGreen));
 
                 if (itemOffset < firstLabelPosition && !firstLabelShown)
                 {

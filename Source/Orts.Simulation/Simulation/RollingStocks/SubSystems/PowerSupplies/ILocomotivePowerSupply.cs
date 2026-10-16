@@ -52,6 +52,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         void HandleEventFromTcs(PowerSupplyEvent evt);
         void HandleEventFromTcs(PowerSupplyEvent evt, int id);
         void HandleEventFromTcs(PowerSupplyEvent evt, string message);
+        void HandleEventFromControlCar(PowerSupplyEvent evt);
+        void HandleEventFromControlCar(PowerSupplyEvent evt, int id);
         void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt);
         void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt, int id);
     }

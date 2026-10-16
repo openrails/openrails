@@ -16,8 +16,8 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Media.Imaging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -113,7 +113,7 @@ namespace ORTS.TrackViewer.Drawing
             Texture2D tempTexture;
             try
             {
-                tempTexture = SharedTextureManager.Get(graphicsDevice, fullFileName);
+                tempTexture = SharedTextureManager.LoadInternal(graphicsDevice, fullFileName);
             }
             catch
             {
@@ -308,9 +308,23 @@ namespace ORTS.TrackViewer.Drawing
                 string textureName = filename;
                 string path = directory + filename;
                 oldAceFiles = new List<string>();
-                if (System.IO.File.Exists(path))
+                if (File.Exists(path))
                 {
-                    Texture2D texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
+                    Texture2D texture;
+                    try
+                    {
+                        if (Path.GetExtension(path) == ".dds")
+                            DDSLib.DDSFromFile(path, graphicsDevice, true, out texture);
+                        else if (Path.GetExtension(path) == ".ace")
+                            texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
+                        else
+                            continue;
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
                     textures[textureName] = texture;
                     textureScales[textureName] = texture.Width;
                     textureOffsets[textureName] = new Vector2(texture.Width / 2, texture.Height / 2);

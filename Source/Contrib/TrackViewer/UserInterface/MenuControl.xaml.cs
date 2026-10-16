@@ -21,6 +21,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -679,7 +680,7 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void MenuDocumentation_Click(object sender, RoutedEventArgs e)
         {
-            string website = "http://openrails.org/learn/manual-and-tutorials/";
+            string website = "https://www.openrails.org/learn/documents/";
             StringBuilder documentation = new StringBuilder();
             documentation.Append(TrackViewer.catalog.GetString("Documentation is available"));
             documentation.Append(": ");
@@ -693,7 +694,7 @@ namespace ORTS.TrackViewer.UserInterface
                 MessageBoxButton.YesNoCancel);
             if (result.ToString() == "Yes")
             {
-                System.Diagnostics.Process.Start(website);
+                Process.Start(new ProcessStartInfo { FileName = website, UseShellExecute = true });
             }
         }
 

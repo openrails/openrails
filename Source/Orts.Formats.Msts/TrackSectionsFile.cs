@@ -216,6 +216,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("sectionidx", ()=>{ SectionIdxs[nextPath++] = new SectionIdx(stf); }),
                 new STFReader.TokenProcessor("tunnelshape", ()=>{ TunnelShape = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("roadshape", ()=>{ RoadShape = stf.ReadBoolBlock(true); }),
+                new STFReader.TokenProcessor("ortsrackshape", ()=>{ RackShape = stf.ReadBoolBlock(true); }),
             });
 			// TODO - this was removed since TrackShape( 183 ) is blank
 			//if( FileName == null )	throw( new STFError( stf, "Missing FileName" ) );
@@ -230,8 +231,9 @@ namespace Orts.Formats.Msts
 		public SectionIdx[] SectionIdxs;
         public bool TunnelShape;
         public bool RoadShape;
+        public bool RackShape;
 
-	}
+    }
 	
 	public class TrackShapes: Dictionary<uint, TrackShape>
 	{
