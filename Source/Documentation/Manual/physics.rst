@@ -5321,13 +5321,18 @@ highly recommended that the default values be used.
 When using any of the following parameters, the sanding system type needs to be set by allocating either "Steam" or 
 "Air" to the ``SandingSystemType`` ( x ) parameter in engine section of file.
 
+.. index::
+   single: ORTSMaxTrackSanderSteamConsumptionForward
+   single: ORTSMaxTrackSanderSteamConsumptionReverse
+
 **Steam Consumption**
 
 ``ORTSMaxTrackSanderSteamConsumptionForward`` - total steam consumption for all sanders when traveling in 
 forward direction, ie in front of wheel.
 
-``ORTSMaxTrackSanderSteamConsumptionForward`` - total steam consumption for all sanders when traveling in 
-reverse direction, ie behind wheel. Note, = 0 when not used.
+``ORTSMaxTrackSanderSteamConsumptionReverse`` - total steam consumption for all sanders when traveling in 
+reverse direction, ie behind wheel. Note: set to 0 when reverse sander is not equipped. If no value is specified,
+the reverse sander value will be set equal to the forward sander value.
 
 All steam consumption parameters are in lbs/sec.
 
@@ -5338,15 +5343,25 @@ can be added by using one or both of the following aparmeters.
 
 ``SanderSteamExhaustReverseFX`` - steam effect when travelling in reverse, ie in behind the wheel.
 
-**Air Consumption**
+.. index::
+   single: ORTSMaxTrackSanderAirConsumptionForward
+   single: ORTSMaxTrackSanderAirConsumptionReverse
 
-``ORTSMaxTrackSanderAirConsumptionForward`` - total air consumption for all sanders when traveling in reverse 
-direction, ie behind wheel. Note, = 0 when not used.
+**Air Consumption**
 
 ``ORTSMaxTrackSanderAirConsumptionForward`` - total air consumption for all sanders when traveling in forward 
 direction, ie in front of wheel.
 
+``ORTSMaxTrackSanderAirConsumptionReverse`` - total air consumption for all sanders when traveling in reverse 
+direction, ie behind wheel. Note: set to 0 when reverse sander is not equipped. If no value is specified,
+the reverse sander value will be set equal to the forward sander value.
+
 All air consumption parameters are in cuft/sec.
+
+.. index::
+   single: ORTSMaxTrackSanderSandConsumptionForward
+   single: ORTSMaxTrackSanderSandConsumptionReverse
+   single: ORTSMaxTrackSanderBoxCapacity
 
 **Sand Consumption**
 
@@ -5354,9 +5369,13 @@ All air consumption parameters are in cuft/sec.
 direction, ie in front of wheel.
 
 ``ORTSMaxTrackSanderSandConsumptionReverse`` - total sand consumption for all sanders when traveling in reverse 
-direction, ie behind wheel. Note, = 0 when not used.
+direction, ie behind wheel. Note: set to 0 when reverse sander is not equipped. If no value is specified,
+the reverse sander value will be set equal to the forward sander value.
 
 All sand consumption parameters are in cuft/sec.
+
+``ORTSMaxTrackSanderBoxCapacity`` - the total sand capacity of the locomotive, shared between forward and reverse
+sanders. Capacity is measured as a volume, default cubic feet.
 
 .. _physics-hammer-blow:
 
