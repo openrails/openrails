@@ -57,36 +57,73 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public PowerSupplyState AuxiliaryPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool AuxiliaryPowerSupplyOn => AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
-
-        public virtual PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
-        public bool ElectricTrainSupplyOn => ElectricTrainSupplyState == PowerSupplyState.PowerOn;
-        public bool FrontElectricTrainSupplyCableConnected { get; set; }
-        public virtual float ElectricTrainSupplyPowerW
+        public float AuxiliaryPowerSupplyPowerW
         {
             get
             {
+                if (!AuxiliaryPowerSupplyOn) return 0;
+                float powerW = 0;
+                foreach (var load in AuxiliaryPowerSupplyLoads)
+                {
+                    powerW += load.CurrentPowerW;
+                }
+                return powerW;
+            }
+        }
+        public List<PowerSupplyLoad> AuxiliaryPowerSupplyLoads { get; protected set; } = new List<PowerSupplyLoad>();
+
+        public virtual PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
+        public virtual PowerSupplyDirection ElectricTrainSupplyDirection { get; set; } = PowerSupplyDirection.Source;
+        public bool ElectricTrainSupplyOn => ElectricTrainSupplyState == PowerSupplyState.PowerOn;
+        public bool FrontElectricTrainSupplyCableConnected { get; set; }
+        public List<TrainCar> ElectricTrainSupplySourceCars { get; set; } = new List<TrainCar>();
+        private float electricTrainSupplyPowerW = 0;
+        public float ElectricTrainSupplyPowerW
+        {
+            get
+            {
+                if (ElectricTrainSupplyDirection == PowerSupplyDirection.Sink) return electricTrainSupplyPowerW;
+                if (!ElectricTrainSupplyOn) return 0;
                 float result = 0;
                 foreach (var car in Train.Cars)
                 {
-                    if (car == null) continue;
-                    if (!(car is MSTSWagon wagon)) continue;
-                    if (wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)
+                    if (!(car is MSTSWagon wagon) || wagon.PowerSupply == null) continue;
+                    if (wagon.PowerSupply.ElectricTrainSupplyDirection == PowerSupplyDirection.Sink)
                     {
-                        result += wagon.PassengerCarPowerSupply.ElectricTrainSupplyPowerW / wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Count;
+                        bool found = false;
+                        int count = 0;
+                        foreach (var car2 in wagon.PowerSupply.ElectricTrainSupplySourceCars)
+                        {
+                            if (car2 == Car) found = true;
+                            if (car2.PowerSupply?.ElectricTrainSupplyOn ?? false) ++count;
+                        }
+                        if (found) result += wagon.PowerSupply.ElectricTrainSupplyPowerW / count;
                     }
-                    else if (wagon is MSTSLocomotive locomotive && locomotive.LocomotivePowerSupply is ScriptedControlCarPowerSupply control && control.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive))
-                    {
-                        result += control.ElectricTrainSupplyPowerW / control.ElectricTrainSupplyConnectedLocomotives.Count;
-                    }
-
                 }
                 return result;
             }
-            set { }
+            set
+            {
+                if (ElectricTrainSupplyDirection == PowerSupplyDirection.Sink) electricTrainSupplyPowerW = value;
+            }
         }
 
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
+        public float LowVoltagePowerSupplyPowerW
+        {
+            get
+            {
+                if (!LowVoltagePowerSupplyOn) return 0;
+                float powerW = 0;
+                foreach (var load in LowVoltagePowerSupplyLoads)
+                {
+                    powerW += load.CurrentPowerW;
+                }
+                return powerW;
+            }
+        }
+        public List<PowerSupplyLoad> LowVoltagePowerSupplyLoads { get; protected set; } = new List<PowerSupplyLoad>();
 
         public PowerSupplyState BatteryState
         {
@@ -107,6 +144,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public float PowerOnDelayS { get; protected set; } = 0f;
         public float AuxPowerOnDelayS { get; protected set; } = 0f;
+        public float AuxContinuousPowerW { get; protected set; } = 0f;
 
         public bool ServiceRetentionButton { get; set; } = false;
         public bool ServiceRetentionCancellationButton { get; set; } = false;
@@ -154,6 +192,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case "engine(ortsauxpowerondelay":
                     AuxPowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
                     break;
+                
+                case "engine(ortsauxcontinuouspower":
+                    AuxContinuousPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
+                    break;
 
                 case "engine(ortsbattery":
                     Battery.Parse(lowercasetoken, stf);
@@ -183,6 +225,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 PowerOnDelayS = scriptedOther.PowerOnDelayS;
                 AuxPowerOnDelayS = scriptedOther.AuxPowerOnDelayS;
+                AuxContinuousPowerW = scriptedOther.AuxContinuousPowerW;
             }
         }
 
@@ -267,6 +310,65 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     FrontElectricTrainSupplyCableConnected = true;
                 }
+            }
+
+            ElectricTrainSupplySourceCars.Clear();
+            if (ElectricTrainSupplyDirection == PowerSupplyDirection.Sink)
+            {
+                foreach (TrainCar car in Train.Cars)
+                {
+                    int carId = Train.Cars.IndexOf(car);
+                    bool carInFront = carId < CarId;
+
+                    bool connectedToCar = true;
+                    if (carInFront)
+                    {
+                        for (int i = carId; i < CarId; i++)
+                        {
+                            if (Train.Cars[i + 1].PowerSupply == null)
+                            {
+                                connectedToCar = false;
+                                break;
+                            }
+                            if (!Train.Cars[i + 1].PowerSupply.FrontElectricTrainSupplyCableConnected)
+                            {
+                                connectedToCar = false;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i = carId; i > CarId; i--)
+                        {
+                            if (Train.Cars[i].PowerSupply == null)
+                            {
+                                connectedToCar = false;
+                                break;
+                            }
+                            if (!Train.Cars[i].PowerSupply.FrontElectricTrainSupplyCableConnected)
+                            {
+                                connectedToCar = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (connectedToCar && car.PowerSupply.ElectricTrainSupplyDirection == PowerSupplyDirection.Source) ElectricTrainSupplySourceCars.Add(car);
+                }
+
+                ElectricTrainSupplyState = PowerSupplyState.PowerOff;
+                foreach (var car in ElectricTrainSupplySourceCars)
+                {
+                    if (car.PowerSupply.ElectricTrainSupplyState > ElectricTrainSupplyState)
+                    {
+                        ElectricTrainSupplyState = car.PowerSupply.ElectricTrainSupplyState;
+                    }
+                }
+            }
+            else
+            {
+                electricTrainSupplyPowerW = 0;
             }
 
             Battery.Update(elapsedClockSeconds);

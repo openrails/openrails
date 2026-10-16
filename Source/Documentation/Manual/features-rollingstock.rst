@@ -2015,6 +2015,7 @@ Scripts will run if referenced by OR-specific fields in the .eng file.
    * - Circuit breaker
      - ``ORTS.Scripting.Api.CircuitBreaker``
      - ``Engine ( ORTSCircuitBreaker ( "DemoBreaker.cs" ) )``
+     - ``Wagon ( ORTSCircuitBreaker ( "DemoBreaker.cs" ) )``
    * - Traction cut-off relay
      - ``ORTS.Scripting.Api.TractionCutOffRelay``
      - ``Engine ( ORTSTractionCutOffRelay ( "DemoRelay.cs" ) )``
@@ -2024,8 +2025,14 @@ Scripts will run if referenced by OR-specific fields in the .eng file.
    * - Electric power supply
      - ``ORTS.Scripting.Api.ElectricPowerSupply``
      - ``Engine ( ORTSPowerSupply ( "DemoPower.cs" ) )``
+   * - Control car power supply
+     - ``ORTS.Scripting.Api.ControlCarPowerSupply``
+     - ``Engine ( ORTSPowerSupply ( "DemoPower.cs" ) )``
    * - Passenger car power supply
      - ``ORTS.Scripting.Api.PassengerCarPowerSupply``
+     - ``Wagon ( ORTSPowerSupply ( "DemoPower.cs" ) )``
+   * - Power van power supply
+     - ``ORTS.Scripting.Api.PowerVanPowerSupply``
      - ``Wagon ( ORTSPowerSupply ( "DemoPower.cs" ) )``
    * - Pantograph selector
      - ``ORTS.Scripting.Api.PantographSelector``
@@ -2174,8 +2181,8 @@ Do `not` use these names for your own script.
 Circuit breaker
 ---------------
 
-Available for electric locomotives only. The circuit breaker script controls 
-the behavior of the locomotive's 
+Available for vehicles with pantographs. The circuit breaker script controls 
+the behavior of the car's 
 :ref:`circuit breaker <physics-circuit-breaker>`.
 
 .. index::
@@ -2184,6 +2191,13 @@ the behavior of the locomotive's
 Use the following .eng parameter to load a circuit breaker script::
 
   Engine (
+      ORTSCircuitBreaker ( "YourCB.cs" )
+      ORTSCircuitBreakerClosingDelay ( 2s )
+  )
+
+For unpowered cars with pantograph (e.g. power vans), use instead::
+
+  Wagon (
       ORTSCircuitBreaker ( "YourCB.cs" )
       ORTSCircuitBreakerClosingDelay ( 2s )
   )

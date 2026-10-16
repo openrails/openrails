@@ -615,9 +615,9 @@ to MSTS which only considered one engine per locomotive. In case
 there is more than one engine, other engines act like *helper* engines
 (start/stop control for helpers is ``<Ctrl+Y>`` by default). The power of
 each active engine is added to the locomotive power. Depending on the settings
-of ``ProvidesTractionPower`` and ``ProvidesETSPower``, various multi-engine
+of ``ProvidesTractionPower``, ``ProvidesAuxiliaryPower`` and ``ProvidesETSPower``, various multi-engine
 locomotives can be constructed, from gensets to locomotives with separate
-engines for ETS power only.
+engines for ETS and auxiliary power only.
 
 If the ORTS specific definition is used, each parameter is tracked and if
 any are missing the lacking data is estimated from other diesel engine
@@ -688,6 +688,7 @@ is enabled.
 |                                          |                                                           |
 |     MaximalPower ( 300kW )               | Maximum engine gross power (default watts)                |
 |     ProvidesTractionPower ( 1 )          | Set to 0 if this engine isn't used to move the locomotive |
+|     ProvidesAuxiliaryPower ( 1 )         | Set to 0 if this engine isn't used to provide aux power   |
 |     ProvidesETSPower ( 1 )               | Set to 0 if this engine isn't used to provide coach power |
 |                                          |                                                           |
 |     IdleExhaust ( 5 )                    | Number of exhaust particles per second at IdleRPM         |
@@ -713,7 +714,7 @@ is enabled.
 |     AuxiliaryPowerTab (                  | Auxiliary Power Draw vs. RPM Table                        |
 |         0       2500                     |   RPM / Power (default watts)                             |
 |         510     3500                     |      Specifies power constantly consumed by auxiliary     |
-|         600     4000                     |      equipment, such as battery chargers and blowers,     |
+|         600     4000                     |      equipment *not* connected to the auxiliary generator |
 |         800     6000                     |      as a function of RPM.                                |
 |         1000    9000                     |      Subtracts from DieselPowerTab to determine the power |
 |         1100    11000                    |      available for tractive effort.                       |
@@ -5708,6 +5709,7 @@ by the *Electric train supply* value in the HUD view.
 
 .. index::
    single: ORTSElectricTrainSupply
+   single: ORTSWagonSpecialType
 
 Three behaviours are available:
 
@@ -5728,6 +5730,8 @@ Example::
     )
 
 If the locomotive is a diesel locomotive, the power consumed by the cars on the electric train supply is no longer available for traction.
+
+Unpowered cars with pantographs can power the electric train supply by setting ``ORTSWagonSpecialType ( PowerVan )``.
 
 The state of the electric train supply can be used in the :ref:`locomotive power supply scripts <features-scripting-powersupply>`,
 in the :ref:`passenger car power supply scripts <features-scripting-passenger-car-power-supply>` and the :ref:`cabview controls <cabs-master-key>`.

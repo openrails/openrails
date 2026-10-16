@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
@@ -30,12 +31,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         Pantographs Pantographs { get; }
 
         PowerSupplyState ElectricTrainSupplyState { get; set; }
+        PowerSupplyDirection ElectricTrainSupplyDirection { get; set; }
+        List<TrainCar> ElectricTrainSupplySourceCars { get; set; }
         bool ElectricTrainSupplyOn { get; }
         bool FrontElectricTrainSupplyCableConnected { get; set; }
         float ElectricTrainSupplyPowerW { get; }
 
+        PowerSupplyState AuxiliaryPowerSupplyState { get; set; }
+        bool AuxiliaryPowerSupplyOn { get; }
+        float AuxiliaryPowerSupplyPowerW { get; }
+        List<PowerSupplyLoad> AuxiliaryPowerSupplyLoads { get; }
+
         PowerSupplyState LowVoltagePowerSupplyState { get; set; }
         bool LowVoltagePowerSupplyOn { get; }
+        float LowVoltagePowerSupplyPowerW { get; }
+        List<PowerSupplyLoad> LowVoltagePowerSupplyLoads { get; }
 
         PowerSupplyState BatteryState { get; set; }
         bool BatteryOn { get; }

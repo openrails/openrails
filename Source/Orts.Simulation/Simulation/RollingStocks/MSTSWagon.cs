@@ -1211,7 +1211,7 @@ namespace Orts.Simulation.RollingStocks
         {
             Pantographs.Initialize();
             Doors.Initialize();
-            PassengerCarPowerSupply?.Initialize();
+            PowerSupply?.Initialize();
             LocomotiveAxles.Initialize();
 
             base.Initialize();
@@ -1245,7 +1245,7 @@ namespace Orts.Simulation.RollingStocks
         public override void InitializeMoving()
         {
             base.InitializeMoving();
-            PassengerCarPowerSupply?.InitializeMoving();
+            PowerSupply?.InitializeMoving();
             LocomotiveAxles.InitializeMoving();
         }
 
@@ -1656,6 +1656,8 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsnumberaxles": InitWagonNumAxles = stf.ReadIntBlock(null); break;
                 case "wagon(ortsnumberbogies": WagonNumBogies = stf.ReadIntBlock(null); break;
                 case "wagon(ortspantographs":
+                case "wagon(ortscircuitbreaker":
+                case "wagon(ortscircuitbreakerclosingdelay":
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
                 case "wagon(ortsdoors(closingdelay":
@@ -1673,11 +1675,21 @@ namespace Orts.Simulation.RollingStocks
                     {
                         Trace.TraceWarning($"Defining the {lowercasetoken} parameter is forbidden for locomotives (in {stf.FileName}:line {stf.LineNumber})");
                     }
-                    else if (PassengerCarPowerSupply == null)
+                    else
+                    {
+                        if (PowerSupply == null)
+                        {
+                            if (WagonSpecialType == WagonSpecialTypes.PowerVan)
+                            {
+                                PowerSupply = new ScriptedPowerVanPowerSupply(this);
+                            }
+                            else
                     {
                         PowerSupply = new ScriptedPassengerCarPowerSupply(this);
                     }
-                    PassengerCarPowerSupply?.Parse(lowercasetoken, stf);
+                        }
+                        PowerSupply?.Parse(lowercasetoken, stf);
+                    }
                     break;
 
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
@@ -1878,11 +1890,7 @@ namespace Orts.Simulation.RollingStocks
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
             if (copy.WeightLoadController != null) WeightLoadController = new MSTSNotchController(copy.WeightLoadController);
 
-            if (copy.PassengerCarPowerSupply != null)
-            {
-                PowerSupply = new ScriptedPassengerCarPowerSupply(this);
-                PassengerCarPowerSupply.Copy(copy.PassengerCarPowerSupply);
-            }
+            PowerSupply?.Copy(copy.PowerSupply);
             LocomotiveAxles.Copy(copy.LocomotiveAxles);
             MoveParamsToAxle();
         }
@@ -2012,7 +2020,7 @@ namespace Orts.Simulation.RollingStocks
                 coupler.Save(outf);
             Pantographs.Save(outf);
             Doors.Save(outf);
-            PassengerCarPowerSupply?.Save(outf);
+            PowerSupply?.Save(outf);
             if (FreightAnimations != null)
             {
                 FreightAnimations.Save(outf);
@@ -2081,7 +2089,7 @@ namespace Orts.Simulation.RollingStocks
             Couplers = ReadCouplersFromSave(inf).ToList();
             Pantographs.Restore(inf);
             Doors.Restore(inf);
-            PassengerCarPowerSupply?.Restore(inf);
+            PowerSupply?.Restore(inf);
             if (FreightAnimations != null)
             {
                 FreightAnimations.Restore(inf);
@@ -2137,7 +2145,7 @@ namespace Orts.Simulation.RollingStocks
         {
             base.Update(elapsedClockSeconds);
 
-            PassengerCarPowerSupply?.Update(elapsedClockSeconds);
+            PowerSupply?.Update(elapsedClockSeconds);
 
             ConfirmSteamLocomotiveTender(); // Confirms that a tender is connected to the steam locomotive
 

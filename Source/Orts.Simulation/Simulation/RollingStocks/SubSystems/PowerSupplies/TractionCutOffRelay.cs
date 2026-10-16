@@ -28,7 +28,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
     public class ScriptedTractionCutOffRelay : ITractionCutOffSubsystem
     {
-        public ILocomotivePowerSupply PowerSupply { get; protected set; }
+        public IPowerSupply PowerSupply { get; protected set; }
         public ScriptedLocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ScriptedLocomotivePowerSupply;
         public MSTSLocomotive Locomotive => LocomotivePowerSupply.Locomotive;
         public Simulator Simulator => LocomotivePowerSupply.Locomotive.Simulator;

@@ -457,8 +457,8 @@ namespace Orts.Viewer3D.RollingStock
             if (!(car.Flipped ^ (car.Train.IsActualPlayerTrain && Viewer.PlayerLocomotive.Flipped)) && Pantograph1.IsAnimated() && Pantograph2.IsAnimated())
                 (Pantograph1, Pantograph2) = (Pantograph2, Pantograph1);
 
-            Pantograph1.SetState(MSTSWagon.Pantographs[1].CommandUp);
-            Pantograph2.SetState(MSTSWagon.Pantographs[2].CommandUp);
+            if (MSTSWagon.Pantographs.List.Count > 0) Pantograph1.SetState(MSTSWagon.Pantographs[1].CommandUp);
+            if (MSTSWagon.Pantographs.List.Count > 1) Pantograph2.SetState(MSTSWagon.Pantographs[2].CommandUp);
             if (MSTSWagon.Pantographs.List.Count > 2) Pantograph3.SetState(MSTSWagon.Pantographs[3].CommandUp);
             if (MSTSWagon.Pantographs.List.Count > 3) Pantograph4.SetState(MSTSWagon.Pantographs[4].CommandUp);
             LeftDoor.SetState(MSTSWagon.LeftDoor.State >= DoorState.Opening);
@@ -714,8 +714,8 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            Pantograph1.UpdateState(MSTSWagon.Pantographs[1].CommandUp, elapsedTime);
-            Pantograph2.UpdateState(MSTSWagon.Pantographs[2].CommandUp, elapsedTime);
+            if (MSTSWagon.Pantographs.List.Count > 0) Pantograph1.UpdateState(MSTSWagon.Pantographs[1].CommandUp, elapsedTime);
+            if (MSTSWagon.Pantographs.List.Count > 1) Pantograph2.UpdateState(MSTSWagon.Pantographs[2].CommandUp, elapsedTime);
             if (MSTSWagon.Pantographs.List.Count > 2) Pantograph3.UpdateState(MSTSWagon.Pantographs[3].CommandUp, elapsedTime);
             if (MSTSWagon.Pantographs.List.Count > 3) Pantograph4.UpdateState(MSTSWagon.Pantographs[4].CommandUp, elapsedTime);
             LeftDoor.UpdateState(MSTSWagon.LeftDoor.State >= DoorState.Opening, elapsedTime);
