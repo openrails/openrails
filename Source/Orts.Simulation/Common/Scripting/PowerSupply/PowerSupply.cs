@@ -271,7 +271,8 @@ namespace ORTS.Scripting.Api
         Light,
         InteriorLighting,
         CabInstrument,
-        Tilting
+        Tilting,
+        DieselMechanical
     }
     public class PowerSupplyLoad
     {

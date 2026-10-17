@@ -251,6 +251,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 return temp;
             }
         }
+        /// <summary>
+        /// A summary of instantaneous auxiliary power output of all the diesel engines
+        /// </summary>
+        public float AuxiliaryPowerSupplyLoadPowerW
+        {
+            get
+            {
+                float temp = 0f;
+                foreach (DieselEngine de in DEList)
+                    temp += de.AuxiliarySupplyLoad.CurrentPowerW;
+                return temp;
+            }
+        }
 
         /// <summary>
         /// A summary of instantaneous ETS power output of all the diesel engines
@@ -289,7 +302,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 float temp = 0f;
                 foreach (DieselEngine de in DEList)
                     if (de.ProvidesElectricalAuxiliaryPower)
-                        temp += de.CurrentMaximumPowerW - de.AuxPowerTab[de.RealRPM];
+                        temp += de.CurrentMaximumPowerW - de.AuxiliarySupplyLoad.CurrentPowerW;
                 return temp;
             }
         }
@@ -779,6 +792,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
         }
+        public PowerSupplyLoad AuxiliarySupplyLoad;
         /// <summary>
         /// The proportion of total locomotive electrical auxiliary power this engine currently provides
         /// </summary>
@@ -792,7 +806,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         float availableAuxW = Locomotive.DieselEngines.AvailableElectricalAuxiliaryPowerW;
                         if (availableAuxW > 0)
-                            return (CurrentMaximumPowerW - AuxPowerTab[RealRPM]) / availableAuxW;
+                            return (CurrentMaximumPowerW - AuxiliarySupplyLoad.CurrentPowerW) / availableAuxW;
                         else
                             return 0;
                     }
@@ -1161,6 +1175,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 GearBox = new GearBox(this);
                 GearBox.Initialize();
             }
+            AuxiliarySupplyLoad = new PowerSupplyLoad(PowerSupplyLoadType.DieselMechanical, Id.ToString());
+            Locomotive.DieselPowerSupply.AuxiliaryPowerSupplyLoads.Add(AuxiliarySupplyLoad);
         }
 
         public void InitializeMoving()
@@ -1269,11 +1285,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 CurrentMaximumPowerW = MathHelper.Clamp(DieselPowerTab[RealRPM], 0.0f, MaximumDieselPowerW) * (1 - Locomotive.PowerReduction);
             }
 
-            AuxiliaryPowerW = AuxPowerTab[RealRPM];
+            AuxiliarySupplyLoad.CurrentPowerW = State == DieselEngineState.Running ? AuxPowerTab[RealRPM] * AuxiliarySupplyLoad.PowerReduction : 0.0f;
+            AuxiliaryPowerW = AuxiliarySupplyLoad.CurrentPowerW;
             ETSPowerW = 0;
             if (Locomotive.LocomotivePowerSupply != null)
             {
-                if (ProvidesElectricalAuxiliaryPower) AuxiliaryPowerW += Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyPowerW * ElectricalAuxiliaryPowerProportion;
+                if (ProvidesElectricalAuxiliaryPower) AuxiliaryPowerW += (Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyPowerW - Locomotive.DieselEngines.AuxiliaryPowerSupplyLoadPowerW) * ElectricalAuxiliaryPowerProportion;
                 if (ProvidesETS) ETSPowerW = Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW * ETSPowerProportion;
             }
 
