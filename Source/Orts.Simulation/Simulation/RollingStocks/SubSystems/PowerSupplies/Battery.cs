@@ -22,30 +22,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float VoltageV { get; protected set; }
         public float CurrentCapacityJ { get; protected set; }
         public float MaxCapacityJ = 3.6e7f;
-        protected float PowerW; // Power demanded by the power supply, not implemented
-        protected float MaxChargingPowerW = 10000;
+        public PowerSupplyLoad BatteryCharger;
+        protected float LowVoltageSupplyPowerW => Car.PowerSupply.LowVoltagePowerSupplyPowerW;
+        protected float PowerFlowW; // Charging (positive) or discharging (negative) power to the battery
         protected float ChargingVoltageV;
-        protected bool IsCharging
-        {
-            get
-            {
-                if (Car is MSTSLocomotive locomotive)
-                {
-                    return locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn;
-                }
-                else if (Car.PowerSupply != null)
-                {
-                    return Car.PowerSupply.ElectricTrainSupplyOn;
-                }
-                return false;
-            }
-        }
+        protected bool IsChargerOn => (Car.PowerSupply?.AuxiliaryPowerSupplyOn ?? false) && BatteryCharger.PowerReduction < 1;
         public Interpolator ChargeVoltageCurve;
         public PowerSupplyState State;
         public Battery(MSTSWagon wagon)
         {
             Car = wagon;
             BatterySwitch = new BatterySwitch(wagon);
+            BatteryCharger = new PowerSupplyLoad(PowerSupplyLoadType.BatteryCharger);
         }
         public virtual void Parse(string lowercasetoken, STFReader stf)
         {
@@ -66,7 +54,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                 MaxCapacityJ = stf.ReadFloatBlock(STFReader.UNITS.Energy, MaxCapacityJ);
                                 break;
                             case "chargerpower":
-                                MaxChargingPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, MaxChargingPowerW);
+                                BatteryCharger.MaxPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 0);
                                 break;
                             case "chargervoltage":
                                 ChargingVoltageV = stf.ReadFloatBlock(STFReader.UNITS.Voltage, 0);
@@ -92,11 +80,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             BatterySwitch.Copy(other.BatterySwitch);
             NominalVoltageV = other.NominalVoltageV;
             MaxCapacityJ = other.MaxCapacityJ;
-            ChargeVoltageCurve = other?.ChargeVoltageCurve;
+            ChargeVoltageCurve = other.ChargeVoltageCurve;
+            BatteryCharger.MaxPowerW = other.BatteryCharger.MaxPowerW;
         }
         public virtual void Initialize()
         {
-            CurrentCapacityJ = 0.7f * MaxCapacityJ;
+            Car.PowerSupply.AuxiliaryPowerSupplyLoads.Add(BatteryCharger);
+            CurrentCapacityJ = MaxCapacityJ;
             if (ChargingVoltageV == 0) ChargingVoltageV = NominalVoltageV * 1.15f;
             if (ChargeVoltageCurve == null)
             {
@@ -104,6 +94,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     new float[] {0, MaxCapacityJ * 0.1f, MaxCapacityJ}, 
                     new float[] {0, 0.95f * NominalVoltageV, 1.05f * NominalVoltageV});
             }
+            if (BatteryCharger.MaxPowerW == 0) BatteryCharger.MaxPowerW = 10000;
 
             BatterySwitch.Initialize();
         }
@@ -125,32 +116,47 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             BatterySwitch.Update(elapsedClockSeconds);
 
-            if (IsCharging)
+            if (State != PowerSupplyState.PowerOn)
             {
-                if (ChargeVoltageCurve[CurrentCapacityJ] < ChargingVoltageV && CurrentCapacityJ < MaxCapacityJ)
+                PowerFlowW = 0;
+                VoltageV = ChargeVoltageCurve[CurrentCapacityJ];
+                BatteryCharger.CurrentPowerW = 0;
+            }
+            else if (IsChargerOn)
+            {
+                float chargerPowerW = BatteryCharger.MaxPowerW * (1 - BatteryCharger.PowerReduction);
+                if ((ChargeVoltageCurve[CurrentCapacityJ] < ChargingVoltageV && CurrentCapacityJ < MaxCapacityJ) || LowVoltageSupplyPowerW > chargerPowerW)
                 {
-                    // Charge the battery
-                    float energyJ = MaxChargingPowerW * elapsedClockSeconds;
-                    if (CurrentCapacityJ + energyJ > MaxCapacityJ)
-                        energyJ = MaxCapacityJ - CurrentCapacityJ;
-                    CurrentCapacityJ += energyJ;
+                    PowerFlowW = chargerPowerW - LowVoltageSupplyPowerW;
                 }
-                // When charging, voltage is that of the battery charger
+                else
+                {
+                    PowerFlowW = 0;
+                    chargerPowerW = LowVoltageSupplyPowerW;
+                }
+                BatteryCharger.CurrentPowerW = chargerPowerW;
                 VoltageV = ChargingVoltageV;
             }
             else
             {
-                if (PowerW > 0 && State == PowerSupplyState.PowerOn)
-                {
-                    // Discharge the battery
-                    float energyJ = PowerW * elapsedClockSeconds;
-                    if (CurrentCapacityJ - energyJ > 0)
-                        energyJ = CurrentCapacityJ;
-                    CurrentCapacityJ -= energyJ;
-                }
-                // If battery is draining, voltage will depend on the total charge
-                // Voltage also depends on power drawn, not implemented
+                PowerFlowW = -LowVoltageSupplyPowerW;
                 VoltageV = ChargeVoltageCurve[CurrentCapacityJ];
+                BatteryCharger.CurrentPowerW = 0;
+            }
+            if (PowerFlowW != 0)
+            {
+                float energyJ = PowerFlowW * elapsedClockSeconds;
+                if (CurrentCapacityJ + energyJ > MaxCapacityJ)
+                {
+                    energyJ = MaxCapacityJ - CurrentCapacityJ;
+                    PowerFlowW = energyJ / elapsedClockSeconds;
+                }
+                else if (CurrentCapacityJ + energyJ < 0)
+                {
+                    energyJ = -CurrentCapacityJ;
+                    PowerFlowW = energyJ / elapsedClockSeconds;
+                }
+                CurrentCapacityJ += energyJ;
             }
         }
     }

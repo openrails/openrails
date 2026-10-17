@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 
@@ -41,10 +42,34 @@ namespace ORTS.Scripting.Api
         public PowerSupplyState CurrentElectricTrainSupplyState() => Host.ElectricTrainSupplyState;
 
         /// <summary>
+        /// Current state of the auxiliary power supply
+        /// Auxiliary power is used by auxiliary systems of a locomotive (such as ventilation or air compressor) and by systems of the cars (such as air conditionning)
+        /// </summary>
+        protected PowerSupplyState CurrentAuxiliaryPowerSupplyState() => Host.AuxiliaryPowerSupplyState;
+
+        /// <summary>
+        /// Auxiliary power consumption
+        /// </summary>
+        protected float AuxiliaryPowerSupplyPowerW => Host.AuxiliaryPowerSupplyPowerW;
+        /// <summary>
+        /// Loads connected to the auxiliary supply
+        /// </summary>
+        protected List<PowerSupplyLoad> AuxiliaryPowerSupplyLoads => Host.AuxiliaryPowerSupplyLoads;
+
+        /// <summary>
         /// Current state of the low voltage power supply
         /// Low voltage power is used by safety systems (such as TCS) or lights
         /// </summary>
         public PowerSupplyState CurrentLowVoltagePowerSupplyState() => Host.LowVoltagePowerSupplyState;
+
+        /// <summary>
+        /// Low voltage supply power consumption
+        /// </summary>
+        protected float LowVoltagePowerSupplyPowerW => Host.LowVoltagePowerSupplyPowerW;
+        /// <summary>
+        /// Loads connected to the low voltage supply
+        /// </summary>
+        protected List<PowerSupplyLoad> LowVoltagePowerSupplyLoads => Host.LowVoltagePowerSupplyLoads;
 
         /// <summary>
         /// Current state of the battery
@@ -56,6 +81,12 @@ namespace ORTS.Scripting.Api
         /// True if the battery is switched on
         /// </summary>
         public bool BatterySwitchOn() => Host.BatterySwitch.On;
+
+        /// <summary>
+        /// Sets the current state of the auxiliary power supply
+        /// Auxiliary power is used by auxiliary systems of a locomotive (such as ventilation or air compressor) and by systems of the cars (such as air conditionning)
+        /// </summary>
+        protected virtual void SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState state) => Host.AuxiliaryPowerSupplyState = state;
 
         /// <summary>
         /// Sets the current state of the low voltage power supply
@@ -219,5 +250,46 @@ namespace ORTS.Scripting.Api
         [GetParticularString("Engine", "Stopping")] Stopping,
         [GetParticularString("Engine", "Starting")] Starting,
         [GetParticularString("Engine", "Running")] Running
+    }
+
+    public enum PowerSupplyDirection
+    {
+        [GetString("PowerOff")] PowerOff = -1,
+        [GetString("Sink")] Sink,
+        [GetString("Source")] Source,
+    }
+    public enum PowerSupplyLoadType
+    {
+        Other,
+        PowerConverter,
+        BatteryCharger,
+        Compressor,
+        EngineCooling,
+        CarHeating,
+        CarVentilation,
+        AirConditioning,
+        Light,
+        InteriorLighting,
+        CabInstrument,
+        Tilting,
+        DieselMechanical
+    }
+    public class PowerSupplyLoad
+    {
+        public readonly PowerSupplyLoadType Type;
+        public readonly string Description;
+        public float CurrentPowerW;
+        public float MaxPowerW;
+        /// <summary>
+        /// Reduction of the total power consumption requested by the power supply
+        /// 0 means the load can run at full power
+        /// 1 means that the power supply forbids the load being activated
+        /// </summary>
+        public float PowerReduction;
+        public PowerSupplyLoad(PowerSupplyLoadType type, string description = "")
+        {
+            Type = type;
+            Description = description;
+        }
     }
 }
