@@ -7317,7 +7317,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Ensure traction calculations for steam locomotives use the driver wheel speed, not the idler wheel speed
             // Idler wheels don't slip from excessive tractive effort, drivers do, we want to account for slipping wheels
             // Note: On geared steam locos, DriveWheelSpeed is the same as WheelSpeed
-            PrevAbsTractionSpeedMpS = AbsTractionSpeedMpS;
             AbsTractionSpeedMpS = Math.Abs(DriveWheelSpeedMpS);
 
             // Update tractive effort across all steam engines
