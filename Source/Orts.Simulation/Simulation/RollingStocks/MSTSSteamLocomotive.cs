@@ -3949,8 +3949,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             float SteamEffectsFactor = MathHelper.Clamp(BoilerPressurePSI / MaxBoilerPressurePSI, 0.1f, 1.0f);  // Factor to allow for drops in boiler pressure reducing steam effects
 
-            SanderSteamExhaustForwardVolumeM3pS = Sander && SandingSystemType == SandingSystemTypes.Steam && (Direction == Direction.Forward || Direction == Direction.N) ? (10.0f * SteamEffectsFactor) : 0.0f;
-            SanderSteamExhaustReverseVolumeM3pS = Sander && SandingSystemType == SandingSystemTypes.Steam && Direction == Direction.Reverse ? (10.0f * SteamEffectsFactor) : 0.0f;
+            SanderSteamExhaustForwardVolumeM3pS = Sanding && SandingSystemType == SandingSystemTypes.Steam && (Direction == Direction.Forward || Direction == Direction.N) ? (10.0f * SteamEffectsFactor) : 0.0f;
+            SanderSteamExhaustReverseVolumeM3pS = Sanding && SandingSystemType == SandingSystemTypes.Steam && Direction == Direction.Reverse ? (10.0f * SteamEffectsFactor) : 0.0f;
             SanderSteamExhaustParticleDurationS = 1.0f;
             SanderSteamExhaustVelocityMpS = 100.0f;
 
@@ -7771,7 +7771,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // Calculate sanding steam Usage if a steam based system and turned on
             // Assume steam sanding usage is 1000lbs/hr
-            if (Sander && SandingSystemType == SandingSystemTypes.Steam)
+            if (Sanding && SandingSystemType == SandingSystemTypes.Steam)
             {
                 BoilerMassLB -= elapsedClockSeconds * SandingSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by generator  
                 BoilerHeatBTU -= elapsedClockSeconds * SandingSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
