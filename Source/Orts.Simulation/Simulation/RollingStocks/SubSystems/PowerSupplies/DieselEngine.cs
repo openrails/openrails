@@ -386,6 +386,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         /// <summary>
+        /// Returns the maximum allowed tractive effort output of the gear box
+        /// at the current gear setting.
+        /// </summary>
+        public float MaxTractiveForceN
+        {
+            get
+            {
+                float temp = 0;
+                foreach (DieselEngine de in DEList)
+                {
+                    if (de.GearBox != null && de.GearBox.CurrentGear != null)
+                    {
+                        temp += de.GearBox.CurrentGear.MaxTractiveForceN;
+                    }
+                }
+                return temp;
+            }
+        }
+
+        /// <summary>
         /// Updates all diesel engines
         /// </summary>
         /// <param name="elapsedClockSeconds">Time span within the simulation cycle</param>
@@ -517,14 +537,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                float percent = 0;
-                float totalMaxPower = MaxPowerW;
+                float totalRunningPower = 0;
+                float totalMaxPower = 0;
                 foreach (DieselEngine eng in DEList)
                 {
-                    if (eng.State == DieselEngineState.Running)
-                        percent += eng.MaximumDieselPowerW / totalMaxPower;
+                    if (eng.ProvidesTraction)
+                    {
+                        totalMaxPower += eng.MaximumDieselPowerW;
+                        if (eng.State == DieselEngineState.Running)
+                            totalRunningPower += eng.MaximumDieselPowerW;
+                    }
                 }
-                return percent;
+                return totalRunningPower / totalMaxPower;
             }
         }
     }

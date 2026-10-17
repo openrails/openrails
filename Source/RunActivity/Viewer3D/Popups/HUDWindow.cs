@@ -481,7 +481,7 @@ namespace Orts.Viewer3D.Popups
 
             if (Viewer.PlayerTrain.HuDIsWheelSlip)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel slip") + "!!!");
-            else if (Viewer.PlayerTrain.HuDIsWheelSlipWarninq)
+            else if (Viewer.PlayerTrain.HuDIsWheelSlipWarning)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel slip warning") + "???");
 
             if (Viewer.PlayerTrain.IsBrakeSkid )

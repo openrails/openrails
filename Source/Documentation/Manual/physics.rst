@@ -302,11 +302,13 @@ However due to the number of algorithm steps required to calculate the wheel adh
 value, it is more CPU load-intensive then the Pacha one. On low performance PCs, this would lower the 
 frame rate for the screen display to an unacceptable degree. 
 
-To avoid this, OR senses the frame rate and switches from the Polach algorithm 
+To avoid this, OR senses the simulation update rate and switches from the Polach algorithm 
 to the Pacha one as follows.
-If the frame rate falls below 30 fps, then a switch is made to Pacha until the frame rate
-recovers to more than 40 fps. If a switch to Pacha happens more than once in a 5 minute interval
-then it will persist for the rest of the session.
+If the simulation rate falls below 30 fps and the display framerate is not limited by
+graphics rendering, then a switch is made to Pacha until the simulation rate recovers
+to more than 60 fps. If a switch to Pacha happens more than once in a 5 minute interval
+then it will persist for the rest of the session, but only one switch is allowed per
+minute.
 
 In this way OR provides a more accurate algorithm whilst retaining 
 the original one for lower specification computers. When OR is using the 
@@ -5318,13 +5320,18 @@ highly recommended that the default values be used.
 When using any of the following parameters, the sanding system type needs to be set by allocating either "Steam" or 
 "Air" to the ``SandingSystemType`` ( x ) parameter in engine section of file.
 
+.. index::
+   single: ORTSMaxTrackSanderSteamConsumptionForward
+   single: ORTSMaxTrackSanderSteamConsumptionReverse
+
 **Steam Consumption**
 
 ``ORTSMaxTrackSanderSteamConsumptionForward`` - total steam consumption for all sanders when traveling in 
 forward direction, ie in front of wheel.
 
-``ORTSMaxTrackSanderSteamConsumptionForward`` - total steam consumption for all sanders when traveling in 
-reverse direction, ie behind wheel. Note, = 0 when not used.
+``ORTSMaxTrackSanderSteamConsumptionReverse`` - total steam consumption for all sanders when traveling in 
+reverse direction, ie behind wheel. Note: set to 0 when reverse sander is not equipped. If no value is specified,
+the reverse sander value will be set equal to the forward sander value.
 
 All steam consumption parameters are in lbs/sec.
 
@@ -5335,15 +5342,25 @@ can be added by using one or both of the following aparmeters.
 
 ``SanderSteamExhaustReverseFX`` - steam effect when travelling in reverse, ie in behind the wheel.
 
-**Air Consumption**
+.. index::
+   single: ORTSMaxTrackSanderAirConsumptionForward
+   single: ORTSMaxTrackSanderAirConsumptionReverse
 
-``ORTSMaxTrackSanderAirConsumptionForward`` - total air consumption for all sanders when traveling in reverse 
-direction, ie behind wheel. Note, = 0 when not used.
+**Air Consumption**
 
 ``ORTSMaxTrackSanderAirConsumptionForward`` - total air consumption for all sanders when traveling in forward 
 direction, ie in front of wheel.
 
+``ORTSMaxTrackSanderAirConsumptionReverse`` - total air consumption for all sanders when traveling in reverse 
+direction, ie behind wheel. Note: set to 0 when reverse sander is not equipped. If no value is specified,
+the reverse sander value will be set equal to the forward sander value.
+
 All air consumption parameters are in cuft/sec.
+
+.. index::
+   single: ORTSMaxTrackSanderSandConsumptionForward
+   single: ORTSMaxTrackSanderSandConsumptionReverse
+   single: ORTSMaxTrackSanderBoxCapacity
 
 **Sand Consumption**
 
@@ -5351,9 +5368,13 @@ All air consumption parameters are in cuft/sec.
 direction, ie in front of wheel.
 
 ``ORTSMaxTrackSanderSandConsumptionReverse`` - total sand consumption for all sanders when traveling in reverse 
-direction, ie behind wheel. Note, = 0 when not used.
+direction, ie behind wheel. Note: set to 0 when reverse sander is not equipped. If no value is specified,
+the reverse sander value will be set equal to the forward sander value.
 
 All sand consumption parameters are in cuft/sec.
+
+``ORTSMaxTrackSanderBoxCapacity`` - the total sand capacity of the locomotive, shared between forward and reverse
+sanders. Capacity is measured as a volume, default cubic feet.
 
 .. _physics-hammer-blow:
 

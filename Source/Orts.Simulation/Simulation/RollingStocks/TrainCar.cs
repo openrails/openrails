@@ -320,7 +320,7 @@ namespace Orts.Simulation.RollingStocks
 
         public bool WheelSlip;  // true if locomotive wheels slipping
         public bool WheelSlipWarning;
-        public bool HuDIsWheelSlipWarninq;
+        public bool HuDIsWheelSlipWarning;
         public bool HuDIsWheelSlip;
         public bool WheelSkid;  // True if wagon wheels lock up.
         public float _AccelerationMpSS;
