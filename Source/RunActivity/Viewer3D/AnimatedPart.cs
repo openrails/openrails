@@ -29,7 +29,9 @@ namespace Orts.Viewer3D
     /// </summary>
     public class AnimatedPart
     {
-        // Shape that we're animating.
+        /// <summary>
+        /// Shape that is animated.
+        /// </summary>
         readonly PoseableShape PoseableShape;
 
         /// <summary>
@@ -57,6 +59,8 @@ namespace Orts.Viewer3D
         /// The saved direction of the loop update.
         /// </summary>
         float LoopSign = 1.0f;
+
+        bool Initialized;
 
         /// <summary>
         /// shape format: List of the matrices we're animating for this part.
@@ -195,9 +199,10 @@ namespace Orts.Viewer3D
 
         void SetFrame(float frame)
         {
-            if (frame == AnimationKey)
+            if (Initialized && frame == AnimationKey)
                 return;
 
+            Initialized = true;
             AnimationKey = frame;
 
             foreach (var matrix in MatrixIndexes)

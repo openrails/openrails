@@ -1678,29 +1678,14 @@ namespace Orts.Viewer3D
         public override bool HasAnimation(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.FirstOrDefault() != null;
         public override float GetAnimationLength(int number) => GltfAnimations?.ElementAtOrDefault(number)?.Channels?.Select(c => c.TimeMax).Max() ?? 0;
 
-        public override void GetAnimationOutputMinMax(int animationId, out Vector3 min, out Vector3 max, out Vector3 start)
+        public override void GetAnimationStartEnd(int animationId, float maxFrame, out Vector3 start, out Vector3 end)
         {
-            min = max = start = Vector3.Zero;
-
-            var outputVector3 = GltfAnimations?.ElementAtOrDefault(animationId)?.Channels?.FirstOrDefault()?.OutputVector3;
-
-            if (outputVector3 == null || outputVector3.Length == 0)
+            start = end = Vector3.Zero;
+            if (GltfAnimations?.ElementAtOrDefault(animationId)?.Channels?.FirstOrDefault()?.OutputVector3 is not Vector3[] outputVector3 || outputVector3?.Length == 0)
                 return;
 
-            min = max = start = outputVector3[0];
-
-            for (int i = 1; i < outputVector3.Length; i++)
-            {
-                var v = outputVector3[i];
-
-                if (v.X < min.X) min.X = v.X;
-                if (v.Y < min.Y) min.Y = v.Y;
-                if (v.Z < min.Z) min.Z = v.Z;
-
-                if (v.X > max.X) max.X = v.X;
-                if (v.Y > max.Y) max.Y = v.Y;
-                if (v.Z > max.Z) max.Z = v.Z;
-            }
+            start = outputVector3[0];
+            end = outputVector3.Last();
         }
 
         /// <summary>
