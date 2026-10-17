@@ -2617,7 +2617,7 @@ namespace Orts.Simulation.RollingStocks
             // Advanced configuration (TF table) - use a user defined tractive force table
             if (TractiveForceCurves == null)
             {
-                // Calculate target power based on throttle setting, electric locomotives use exponential power increase
+                // Calculate target power based on throttle setting, electric locomotives use quadratic throttle response
                 if (this is MSTSDieselLocomotive)
                     powerW = Math.Min(powerW, MaxPowerW * t);
                 else
