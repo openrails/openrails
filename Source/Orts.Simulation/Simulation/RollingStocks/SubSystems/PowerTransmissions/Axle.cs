@@ -1066,8 +1066,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
             while (Math.Abs(upperSlipMpS - lowerSlipMpS) > 0.005)
             {
-                double c = (a + b) / 2;
-                double fc = SlipCharacteristicsPolach(c + dx) - SlipCharacteristicsPolach(c);
                 double middleSlipMpS = (lowerSlipMpS + upperSlipMpS) / 2;
                 double middleAdhesion = SlipCharacteristicsPolach(middleSlipMpS);
                 double fc = SlipCharacteristicsPolach(middleSlipMpS + dx) - middleAdhesion;
