@@ -839,7 +839,7 @@ namespace Orts.Viewer3D.Popups
             // Sander
             if (locomotive.GetSanderOn())
             {
-                bool sanderBlocked = locomotive.AbsSpeedMpS > locomotive.SanderSpeedOfMpS;
+                bool sanderBlocked = !locomotive.GetSandingOn();
                 string sanderKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
                 AddLabel(new ListLabel
                 {

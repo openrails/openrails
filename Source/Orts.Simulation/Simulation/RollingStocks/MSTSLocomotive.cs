@@ -134,7 +134,8 @@ namespace Orts.Simulation.RollingStocks
 
         public bool AlerterSnd;
         public bool VigilanceMonitor;
-        public bool Sander;
+        public bool Sander; // State of physical sander switch
+        public bool Sanding; // True if sanding is occurring (manual or otherwise) 
         public bool Wiper;
         public bool BailOff;
         public bool DynamicBrake;
@@ -1247,19 +1248,19 @@ namespace Orts.Simulation.RollingStocks
                     MaxTrackSandBoxCapacityM3 = Me3.FromFt3(MaxTrackSandBoxCapacityM3);
                     break;
                 case "engine(ortsmaxtracksandersandconsumptionforward":
-                    Me3.FromFt3(MaxTrackSanderSandConsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderSandConsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null);
                     MaxTrackSanderSandConsumptionForwardM3pS = Me3.FromFt3(MaxTrackSanderSandConsumptionForwardM3pS);
                     break;
                 case "engine(ortsmaxtracksandersandconsumptionreverse":
-                    Me3.FromFt3(MaxTrackSanderSandConsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderSandConsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null);
                     MaxTrackSanderSandConsumptionReverseM3pS = Me3.FromFt3(MaxTrackSanderSandConsumptionReverseM3pS);
                     break;
                 case "engine(ortsmaxtracksanderairconsumptionforward":
-                    Me3.FromFt3(MaxTrackSanderAirConsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderAirConsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null);
                     MaxTrackSanderAirConsumptionForwardM3pS = Me3.FromFt3(MaxTrackSanderAirConsumptionForwardM3pS);
                     break;
                 case "engine(ortsmaxtracksanderairconsumptionreverse":
-                    Me3.FromFt3(MaxTrackSanderAirConsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderAirConsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null);
                     MaxTrackSanderAirConsumptionReverseM3pS = Me3.FromFt3(MaxTrackSanderAirConsumptionReverseM3pS);
                     break;
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
@@ -1450,6 +1451,7 @@ namespace Orts.Simulation.RollingStocks
             // we won't save the horn state
             outf.Write(Bell);
             outf.Write(Sander);
+            outf.Write(Sanding);
             outf.Write(VacuumExhausterPressed);
             outf.Write(Wiper);
             outf.Write(OdometerResetPositionM);
@@ -1503,6 +1505,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (inf.ReadBoolean()) SignalEvent(Event.BellOn);
             if (inf.ReadBoolean()) SignalEvent(Event.SanderOn);
+            if (inf.ReadBoolean()) SignalEvent(Event.SandingOn);
             if (inf.ReadBoolean()) SignalEvent(Event.VacuumExhausterOn);
             if (inf.ReadBoolean()) SignalEvent(Event.WiperOn);
             OdometerResetPositionM = inf.ReadSingle();
@@ -3475,8 +3478,20 @@ namespace Orts.Simulation.RollingStocks
 
             BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f);
 
-            // Increase friction coefficient when sanding
-            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
+            // Determine whether or not sanding should be occurring
+            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)
+            {
+                if (!Sanding)
+                    SignalEvent(Event.SandingOn);
+            }
+            else
+            {
+                // FUTURE: Facilitate automatic sanding even if sander switch is off
+                if (Sanding)
+                    SignalEvent(Event.SandingOff);
+            }
+            // Determine whether or not sand should have an effect on adhesion
+            if (Sanding && CurrentTrackSanderSandConsumptionM3pS > 0.0 && MainResPressurePSI > 80.0)
             {
                 switch (Simulator.WeatherType)
                 {
@@ -3558,89 +3573,79 @@ namespace Orts.Simulation.RollingStocks
             // The following assumptions have been made:
             //
 
-            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)  // If sander switch is on, and not blocked by speed, adjust parameters
+            if (Sanding)  // If sanding is occurring, adjust parameters
             {
-
                 // Calculate steam, air or gravity consumption for different sander modes
+                float sandingSandConsumptionM3pS;
+                if (Direction == Direction.Reverse)
+                    sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
+                else
+                    sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
+
                 if (SandingSystemType == SandingSystemTypes.Steam)
                 {
-                    float sandingSteamConsumptionLbpS = 0.0f;
-                    float sandingSandConsumptionM3pS = 0.0f;
+                    float sandingSteamConsumptionLbpS;
 
                     if (Direction == Direction.Reverse)
-                    {
                         sandingSteamConsumptionLbpS = MaxTrackSanderSteamConsumptionReverseLbpS;
-                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
-                    }
                     else
-                    {
                         sandingSteamConsumptionLbpS = MaxTrackSanderSteamConsumptionForwardLbpS;
-                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
-                    }
 
                     // Calculate steam consumption
-                    SandingSteamUsageLBpS = (BoilerPressurePSI / MaxBoilerPressurePSI) * sandingSteamConsumptionLbpS * elapsedClockSeconds;
-
-                    // Calculate sand consumption for sander
-                    if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
-                    {
-                        // Calculate consumption of sand, and drop in sand box level
-                        CurrentTrackSanderSandConsumptionM3pS = (BoilerPressurePSI / MaxBoilerPressurePSI) * sandingSandConsumptionM3pS * elapsedClockSeconds;
-                        CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
-                        CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
-                        if (CurrentTrackSandBoxCapacityM3 <= 0.0)
-                        {
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
-                        }
-                    }
+                    float relativeFlow = BoilerPressurePSI / MaxBoilerPressurePSI;
+                    SandingSteamUsageLBpS = relativeFlow * sandingSteamConsumptionLbpS;
+                    sandingSandConsumptionM3pS = relativeFlow * sandingSandConsumptionM3pS;
                 }
                 else // air consumption
                 {
-                    float sandingAirConsumptionM3pS = 0.0f;
-                    float sandingSandConsumptionM3pS = 0.0f;
+                    float sandingAirConsumptionM3pS;
 
                     if (Direction == Direction.Reverse)
-                    {
                         sandingAirConsumptionM3pS = MaxTrackSanderAirConsumptionReverseM3pS;
-                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
-                    }
                     else
-                    {
                         sandingAirConsumptionM3pS = MaxTrackSanderAirConsumptionForwardM3pS;
-                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
-                    }
 
                     // Calculate air consumption and change in main air reservoir pressure
-                    CurrentTrackSanderAirConsumptionM3pS = (MainResPressurePSI / MaxMainResPressurePSI) * sandingAirConsumptionM3pS * elapsedClockSeconds;
-                    float SanderPressureDiffPSI = CurrentTrackSanderAirConsumptionM3pS / Me3.ToFt3(MainResVolumeM3);
-                    MainResPressurePSI -= SanderPressureDiffPSI;
-                    MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.001f, MaxMainResPressurePSI);
+                    float relativeFlow = MainResPressurePSI / MaxMainResPressurePSI;
+                    CurrentTrackSanderAirConsumptionM3pS = relativeFlow * sandingAirConsumptionM3pS;
+                    sandingSandConsumptionM3pS = relativeFlow * sandingSandConsumptionM3pS;
 
-                    // Calculate sand consumption for sander
-                    if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
+                    float SanderPressureDiffPSI = OneAtmospherePSI * (CurrentTrackSanderAirConsumptionM3pS * elapsedClockSeconds / MainResVolumeM3);
+                    MainResPressurePSI -= SanderPressureDiffPSI;
+
+                    if (MainResPressurePSI < 0.0f)
+                        MainResPressurePSI = 0.0f;
+                }
+
+                // Subtract sand from the sand box
+                if (CurrentTrackSandBoxCapacityM3 > 0.0f && sandingSandConsumptionM3pS > 0.0f)
                     {
-                        // Calculate consumption of sand, and drop in sand box level
-                        CurrentTrackSanderSandConsumptionM3pS = (MainResPressurePSI / MaxMainResPressurePSI) * sandingSandConsumptionM3pS * elapsedClockSeconds;
+                    CurrentTrackSanderSandConsumptionM3pS = sandingSandConsumptionM3pS * elapsedClockSeconds;
                         CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
-                        CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
-                        if (CurrentTrackSandBoxCapacityM3 <= 0.0)
+                    if (CurrentTrackSandBoxCapacityM3 <= 0.0f)
                         {
+                        CurrentTrackSandBoxCapacityM3 = 0.0f;
                             Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
                         }
                     }
-                }
+                else // Can't sand, or no sand is requested, disable sander (air/steam will still be consumed)
+                    CurrentTrackSanderSandConsumptionM3pS = 0.0f;
             }
             else // reset to zero if sander is off
             {
-                CurrentTrackSanderSandConsumptionM3pS = 0;
-                CurrentTrackSanderAirConsumptionM3pS = 0;
-                SandingSteamUsageLBpS = 0;
+                CurrentTrackSanderSandConsumptionM3pS = 0.0f;
+                CurrentTrackSanderAirConsumptionM3pS = 0.0f;
+                SandingSteamUsageLBpS = 0.0f;
             }
         }
 
         public override bool GetSanderOn()
         {
             return Sander;
+        }
+        public override bool GetSandingOn()
+        {
+            return Sanding;
         }
                                  
         #region Reverser
@@ -5105,6 +5110,8 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
                 case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
+                case Event.SandingOn: { Sanding = true; break; }
+                case Event.SandingOff: { Sanding = false; break; }
                 case Event.WiperOn: { Wiper = true; if (this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
                 case Event.WiperOff: { Wiper = false; if (this == Simulator.PlayerLocomotive) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
 
@@ -5704,7 +5711,7 @@ namespace Orts.Simulation.RollingStocks
                 // the independant sanding light found in some cabs would not work.
                 case CABViewControlTypes.SANDING:
                     {
-                        data = Sander ? 1 : 0;
+                        data = Sanding ? 1 : 0;
                         break;
                     }
                 case CABViewControlTypes.CLOCK:

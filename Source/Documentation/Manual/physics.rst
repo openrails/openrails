@@ -5369,7 +5369,7 @@ All air consumption parameters are in cuft/sec.
 direction, ie in front of wheel.
 
 ``ORTSMaxTrackSanderSandConsumptionReverse`` - total sand consumption for all sanders when traveling in reverse 
-direction, ie behind wheel. Note: set to 0 when reverse sander is not equipped. If no value is specified,
+direction, ie behind wheel. Note: set to 0 to disable reverse sanding. If no value is specified,
 the reverse sander value will be set equal to the forward sander value.
 
 All sand consumption parameters are in cuft/sec.

@@ -384,7 +384,7 @@ namespace Orts.Viewer3D.WebServices
             // Sander
             if (locomotive.GetSanderOn())
             {
-                var sanderBlocked = locomotive.AbsSpeedMpS > locomotive.SanderSpeedOfMpS;
+                bool sanderBlocked = !locomotive.GetSandingOn();
                 var sanderKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
                 AddLabel(new ListLabel
                 {
