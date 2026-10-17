@@ -106,7 +106,11 @@ namespace Orts.Common
                         if (!(c is CameraCommand && CameraReplaySuspended)) {
                             ReplayCommand(elapsedTime, replayCommandList, c);
                         }
-                        completeTime = elapsedTime + completeDelayS;  // Postpone the time for "Replay complete" message
+                        else
+                        {
+                            replayCommandList.RemoveAt(0);    // Remove the camera command from the head of the replay list
+                        }
+                            completeTime = elapsedTime + completeDelayS;  // Postpone the time for "Replay complete" message
                     }
                 }
             } else {
