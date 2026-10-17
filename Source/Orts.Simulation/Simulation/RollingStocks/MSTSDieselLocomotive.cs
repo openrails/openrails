@@ -751,15 +751,6 @@ namespace Orts.Simulation.RollingStocks
                     forceN *= DieselEngineFractionPower;
                 }
             }
-            // Consider power limit of diesel engines, if ORTSTractiveForceIsPowerLimited
-            // This limit influences the absolute maximum force, and cannot be exceeded, not even transiently
-            if (TractiveForcePowerLimited)
-            {
-                float powerW = DieselPowerSupply.AvailableTractionPowerW * DieselTransmissionEfficiency;
-
-                if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
-            }
-
             return forceN;
         }
 

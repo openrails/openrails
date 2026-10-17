@@ -1848,8 +1848,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 // Rudimentary slip control
                 // Completely eliminates tractive effort after slip happens
-                // and only restores effort after it is completely cut
-                if (!HuDIsWheelSlip && (DriveForceN == 0.0f || SlipControlFraction > 0.0f))
+                // and only restores effort after resetting throttle
+                if (!HuDIsWheelSlip && ((Car.ThrottlePercent == 0.0f && Car.DynamicBrakePercent < 0.0f) || SlipControlFraction > 0.0f))
                 {
                     if (useRampRates)
                     {
@@ -1908,7 +1908,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                 // If current power is negative, ramp rate behavior needs to be flipped
                 // Ie: Use the ramp "up" if power is positive and increasing, or negative and decreasing (getting more negative)
-                bool powerUp = targetPowerW > powerW ^ powerW < 0;
+                bool powerUp = (targetPowerW > powerW) ^ (powerW < 0);
                 float rampW = powerUp ? rampUpWpS : toZero ? rampZeroWpS : rampDownWpS;
 
                 // If no power ramp rate was given, then skip smooth power changes (force ramp rates will be used instead)
@@ -1927,7 +1927,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
             // If current force is negative, ramp rate behavior needs to be flipped
             // Ie: Use the ramp "up" if force is positive and increasing, or negative and decreasing (getting more negative)
-            bool rampUp = targetForceN > forceN ^ forceN < 0;
+            bool rampUp = (targetForceN > forceN) ^ (forceN < 0);
             float rampN = rampUp ? rampUpNpS : toZero ? rampZeroNpS : rampDownNpS;
 
             // Finally, update actual force value
@@ -2085,7 +2085,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// 
         /// </summary>
         /// <param name="slipSpeedMpS">Difference between train speed and wheel speed</param>
-        /// <param name="speedMpS">Current speed</param>
         /// <returns>Relative force transmitted to the rail</returns>
         public double SlipCharacteristicsPolach(double slipSpeedMpS)
         {
