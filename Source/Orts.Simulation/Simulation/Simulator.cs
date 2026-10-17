@@ -762,6 +762,14 @@ namespace Orts.Simulation
             EOTEmergencyBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleEOTEmergencyBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             EOTMountCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+
+            // Wagon Commands, Receiver is the train so that the command log can use the car position (index)
+            WagonHandbrakeCommand.Receiver = PlayerLocomotive.Train;
+            WagonBrakeHoseConnectCommand.Receiver = PlayerLocomotive.Train;
+            WagonBrakeHoseRearConnectCommand.Receiver = PlayerLocomotive.Train;
+            ToggleAngleCockACommand.Receiver = PlayerLocomotive.Train;
+            ToggleAngleCockBCommand.Receiver = PlayerLocomotive.Train;
+            ToggleBleedOffValveCommand.Receiver = PlayerLocomotive.Train;
         }
 
         public void SetWagonCommandReceivers(MSTSWagon wag)
