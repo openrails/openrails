@@ -49,7 +49,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
         public override void Update(float timeSpan)
         {
-            TargetForceN = Locomotive.TractiveForceN * AxleConnected.TractiveForceFraction;
             EngineMaxSpeedMpS = Locomotive.MaxSpeedMpS;
             float linToAngFactor = TransmissionRatio / AxleConnected.WheelRadiusM;
 

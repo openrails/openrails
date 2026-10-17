@@ -142,7 +142,6 @@ namespace Orts.Simulation.RollingStocks
         public float MaxForceN;
         public float RunUpTimeToMaxForceS = -1;
         public float AbsTractionSpeedMpS;
-        public float PrevAbsTractionSpeedMpS;
         public float MaxCurrentA = 0;
         public float MaxSpeedMpS = 1e3f;
         public float UnloadingSpeedMpS;
@@ -255,7 +254,7 @@ namespace Orts.Simulation.RollingStocks
             Full
         }
         public SlipControlType SlipControlSystem;
-        public float[] SlipEffortLimit; // 0-1 value representing the % of target tractive effort the slip control system will allow
+        public bool IndividualAxleControl = false; // Can the tractive effort of axles be managed individually? FUTURE: Add user input for this
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
         float SlipFrictionCoefficientFactor;
         public float SteamStaticWheelForce;
@@ -457,7 +456,6 @@ namespace Orts.Simulation.RollingStocks
         public float SpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs
         public float MSTSSpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs - MSTS parameter if used
         public float ContinuousForceTimeFactor = 1800;
-        public bool AntiSlip;
         public bool AdvancedAdhesionModel = false; // flag set depending upon adhesion model used.
         public float SanderSpeedEffectUpToMpS;
         public float SanderSpeedOfMpS = 30.0f;
@@ -467,7 +465,6 @@ namespace Orts.Simulation.RollingStocks
         public bool EmergencyCausesPowerDown { get; private set; }
         public bool EmergencyCausesThrottleDown { get; private set; }
         public bool EmergencyEngagesHorn { get; private set; }
-        public bool WheelslipCausesThrottleDown { get; private set; }
 
         public float BrakeRestoresPowerAtBrakePipePressurePSI;
         public float BrakeCutsPowerAtBrakePipePressurePSI;
@@ -1127,7 +1124,10 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsemergencyengageshorn":
                 case "engine(orts(ortsemergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
                 case "engine(ortswheelslipcausesthrottledown":
-                case "engine(orts(ortswheelslipcausesthrottledown": WheelslipCausesThrottleDown = stf.ReadBoolBlock(false); break;
+                case "engine(orts(ortswheelslipcausesthrottledown": // WheelSlipCausesThrottleDown has been superseded by SlipControlType.CutPower
+                    if (stf.ReadBoolBlock(false) && SlipControlSystem == SlipControlType.Unknown)
+                        SlipControlSystem = SlipControlType.CutPower;
+                    break;
                 case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
@@ -1144,7 +1144,11 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(ortsnumberdriveaxles": LocoNumDrvAxles = stf.ReadIntBlock(null); if (LocoNumDrvAxles < 1) STFException.TraceWarning(stf, "Engine:ORTSNumberDriveAxles is less than 1, parts of the simulation may not function correctly"); break;
-                case "engine(antislip": AntiSlip = stf.ReadBoolBlock(true); break;
+                case "wagon(antislip": // Some Kuju content, eg: Acela, places AntiSlip in the wagon section
+                case "engine(antislip": // AntiSlip has been superseded by SlipControlType.Full
+                    if (stf.ReadBoolBlock(true) && SlipControlSystem == SlipControlType.Unknown)
+                        SlipControlSystem = SlipControlType.Full;
+                    break;
                 case "engine(ortsdrivewheelweight": InitialDrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout":
@@ -1285,6 +1289,7 @@ namespace Orts.Simulation.RollingStocks
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
             UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
             SlipControlSystem = locoCopy.SlipControlSystem;
+            IndividualAxleControl = locoCopy.IndividualAxleControl;
             EngineType = locoCopy.EngineType;
             SandingSystemType = locoCopy.SandingSystemType;
             TractionMotorType = locoCopy.TractionMotorType;
@@ -1323,7 +1328,6 @@ namespace Orts.Simulation.RollingStocks
             HasSmoothStruc = locoCopy.HasSmoothStruc;
             LocoNumDrvAxles = locoCopy.LocoNumDrvAxles;
             MSTSLocoNumDrvWheels = locoCopy.MSTSLocoNumDrvWheels;
-            AntiSlip = locoCopy.AntiSlip;
             VacuumPumpFitted = locoCopy.VacuumPumpFitted;
             FastVacuumExhausterFitted = locoCopy.FastVacuumExhausterFitted;
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
@@ -1349,8 +1353,6 @@ namespace Orts.Simulation.RollingStocks
             EmergencyEngagesHorn = locoCopy.EmergencyEngagesHorn;
             HornTimerS = locoCopy.HornTimerS;
             BellTimerS = locoCopy.BellTimerS;
-
-            WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
 
             CompressorIsMechanical = locoCopy.CompressorIsMechanical;
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
@@ -1539,7 +1541,7 @@ namespace Orts.Simulation.RollingStocks
             CurrentTrackSanderSandConsumptionM3pS = inf.ReadSingle();
             CurrentTrackSanderAirConsumptionM3pS = inf.ReadSingle();
 
-            AbsTractionSpeedMpS = PrevAbsTractionSpeedMpS = inf.ReadSingle();
+            AbsTractionSpeedMpS = inf.ReadSingle();
 
             base.Restore(inf);
 
@@ -1722,14 +1724,8 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
             }
-            SlipEffortLimit = new float[LocomotiveAxles.Count];
-            Array.Fill(SlipEffortLimit, 1.0f);
             if (SlipControlSystem == SlipControlType.Unknown)
-            {
-                if (AntiSlip) SlipControlSystem = SlipControlType.ReduceForce;
-                else if (WheelslipCausesThrottleDown) SlipControlSystem = SlipControlType.CutPower;
-                else SlipControlSystem = SlipControlType.None;
-            }
+                SlipControlSystem = SlipControlType.None;
 
             // Calculate minimum speed to pickup water
             const float Aconst = 2;
@@ -2043,7 +2039,8 @@ namespace Orts.Simulation.RollingStocks
                 float maxPowerW = MaxPowerW * Train.MUThrottlePercent / 100.0f;
                 if (TractionForceN * SpeedMpS > maxPowerW) TractionForceN = maxPowerW / SpeedMpS;
             }
-            AverageForceN = TractionForceN;
+            LocomotiveAxles.ApplyTractionForce(TractionForceN);
+            AverageForceN = TractiveForceN = TractionForceN;
 
             LocomotivePowerSupply?.InitializeMoving();
             if (Train.IsActualPlayerTrain)
@@ -2053,7 +2050,7 @@ namespace Orts.Simulation.RollingStocks
                 BrakeSystem.LocoInitializeMoving();
                 EngineBrakeController?.InitializeMoving();
             }
-            AbsTractionSpeedMpS = PrevAbsTractionSpeedMpS = SpeedMpS;
+            AbsTractionSpeedMpS = SpeedMpS;
         }
 
         //================================================================================================//
@@ -2574,45 +2571,7 @@ namespace Orts.Simulation.RollingStocks
 			}
 #endif
         }
-        public void UpdateForceWithRamp(ref float forceN, float elapsedClockSeconds, float targetForceN, float maxForceN, float rampUpNpS=0, float rampDownNpS=0, float rampZeroNpS=0, float rampUpWpS=0, float rampDownWpS=0, float rampZeroWpS=0)
-        {
-            if (targetForceN > maxForceN) targetForceN = maxForceN;
-            if (forceN > maxForceN) forceN = maxForceN;
-            bool toZero = targetForceN == 0;
-            if (AbsTractionSpeedMpS > 0)
-            {
-                float powerW = forceN * PrevAbsTractionSpeedMpS;
-                float targetPowerW = targetForceN * AbsTractionSpeedMpS;
-                if (targetPowerW > powerW && rampUpWpS > 0)
-                {
-                    float maxChangeW = rampUpWpS * elapsedClockSeconds;
-                    if (powerW + maxChangeW < targetPowerW)
-                    {
-                        targetPowerW = powerW + maxChangeW;
-                        targetForceN = Math.Min(targetForceN, targetPowerW / AbsTractionSpeedMpS);
-                    }
-                }
-                if (targetPowerW < powerW && (toZero ? rampZeroWpS : rampDownWpS) > 0)
-                {
-                    float maxChangeW = (toZero ? rampZeroWpS : rampDownWpS) * elapsedClockSeconds;
-                    if (powerW - maxChangeW > targetPowerW)
-                    {
-                        targetPowerW = powerW - maxChangeW;
-                        targetForceN = Math.Max(targetForceN, Math.Min(forceN, targetPowerW / AbsTractionSpeedMpS));
-                    }
-                }
-            }
-            if (targetForceN > forceN)
-            {
-                if (rampUpNpS > 0) forceN = Math.Min(forceN + rampUpNpS * elapsedClockSeconds, targetForceN);
-                else forceN = targetForceN;
-            }
-            else if (targetForceN < forceN)
-            {
-                if ((toZero ? rampZeroNpS : rampDownNpS) > 0) forceN = Math.Max(forceN - (toZero ? rampZeroNpS : rampDownNpS) * elapsedClockSeconds, targetForceN);
-                else forceN = targetForceN;
-            }
-        }
+
         /// <summary>
         /// Provides the theoretical tractive force that can be achieved at current speed
         /// Takes into account number of available engines and power limitation effects from the power supply.
@@ -2620,43 +2579,62 @@ namespace Orts.Simulation.RollingStocks
         /// (e.g. diesel engine still revving up)
         /// </summary>
         /// <param name="t">Throttle position (0-1)</param>
-        /// <returns></returns>
-        public virtual float GetAvailableTractionForceN(float t)
+        /// <param name="limit">True (default false) if the force returned should be the absolute limit on force</param>
+        /// <returns>Tractive effort currently available at the given throttle setting</returns>
+        public virtual float GetAvailableTractionForceN(float t, bool limit = false)
         {
             if (t <= 0) return 0;
             float powerW = float.MaxValue;
             float forceN;
-            // Take into account power limitation
-            if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply && supply.MaximumPowerW > 0)
-                powerW = supply.MaximumPowerW * t * (1-PowerReduction);
+
+            if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
+            {
+                // Consider influence of power supply on target force
+                // This limit influences the target force, and can be exceeded in transient situations
+                if (!limit && supply.MaximumPowerW > 0)
+                    powerW = supply.MaximumPowerW * t;
+                // This limit influences the absolute maximum force, and cannot be exceeded, not even transiently
+                if (supply.AvailableTractionPowerW > 0)
+                    powerW = Math.Min(powerW, supply.AvailableTractionPowerW);
+            }
             // This section calculates the traction force of the locomotive as follows:
             // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 
             // Advanced configuration (TF table) - use a user defined tractive force table
             if (TractiveForceCurves == null)
             {
-                powerW = Math.Min(powerW, MaxPowerW * t * t * (1 - PowerReduction));
-                
-                if (AbsTractionSpeedMpS > MaxSpeedMpS)
-                {
-                    forceN = 0;
-                }
-                else if (AbsTractionSpeedMpS > MaxSpeedMpS - 0.05f)
-                {
-                    forceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * MaxForceN * (1 - PowerReduction);
-                }
+                // Calculate target power based on throttle setting, electric locomotives use exponential power increase
+                if (this is MSTSDieselLocomotive)
+                    powerW = Math.Min(powerW, MaxPowerW * t);
                 else
+                    powerW = Math.Min(powerW, MaxPowerW * t * t);
+
+                // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
+                if (UnloadingSpeedMpS != 0 && AbsTractionSpeedMpS > UnloadingSpeedMpS)
                 {
-                    forceN = MaxForceN * (1 - PowerReduction);
+                    // use straight line curve to decay power to zero by 2 x unloading speed
+                    float unloadingSpeedDecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsTractionSpeedMpS - UnloadingSpeedMpS);
+                    unloadingSpeedDecay = MathHelper.Clamp(unloadingSpeedDecay, 0.0f, 1.0f);  // Clamp decay within bounds
+                    powerW *= unloadingSpeedDecay;
                 }
+
+                // Consider speed-dependent effects on target force
+                if (AbsTractionSpeedMpS > MaxSpeedMpS)
+                    forceN = 0;
+                else if (AbsTractionSpeedMpS > MaxSpeedMpS - 0.05f)
+                    forceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * MaxForceN;
+                else
+                    forceN = MaxForceN;
                 forceN *= t;
             }
             else
             {
-                forceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS) * (1 - PowerReduction);
+                forceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS);
                 if (forceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                     forceN = 0;
             }
             if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
+
+            forceN *= (1 - PowerReduction);
 
             // Dynamically evolving tractive force:
             // Reduce max allowed tractive effort to continuous tractive effort after sustained high force output
@@ -2671,58 +2649,25 @@ namespace Orts.Simulation.RollingStocks
 
             return forceN;
         }
-        protected virtual void UpdateTractionForce(float elapsedClockSeconds)
-        {
-            float t = ThrottlePercent / 100;
 
-            // Ensure that throttle never exceeds the limits imposed by other subsystems
-            float maxthrottle = MaxThrottlePercent / 100;
-            if (DynamicBrake) maxthrottle = 0;
-            if (t > maxthrottle) t = maxthrottle;
-            t = MathHelper.Clamp(t, 0, 1);
-
-            if (maxthrottle > 0 && Direction != Direction.N && LocomotivePowerSupply.MainPowerSupplyOn)
-            {
-                // Set the target force to the theoretically available tractive force for current throttle setting
-                // If there is a limit on the amount of throttle, ensure that tractive force never exceeds the limit
-                // imposed by that throttle setting
-                float targetForceN = GetAvailableTractionForceN(t);
-                float limitForceN = GetAvailableTractionForceN(maxthrottle);
-                float maxForceN = float.MaxValue;
-                // Ignore force limit for exotic curves where higher throttle settings provide less tractive force
-                if (limitForceN >= targetForceN)
-                    maxForceN = limitForceN;
-                // Ensure that power consumption never exceeds the power that is available for traction at the moment
-                if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
-                {
-                    float maxPowerW = supply.AvailableTractionPowerW;
-                    if (this is MSTSDieselLocomotive dL)
-                        maxPowerW *= dL.DieselTransmissionEfficiency;
-                    if (maxForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
-                }
-                // Consider wheel slip control
-                targetForceN = UpdateSlipControl(targetForceN, elapsedClockSeconds);
-                UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS, TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);
-            }
-            else
-            {
-                TractionForceN = 0f;
-            }
-
-            // Dynamically evolving tractive force:
-            // Determine long-term average traction force as an estimate of motor/transmission heat
-            float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
-            if (w < 0)
-                w = 0;
-            AverageForceN = w * AverageForceN + (1 - w) * TractionForceN;
-        }
-        public float GetAvailableDynamicBrakeForceN(float d)
+        /// <summary>
+        /// Provides the theoretical dynamic brake force that can be achieved at current speed
+        /// Takes into account power limitation effects from the power supply.
+        /// This method does not take into account transient effects that temporary limit tractive force.
+        /// </summary>
+        /// <param name="d">Dynamic brake position (0-1)</param>
+        /// <param name="limit">True (default false) if the force returned should be the absolute limit on force</param>
+        /// <returns>Dynamic brake effort currently available at the given dynamic brake setting</returns>
+        public float GetAvailableDynamicBrakeForceN(float d, bool limit = false)
         {
             float forceN = 0;
+            // Note: All locomotives, even using MSTS settings, should have dynamic brake curves
             if (d > 0 && DynamicBrakeForceCurves != null && AbsTractionSpeedMpS > 0)
             {
                 forceN = DynamicBrakeForceCurves.Get(d, AbsTractionSpeedMpS) * (1 - PowerReduction);
-                if (LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
+                // Consider influence of power supply on target force
+                // This limit influences the target dynamic brake force, and can be exceeded in transient situations
+                if (!limit && LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
                 {
                     float powerW = LocomotivePowerSupply.MaximumDynamicBrakePowerW * (1 - PowerReduction);
                     if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
@@ -2730,7 +2675,11 @@ namespace Orts.Simulation.RollingStocks
             }
             return forceN;
         }
-        protected virtual void UpdateDynamicBrakeForce(float elapsedClockSeconds)
+
+        /// <summary>
+        /// Updates the dynamic braking system to determine if dynamic braking is enabled or not
+        /// </summary>
+        protected void UpdateDynamicBrakeStatus()
         {
             if (ThrottlePercent <= 0 && TractionForceN == 0 && LocomotivePowerSupply.DynamicBrakeAvailable && Direction != Direction.N && DynamicBrakePercent >= 0)
             {
@@ -2755,24 +2704,125 @@ namespace Orts.Simulation.RollingStocks
                 DynamicBrake = false;
                 DynamicBrakeCommandStartTime = null;
             }
-            float maxdynamic = DynamicBrake ? MaxDynamicBrakePercent / 100 : 0;
-            float d = DynamicBrakePercent / 100;
-            bool dynamicLimited = d > maxdynamic;
-            if (dynamicLimited) d = maxdynamic;
-            d = MathHelper.Clamp(d, 0, 1);
+        }
 
-            if (maxdynamic > 0 && AbsTractionSpeedMpS > 0)
+        /// <summary>
+        /// Determines the drive force currently targeted by the locomotive (whether in power or dynamic braking),
+        /// as well as the current maximum force that must not be exceeded
+        /// </summary>
+        /// <returns>Pair of floating point values, first is the target force, second is the maximum allowed force</returns>
+        protected (float, float) GetTargetForce()
+        {
+            float targetForceN = 0.0f;
+            float maxForceN = 0.0f;
+
+            if (LocomotivePowerSupply.MainPowerSupplyOn && Direction != Direction.N)
             {
-                float limitForceN = GetAvailableDynamicBrakeForceN(maxdynamic);
-                float targetForceN = GetAvailableDynamicBrakeForceN(d);
-                float maxForceN = limitForceN >= targetForceN ? limitForceN : float.MaxValue;
-                // Consider wheel slip control
-                targetForceN = UpdateSlipControl(targetForceN, elapsedClockSeconds);
-                UpdateForceWithRamp(ref DynamicBrakeForceN, elapsedClockSeconds, targetForceN, maxForceN, DynamicBrakeForceRampUpNpS, DynamicBrakeForceRampDownNpS, DynamicBrakeForceRampDownToZeroNpS, DynamicBrakePowerRampUpWpS, DynamicBrakePowerRampDownWpS, DynamicBrakePowerRampDownToZeroWpS);
+                float limitForceN;
+
+                if (DynamicBrake)
+                {
+                    float d = DynamicBrakePercent / 100;
+                    float maxDynamic = MaxDynamicBrakePercent / 100;
+                    if (d > maxDynamic) d = maxDynamic;
+                    d = MathHelper.Clamp(d, 0, 1);
+
+                    // Determine dynamic brake force from force curves and power supply
+                    // Prevent dynamic brake force from exceeding that which occurs at the maximum dynamic brake value
+                    targetForceN = GetAvailableDynamicBrakeForceN(d);
+                    limitForceN = GetAvailableDynamicBrakeForceN(maxDynamic, true);
+                }
+                else
+                {
+                    float t = ThrottlePercent / 100;
+                    float maxThrottle = MaxThrottlePercent / 100;
+                    if (t > maxThrottle) t = maxThrottle;
+                    t = MathHelper.Clamp(t, 0, 1);
+
+                    // Determine tractive effort from force curves (or default curves) and power supply
+                    // Prevent tractive effort from exceeding that which occurs at the maximum throttle value
+                    targetForceN = GetAvailableTractionForceN(t);
+                    limitForceN = GetAvailableTractionForceN(maxThrottle, true);
+                }
+                // Ignore limit force for unusual force curves where higher settings give less force
+                maxForceN = limitForceN >= targetForceN ? limitForceN : float.MaxValue;
             }
+
+            return (targetForceN, maxForceN);
+        }
+
+        /// <summary>
+        /// Updates the behavior of the wheel slip control system on each of the locomotive's axles.
+        /// The wheel slip control system, depending on the style equipped, influences the locomotive control
+        /// system to reduce tractive effort/dynamic brake effort demand in order to control wheel slip.
+        /// Returns the tractive effort/dynamic brake effort demanded by the wheel slip control system.
+        /// </summary>
+        /// <param name="targetForceN">The tractive effort the locomotive is attempting to output, without considering slip control.</param>
+        /// <param name="elapsedClockSeconds">Simulation delta time.</param>
+        /// <returns>The tractive effort the locomotive should attempt to output after considering slip control.</returns>
+        protected float UpdateSlipControl(float targetForceN, float elapsedClockSeconds)
+        {
+            // Should we use ramp rates or hardcoded run up/down for slip control?
+            bool useRampRates;
+            if (DynamicBrake)
+                useRampRates = DynamicBrakeForceRampDownToZeroNpS > 0 && DynamicBrakeForceRampDownToZeroNpS > DynamicBrakeForceRampDownNpS;
             else
+                useRampRates = TractionForceRampDownToZeroNpS > 0 && TractionForceRampDownToZeroNpS > TractionForceRampDownNpS;
+
+            float slipControlForceN = LocomotiveAxles.UpdateSlipControl(targetForceN, SlipControlSystem, elapsedClockSeconds, useRampRates);
+            // Without individual axle control, force setpoint is reduced for the entire locomotive
+            if (!IndividualAxleControl && Math.Abs(slipControlForceN) < Math.Abs(targetForceN))
+                targetForceN = slipControlForceN;
+
+            return targetForceN;
+        }
+
+        /// <summary>
+        /// Updates the force used to drive the locomotive axles from the current force
+        /// toward a given target force, while limiting the force to a given maximum value.
+        /// Works for both power and dynamic braking.
+        /// </summary>
+        /// <param name="targetForceN">The total drive force that should be applied</param>
+        /// <param name="maxForceN">The maximum drive force currently allowed</param>
+        /// <param name="elapsedClockSeconds">Simulation delta time</param>
+        protected void UpdateDriveForce(float targetForceN, float maxForceN, float elapsedClockSeconds)
+        {
+            float axleForceN;
+            float axleTargetForceN;
+            float axleMaxForceN;
+
+            foreach (Axle axle in LocomotiveAxles)
             {
-                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
+                if (axle.DriveType != AxleDriveType.NotDriven)
+                {
+                    // With overall force/power limits established, update force used to drive each axle
+                    if (IndividualAxleControl)
+                        axleTargetForceN = axle.SlipControlForceN;
+                    else // If individual axle control is not used, slip will be limited by overall force limit
+                        axleTargetForceN = targetForceN * axle.TractiveForceFraction;
+                    axleMaxForceN = maxForceN * axle.TractiveForceFraction;
+
+                    if (DynamicBrake)
+                    {
+                        // Adjust sign convention: Positive is against actual direction of motion (braking)
+                        axleForceN = axle.DriveForceN * -Math.Sign((float)axle.AxleSpeedMpS);
+
+                        axle.UpdateForceWithRamp(ref axleForceN, elapsedClockSeconds, axleTargetForceN, axleMaxForceN,
+                            DynamicBrakeForceRampUpNpS, DynamicBrakeForceRampDownNpS, DynamicBrakeForceRampDownToZeroNpS,
+                            DynamicBrakePowerRampUpWpS, DynamicBrakePowerRampDownWpS, DynamicBrakePowerRampDownToZeroWpS);
+                        axle.ApplyDynamicBrakeForce(axleForceN);
+                    }
+                    else
+                    {
+                        // Adjust sign convention: Positive is with direction of reverser (powering)
+                        axleForceN = axle.DriveForceN * (Direction == Direction.Reverse ? -1 : 1);
+
+                        axle.UpdateForceWithRamp(ref axleForceN, elapsedClockSeconds, axleTargetForceN, axleMaxForceN,
+                            TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS,
+                            TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);
+                        axle.ApplyTractionForce(axleForceN);
+                    }
+                }
             }
         }
 
@@ -2781,7 +2831,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateTractiveForce(float elapsedClockSeconds)
         {
-            // Method to set force and power info
+            // Method to set force and power info for diesel and electric locomotives
             // An alternative method in the steam locomotive will override this and input force and power info for it.
 
             // Motive force is calculated from traction and dynamic brake force
@@ -2795,128 +2845,12 @@ namespace Orts.Simulation.RollingStocks
             // the traction motor/gearbox/steam piston does not "know" or "care" if the wheels are slipping or not, and behaves the same either way).
             // For a locomotive to respond to ground speed or slippage, additional systems (such as wheel slip protection) are required, these are
             // implemented elsewhere.
-            PrevAbsTractionSpeedMpS = AbsTractionSpeedMpS;
             AbsTractionSpeedMpS = AbsWheelSpeedMpS;
-            UpdateTractionForce(elapsedClockSeconds);
-            TractiveForceN = TractionForceN;
-            ApplyDirectionToTractiveForce(ref TractiveForceN);
 
-            UpdateDynamicBrakeForce(elapsedClockSeconds);
-            TractiveForceN -= Math.Sign(WheelSpeedMpS) * DynamicBrakeForceN;
-
-            foreach (Axle axle in LocomotiveAxles)
-            {
-                if (axle.DriveType == AxleDriveType.ForceDriven)
-                {
-                    axle.DriveForceN = TractiveForceN * axle.TractiveForceFraction;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updates the behavior of the wheel slip control system on each of the locomotive's axles.
-        /// The wheel slip control system, depending on the style equipped, influences the locomotive control
-        /// system to reduce tractive effort/dynamic brake effort demand in order to control wheel slip.
-        /// Returns the tractive effort/dynamic brake effort demanded by the wheel slip control system.
-        /// </summary>
-        /// <param name="targetForceN">The tractive effort the locomotive is attempting to output, without considering slip control.</param>
-        /// <param name="elapsedClockSeconds">Simulation delta time.</param>
-        /// <returns>The tractive effort the locomotive should attempt to output after considering slip control.</returns>
-        protected virtual float UpdateSlipControl(float targetForceN, float elapsedClockSeconds)
-        {
-            if (SlipControlSystem == SlipControlType.Unknown || SlipControlSystem == SlipControlType.None)
-            {
-                // No slip control, do not limit the target tractive effort
-                return targetForceN;
-            }
-
-            float forceRatio = TractionForceN / targetForceN;
-
-            for (int i = 0; i < LocomotiveAxles.Count; i++)
-            {
-                Axle axle = LocomotiveAxles[i];
-
-                if (SlipControlSystem == SlipControlType.ReduceForce || SlipControlSystem == SlipControlType.Full)
-                {
-                    // Shared behavior for both standard and fully capable slip control
-                    // Reduces tractive effort only after slip has actually happened
-                    if (!axle.HuDIsWheelSlip && SlipEffortLimit[i] < 1.0f)
-                    {
-                        if (TractionForceRampUpNpS <= 0)
-                        {
-                            // No ramp rates defined, use default behavior
-                            // If not slipping, gradually increase effort limit back to 100% over 10 seconds
-                            SlipEffortLimit[i] += elapsedClockSeconds / 10.0f;
-                            if (SlipEffortLimit[i] > 1.0f)
-                                SlipEffortLimit[i] = 1.0f;
-                        }
-                        else
-                        {
-                            // Speed of effort restoration will be controlled by ramp rates
-                            SlipEffortLimit[i] = 1.0f;
-                        }
-                    }
-                    else if (axle.HuDIsWheelSlip && SlipEffortLimit[i] > 0.0f)
-                    {
-                        // Reduce target force to mitigate wheel slip
-                        if (TractionForceRampDownToZeroNpS <= 0)
-                        {
-                            // No ramp rates defined, use default behavior
-                            // Immediately set effort reduction to reduce target force to the current force
-                            if (SlipEffortLimit[i] > forceRatio)
-                                SlipEffortLimit[i] = forceRatio;
-                            // If slipping, quickly reduce effort limit toward 0% over 1 second
-                            SlipEffortLimit[i] -= elapsedClockSeconds / 1.0f;
-                            if (SlipEffortLimit[i] < 0.0f)
-                                SlipEffortLimit[i] = 0.0f;
-                        }
-                        else
-                        {
-                            // Speed of effort reduction will be controlled by ramp rates
-                            SlipEffortLimit[i] = 0.0f;
-                        }
-                    }
-
-                    if (SlipControlSystem == SlipControlType.Full)
-                    {
-                        // Fully capable slip control (creep control)
-                        // In addition to standard behavior, directly overrides the target tractive effort
-                        // by limiting target force to the limit of adhesion
-                        float adhesionLimitN = axle.MaximumWheelAdhesion * axle.AxleGradientForceN * 0.99f;
-                        if (targetForceN > adhesionLimitN)
-                            targetForceN = adhesionLimitN;
-                    }
-                }
-                else if (SlipControlSystem == SlipControlType.CutPower)
-                {
-                    // Rudimentary slip control
-                    // Completely eliminates tractive effort after slip happens
-                    // and only restores effort after it is completely cut
-                    if (!axle.HuDIsWheelSlip && (axle.DriveForceN == 0.0f || SlipEffortLimit[i] > 0.0f))
-                    {
-                        if (TractionForceRampUpNpS <= 0)
-                        {
-                            // No ramp rates defined, use default behavior
-                            // gradually increase effort limit back to 100% over 10 seconds
-                            SlipEffortLimit[i] += elapsedClockSeconds / 10.0f;
-                            if (SlipEffortLimit[i] > 1.0f)
-                                SlipEffortLimit[i] = 1.0f;
-                        }
-                        else
-                        {
-                            // Speed of effort restoration will be controlled by ramp rates
-                            SlipEffortLimit[i] = 1.0f;
-                        }
-                    }
-                    else if (axle.HuDIsWheelSlip && SlipEffortLimit[i] > 0.0f)
-                    {
-                        // If slipping, immediately reduce effort limit to 0%
-                        SlipEffortLimit[i] = 0.0f;
-                    }
-                }
-            }
-            // Limit target force using the smallest value of SlipEffortLimit
-            return targetForceN * SlipEffortLimit.Min();
+            UpdateDynamicBrakeStatus();
+            (float targetForceN, float maxForceN) = GetTargetForce();
+            targetForceN = UpdateSlipControl(targetForceN, elapsedClockSeconds);
+            UpdateDriveForce(targetForceN, maxForceN, elapsedClockSeconds);
         }
 
         /// <summary>
@@ -3239,8 +3173,16 @@ namespace Orts.Simulation.RollingStocks
             // TODO: Rolling friction should be handled by the axle module
 
             TractiveForceN = LocomotiveAxles.DriveForceN;
-            if (DynamicBrake) DynamicBrakeForceN = Math.Abs(TractiveForceN);
-            else TractionForceN = Math.Abs(TractiveForceN);
+            if (DynamicBrake)
+            {
+                TractionForceN = 0.0f;
+                DynamicBrakeForceN = Math.Abs(TractiveForceN);
+            }
+            else
+            {
+                TractionForceN = Math.Abs(TractiveForceN);
+                DynamicBrakeForceN = 0.0f;
+            }
             MotiveForceN = LocomotiveAxles.AxleMotiveForceN;
             BrakeForceN = LocomotiveAxles.AxleBrakeForceN;
             RollingFrictionForceN = LocomotiveAxles.AxleFrictionForceN;
@@ -3251,6 +3193,13 @@ namespace Orts.Simulation.RollingStocks
                 WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
                 HuDIsWheelSlip = LocomotiveAxles.HuDIsWheelSlip;
                 HuDIsWheelSlipWarning = LocomotiveAxles.HuDIsWheelSlipWarning;
+
+                // Dynamically evolving tractive force:
+                // Determine long-term average traction force as an estimate of motor/transmission heat
+                float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
+                if (w < 0)
+                    w = 0;
+                AverageForceN = w * AverageForceN + (1 - w) * Math.Abs(TractiveForceN);
             }
 
             WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
