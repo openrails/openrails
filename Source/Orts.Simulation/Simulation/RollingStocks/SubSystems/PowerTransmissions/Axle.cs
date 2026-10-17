@@ -1026,40 +1026,65 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// - its value is computed as a maximum of slip function
         ///   maximum can be found as a derivation f'(dV) = 0
         /// </summary>
-        public float WheelSlipThresholdMpS;
+        public float WheelSlipThresholdMpS = 0.025f;
+
+        /// <summary>
+        /// Determines the maximum axle adhesion (MaximumWheelAdhesion) at the current conditions,
+        /// as well as the slip speed that causes this level of adhesion (WheelSlipThresholdMpS)
+        /// </summary>
         public void ComputeWheelSlipThresholdMpS()
         {
-            // Bisection algorithm. We assume adhesion maximum is between 0 (0.005) and 4 m/s
-            double a = 0.005f;
-            double b = 4;
+            // Goal: Determine the slip speed that causes the largest adhesion
+            // Not feasible to determine analytically, determine iteratively
+            // Bisection algorithm. We assume adhesion maximum is between 0.025 m/s and slightly above the previous slip speed
+            double lowerSlipMpS = 0.025;
+            double upperSlipMpS = Math.Max(WheelSlipThresholdMpS, lowerSlipMpS) + lowerSlipMpS;
+
+            double lowerAdhesion = SlipCharacteristicsPolach(lowerSlipMpS);
+            double upperAdhesion = SlipCharacteristicsPolach(upperSlipMpS);
             // We have to find the zero of the derivative of adhesion curve
             // i.e. the point where slope changes from positive (adhesion region)
             // to negative (slip region)
             double dx = 0.001;
-            double fa = SlipCharacteristicsPolach(a + dx) - SlipCharacteristicsPolach(a);
-            double fb = SlipCharacteristicsPolach(b + dx) - SlipCharacteristicsPolach(b);
+            double fa = SlipCharacteristicsPolach(lowerSlipMpS + dx) - lowerAdhesion;
+            double fb = SlipCharacteristicsPolach(upperSlipMpS + dx) - upperAdhesion;
 
             if (fa * fb > 0)
             {
                 // If sign does not change, bisection fails
-                WheelSlipThresholdMpS = MpS.FromKpH(0.1f);
+                if (fa > 0) // Max adhesion is somewhere above the upper threshold
+                {
+                    MaximumWheelAdhesion = (float)upperAdhesion;
+                    WheelSlipThresholdMpS = (float)upperSlipMpS;
+                }
+                else // Max adhesion is somewhere below the lower threshold
+                {
+                    MaximumWheelAdhesion = (float)lowerAdhesion;
+                    WheelSlipThresholdMpS = (float)lowerSlipMpS;
+                }
                 return;
             }
-            while (Math.Abs(b - a) > MpS.FromKpH(0.1f))
+            while (Math.Abs(upperSlipMpS - lowerSlipMpS) > 0.005)
             {
                 double c = (a + b) / 2;
                 double fc = SlipCharacteristicsPolach(c + dx) - SlipCharacteristicsPolach(c);
+                double middleSlipMpS = (lowerSlipMpS + upperSlipMpS) / 2;
+                double middleAdhesion = SlipCharacteristicsPolach(middleSlipMpS);
+                double fc = SlipCharacteristicsPolach(middleSlipMpS + dx) - middleAdhesion;
                 if (fa * fc > 0)
                 {
-                    a = c;
+                    lowerAdhesion = middleAdhesion;
+                    lowerSlipMpS = middleSlipMpS;
                     fa = fc;
                 }
                 else
                 {
-                    b = c;
+                    upperAdhesion = middleAdhesion;
+                    upperSlipMpS = middleSlipMpS;
                 }
             }
-            WheelSlipThresholdMpS = (float)Math.Max((a + b) / 2, MpS.FromKpH(0.1f));
+            MaximumWheelAdhesion = (float)((lowerAdhesion + upperAdhesion) / 2);
+            WheelSlipThresholdMpS = (float)((lowerSlipMpS + upperSlipMpS) / 2);
         }
 
         /// <summary>
@@ -1498,7 +1523,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 axleStaticForceN = AxleGradientForceN * SlipCharacteristicsPolach(0);
                 ComputeWheelSlipThresholdMpS();
                 WheelAdhesion = (float)SlipCharacteristicsPolach(SlipSpeedMpS);
-                MaximumWheelAdhesion = (float)SlipCharacteristicsPolach(WheelSlipThresholdMpS);
 
 #if DEBUG_ADHESION
                 if (count < 6 && count++ == 5)
