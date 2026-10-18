@@ -1839,7 +1839,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     // Fully capable slip control (creep control)
                     // In addition to standard behavior, directly overrides the target tractive effort
                     // by limiting target force to the limit of adhesion
-                    float adhesionLimitN = MaximumWheelAdhesion * AxleGradientForceN * 0.99f;
+                    float adhesionLimitN = MaximumWheelAdhesion * AxleGradientForceN;
+
+                    // If ramp rates are defined, more precise creep control can be employed
+                    if (useRampRates)
+                    {
+                        // Increase adhesion limit (limited to +10%) if below 100% slip, reduce if above, to search for perfect wheel creep
+                        // Limit drops to 0 at 110% slip, actual force will be controlled by ramp rates
+                        adhesionLimitN *= MathHelper.Clamp(1.0f - (SlipSpeedPercent - 100) / 10.0f, 0.0f, 1.1f);
+                    }
+
+                    // Consider that target force may be negative, sign of adhesion limit should match sign of target force
                     if (Math.Abs(targetForceN) > Math.Abs(adhesionLimitN))
                         targetForceN = Math.Abs(adhesionLimitN) * Math.Sign(targetForceN);
                 }
