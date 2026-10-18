@@ -962,11 +962,9 @@ namespace Orts.Viewer3D
         AnimatedPart AnimatedPartGrabber02;
 
         Vector3 AnimationXYZSpan;
-        Vector3 AnimationGrabber01Span;
-        Vector3 AnimationGrabber02Span;
         Vector3 AnimationXYZStart;
-        Vector3 AnimationGrabber01Start;
-        Vector3 AnimationGrabber02Start;
+        Vector2 AnimationGrabber12Span;
+        Vector2 AnimationGrabber12Start;
 
         readonly float SlowDownThreshold = 0.03f;
 
@@ -1025,16 +1023,16 @@ namespace Orts.Viewer3D
             AnimatedPartGrabber01.SetGltfSpeed(speed);
             AnimatedPartGrabber02.SetGltfSpeed(speed);
 
-            SharedShape.GetAnimationOutputMinMax(AnimatedPartX.MatrixIndexes.FirstOrDefault(), out var minX, out var maxX, out var startX);
-            SharedShape.GetAnimationOutputMinMax(AnimatedPartY.MatrixIndexes.FirstOrDefault(), out var minY, out var maxY, out var startY);
-            SharedShape.GetAnimationOutputMinMax(AnimatedPartZ.MatrixIndexes.FirstOrDefault(), out var minZ, out var maxZ, out var startZ);
-            SharedShape.GetAnimationOutputMinMax(AnimatedPartGrabber01.MatrixIndexes.FirstOrDefault(), out var minG01, out var maxG01, out AnimationGrabber01Start);
-            SharedShape.GetAnimationOutputMinMax(AnimatedPartGrabber02.MatrixIndexes.FirstOrDefault(), out var minG02, out var maxG02, out AnimationGrabber02Start);
+            SharedShape.GetAnimationStartEnd(AnimatedPartX.MatrixIndexes.FirstOrDefault(), AnimatedPartX.MaxFrame, out var startX, out var endX);
+            SharedShape.GetAnimationStartEnd(AnimatedPartY.MatrixIndexes.FirstOrDefault(), AnimatedPartY.MaxFrame, out var startY, out var endY);
+            SharedShape.GetAnimationStartEnd(AnimatedPartZ.MatrixIndexes.FirstOrDefault(), AnimatedPartZ.MaxFrame, out var startZ, out var endZ);
+            SharedShape.GetAnimationStartEnd(AnimatedPartGrabber01.MatrixIndexes.FirstOrDefault(), AnimatedPartGrabber01.MaxFrame, out var startG01, out var endG01);
+            SharedShape.GetAnimationStartEnd(AnimatedPartGrabber02.MatrixIndexes.FirstOrDefault(), AnimatedPartGrabber02.MaxFrame, out var startG02, out var endG02);
 
             AnimationXYZStart = new Vector3(startX.X, startY.Y, startZ.Z);
-            AnimationXYZSpan = new Vector3(maxX.X - minX.X, maxY.Y - minY.Y, maxZ.Z - minZ.Z);
-            AnimationGrabber01Span = maxG01 - minG01;
-            AnimationGrabber02Span = maxG02 - minG02;
+            AnimationXYZSpan = new Vector3(endX.X - startX.X, endY.Y - startY.Y, endZ.Z - startZ.Z);
+            AnimationGrabber12Start = new Vector2(startG01.Z, startG02.Z);
+            AnimationGrabber12Span = new Vector2(endG01.Z - startG01.Z, endG02.Z - startG02.Z);
 
             var key = GetStateFromPosition(Vector3.Zero);
 
@@ -1048,7 +1046,7 @@ namespace Orts.Viewer3D
             Matrix.Multiply(ref absAnimationMatrix, ref Location.XNAMatrix, out absAnimationMatrix);
 
             ContainerHandlingItem = Viewer.Simulator.ContainerManager.ContainerHandlingItems[FuelPickupItemObj.TrItemIDList[0].dbID];
-            ContainerHandlingItem.PassSpanParameters(maxZ.Z, minZ.Z, minG01.Z - maxG01.Z, minG02.Z - maxG02.Z);
+            ContainerHandlingItem.PassSpanParameters(startZ.Z, endZ.Z, Math.Abs(AnimationGrabber12Span.X), Math.Abs(AnimationGrabber12Span.Y));
             ContainerHandlingItem.ReInitPositionOffset(absAnimationMatrix);
 
             key = GetStateFromPosition(ContainerHandlingItem.PickingSurfaceRelativeTopStartPosition);
@@ -1057,8 +1055,8 @@ namespace Orts.Viewer3D
             AnimatedPartY.SetState(key.Y);
             AnimatedPartZ.SetState(key.Z);
             AnimatedPartCable.SetState(key.Y);
-            AnimatedPartGrabber01.SetState(0);
-            AnimatedPartGrabber02.SetState(0);
+            AnimatedPartGrabber01.SetState(1);
+            AnimatedPartGrabber02.SetState(1);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -1066,8 +1064,8 @@ namespace Orts.Viewer3D
             if (FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
             {
                 var key = GetStateFromPosition(new Vector3(ContainerHandlingItem.TargetX, ContainerHandlingItem.TargetY, ContainerHandlingItem.TargetZ));
-                var keyGrabber01 = GetStateFromPosition(ContainerHandlingItem.TargetGrabber01, AnimationGrabber01Start.Z, AnimationGrabber01Span.Z);
-                var keyGrabber02 = GetStateFromPosition(ContainerHandlingItem.TargetGrabber02, AnimationGrabber02Start.Z, AnimationGrabber02Span.Z);
+                var keyGrabber01 = 1.0f - GetStateFromPosition(ContainerHandlingItem.TargetGrabber01 * Math.Sign(AnimationGrabber12Span.X), AnimationGrabber12Start.X, AnimationGrabber12Span.X);
+                var keyGrabber02 = 1.0f - GetStateFromPosition(ContainerHandlingItem.TargetGrabber02 * Math.Sign(AnimationGrabber12Span.Y), AnimationGrabber12Start.Y, AnimationGrabber12Span.Y);
 
                 AnimatedPartX.SlowDownFactor = Math.Abs(AnimatedPartX.AnimationKeyFraction() - key.X) > SlowDownThreshold / AnimatedPartX.MaxFrame ? 1.0f : 0.25f;
                 AnimatedPartY.SlowDownFactor = Math.Abs(AnimatedPartY.AnimationKeyFraction() - key.Y) > SlowDownThreshold / AnimatedPartY.MaxFrame ? 1.0f : 0.25f;
@@ -1092,8 +1090,6 @@ namespace Orts.Viewer3D
             ContainerHandlingItem.ActualX = AnimatedPartX.AnimationKeyFraction() * AnimationXYZSpan.X + AnimationXYZStart.X;
             ContainerHandlingItem.ActualY = AnimatedPartY.AnimationKeyFraction() * AnimationXYZSpan.Y + AnimationXYZStart.Y;
             ContainerHandlingItem.ActualZ = AnimatedPartZ.AnimationKeyFraction() * AnimationXYZSpan.Z + AnimationXYZStart.Z;
-            ContainerHandlingItem.ActualGrabber01 = AnimatedPartGrabber01.AnimationKeyFraction() * AnimationGrabber01Span.Z + AnimationGrabber01Start.Z;
-            ContainerHandlingItem.ActualGrabber02 = AnimatedPartGrabber02.AnimationKeyFraction() * AnimationGrabber02Span.Z + AnimationGrabber02Start.Z;
 
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
 
@@ -2446,28 +2442,18 @@ namespace Orts.Viewer3D
         public virtual float GetAnimationLength(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?
             .Select(c => c.LastOrDefault()?.Frame ?? 0).DefaultIfEmpty(0).Max() ?? 0;
 
-        public virtual void GetAnimationOutputMinMax(int animationId, out Vector3 min, out Vector3 max, out Vector3 start)
+        public virtual void GetAnimationStartEnd(int animationId, float maxFrame, out Vector3 start, out Vector3 end)
         {
-            min = max = start = Vector3.Zero;
-
-            if (!(Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?.FirstOrDefault() is IList keys) || keys.Count == 0)
+            start = end = Vector3.Zero;
+            if (Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers?.FirstOrDefault() is not IList keys || keys.Count == 0)
                 return;
 
             var v = (linear_key)keys[0];
-            min = max = start = new Vector3(v.X, v.Y, v.Z);
+            start = new Vector3(v.X, v.Y, v.Z);
 
-            for (int i = 1; i < keys.Count; i++)
-            {
-                v = (linear_key)keys[i];
-
-                if (v.X < min.X) min.X = v.X;
-                if (v.Y < min.Y) min.Y = v.Y;
-                if (v.Z < min.Z) min.Z = v.Z;
-
-                if (v.X > max.X) max.X = v.X;
-                if (v.Y > max.Y) max.Y = v.Y;
-                if (v.Z > max.Z) max.Z = v.Z;
-            }
+            var endKey = keys.Cast<linear_key>().LastOrDefault(k => k.Frame <= maxFrame);
+            if (endKey != null)
+                end = new Vector3(endKey.X, endKey.Y, endKey.Z);
         }
 
         [CallOnThread("Loader")]
