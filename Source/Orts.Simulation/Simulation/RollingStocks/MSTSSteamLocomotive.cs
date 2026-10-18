@@ -1044,11 +1044,15 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     MSTSNumCylinders = stf.ReadIntBlock(null); break; // retained for legacy purposes
                 case "engine(numberofcylinders":
                     MSTSNumCylinders = stf.ReadIntBlock(null); break;
+                case "engine(ortsmaxtracksandersteamconsumption":
+                    float sandSteamLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
+                    MaxTrackSanderSteamConsumptionForwardLbpS = MaxTrackSanderSteamConsumptionReverseLbpS = sandSteamLbpS;
+                    break;
                 case "engine(ortsmaxtracksandersteamconsumptionforward":
-                    Me3.FromFt3(MaxTrackSanderSteamConsumptionForwardLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null));
+                    MaxTrackSanderSteamConsumptionForwardLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                     break;
                 case "engine(ortsmaxtracksandersteamconsumptionreverse":
-                    Me3.FromFt3(MaxTrackSanderSteamConsumptionReverseLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null));
+                    MaxTrackSanderSteamConsumptionReverseLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                     break;
                 case "engine(cylinderstroke": MSTSCylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(cylinderdiameter": MSTSCylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
