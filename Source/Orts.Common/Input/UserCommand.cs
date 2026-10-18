@@ -31,6 +31,7 @@ namespace ORTS.Common.Input
         [GetString("Game Pause")] GamePause,
         [GetString("Game Screenshot")] GameScreenshot,
         [GetString("Game Fullscreen")] GameFullscreen,
+        [GetString("Game VR Recentre")] GameVRRecenter,
         [GetString("Game External Controller (RailDriver)")] GameExternalCabController,
         [GetString("Game Switch Ahead")] GameSwitchAhead,
         [GetString("Game Switch Behind")] GameSwitchBehind,

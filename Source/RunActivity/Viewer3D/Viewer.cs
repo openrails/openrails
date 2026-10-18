@@ -70,6 +70,8 @@ namespace Orts.Viewer3D
         public SharedShapeManager ShapeManager { get; private set; }
         public SignalTypeDataManager SignalTypeDataManager { get; private set; }
         public Point DisplaySize { get { return RenderProcess.DisplaySize; } }
+        /// <summary>The headset session, or null when driving flat.</summary>
+        public Orts.Viewer3D.VR.VRSession VR { get { return RenderProcess.VR; } }
         // Components
         public Orts.Viewer3D.Processes.Game Game { get; private set; }
         public Simulator Simulator { get; private set; }
@@ -151,7 +153,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void ActivateCabCamera()
         {
-            if ((Settings.Use3DCab || !CabCamera.IsAvailable) && ThreeDimCabCamera.IsAvailable)
+            if ((Settings.Use3DCab || VR != null || !CabCamera.IsAvailable) && ThreeDimCabCamera.IsAvailable)
                 ThreeDimCabCamera.Activate();
             else
                 CabCamera.Activate();
@@ -481,6 +483,8 @@ namespace Orts.Viewer3D
         internal void Initialize()
         {
             GraphicsDevice = RenderProcess.GraphicsDevice;
+            if (RenderProcess.VRStatus != null)
+                Trace.TraceInformation("{0} (as of building the world)", RenderProcess.VRStatus);
             UpdateAdapterInformation(GraphicsDevice.Adapter);
             DefaultViewport = GraphicsDevice.Viewport;
 
@@ -966,6 +970,9 @@ namespace Orts.Viewer3D
 
             if (UserInput.IsPressed(UserCommand.CameraReset))
                 Camera.Reset();
+
+            if (UserInput.IsPressed(UserCommand.GameVRRecenter) && VR != null)
+                VR.RequestRecenter();
 
             Camera.HandleUserInput(elapsedTime);
 

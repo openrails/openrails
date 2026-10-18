@@ -406,6 +406,10 @@ namespace Orts.Viewer3D
         Vector3 XNACameraLocation;
         Matrix XNACameraView;
         Matrix XNACameraProjection;
+        Matrix XNASeatView;
+
+        // Shared eye render targets for VR; only the render thread draws, so one pair serves both frames.
+        static RenderTarget2D[] EyeSurface;
 
         public RenderFrame(Game game)
         {
@@ -520,6 +524,7 @@ namespace Orts.Viewer3D
             XNACameraLocation.Z *= -1;
             XNACameraView = Camera.XnaView;
             XNACameraProjection = Camera.XnaProjection;
+            XNASeatView = Camera.XnaSeatView;
         }
 
         static bool LockShadows;
@@ -729,7 +734,11 @@ namespace Orts.Viewer3D
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ShadowMapMaterial != null)
                 DrawShadows(graphicsDevice, logging);
 
-            DrawSimple(graphicsDevice, logging);
+            var vr = Game.RenderProcess.VR;
+            if (vr != null && vr.FrameActive)
+                DrawVR(graphicsDevice, logging, vr);
+            else
+                DrawSimple(graphicsDevice, logging);
 
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
                 Game.RenderProcess.PrimitiveCount[i] = RenderItems[i].Values.Sum(l => l.Count);
@@ -821,24 +830,7 @@ namespace Orts.Viewer3D
                 graphicsDevice.SetRenderTarget(RenderSurface);
             }
 
-            if (Game.Settings.DistantMountains)
-            {
-                if (logging) Console.WriteLine("  DrawSimple (Distant Mountains) {");
-                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
-                DrawSequencesDistantMountains(graphicsDevice, logging);
-                if (logging) Console.WriteLine("  }");
-                if (logging) Console.WriteLine("  DrawSimple {");
-                graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Transparent, 1, 0);
-                DrawSequences(graphicsDevice, logging);
-                if (logging) Console.WriteLine("  }");
-            }
-            else
-            {
-                if (logging) Console.WriteLine("  DrawSimple {");
-                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
-                DrawSequences(graphicsDevice, logging);
-                if (logging) Console.WriteLine("  }");
-            }
+            DrawScene(graphicsDevice, logging, SequenceFilter.All);
 
             if (RenderSurfaceMaterial != null)
             {
@@ -850,7 +842,111 @@ namespace Orts.Viewer3D
             }
         }
 
-        void DrawSequences(GraphicsDevice graphicsDevice, bool logging)
+        /// <summary>
+        /// Clears the current render target and draws the sequences into it, distant mountains first when enabled.
+        /// </summary>
+        void DrawScene(GraphicsDevice graphicsDevice, bool logging, SequenceFilter filter)
+        {
+            if (Game.Settings.DistantMountains)
+            {
+                if (logging) Console.WriteLine("  DrawSimple (Distant Mountains) {");
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
+                DrawSequencesDistantMountains(graphicsDevice, logging);
+                if (logging) Console.WriteLine("  }");
+                if (logging) Console.WriteLine("  DrawSimple {");
+                graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Transparent, 1, 0);
+                DrawSequences(graphicsDevice, logging, filter);
+                if (logging) Console.WriteLine("  }");
+            }
+            else
+            {
+                if (logging) Console.WriteLine("  DrawSimple {");
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
+                DrawSequences(graphicsDevice, logging, filter);
+                if (logging) Console.WriteLine("  }");
+            }
+        }
+
+        /// <summary>
+        /// Executed in the RenderProcess thread - one pass per eye for the headset, then the window
+        /// gets the left eye as a mirror with the 2D overlays (HUD, popups, labels) drawn on top at
+        /// window size. The overlays are left out of the eyes: a flat HUD pinned to the lenses is
+        /// unreadable in a headset; a VR cab wants them on panels in the cab instead.
+        /// </summary>
+        void DrawVR(GraphicsDevice graphicsDevice, bool logging, Orts.Viewer3D.VR.VRSession vr)
+        {
+            if (EyeSurface == null || EyeSurface[0].Width != vr.EyeWidth || EyeSurface[0].Height != vr.EyeHeight || EyeSurface[0].IsDisposed)
+            {
+                if (EyeSurface != null)
+                    foreach (var surface in EyeSurface)
+                        surface.Dispose();
+                EyeSurface = new RenderTarget2D[Orts.Viewer3D.VR.VRSession.EyeCount];
+                for (var eye = 0; eye < EyeSurface.Length; eye++)
+                    EyeSurface[eye] = new RenderTarget2D(graphicsDevice, vr.EyeWidth, vr.EyeHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8, graphicsDevice.PresentationParameters.MultiSampleCount, RenderTargetUsage.PreserveContents);
+            }
+
+            var savedView = XNACameraView;
+            var savedProjection = XNACameraProjection;
+            var nearPlane = Camera != null ? Camera.NearPlane : 1f;
+            var farPlane = (float)Game.Settings.ViewingDistance;
+            var skyFarPlane = SkyPrimitive.RadiusM + 100;
+            var distantMountainNearPlane = MathHelper.Clamp(Game.Settings.ViewingDistance - 500, 500, 1500);
+            var distantMountainFarPlane = (float)Game.Settings.DistantMountainsViewingDistance;
+
+            for (var eye = 0; eye < EyeSurface.Length; eye++)
+            {
+                if (logging) Console.WriteLine("  Eye {0} {{", eye);
+                if (Camera != null)
+                {
+                    XNACameraView = XNASeatView * Matrix.Invert(vr.EyePose(eye));
+                    XNACameraProjection = vr.EyeProjection(eye, nearPlane, farPlane);
+                    Camera.SetRenderProjections(XNACameraProjection, vr.EyeProjection(eye, nearPlane, skyFarPlane), vr.EyeProjection(eye, distantMountainNearPlane, distantMountainFarPlane));
+                }
+                graphicsDevice.SetRenderTarget(EyeSurface[eye]);
+                // Before the world exists (loading screen) the eye gets everything, so the headset is not left black.
+                DrawScene(graphicsDevice, logging, Camera != null ? SequenceFilter.Scene : SequenceFilter.All);
+                graphicsDevice.SetRenderTarget(null); // also resolves multisampling into the texture we copy
+                vr.SubmitEye(eye, EyeSurface[eye]);
+                if (logging) Console.WriteLine("  }");
+            }
+
+            Camera.ClearRenderProjections();
+            XNACameraView = savedView;
+            XNACameraProjection = savedProjection;
+
+            graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
+            if (RenderSurfaceMaterial != null)
+            {
+                var window = graphicsDevice.PresentationParameters;
+                var scale = Math.Min((float)window.BackBufferWidth / vr.EyeWidth, (float)window.BackBufferHeight / vr.EyeHeight);
+                var width = (int)(vr.EyeWidth * scale);
+                var height = (int)(vr.EyeHeight * scale);
+                var mirror = new Rectangle((window.BackBufferWidth - width) / 2, (window.BackBufferHeight - height) / 2, width, height);
+                RenderSurfaceMaterial.SetState(graphicsDevice, null);
+                RenderSurfaceMaterial.SpriteBatch.Draw(EyeSurface[0], mirror, Color.White);
+                RenderSurfaceMaterial.ResetState(graphicsDevice);
+            }
+            if (Camera != null)
+            {
+                if (logging) Console.WriteLine("  Mirror overlay {");
+                DrawSequences(graphicsDevice, logging, SequenceFilter.Overlay);
+                if (logging) Console.WriteLine("  }");
+            }
+        }
+
+        enum SequenceFilter
+        {
+            All,
+            Scene,   // everything but the 2D overlays
+            Overlay, // the 2D overlays only: labels, HUD, popup windows
+        }
+
+        static bool IsOverlaySequence(int sequence)
+        {
+            return sequence == (int)RenderPrimitiveSequence.Labels || sequence == (int)RenderPrimitiveSequence.OverlayOpaque || sequence == (int)RenderPrimitiveSequence.OverlayBlended;
+        }
+
+        void DrawSequences(GraphicsDevice graphicsDevice, bool logging, SequenceFilter filter)
         {
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && SceneryShader != null)
                 SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
@@ -860,6 +956,11 @@ namespace Orts.Viewer3D
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
             {
                 if (logging) Console.WriteLine("    {0} {{", (RenderPrimitiveSequence)i);
+                if (filter == SequenceFilter.Scene && IsOverlaySequence(i) || filter == SequenceFilter.Overlay && !IsOverlaySequence(i))
+                {
+                    if (logging) Console.WriteLine("    }");
+                    continue;
+                }
                 var sequence = RenderItems[i];
                 foreach (var sequenceMaterial in sequence)
                 {
@@ -927,6 +1028,7 @@ namespace Orts.Viewer3D
 
         void DrawSequencesDistantMountains(GraphicsDevice graphicsDevice, bool logging)
         {
+            var distantMountainProjection = Camera.XnaDistantMountainProjection;
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
             {
                 if (logging) Console.WriteLine("    {0} {{", (RenderPrimitiveSequence)i);
@@ -940,7 +1042,7 @@ namespace Orts.Viewer3D
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
                         if (logging) Console.WriteLine("      {0,-5} * {1}", sequenceMaterial.Value.Count, sequenceMaterial.Key);
-                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNACameraView, ref Camera.XnaDistantMountainProjection);
+                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNACameraView, ref distantMountainProjection);
                         sequenceMaterial.Key.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
                         DebugRenderState(graphicsDevice, sequenceMaterial.Key.ToString());

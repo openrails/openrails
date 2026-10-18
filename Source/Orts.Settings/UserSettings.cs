@@ -166,6 +166,8 @@ namespace ORTS.Settings
         public bool Wire { get; set; }
         [Default(true)]
         public bool VerticalSync { get; set; }
+        [Default(false)]
+        public bool VR { get; set; } // Drive from an OpenXR headset; the window becomes a mirror.
         [Default(2000)]
         public int ViewingDistance { get; set; }
         [Default(true)]
