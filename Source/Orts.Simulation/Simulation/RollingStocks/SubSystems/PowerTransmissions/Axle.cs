@@ -1026,19 +1026,87 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// - its value is computed as a maximum of slip function
         ///   maximum can be found as a derivation f'(dV) = 0
         /// </summary>
-        public float WheelSlipThresholdMpS = 0.025f;
+        public float WheelSlipThresholdMpS = 0.01f;
 
         /// <summary>
         /// Determines the maximum axle adhesion (MaximumWheelAdhesion) at the current conditions,
         /// as well as the slip speed that causes this level of adhesion (WheelSlipThresholdMpS)
+        /// using Newton's method
         /// </summary>
         public void ComputeWheelSlipThresholdMpS()
         {
             // Goal: Determine the slip speed that causes the largest adhesion
             // Not feasible to determine analytically, determine iteratively
-            // Bisection algorithm. We assume adhesion maximum is between 0.025 m/s and slightly above the previous slip speed
-            double lowerSlipMpS = 0.025;
-            double upperSlipMpS = Math.Max(WheelSlipThresholdMpS, lowerSlipMpS) + lowerSlipMpS;
+            // Newton's method (technically secant method). We use the previous wheel slip threshold as the initial guess
+            double nextSlipMpS = WheelSlipThresholdMpS;
+            const double minSlipThresholdMpS = 0.01;
+
+            if (Math.Abs(TrainSpeedMpS) > 0.25f)
+            {
+                // We have to find the zero of the derivative of adhesion curve
+                // i.e. the point where slope changes from positive (adhesion region)
+                // to negative (slip region), this is done by inspecting the slope of
+                // the derivative (the second derivative) 
+                double dx = 0.001;
+                int remainingIterations = 10;
+
+                double currentSlipMpS;
+                double deltaAdhesion;
+                double firstDerivative;
+                double secondDerivative;
+
+                do
+                {
+                    // next estimate for slip = current estimate for slip - (first derivative of adhesion at current estimate) / (second derivative of adhesion at current estimate)
+                    currentSlipMpS = nextSlipMpS;
+                    deltaAdhesion = SlipCharacteristicsPolach(currentSlipMpS + dx);
+                    // Our "f(x)" is the adhesion at a slip speed of x, ie: f(x) = SlipCharacteristicsPolach(x)
+                    // Estimate for first derivative: f'(x) ~ f(x+dx) - f(x)
+                    firstDerivative = deltaAdhesion - SlipCharacteristicsPolach(currentSlipMpS);
+                    // Estimate for second derivative: f''(x) ~ f'(x+dx) - f'(x) = f(x+2*dx) - f(x+dx) - f'(x)
+                    secondDerivative = SlipCharacteristicsPolach(currentSlipMpS + 2 * dx) - deltaAdhesion - firstDerivative;
+
+                    // If situation becomes incomputable, or unreasonable values are being produced,
+                    // fall back to a default case (this usually happens at very low speed)
+                    if (secondDerivative != 0 && currentSlipMpS < 5)
+                    {
+                        nextSlipMpS = Math.Abs(currentSlipMpS - (firstDerivative / secondDerivative) * dx);
+                    }
+                    else
+                    {
+                        // Failure to converge, set slip speed back to minimum value to try again.
+                        nextSlipMpS = minSlipThresholdMpS;
+                        break;
+                    }
+                }
+                while (Math.Abs(nextSlipMpS - currentSlipMpS) > 0.001 && --remainingIterations > 0);
+
+                nextSlipMpS = Math.Max(nextSlipMpS, minSlipThresholdMpS);
+            }
+            else
+            {
+                // Due to nature of Polach implementation, at very low train speeds Newton's method fails
+                // to converge, set slip threshold to minimum speed in this situation.
+                nextSlipMpS = minSlipThresholdMpS;
+            }
+
+            MaximumWheelAdhesion = (float)SlipCharacteristicsPolach(nextSlipMpS);
+            WheelSlipThresholdMpS = (float)nextSlipMpS;
+        }
+
+        /// <summary>
+        /// Determines the maximum axle adhesion (MaximumWheelAdhesion) at the current conditions,
+        /// as well as the slip speed that causes this level of adhesion (WheelSlipThresholdMpS)
+        /// using the bisection algorithm.
+        /// </summary>
+        // NOTE: THIS IS DEPRICATED, BUT RETAINED FOR REFERENCE PURPOSES. SEE INSTEAD: ComputeWheelSlipThresholdMpS()
+        public void BisectionComputeWheelSlipThresholdMpS()
+        {
+            // Goal: Determine the slip speed that causes the largest adhesion
+            // Not feasible to determine analytically, determine iteratively
+            // Bisection algorithm. We assume adhesion maximum is between half and double the previous slip speed
+            double lowerSlipMpS = Math.Max(WheelSlipThresholdMpS / 2, 0.005);
+            double upperSlipMpS = 2 * Math.Max(WheelSlipThresholdMpS, lowerSlipMpS);
 
             double lowerAdhesion = SlipCharacteristicsPolach(lowerSlipMpS);
             double upperAdhesion = SlipCharacteristicsPolach(upperSlipMpS);
@@ -1844,9 +1912,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     // If ramp rates are defined, more precise creep control can be employed
                     if (useRampRates)
                     {
-                        // Increase adhesion limit (limited to +10%) if below 100% slip, reduce if above, to search for perfect wheel creep
+                        // Increase adhesion limit if below 100% slip, reduce if above, to search for perfect wheel creep
                         // Limit drops to 0 at 110% slip, actual force will be controlled by ramp rates
-                        adhesionLimitN *= MathHelper.Clamp(1.0f - (SlipSpeedPercent - 100) / 10.0f, 0.0f, 1.1f);
+                        adhesionLimitN *= Math.Max(1.0f - (SlipSpeedPercent - 100) / 10.0f, 0.0f);
                     }
 
                     // Consider that target force may be negative, sign of adhesion limit should match sign of target force
