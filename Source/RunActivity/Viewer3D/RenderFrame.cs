@@ -410,6 +410,12 @@ namespace Orts.Viewer3D
 
         // Shared eye render targets for VR; only the render thread draws, so one pair serves both frames.
         static RenderTarget2D[] EyeSurface;
+        // Before the world exists (loading screen) the 2D picture is drawn here and shown on a panel in front of the driver.
+        static RenderTarget2D FlatSurface;
+        static Orts.Viewer3D.VR.VRTexturedMaterial FlatPanelMaterial;
+        static Orts.Viewer3D.VR.VRQuadPrimitive FlatPanelQuad;
+        const float FlatPanelDistanceM = 2.2f;
+        const float FlatPanelWidthM = 2.6f;
 
         public RenderFrame(Game game)
         {
@@ -517,8 +523,39 @@ namespace Orts.Viewer3D
                 SceneryShader = viewer.MaterialManager.SceneryShader;
         }
 
+        /// <summary>True when a view was given by <see cref="SetView"/> rather than a <see cref="Camera"/> (e.g. the menu).</summary>
+        bool HasView;
+
+        /// <summary>
+        /// Sets the view for a frame that has no <see cref="Camera"/>: the seat view (in VR each eye is placed relative to it,
+        /// and the window shows it from the tracked head) and the projection used when drawing flat.
+        /// </summary>
+        public void SetView(Matrix seatView, Matrix projection)
+        {
+            Camera = null;
+            HasView = true;
+            XNASeatView = seatView;
+            var vr = Game.RenderProcess.VR;
+            XNACameraView = vr != null ? seatView * Matrix.Invert(vr.HeadPose) : seatView;
+            XNACameraProjection = projection;
+            XNACameraLocation = Matrix.Invert(seatView).Translation;
+            XNACameraLocation.Z *= -1;
+        }
+
+        /// <summary>Back to the camera-less defaults (identity view, orthographic projection) used by the loading screen.</summary>
+        public void ResetView()
+        {
+            if (!HasView)
+                return;
+            HasView = false;
+            Camera = null;
+            XNACameraView = XNASeatView = Matrix.Identity;
+            XNACameraProjection = Matrix.CreateOrthographic(Game.RenderProcess.DisplaySize.X, Game.RenderProcess.DisplaySize.Y, 1, 100);
+        }
+
         public void SetCamera(Camera camera)
         {
+            HasView = false;
             Camera = camera;
             XNACameraLocation = CameraLocation = Camera.Location;
             XNACameraLocation.Z *= -1;
@@ -887,24 +924,53 @@ namespace Orts.Viewer3D
 
             var savedView = XNACameraView;
             var savedProjection = XNACameraProjection;
-            var nearPlane = Camera != null ? Camera.NearPlane : 1f;
+            var hasView = Camera != null || HasView;
+            var nearPlane = Camera != null ? Camera.NearPlane : 0.1f;
             var farPlane = (float)Game.Settings.ViewingDistance;
             var skyFarPlane = SkyPrimitive.RadiusM + 100;
             var distantMountainNearPlane = MathHelper.Clamp(Game.Settings.ViewingDistance - 500, 500, 1500);
             var distantMountainFarPlane = (float)Game.Settings.DistantMountainsViewingDistance;
 
+            if (!hasView)
+            {
+                // Before the world exists (loading screen) the 2D picture is drawn once at window size and then
+                // shown on a panel a couple of metres in front of the driver, so the headset sees one picture
+                // fixed in space rather than a flat image glued to each eye.
+                var window = graphicsDevice.PresentationParameters;
+                if (FlatSurface == null || FlatSurface.IsDisposed || FlatSurface.Width != window.BackBufferWidth || FlatSurface.Height != window.BackBufferHeight || FlatSurface.GraphicsDevice != graphicsDevice)
+                {
+                    if (FlatSurface != null) FlatSurface.Dispose();
+                    FlatSurface = new RenderTarget2D(graphicsDevice, window.BackBufferWidth, window.BackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8, 0, RenderTargetUsage.PreserveContents);
+                    FlatPanelMaterial = new Orts.Viewer3D.VR.VRTexturedMaterial(graphicsDevice, FlatSurface, false);
+                    FlatPanelQuad = new Orts.Viewer3D.VR.VRQuadPrimitive(graphicsDevice, FlatPanelWidthM, FlatPanelWidthM * window.BackBufferHeight / window.BackBufferWidth);
+                }
+                graphicsDevice.SetRenderTarget(FlatSurface);
+                DrawScene(graphicsDevice, logging, SequenceFilter.All);
+                graphicsDevice.SetRenderTarget(null);
+            }
+
             for (var eye = 0; eye < EyeSurface.Length; eye++)
             {
                 if (logging) Console.WriteLine("  Eye {0} {{", eye);
-                if (Camera != null)
+                if (hasView)
                 {
                     XNACameraView = XNASeatView * Matrix.Invert(vr.EyePose(eye));
                     XNACameraProjection = vr.EyeProjection(eye, nearPlane, farPlane);
                     Camera.SetRenderProjections(XNACameraProjection, vr.EyeProjection(eye, nearPlane, skyFarPlane), vr.EyeProjection(eye, distantMountainNearPlane, distantMountainFarPlane));
                 }
                 graphicsDevice.SetRenderTarget(EyeSurface[eye]);
-                // Before the world exists (loading screen) the eye gets everything, so the headset is not left black.
-                DrawScene(graphicsDevice, logging, Camera != null ? SequenceFilter.Scene : SequenceFilter.All);
+                if (hasView)
+                    DrawScene(graphicsDevice, logging, SequenceFilter.Scene);
+                else
+                {
+                    graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Black, 1, 0);
+                    var view = Matrix.Invert(vr.EyePose(eye));
+                    var projection = vr.EyeProjection(eye, 0.1f, 100f);
+                    var panel = Matrix.CreateTranslation(0, -0.1f, -FlatPanelDistanceM);
+                    FlatPanelMaterial.SetState(graphicsDevice, null);
+                    FlatPanelMaterial.Render(graphicsDevice, new[] { new RenderItem(FlatPanelMaterial, FlatPanelQuad, ref panel, ShapeFlags.None) }, ref view, ref projection);
+                    FlatPanelMaterial.ResetState(graphicsDevice);
+                }
                 graphicsDevice.SetRenderTarget(null); // also resolves multisampling into the texture we copy
                 vr.SubmitEye(eye, EyeSurface[eye]);
                 if (logging) Console.WriteLine("  }");
@@ -918,15 +984,20 @@ namespace Orts.Viewer3D
             if (RenderSurfaceMaterial != null)
             {
                 var window = graphicsDevice.PresentationParameters;
-                var scale = Math.Min((float)window.BackBufferWidth / vr.EyeWidth, (float)window.BackBufferHeight / vr.EyeHeight);
-                var width = (int)(vr.EyeWidth * scale);
-                var height = (int)(vr.EyeHeight * scale);
-                var mirror = new Rectangle((window.BackBufferWidth - width) / 2, (window.BackBufferHeight - height) / 2, width, height);
                 RenderSurfaceMaterial.SetState(graphicsDevice, null);
-                RenderSurfaceMaterial.SpriteBatch.Draw(EyeSurface[0], mirror, Color.White);
+                if (hasView)
+                {
+                    var scale = Math.Min((float)window.BackBufferWidth / vr.EyeWidth, (float)window.BackBufferHeight / vr.EyeHeight);
+                    var width = (int)(vr.EyeWidth * scale);
+                    var height = (int)(vr.EyeHeight * scale);
+                    var mirror = new Rectangle((window.BackBufferWidth - width) / 2, (window.BackBufferHeight - height) / 2, width, height);
+                    RenderSurfaceMaterial.SpriteBatch.Draw(EyeSurface[0], mirror, Color.White);
+                }
+                else
+                    RenderSurfaceMaterial.SpriteBatch.Draw(FlatSurface, Vector2.Zero, Color.White);
                 RenderSurfaceMaterial.ResetState(graphicsDevice);
             }
-            if (Camera != null)
+            if (hasView)
             {
                 if (logging) Console.WriteLine("  Mirror overlay {");
                 DrawSequences(graphicsDevice, logging, SequenceFilter.Overlay);

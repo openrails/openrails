@@ -38,8 +38,9 @@ namespace Orts.Viewer3D.VR
     /// the cameras treat that origin as their own viewpoint: in the 3D cab, that is ORTS3DCabHeadPos.
     ///
     /// Per frame, on the render thread: <see cref="BeginFrame"/> (events, xrWaitFrame, xrBeginFrame,
-    /// xrLocateViews), one <see cref="SubmitEye"/> per eye, then <see cref="EndFrame"/>. The updater
-    /// thread only reads <see cref="HeadPose"/>, for culling and the sound listener.
+    /// xrLocateViews, xrSyncActions), one <see cref="SubmitEye"/> per eye, then <see cref="EndFrame"/>.
+    /// The updater thread only reads <see cref="HeadPose"/> (for culling and the sound listener) and
+    /// <see cref="Hand"/> (the controllers, for pointing at things).
     /// </summary>
     [CallOnThread("Render")]
     public sealed unsafe class VRSession : IDisposable
@@ -71,6 +72,53 @@ namespace Orts.Viewer3D.VR
 
         readonly object PoseLock = new object();
         Matrix headPose = Matrix.Identity;
+
+        public const int HandCount = 2;
+        public const int LeftHand = 0;
+        public const int RightHand = 1;
+
+        /// <summary>A copy of the controller's state from the last frame; its pose is in the seat frame like <see cref="HeadPose"/>. Safe from any thread.</summary>
+        public VRHand Hand(int hand)
+        {
+            lock (PoseLock) return hands[hand].Clone();
+        }
+
+        /// <summary>True when the runtime accepted our controller actions (it may still have no controllers to drive them).</summary>
+        public bool HasControllers { get { return ActionsAvailable; } }
+
+        /// <summary>
+        /// Whether the controllers are listened to at all (Alt+F in the cab, or OPENRAILS_VR_CONTROLLERS=0).
+        /// Independently of this, a controller that has not moved for a few seconds (put down) goes idle:
+        /// <see cref="VRHand.Active"/> is false until it is picked up again.
+        /// </summary>
+        public bool ControllersEnabled = Environment.GetEnvironmentVariable("OPENRAILS_VR_CONTROLLERS") != "0";
+        /// <summary>
+        /// Runtimes that track bare hands (WiVRn on a Quest) present them as the Khronos simple controller, and a
+        /// Quest switches to them whenever it decides the controllers are at rest, even in the driver's hands.
+        /// So hands are accepted as a pointer (pinch to click) unless OPENRAILS_VR_HAND_TRACKING=0; the idle rule
+        /// still silences a hand that lies still. Turning hand tracking off on the headset avoids the switching.
+        /// </summary>
+        public readonly bool HandTrackingAllowed = Environment.GetEnvironmentVariable("OPENRAILS_VR_HAND_TRACKING") != "0";
+        const string SimpleControllerProfile = "/interaction_profiles/khr/simple_controller";
+        readonly string[] HandProfiles = new string[HandCount];
+        bool ProfilesLogged;
+        public const float IdleAfterSeconds = 3;
+        const float IdleMoveMetres = 0.015f;
+        const float IdleTurnRadians = 0.035f;
+        readonly Matrix[] RestPose = new Matrix[HandCount];
+        readonly DateTime[] LastMoved = new DateTime[HandCount];
+        readonly bool[] WasPressed = new bool[HandCount];
+
+        readonly VRHand[] hands = { new VRHand(), new VRHand() };
+        IntPtr ActionSet;
+        IntPtr AimAction, TriggerAction, GripAction, StickAction, PrimaryAction, SecondaryAction, MenuAction, HapticAction;
+        readonly ulong[] HandPaths = new ulong[HandCount];
+        readonly IntPtr[] AimSpaces = new IntPtr[HandCount];
+        bool ActionsAvailable;
+        List<string> EnabledExtensions = new List<string>();
+        bool SyncWarned;
+        readonly bool[] HandSeen = new bool[HandCount];
+        readonly int[] HapticMilliseconds = new int[HandCount];
 
         IntPtr Instance;
         ulong SystemId;
@@ -126,6 +174,7 @@ namespace Orts.Viewer3D.VR
                 CreateSession();
                 CreateSpaces();
                 CreateSwapchains();
+                CreateActions();
             }
             catch
             {
@@ -160,11 +209,15 @@ namespace Orts.Viewer3D.VR
             if (!names.Contains(OpenXR.KhrD3D11Enable))
                 throw new InvalidOperationException("the OpenXR runtime does not offer " + OpenXR.KhrD3D11Enable + " (it has: " + String.Join(", ", names) + ")");
 
-            var extensionName = System.Text.Encoding.ASCII.GetBytes(OpenXR.KhrD3D11Enable + "\0");
-            fixed (byte* extensionNamePtr = extensionName)
+            // The newer Meta controllers have their own interaction profiles behind extensions; take them when offered.
+            EnabledExtensions = new[] { OpenXR.KhrD3D11Enable, OpenXR.MetaTouchControllerPlus, OpenXR.FbTouchControllerPro }.Where(names.Contains).ToList();
+            var extensionBytes = EnabledExtensions.Select(e => System.Text.Encoding.ASCII.GetBytes(e + "\0")).ToArray();
+            var handles = extensionBytes.Select(b => System.Runtime.InteropServices.GCHandle.Alloc(b, System.Runtime.InteropServices.GCHandleType.Pinned)).ToArray();
+            try
             {
-                byte** extensionNames = stackalloc byte*[1];
-                extensionNames[0] = extensionNamePtr;
+                byte** extensionNames = stackalloc byte*[extensionBytes.Length];
+                for (var i = 0; i < handles.Length; i++)
+                    extensionNames[i] = (byte*)handles[i].AddrOfPinnedObject();
 
                 var createInfo = new XrInstanceCreateInfo();
                 createInfo.Type = XrStructureType.InstanceCreateInfo;
@@ -173,9 +226,14 @@ namespace Orts.Viewer3D.VR
                 OpenXR.FillFixed(createInfo.ApplicationInfo.EngineName, 128, "MonoGame");
                 createInfo.ApplicationInfo.EngineVersion = 3;
                 createInfo.ApplicationInfo.ApiVersion = OpenXR.MakeVersion(1, 0, 34);
-                createInfo.EnabledExtensionCount = 1;
+                createInfo.EnabledExtensionCount = (uint)extensionBytes.Length;
                 createInfo.EnabledExtensionNames = extensionNames;
                 OpenXR.Check(OpenXR.xrCreateInstance(&createInfo, out Instance), "xrCreateInstance");
+            }
+            finally
+            {
+                foreach (var handle in handles)
+                    handle.Free();
             }
 
             var properties = new XrInstanceProperties { Type = XrStructureType.InstanceProperties };
@@ -327,6 +385,7 @@ namespace Orts.Viewer3D.VR
                 RecenterRequested = false;
                 Recenter(FrameState.PredictedDisplayTime);
             }
+            SyncActions(FrameState.PredictedDisplayTime);
 
             var locateInfo = new XrViewLocateInfo
             {
@@ -468,6 +527,281 @@ namespace Orts.Viewer3D.VR
             FrameActive = false;
         }
 
+        /// <summary>Buzz a controller briefly (a click's worth of feedback). Safe from any thread; applied on the next frame.</summary>
+        public void Vibrate(int hand, float seconds)
+        {
+            System.Threading.Interlocked.Exchange(ref HapticMilliseconds[hand], (int)(seconds * 1000));
+        }
+
+        #region Controllers
+        // One action set holding one action per input, each with a left and a right subaction path, bound
+        // to the common controller profiles. The runtime picks the profile that matches the controllers in
+        // use and maps our actions to it; a profile it does not know is just declined.
+        void CreateActions()
+        {
+            try
+            {
+                HandPaths[LeftHand] = StringToPath("/user/hand/left");
+                HandPaths[RightHand] = StringToPath("/user/hand/right");
+
+                var setInfo = new XrActionSetCreateInfo { Type = XrStructureType.ActionSetCreateInfo };
+                OpenXR.FillFixed(setInfo.ActionSetName, 64, "openrails");
+                OpenXR.FillFixed(setInfo.LocalizedActionSetName, 128, "Open Rails");
+                OpenXR.Check(OpenXR.xrCreateActionSet(Instance, &setInfo, out ActionSet), "xrCreateActionSet");
+
+                AimAction = CreateAction("aim", "Aim", XrActionType.PoseInput);
+                TriggerAction = CreateAction("trigger", "Trigger", XrActionType.FloatInput);
+                GripAction = CreateAction("grip", "Grip", XrActionType.FloatInput);
+                StickAction = CreateAction("stick", "Thumbstick", XrActionType.Vector2fInput);
+                PrimaryAction = CreateAction("primary", "Primary button", XrActionType.BooleanInput);
+                SecondaryAction = CreateAction("secondary", "Secondary button", XrActionType.BooleanInput);
+                MenuAction = CreateAction("menu", "Menu button", XrActionType.BooleanInput);
+                HapticAction = CreateAction("haptic", "Vibration", XrActionType.VibrationOutput);
+
+                SuggestBindings("/interaction_profiles/oculus/touch_controller", new[] {
+                    Bind(AimAction, "/user/hand/left/input/aim/pose"), Bind(AimAction, "/user/hand/right/input/aim/pose"),
+                    Bind(TriggerAction, "/user/hand/left/input/trigger/value"), Bind(TriggerAction, "/user/hand/right/input/trigger/value"),
+                    Bind(GripAction, "/user/hand/left/input/squeeze/value"), Bind(GripAction, "/user/hand/right/input/squeeze/value"),
+                    Bind(StickAction, "/user/hand/left/input/thumbstick"), Bind(StickAction, "/user/hand/right/input/thumbstick"),
+                    Bind(PrimaryAction, "/user/hand/left/input/x/click"), Bind(PrimaryAction, "/user/hand/right/input/a/click"),
+                    Bind(SecondaryAction, "/user/hand/left/input/y/click"), Bind(SecondaryAction, "/user/hand/right/input/b/click"),
+                    Bind(MenuAction, "/user/hand/left/input/menu/click"),
+                    Bind(HapticAction, "/user/hand/left/output/haptic"), Bind(HapticAction, "/user/hand/right/output/haptic"),
+                });
+                var touchPlus = new[] {
+                    Bind(AimAction, "/user/hand/left/input/aim/pose"), Bind(AimAction, "/user/hand/right/input/aim/pose"),
+                    Bind(TriggerAction, "/user/hand/left/input/trigger/value"), Bind(TriggerAction, "/user/hand/right/input/trigger/value"),
+                    Bind(GripAction, "/user/hand/left/input/squeeze/value"), Bind(GripAction, "/user/hand/right/input/squeeze/value"),
+                    Bind(StickAction, "/user/hand/left/input/thumbstick"), Bind(StickAction, "/user/hand/right/input/thumbstick"),
+                    Bind(PrimaryAction, "/user/hand/left/input/x/click"), Bind(PrimaryAction, "/user/hand/right/input/a/click"),
+                    Bind(SecondaryAction, "/user/hand/left/input/y/click"), Bind(SecondaryAction, "/user/hand/right/input/b/click"),
+                    Bind(MenuAction, "/user/hand/left/input/menu/click"),
+                    Bind(HapticAction, "/user/hand/left/output/haptic"), Bind(HapticAction, "/user/hand/right/output/haptic"),
+                };
+                if (EnabledExtensions.Contains(OpenXR.MetaTouchControllerPlus))
+                    SuggestBindings("/interaction_profiles/meta/touch_controller_plus", touchPlus);
+                if (EnabledExtensions.Contains(OpenXR.FbTouchControllerPro))
+                    SuggestBindings("/interaction_profiles/facebook/touch_controller_pro", touchPlus);
+                SuggestBindings("/interaction_profiles/valve/index_controller", new[] {
+                    Bind(AimAction, "/user/hand/left/input/aim/pose"), Bind(AimAction, "/user/hand/right/input/aim/pose"),
+                    Bind(TriggerAction, "/user/hand/left/input/trigger/value"), Bind(TriggerAction, "/user/hand/right/input/trigger/value"),
+                    Bind(GripAction, "/user/hand/left/input/squeeze/value"), Bind(GripAction, "/user/hand/right/input/squeeze/value"),
+                    Bind(StickAction, "/user/hand/left/input/thumbstick"), Bind(StickAction, "/user/hand/right/input/thumbstick"),
+                    Bind(PrimaryAction, "/user/hand/left/input/a/click"), Bind(PrimaryAction, "/user/hand/right/input/a/click"),
+                    Bind(SecondaryAction, "/user/hand/left/input/b/click"), Bind(SecondaryAction, "/user/hand/right/input/b/click"),
+                    Bind(HapticAction, "/user/hand/left/output/haptic"), Bind(HapticAction, "/user/hand/right/output/haptic"),
+                });
+                SuggestBindings("/interaction_profiles/khr/simple_controller", new[] {
+                    Bind(AimAction, "/user/hand/left/input/aim/pose"), Bind(AimAction, "/user/hand/right/input/aim/pose"),
+                    Bind(TriggerAction, "/user/hand/left/input/select/click"), Bind(TriggerAction, "/user/hand/right/input/select/click"),
+                    Bind(MenuAction, "/user/hand/left/input/menu/click"), Bind(MenuAction, "/user/hand/right/input/menu/click"),
+                    Bind(HapticAction, "/user/hand/left/output/haptic"), Bind(HapticAction, "/user/hand/right/output/haptic"),
+                });
+
+                for (var hand = 0; hand < HandCount; hand++)
+                {
+                    var spaceInfo = new XrActionSpaceCreateInfo { Type = XrStructureType.ActionSpaceCreateInfo, Action = AimAction, SubactionPath = HandPaths[hand], PoseInActionSpace = XrPosef.Identity };
+                    OpenXR.Check(OpenXR.xrCreateActionSpace(Session, &spaceInfo, out AimSpaces[hand]), "xrCreateActionSpace");
+                }
+
+                var set = ActionSet;
+                var attachInfo = new XrSessionActionSetAttachInfo { Type = XrStructureType.SessionActionSetAttachInfo, CountActionSets = 1, ActionSets = &set };
+                OpenXR.Check(OpenXR.xrAttachSessionActionSets(Session, &attachInfo), "xrAttachSessionActionSets");
+                ActionsAvailable = true;
+                Trace.TraceInformation("VR: controller actions attached (extensions: {0})", String.Join(", ", EnabledExtensions));
+            }
+            catch (OpenXRException error)
+            {
+                Trace.TraceWarning("VR: the controllers will not work: {0}", error.Message);
+            }
+        }
+
+        ulong StringToPath(string path)
+        {
+            var bytes = System.Text.Encoding.ASCII.GetBytes(path + "\0");
+            fixed (byte* p = bytes)
+            {
+                ulong result;
+                OpenXR.Check(OpenXR.xrStringToPath(Instance, p, out result), "xrStringToPath(" + path + ")");
+                return result;
+            }
+        }
+
+        IntPtr CreateAction(string name, string localizedName, XrActionType type)
+        {
+            fixed (ulong* paths = HandPaths)
+            {
+                var info = new XrActionCreateInfo { Type = XrStructureType.ActionCreateInfo, ActionType = type, CountSubactionPaths = HandCount, SubactionPaths = paths };
+                OpenXR.FillFixed(info.ActionName, 64, name);
+                OpenXR.FillFixed(info.LocalizedActionName, 128, localizedName);
+                IntPtr action;
+                OpenXR.Check(OpenXR.xrCreateAction(ActionSet, &info, out action), "xrCreateAction(" + name + ")");
+                return action;
+            }
+        }
+
+        XrActionSuggestedBinding Bind(IntPtr action, string path)
+        {
+            return new XrActionSuggestedBinding { Action = action, Binding = StringToPath(path) };
+        }
+
+        void SuggestBindings(string profile, XrActionSuggestedBinding[] bindings)
+        {
+            fixed (XrActionSuggestedBinding* p = bindings)
+            {
+                var info = new XrInteractionProfileSuggestedBinding
+                {
+                    Type = XrStructureType.InteractionProfileSuggestedBinding,
+                    InteractionProfile = StringToPath(profile),
+                    CountSuggestedBindings = (uint)bindings.Length,
+                    SuggestedBindings = p,
+                };
+                var result = OpenXR.xrSuggestInteractionProfileBindings(Instance, &info);
+                if (result < 0)
+                    Trace.TraceInformation("VR: the runtime declined the bindings for {0}: {1}", profile, result);
+                else
+                    Trace.TraceInformation("VR: bindings suggested for {0}", profile);
+            }
+        }
+
+        string PathToString(ulong path)
+        {
+            var buffer = new byte[256];
+            uint count;
+            fixed (byte* p = buffer)
+                if (OpenXR.xrPathToString(Instance, path, (uint)buffer.Length, out count, p) < 0 || count == 0)
+                    return "?";
+            return System.Text.Encoding.ASCII.GetString(buffer, 0, (int)count - 1);
+        }
+
+        void LogInteractionProfiles()
+        {
+            if (!ActionsAvailable)
+                return;
+            for (var hand = 0; hand < HandCount; hand++)
+            {
+                var state = new XrInteractionProfileState { Type = XrStructureType.InteractionProfileState };
+                var result = OpenXR.xrGetCurrentInteractionProfile(Session, HandPaths[hand], &state);
+                var profile = result < 0 ? null : state.InteractionProfile == 0 ? null : PathToString(state.InteractionProfile);
+                HandProfiles[hand] = profile;
+                Trace.TraceInformation("VR: {0} controller profile: {1}{2}", hand == LeftHand ? "left" : "right", profile ?? (result < 0 ? result.ToString() : "none"),
+                    profile == SimpleControllerProfile ? (HandTrackingAllowed ? " (hand tracking)" : " (hand tracking; ignored)") : "");
+            }
+        }
+
+        void SyncActions(long time)
+        {
+            if (!ActionsAvailable)
+                return;
+            var active = new XrActiveActionSet { ActionSet = ActionSet };
+            var syncInfo = new XrActionsSyncInfo { Type = XrStructureType.ActionsSyncInfo, CountActiveActionSets = 1, ActiveActionSets = &active };
+            var result = OpenXR.xrSyncActions(Session, &syncInfo);
+            if (result < 0)
+            {
+                Trace.TraceWarning("VR: xrSyncActions failed: {0}; the controllers will not work.", result);
+                ActionsAvailable = false;
+                return;
+            }
+            if (result == XrResult.Success && !ProfilesLogged)
+            {
+                ProfilesLogged = true;
+                LogInteractionProfiles();
+            }
+            if (result != XrResult.Success && !SyncWarned)
+            {
+                // SessionNotFocused: another application (an overlay, the system menu) has the controllers.
+                SyncWarned = true;
+                Trace.TraceInformation("VR: xrSyncActions says {0}; the controllers are idle until the session is focused.", result);
+            }
+            else if (result == XrResult.Success && SyncWarned)
+            {
+                SyncWarned = false;
+                Trace.TraceInformation("VR: the session is focused; the controllers are live.");
+            }
+
+            for (var hand = 0; hand < HandCount; hand++)
+            {
+                var state = new VRHand();
+                var getInfo = new XrActionStateGetInfo { Type = XrStructureType.ActionStateGetInfo, Action = AimAction, SubactionPath = HandPaths[hand] };
+                var pose = new XrActionStatePose { Type = XrStructureType.ActionStatePose };
+                if (OpenXR.xrGetActionStatePose(Session, &getInfo, &pose) >= 0 && pose.IsActive != 0)
+                {
+                    state.Connected = true;
+                    var location = new XrSpaceLocation { Type = XrStructureType.SpaceLocation };
+                    const XrSpaceLocationFlags valid = XrSpaceLocationFlags.OrientationValid | XrSpaceLocationFlags.PositionValid;
+                    if (OpenXR.xrLocateSpace(AimSpaces[hand], Space, time, &location) >= 0 && (location.LocationFlags & valid) == valid)
+                    {
+                        state.Tracked = true;
+                        state.Pose = PoseToMatrix(location.Pose);
+                    }
+                }
+                state.Trigger = GetFloat(TriggerAction, hand);
+                state.Grip = GetFloat(GripAction, hand);
+                state.Stick = GetVector2(StickAction, hand);
+                state.PrimaryButton = GetBoolean(PrimaryAction, hand);
+                state.SecondaryButton = GetBoolean(SecondaryAction, hand);
+                state.MenuButton = GetBoolean(MenuAction, hand);
+                state.Idle = IsIdle(hand, state);
+                state.Profile = HandProfiles[hand];
+                state.Enabled = ControllersEnabled && (HandTrackingAllowed || state.Profile != SimpleControllerProfile);
+                lock (PoseLock)
+                    hands[hand] = state;
+                if (state.Tracked && !HandSeen[hand])
+                {
+                    HandSeen[hand] = true;
+                    Trace.TraceInformation("VR: the {0} controller is tracked.", hand == LeftHand ? "left" : "right");
+                }
+
+                var milliseconds = System.Threading.Interlocked.Exchange(ref HapticMilliseconds[hand], 0);
+                if (milliseconds > 0)
+                {
+                    var hapticInfo = new XrHapticActionInfo { Type = XrStructureType.HapticActionInfo, Action = HapticAction, SubactionPath = HandPaths[hand] };
+                    var vibration = new XrHapticVibration { Type = XrStructureType.HapticVibration, Duration = milliseconds * 1000000L, Frequency = 0, Amplitude = 0.5f };
+                    OpenXR.xrApplyHapticFeedback(Session, &hapticInfo, &vibration);
+                }
+            }
+        }
+
+        /// <summary>A controller counts as put down when it has stayed within a couple of centimetres and degrees of its resting pose with nothing pressed for a few seconds.</summary>
+        bool IsIdle(int hand, VRHand state)
+        {
+            var now = DateTime.UtcNow;
+            var pressed = state.TriggerDown || state.Grip > 0.5f || state.PrimaryButton || state.SecondaryButton || state.MenuButton || state.Stick.LengthSquared() > 0.25f;
+            if (!state.Tracked)
+                return true;
+            var moved = (state.Pose.Translation - RestPose[hand].Translation).Length() > IdleMoveMetres
+                || Vector3.Dot(Vector3.TransformNormal(Vector3.Forward, state.Pose), Vector3.TransformNormal(Vector3.Forward, RestPose[hand])) < Math.Cos(IdleTurnRadians);
+            if (moved || pressed || (!pressed && WasPressed[hand]))
+            {
+                RestPose[hand] = state.Pose;
+                LastMoved[hand] = now;
+            }
+            WasPressed[hand] = pressed;
+            return (now - LastMoved[hand]).TotalSeconds > IdleAfterSeconds;
+        }
+
+        float GetFloat(IntPtr action, int hand)
+        {
+            var getInfo = new XrActionStateGetInfo { Type = XrStructureType.ActionStateGetInfo, Action = action, SubactionPath = HandPaths[hand] };
+            var state = new XrActionStateFloat { Type = XrStructureType.ActionStateFloat };
+            return OpenXR.xrGetActionStateFloat(Session, &getInfo, &state) >= 0 && state.IsActive != 0 ? state.CurrentState : 0;
+        }
+
+        bool GetBoolean(IntPtr action, int hand)
+        {
+            var getInfo = new XrActionStateGetInfo { Type = XrStructureType.ActionStateGetInfo, Action = action, SubactionPath = HandPaths[hand] };
+            var state = new XrActionStateBoolean { Type = XrStructureType.ActionStateBoolean };
+            return OpenXR.xrGetActionStateBoolean(Session, &getInfo, &state) >= 0 && state.IsActive != 0 && state.CurrentState != 0;
+        }
+
+        Vector2 GetVector2(IntPtr action, int hand)
+        {
+            var getInfo = new XrActionStateGetInfo { Type = XrStructureType.ActionStateGetInfo, Action = action, SubactionPath = HandPaths[hand] };
+            var state = new XrActionStateVector2f { Type = XrStructureType.ActionStateVector2f };
+            return OpenXR.xrGetActionStateVector2f(Session, &getInfo, &state) >= 0 && state.IsActive != 0 ? new Vector2(state.CurrentState.X, state.CurrentState.Y) : Vector2.Zero;
+        }
+        #endregion
+
         void Recenter(long time)
         {
             var location = new XrSpaceLocation { Type = XrStructureType.SpaceLocation };
@@ -524,6 +858,9 @@ namespace Orts.Viewer3D.VR
                     case XrStructureType.EventDataInstanceLossPending:
                         Trace.TraceWarning("VR: the OpenXR runtime is going away; leaving VR.");
                         Dead = true;
+                        break;
+                    case XrStructureType.EventDataInteractionProfileChanged:
+                        LogInteractionProfiles();
                         break;
                     case XrStructureType.EventDataReferenceSpaceChangePending:
                         // The runtime recentred itself (e.g. the headset's own recentre); our offset still applies on top.
@@ -597,6 +934,18 @@ namespace Orts.Viewer3D.VR
             foreach (var eye in Eyes)
                 if (eye != null && eye.Swapchain != IntPtr.Zero)
                     OpenXR.xrDestroySwapchain(eye.Swapchain);
+            for (var hand = 0; hand < HandCount; hand++)
+                if (AimSpaces[hand] != IntPtr.Zero)
+                {
+                    OpenXR.xrDestroySpace(AimSpaces[hand]);
+                    AimSpaces[hand] = IntPtr.Zero;
+                }
+            if (ActionSet != IntPtr.Zero)
+            {
+                OpenXR.xrDestroyActionSet(ActionSet);
+                ActionSet = IntPtr.Zero;
+            }
+            ActionsAvailable = false;
             if (ViewSpace != IntPtr.Zero) OpenXR.xrDestroySpace(ViewSpace);
             if (Space != IntPtr.Zero) OpenXR.xrDestroySpace(Space);
             if (Session != IntPtr.Zero)
@@ -609,6 +958,45 @@ namespace Orts.Viewer3D.VR
             ViewSpace = Space = Session = Instance = IntPtr.Zero;
             SessionRunning = false;
             Dead = true;
+        }
+    }
+
+    /// <summary>
+    /// One controller's state as of the last headset frame. <see cref="Pose"/> is the aim pose in the seat
+    /// frame (XNA axes; the controller points along its -Z), so world-from-hand is Pose * Invert(seatView).
+    /// </summary>
+    public sealed class VRHand
+    {
+        /// <summary>The runtime has a controller for this hand (it may be out of view or asleep).</summary>
+        public bool Connected;
+        /// <summary><see cref="Pose"/> is valid this frame.</summary>
+        public bool Tracked;
+        public Matrix Pose = Matrix.Identity;
+        /// <summary>0..1; the index trigger, or the select button on simple controllers.</summary>
+        public float Trigger;
+        public float Grip;
+        public Vector2 Stick;
+        /// <summary>A/X.</summary>
+        public bool PrimaryButton;
+        /// <summary>B/Y.</summary>
+        public bool SecondaryButton;
+        /// <summary>The menu button (left controller on Touch controllers).</summary>
+        public bool MenuButton;
+        /// <summary>Put down: not moved and nothing pressed for <see cref="VRSession.IdleAfterSeconds"/>.</summary>
+        public bool Idle;
+        /// <summary>The controllers are switched on (see <see cref="VRSession.ControllersEnabled"/>) and this is a real controller, not tracked hands.</summary>
+        public bool Enabled;
+        /// <summary>The interaction profile the runtime is using for this hand, or null.</summary>
+        public string Profile;
+
+        /// <summary>Tracked, in use and switched on: the only state in which a controller does anything.</summary>
+        public bool Active { get { return Tracked && Enabled && !Idle; } }
+
+        public bool TriggerDown { get { return Trigger > 0.6f; } }
+
+        public VRHand Clone()
+        {
+            return (VRHand)MemberwiseClone();
         }
     }
 

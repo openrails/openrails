@@ -100,12 +100,28 @@ namespace Orts.Viewer3D.VR
         SwapchainImageAcquireInfo = 55,
         SwapchainImageWaitInfo = 56,
         SwapchainImageReleaseInfo = 57,
+        HapticVibration = 13,
+        ActionStateBoolean = 23,
+        ActionStateFloat = 24,
+        ActionStateVector2f = 25,
+        ActionStatePose = 27,
+        ActionSetCreateInfo = 28,
+        ActionCreateInfo = 29,
+        ActionSpaceCreateInfo = 38,
+        InteractionProfileSuggestedBinding = 51,
+        EventDataInteractionProfileChanged = 52,
+        InteractionProfileState = 53,
+        ActionStateGetInfo = 58,
+        HapticActionInfo = 59,
+        SessionActionSetAttachInfo = 60,
+        ActionsSyncInfo = 61,
         GraphicsRequirementsD3D11KHR = 1000027002,
         GraphicsBindingD3D11KHR = 1000027000,
         SwapchainImageD3D11KHR = 1000027001,
     }
 
     enum XrFormFactor { HeadMountedDisplay = 1, HandheldDisplay = 2 }
+    enum XrActionType { BooleanInput = 1, FloatInput = 2, Vector2fInput = 3, PoseInput = 4, VibrationOutput = 100 }
     enum XrViewConfigurationType { PrimaryMono = 1, PrimaryStereo = 2 }
     enum XrReferenceSpaceType { View = 1, Local = 2, Stage = 3 }
     enum XrEnvironmentBlendMode { Opaque = 1, Additive = 2, AlphaBlend = 3 }
@@ -155,6 +171,9 @@ namespace Orts.Viewer3D.VR
 
     [StructLayout(LayoutKind.Sequential)]
     struct XrVector3f { public float X, Y, Z; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrVector2f { public float X, Y; }
 
     [StructLayout(LayoutKind.Sequential)]
     struct XrQuaternionf { public float X, Y, Z, W; }
@@ -493,12 +512,175 @@ namespace Orts.Viewer3D.VR
         public IntPtr* Layers; // XrCompositionLayerBaseHeader* const*
     }
 
+    // Actions (controller input), OpenXR 1.0 core.
+
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct XrActionSetCreateInfo
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public fixed byte ActionSetName[64];
+        public fixed byte LocalizedActionSetName[128];
+        public uint Priority;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct XrActionCreateInfo
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public fixed byte ActionName[64];
+        public XrActionType ActionType;
+        public uint CountSubactionPaths;
+        public ulong* SubactionPaths;
+        public fixed byte LocalizedActionName[128];
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrActionSuggestedBinding
+    {
+        public IntPtr Action;
+        public ulong Binding;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct XrInteractionProfileSuggestedBinding
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public ulong InteractionProfile;
+        public uint CountSuggestedBindings;
+        public XrActionSuggestedBinding* SuggestedBindings;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct XrSessionActionSetAttachInfo
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public uint CountActionSets;
+        public IntPtr* ActionSets;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrActionSpaceCreateInfo
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public IntPtr Action;
+        public ulong SubactionPath;
+        public XrPosef PoseInActionSpace;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrActiveActionSet
+    {
+        public IntPtr ActionSet;
+        public ulong SubactionPath;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct XrActionsSyncInfo
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public uint CountActiveActionSets;
+        public XrActiveActionSet* ActiveActionSets;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrActionStateGetInfo
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public IntPtr Action;
+        public ulong SubactionPath;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrActionStateBoolean
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public uint CurrentState;
+        public uint ChangedSinceLastSync;
+        public long LastChangeTime;
+        public uint IsActive;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrActionStateFloat
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public float CurrentState;
+        public uint ChangedSinceLastSync;
+        public long LastChangeTime;
+        public uint IsActive;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrActionStateVector2f
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public XrVector2f CurrentState;
+        public uint ChangedSinceLastSync;
+        public long LastChangeTime;
+        public uint IsActive;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrActionStatePose
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public uint IsActive;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrInteractionProfileState
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public ulong InteractionProfile;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrEventDataInteractionProfileChanged
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public IntPtr Session;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrHapticActionInfo
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public IntPtr Action;
+        public ulong SubactionPath;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct XrHapticVibration
+    {
+        public XrStructureType Type;
+        public IntPtr Next;
+        public long Duration;
+        public float Frequency;
+        public float Amplitude;
+    }
+
     static unsafe class OpenXR
     {
         const string Loader = "openxr_loader.dll";
 
         public const long InfiniteDuration = 0x7fffffffffffffff;
         public const string KhrD3D11Enable = "XR_KHR_D3D11_enable";
+        public const string MetaTouchControllerPlus = "XR_META_touch_controller_plus";
+        public const string FbTouchControllerPro = "XR_FB_touch_controller_pro";
 
         public static ulong MakeVersion(ushort major, ushort minor, uint patch)
         {
@@ -539,6 +721,21 @@ namespace Orts.Viewer3D.VR
         [DllImport(Loader)] public static extern XrResult xrBeginFrame(IntPtr session, XrFrameBeginInfo* frameBeginInfo);
         [DllImport(Loader)] public static extern XrResult xrEndFrame(IntPtr session, XrFrameEndInfo* frameEndInfo);
         [DllImport(Loader)] public static extern XrResult xrLocateViews(IntPtr session, XrViewLocateInfo* viewLocateInfo, XrViewState* viewState, uint capacity, out uint count, XrView* views);
+        [DllImport(Loader)] public static extern XrResult xrStringToPath(IntPtr instance, byte* pathString, out ulong path);
+        [DllImport(Loader)] public static extern XrResult xrPathToString(IntPtr instance, ulong path, uint capacity, out uint count, byte* buffer);
+        [DllImport(Loader)] public static extern XrResult xrGetCurrentInteractionProfile(IntPtr session, ulong topLevelUserPath, XrInteractionProfileState* state);
+        [DllImport(Loader)] public static extern XrResult xrCreateActionSet(IntPtr instance, XrActionSetCreateInfo* createInfo, out IntPtr actionSet);
+        [DllImport(Loader)] public static extern XrResult xrDestroyActionSet(IntPtr actionSet);
+        [DllImport(Loader)] public static extern XrResult xrCreateAction(IntPtr actionSet, XrActionCreateInfo* createInfo, out IntPtr action);
+        [DllImport(Loader)] public static extern XrResult xrSuggestInteractionProfileBindings(IntPtr instance, XrInteractionProfileSuggestedBinding* suggestedBindings);
+        [DllImport(Loader)] public static extern XrResult xrAttachSessionActionSets(IntPtr session, XrSessionActionSetAttachInfo* attachInfo);
+        [DllImport(Loader)] public static extern XrResult xrCreateActionSpace(IntPtr session, XrActionSpaceCreateInfo* createInfo, out IntPtr space);
+        [DllImport(Loader)] public static extern XrResult xrSyncActions(IntPtr session, XrActionsSyncInfo* syncInfo);
+        [DllImport(Loader)] public static extern XrResult xrGetActionStateBoolean(IntPtr session, XrActionStateGetInfo* getInfo, XrActionStateBoolean* state);
+        [DllImport(Loader)] public static extern XrResult xrGetActionStateFloat(IntPtr session, XrActionStateGetInfo* getInfo, XrActionStateFloat* state);
+        [DllImport(Loader)] public static extern XrResult xrGetActionStateVector2f(IntPtr session, XrActionStateGetInfo* getInfo, XrActionStateVector2f* state);
+        [DllImport(Loader)] public static extern XrResult xrGetActionStatePose(IntPtr session, XrActionStateGetInfo* getInfo, XrActionStatePose* state);
+        [DllImport(Loader)] public static extern XrResult xrApplyHapticFeedback(IntPtr session, XrHapticActionInfo* hapticActionInfo, XrHapticVibration* hapticFeedback);
 
         // XR_KHR_D3D11_enable adds this one; it is only reachable through xrGetInstanceProcAddr.
         [UnmanagedFunctionPointer(CallingConvention.Winapi)]

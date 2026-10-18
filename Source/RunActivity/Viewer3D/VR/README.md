@@ -18,6 +18,47 @@ as a mirror with the usual 2D overlays (HUD, popup windows, labels) on top of it
   shows, and `Alt+V` (`GameVRRecenter`) does it again from the current head position and yaw.
 * The 3D cab is preferred over the 2D cab whenever a headset is in use.
 
+## The start menu in the headset
+
+`RunActivity.exe -menu` opens the desktop start menu (the Menu program's main window, with all its
+drop-downs, buttons and dialogs) inside the game (`GameStateVRMenu`): the window is created on its own
+thread in the RunActivity process, shown on the desktop as usual, and captured thirty times a second,
+with any pop-ups it has open (drop-down lists, the Options dialog, message boxes), into a texture on a
+panel floating 1.6 m in front of the driver. Clicks from the controllers are fed to the window as mouse
+input (`SendInput`), so the real mouse works on it too. Start carries on in the same process with the
+command line the menu would have given RunActivity (`Menu.MenuLauncher`), after reloading the settings
+in case the Options dialog changed them. It works flat too; closing the window quits.
+
+Under Wine the capture reads each window's client area through `GetDC` + `BitBlt`, which copies the
+window surface Wine keeps for every top-level window (`PrintWindow` also works but drops pop-up borders).
+Tiling desktops resize the window, so the capture is the window's designed size plus 240 px underneath
+for lists that hang out of it.
+
+## Controllers
+
+The session binds one action set (aim pose, trigger, grip, thumbstick, A/X, B/Y, menu, haptics) for
+the Oculus Touch, Valve Index and Khronos simple controller profiles; `VRSession.Hand` gives each
+controller's aim pose in the seat frame and its inputs. A beam is drawn from each tracked controller
+(`VRLinePrimitive`); the hand that last pulled its trigger is the pointer.
+
+* In the menu, the beam meets the panel and moves the mouse there; the trigger is the left button, the
+  thumbstick scrolls (mouse wheel), and the menu button recentres the view.
+* In the cab, the beam replaces the mouse's pick ray for the 3D cab's mouse-operated controls
+  (`Viewer.HandleUserInput` uses it for `NearPoint`/`FarPoint`) and the controller feeds
+  `UserInput.VirtualMouse`: the beam's direction is projected onto the window so the mouse position
+  follows it (levers follow mouse movement, so moving the hand moves the lever) and the trigger is the
+  left button. The beam turns green on a control, the controller buzzes when one is grabbed, and the
+  menu button recentres the view.
+* A controller that is put down goes idle after three seconds without movement or a press (its beam
+  disappears and it drives nothing) until it is picked up again. A Quest switches to hand tracking whenever
+  it decides the controllers are at rest, even while they are held still, and WiVRn then presents the
+  hands as the simple controller; they are accepted as a pointer (pinch to click), or ignored with
+  `OPENRAILS_VR_HAND_TRACKING=0`. Turning hand tracking off in the headset's settings avoids the
+  switching altogether. `Alt+F` (`GameVRControllers`)
+  switches the controllers off and on altogether, and `OPENRAILS_VR_CONTROLLERS=0` starts with them off.
+* Before the world exists (the loading screen) the 2D picture is drawn at window size and shown on a
+  panel 2.2 m in front of the driver, fixed in space, instead of being pasted onto each eye.
+
 ## What it needs
 
 * The WindowsDX (SharpDX / Direct3D 11) build of MonoGame, which is what Open Rails ships.
