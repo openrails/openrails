@@ -5318,23 +5318,48 @@ actual values for the locomotive that they are modelling then they can override 
 the following parameters in the engine section of the ENG file. Note - if values are not known then it is 
 highly recommended that the default values be used.
 
-When using any of the following parameters, the sanding system type needs to be set by allocating either "Steam" or 
-"Air" to the ``SandingSystemType`` ( x ) parameter in engine section of file.
+Values can be provided for both directions of travel simultaneously, or individually for forward and reverse
+operation. Some locomotives only have sanders equipped in one direction, in this case, define the sanding
+parameters for that direction only, leaving the other direction undefined (or set to 0) which tells OR to
+disable the effects of sanding in that direction.
 
 .. index::
+   single: SandingSystemType
+
+When using any of the following parameters, the sanding system type needs to be set by allocating either "Steam" or 
+"Air" to the ``SandingSystemType ( x )`` parameter in engine section of the engine file. The "Gravity" sanding system
+does not need to specify steam or air consumption, but should specify sand consumption.
+
+.. index::
+   single: ORTSMaxTrackSanderSteamConsumption
    single: ORTSMaxTrackSanderSteamConsumptionForward
    single: ORTSMaxTrackSanderSteamConsumptionReverse
 
 **Steam Consumption**
 
+If the sanding system type is set to ``SandingSystemType ( "Steam" )``, steam from the steam
+locomotive's boiler will be consumed to power the sanding system. The consumption values entered here
+correspond to maximum boiler pressure. Actual consumption of steam and sand will vary proportionally
+with boiler pressure.
+
+All steam consumption parameters use units of pounds (per second).
+
+``ORTSMaxTrackSanderSteamConsumption`` - total steam consumption for all sanders in both forward and
+reverse. If not defined, the steam consumption is set to the equivalent of 300 pounds of steam per hour.
+
+If forward and reverse sanders do not have identical specifications, or if sanders are equipped in only
+one direction, use the following parameters instead:
+
 ``ORTSMaxTrackSanderSteamConsumptionForward`` - total steam consumption for all sanders when traveling in 
 forward direction, ie in front of wheel.
 
 ``ORTSMaxTrackSanderSteamConsumptionReverse`` - total steam consumption for all sanders when traveling in 
-reverse direction, ie behind wheel. Note: set to 0 when reverse sander is not equipped. If no value is specified,
-the reverse sander value will be set equal to the forward sander value.
+reverse direction, ie behind wheel. Leave this parameter out, or set it to 0, if reverse sander is not
+equipped.
 
-All steam consumption parameters are in lbs/sec.
+.. index::
+   single: SanderSteamExhaustForwardFX
+   single: SanderSteamExhaustReverseFX
 
 For steam sanding there will be a visible presence of steam when the sander is operated, this steam effect 
 can be added by using one or both of the following aparmeters.
@@ -5344,38 +5369,63 @@ can be added by using one or both of the following aparmeters.
 ``SanderSteamExhaustReverseFX`` - steam effect when travelling in reverse, ie in behind the wheel.
 
 .. index::
+   single: ORTSMaxTrackSanderAirConsumption
    single: ORTSMaxTrackSanderAirConsumptionForward
    single: ORTSMaxTrackSanderAirConsumptionReverse
 
 **Air Consumption**
 
+If the sanding system type is set to ``SandingSystemType ( "Air" )``, air from the locomotive's
+main reservoir will be consumed to power the sanding system. The consumption values here correspond
+to maximum main reservoir pressure. Actual consumption of air and sand will vary proportionally
+with main reservoir pressure. If main reservoir pressure drops below 80 psi, sand flow will be
+too low to increase adhesion.
+
+All air consumption parameters use units of volume of air consumed per second, default cubic feet.
+
+``ORTSMaxTrackSanderAirConsumption`` - total air consumption for all sanders in both forward and reverse.
+If not defined, the air consumption is set to the equivalent of 56 cubic feet of air per minute.
+
+If forward and reverse sanders do not have identical specifications, or if sanders are equipped in only
+one direction, use the following parameters instead:
+
 ``ORTSMaxTrackSanderAirConsumptionForward`` - total air consumption for all sanders when traveling in forward 
 direction, ie in front of wheel.
 
 ``ORTSMaxTrackSanderAirConsumptionReverse`` - total air consumption for all sanders when traveling in reverse 
-direction, ie behind wheel. Note: set to 0 when reverse sander is not equipped. If no value is specified,
-the reverse sander value will be set equal to the forward sander value.
-
-All air consumption parameters are in cuft/sec.
+direction, ie behind wheel. Leave this parameter out, or set it to 0, if reverse sander is not equipped.
 
 .. index::
+   single: ORTSMaxTrackSanderBoxCapacity
+   single: ORTSMaxTrackSanderSandConsumption
    single: ORTSMaxTrackSanderSandConsumptionForward
    single: ORTSMaxTrackSanderSandConsumptionReverse
-   single: ORTSMaxTrackSanderBoxCapacity
 
 **Sand Consumption**
+
+Regardless of the sanding system type, sand is stored in a sand box and must be consumed in order to increase
+adhesion. If all sand on the locomotive is consumed, sanding will no longer provide increased adhesion
+(though air/steam will still be consumed). While many real locomotives have multiple sand boxes, in OR
+there is one shared sand box, so sand capacity should be set to the total capacity of all sand boxes on the locomotive.
+
+``ORTSMaxTrackSanderBoxCapacity`` - the total sand capacity of the locomotive, shared between forward and reverse
+sanders. Capacity is measured as a volume, default units cubic feet. If not defined, 40 cubic feet is used.
+
+All sand consumption parameters are in cuft/sec. Setting sand consumption to 0 disables sand consumption,
+which also disables the increase in adhesion from enabling the sander.
+
+``ORTSMaxTrackSanderSandConsumption`` - total sand consumption for all sanders in both forward and reverse.
+Consumption is measured as a volume consumed per second, default units cubic feet. If not defined, the
+consumption is set to the equivalent of 3.4 cubic feet of sand per hour.
+
+If forward and reverse sanders do not have identical specifications, or if sanders are equipped in only
+one direction, use the following parameters instead:
 
 ``ORTSMaxTrackSanderSandConsumptionForward`` - total sand consumption for all sanders when traveling in forward 
 direction, ie in front of wheel.
 
 ``ORTSMaxTrackSanderSandConsumptionReverse`` - total sand consumption for all sanders when traveling in reverse 
-direction, ie behind wheel. Note: set to 0 to disable reverse sanding. If no value is specified,
-the reverse sander value will be set equal to the forward sander value.
-
-All sand consumption parameters are in cuft/sec.
-
-``ORTSMaxTrackSanderBoxCapacity`` - the total sand capacity of the locomotive, shared between forward and reverse
-sanders. Capacity is measured as a volume, default cubic feet.
+direction, ie behind wheel. Leave this parameter out, or set it to 0, if reverse sander is not equipped.
 
 .. _physics-hammer-blow:
 
