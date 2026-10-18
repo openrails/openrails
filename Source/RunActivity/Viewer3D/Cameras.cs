@@ -1251,6 +1251,13 @@ namespace Orts.Viewer3D
         {
             if (!IsVisibleTrainCarViewerOrWebpage)
             {
+                // encountered this, but unable to reproduce
+                if (attachedCar == null)
+                {
+                    Debug.WriteLine("Warning: attachedCar is null; setting it to the car[0]");
+                    attachedCar = Viewer.PlayerTrain.Cars[0];
+                }
+
                 var attachedCarIdPos = attachedCar.Train.GetCarPositionByCarID(attachedCar.CarID, !Front);
                 if (Front)
                 {
