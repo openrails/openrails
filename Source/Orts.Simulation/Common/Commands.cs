@@ -106,27 +106,6 @@ namespace Orts.Common
     }
 
     // <Superclasses>
-
-    /// <summary>
-    /// Superclass for commands that take an object index (eg. a switch index in the Track Circuit List).
-    /// </summary>
-    [Serializable()]
-    public abstract class IndexCommand : Command
-    {
-        protected int Index;
-
-        public IndexCommand(CommandLog log, int index)
-            : base(log)
-        {
-            Index = index;
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + Index;
-        }
-    }
-
     [Serializable()]
     public abstract class BooleanCommand : Command
     {
@@ -137,26 +116,18 @@ namespace Orts.Common
         {
             ToState = toState;
         }
-
-        // subclass provides ToString(), converting the state into an appropriate text
     }
 
-    /// <summary>
-    /// Superclass for commands that take an object index (eg. a car position) and a boolean state.
-    /// </summary>
     [Serializable()]
-    public abstract class BooleanIndexCommand : IndexCommand
+    public abstract class IndexCommand : Command
     {
-        protected bool ToState;
+        protected int Index;
 
-        public BooleanIndexCommand(CommandLog log, int index, bool toState)
-            : base(log, index)
+        public IndexCommand(CommandLog log, int index)
+            : base(log)
         {
             Index = index;
-            ToState = toState;
         }
-
-        // subclass provides ToString(), converting the state into an appropriate text
     }
 
     /// <summary>
@@ -891,37 +862,21 @@ namespace Orts.Common
         }
     }
 
-    /// <summary>
-    /// Wagon Handbrake Command. Receiver is the player train. The index identifies the car within the train.
-    /// True indicates that the handbrake is set.
-    /// </summary>
     [Serializable()]
-    public sealed class WagonHandbrakeCommand : BooleanIndexCommand
+    public sealed class WagonHandbrakeCommand : BooleanCommand
     {
-        public static Train Receiver { get; set; }
-
-        public WagonHandbrakeCommand(CommandLog log, int carIndex, bool toState)
-            : base(log, carIndex, toState)
-        {
-            Redo();
-        }
+        public static MSTSWagon Receiver { get; set; }
 
         public WagonHandbrakeCommand(CommandLog log, MSTSWagon car, bool toState)
-            : base(log, 0, toState)
+            : base(log, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
-            Redo(car);
+            Receiver = car;
+            Redo();
         }
 
         public override void Redo()
         {
-            MSTSWagon car = (MSTSWagon) Receiver.Cars[Index];
-            Redo(car);
-        }
-
-        private void Redo(MSTSWagon car)
-        {
-            car.SetWagonHandbrake(ToState);
+            Receiver.SetWagonHandbrake(ToState);
             // Report();
         }
 
@@ -954,10 +909,6 @@ namespace Orts.Common
         }
     }
 
-    /// <summary>
-    /// Train Brake Hose Connect Command. Receiver is the player locomotive. Applies the command to all cars (and locomotives) in the train.
-    /// True indicates that the brakehose is connected.
-    /// </summary>
     [Serializable()]
     public sealed class BrakeHoseConnectCommand : BooleanCommand
     {
@@ -981,37 +932,21 @@ namespace Orts.Common
         }
     }
 
-    /// <summary>
-    /// Wagon Brake Hose Front Connect Command. Receiver is the player train. The index identifies the car within the train.
-    /// True indicates that the front brakehose is connected.
-    /// </summary>
     [Serializable()]
-    public sealed class WagonBrakeHoseConnectCommand : BooleanIndexCommand
+    public sealed class WagonBrakeHoseConnectCommand : BooleanCommand
     {
-        public static Train Receiver { get; set; }
-
-        public WagonBrakeHoseConnectCommand(CommandLog log, int carIndex, bool toState)
-            : base(log, carIndex, toState)
-        {
-            Redo();
-        }
+        public static MSTSWagon Receiver { get; set; }
 
         public WagonBrakeHoseConnectCommand(CommandLog log, MSTSWagon car, bool toState)
-            : base(log, 0, toState)
+            : base(log, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
-            Redo(car);
+            Receiver = car;
+            Redo();
         }
 
         public override void Redo()
         {
-            MSTSWagon car = (MSTSWagon)Receiver.Cars[Index];
-            Redo(car);
-        }
-
-        private void Redo(MSTSWagon car)
-        {
-            car.BrakeSystem.FrontBrakeHoseConnected = ToState;
+            Receiver.BrakeSystem.FrontBrakeHoseConnected = ToState;
             // Report();
         }
 
@@ -1021,37 +956,21 @@ namespace Orts.Common
         }
     }
 
-    /// <summary>
-    /// Wagon Brake Hose Rear Connect Command. Receiver is the player train. The index identifies the car within the train.
-    /// True indicates that the rear brakehose is connected.
-    /// </summary>
     [Serializable()]
-    public sealed class WagonBrakeHoseRearConnectCommand : BooleanIndexCommand
+    public sealed class WagonBrakeHoseRearConnectCommand : BooleanCommand
     {
-        public static Train Receiver { get; set; }
-
-        public WagonBrakeHoseRearConnectCommand(CommandLog log, int carIndex, bool toState)
-            : base(log, carIndex, toState)
-        {
-            Redo();
-        }
+        public static MSTSWagon Receiver { get; set; }
 
         public WagonBrakeHoseRearConnectCommand(CommandLog log, MSTSWagon car, bool toState)
-            : base(log, 0, toState)
+            : base(log, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
-            Redo(car);
+            Receiver = car;
+            Redo();
         }
 
         public override void Redo()
         {
-            MSTSWagon car = (MSTSWagon)Receiver.Cars[Index];
-            Redo(car);
-        }
-
-        private void Redo(MSTSWagon car)
-        {
-            car.BrakeSystem.RearBrakeHoseConnected = ToState;
+            Receiver.BrakeSystem.RearBrakeHoseConnected = ToState;
             // Report();
         }
 
@@ -1061,38 +980,21 @@ namespace Orts.Common
         }
     }
 
-    /// <summary>
-    /// Toogle Angle Cock A Command. Receiver is the player train. The index identifies the car within the train.
-    /// True indicates that the A angle cock is open.
-    /// </summary>
-    // TODO: Other commands use front and rear. TBD if A and B really means the A or B end of the car (and therefore are affected by the car beeing flipped).
     [Serializable()]
-    public sealed class ToggleAngleCockACommand : BooleanIndexCommand
+    public sealed class ToggleAngleCockACommand : BooleanCommand
     {
-        public static Train Receiver { get; set; }
-
-        public ToggleAngleCockACommand(CommandLog log, int carIndex, bool toState)
-            : base(log, carIndex, toState)
-        {
-            Redo();
-        }
+        public static MSTSWagon Receiver { get; set; }
 
         public ToggleAngleCockACommand(CommandLog log, MSTSWagon car, bool toState)
-            : base(log, 0, toState)
+            : base(log, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
-            Redo(car);
+            Receiver = car;
+            Redo();
         }
 
         public override void Redo()
         {
-            MSTSWagon car = (MSTSWagon)Receiver.Cars[Index];
-            Redo(car);
-        }
-
-        private void Redo(MSTSWagon car)
-        {
-            car.BrakeSystem.AngleCockAOpen = ToState;
+            Receiver.BrakeSystem.AngleCockAOpen = ToState;
             // Report();
         }
 
@@ -1102,38 +1004,21 @@ namespace Orts.Common
         }
     }
 
-    /// <summary>
-    /// Toogle Angle Cock B Command. Receiver is the player train. The index identifies the car within the train.
-    /// True indicates that the B angle cock is open.
-    /// </summary>
-    // TODO: Other commands use front and rear. TBD if A and B really means the A or B end of the car (and therefore are affected by the car beeing flipped).
     [Serializable()]
-    public sealed class ToggleAngleCockBCommand : BooleanIndexCommand
+    public sealed class ToggleAngleCockBCommand : BooleanCommand
     {
-        public static Train Receiver { get; set; }
-
-        public ToggleAngleCockBCommand(CommandLog log, int carIndex, bool toState)
-            : base(log, carIndex, toState)
-        {
-            Redo();
-        }
+        public static MSTSWagon Receiver { get; set; }
 
         public ToggleAngleCockBCommand(CommandLog log, MSTSWagon car, bool toState)
-            : base(log, 0, toState)
+            : base(log, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
-            Redo(car);
+            Receiver = car;
+            Redo();
         }
 
         public override void Redo()
         {
-            MSTSWagon car = (MSTSWagon)Receiver.Cars[Index];
-            Redo(car);
-        }
-
-        private void Redo(MSTSWagon car)
-        {
-            car.BrakeSystem.AngleCockBOpen = ToState;
+            Receiver.BrakeSystem.AngleCockBOpen = ToState;
             // Report();
         }
 
@@ -1143,37 +1028,21 @@ namespace Orts.Common
         }
     }
 
-    /// <summary>
-    /// Wagon Bleed-Off Valve Command. Receiver is the player train. The index identifies the car within the train.
-    /// True indicates that the valve is open.
-    /// </summary>
     [Serializable()]
-    public sealed class ToggleBleedOffValveCommand : BooleanIndexCommand
+    public sealed class ToggleBleedOffValveCommand : BooleanCommand
     {
-        public static Train Receiver { get; set; }
-
-        public ToggleBleedOffValveCommand(CommandLog log, int carIndex, bool toState)
-            : base(log, carIndex, toState)
-        {
-            Redo();
-        }
+        public static MSTSWagon Receiver { get; set; }
 
         public ToggleBleedOffValveCommand(CommandLog log, MSTSWagon car, bool toState)
-            : base(log, 0, toState)
+            : base(log, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
-            Redo(car);
+            Receiver = car;
+            Redo();
         }
 
         public override void Redo()
         {
-            MSTSWagon car = (MSTSWagon)Receiver.Cars[Index];
-            Redo(car);
-        }
-
-        private void Redo(MSTSWagon car)
-        {
-            car.BrakeSystem.BleedOffValveOpen = ToState;
+            Receiver.BrakeSystem.BleedOffValveOpen = ToState;
             // Report();
         }
 
@@ -1412,7 +1281,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ToggleDoorsLeftCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive or control car
+        public static MSTSWagon Receiver { get; set; }
 
         public ToggleDoorsLeftCommand(CommandLog log)
             : base(log)
@@ -1424,7 +1293,7 @@ namespace Orts.Common
         {
             var side = Receiver.GetCabFlipped() ^ Receiver.Flipped ? DoorSide.Right : DoorSide.Left;
             var state = Receiver.Train.DoorState(side);
-            Receiver.Train.SetDoors(side, state <= DoorState.Closing);  // sets doors on each car in the train
+            Receiver.Train.SetDoors(side, state <= DoorState.Closing);
             // Report();
         }
     }
@@ -1432,7 +1301,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ToggleDoorsRightCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive or control car
+        public static MSTSWagon Receiver { get; set; }
 
         public ToggleDoorsRightCommand(CommandLog log)
             : base(log)
@@ -1444,7 +1313,7 @@ namespace Orts.Common
         {
             var side = Receiver.GetCabFlipped() ^ Receiver.Flipped ? DoorSide.Left : DoorSide.Right;
             var state = Receiver.Train.DoorState(side);
-            Receiver.Train.SetDoors(side, state <= DoorState.Closing);  // sets doors on each car in the train
+            Receiver.Train.SetDoors(side, state <= DoorState.Closing);
             // Report();
         }
     }
@@ -1452,7 +1321,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ToggleMirrorsCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive or control car
+        public static MSTSWagon Receiver { get; set; }
 
         public ToggleMirrorsCommand(CommandLog log)
             : base(log)
@@ -1469,7 +1338,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ToggleWindowLeftCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive or control car
+        public static MSTSWagon Receiver { get; set; }
 
         public ToggleWindowLeftCommand(CommandLog log)
             : base(log)
@@ -1489,7 +1358,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ToggleWindowRightCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive or control car
+        public static MSTSWagon Receiver { get; set; }
 
         public ToggleWindowRightCommand(CommandLog log)
             : base(log)
@@ -1671,7 +1540,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class DPMoveToFrontCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive
+        public static MSTSWagon Receiver { get; set; }
 
         public DPMoveToFrontCommand(CommandLog log)
             : base(log)
@@ -1689,7 +1558,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class DPMoveToBackCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive
+        public static MSTSWagon Receiver { get; set; }
 
         public DPMoveToBackCommand(CommandLog log)
             : base(log)
@@ -1707,7 +1576,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class DPIdleCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive
+        public static MSTSWagon Receiver { get; set; }
 
         public DPIdleCommand(CommandLog log)
             : base(log)
@@ -1725,7 +1594,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class DPTractionCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive
+        public static MSTSWagon Receiver { get; set; }
 
         public DPTractionCommand(CommandLog log)
             : base(log)
@@ -1743,7 +1612,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class DPDynamicBrakeCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive
+        public static MSTSWagon Receiver { get; set; }
 
         public DPDynamicBrakeCommand(CommandLog log)
             : base(log)
@@ -1761,7 +1630,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class DPMoreCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive
+        public static MSTSWagon Receiver { get; set; }
 
         public DPMoreCommand(CommandLog log)
             : base(log)
@@ -1779,7 +1648,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class DPLessCommand : Command
     {
-        public static MSTSWagon Receiver { get; set; }  // is locomotive
+        public static MSTSWagon Receiver { get; set; }
 
         public DPLessCommand(CommandLog log)
             : base(log)
