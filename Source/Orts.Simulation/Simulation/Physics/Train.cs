@@ -16915,17 +16915,17 @@ namespace Orts.Simulation.Physics
         }
 
         /// <summary>
-        /// Get the position (index) of the train car using the car-id.
-        /// Returns a valid index. When the car-id is not found, returns the first car (0),
-        /// or if defaultToEnd is true, the last car (Count - 1).
+        /// Get the position (index) of the train car, using object reference equality.
+        /// Returns a valid index. When the car reference is not found in the list,
+        /// returns the index of the first car (0), or if defaultToEnd is true, the last car (Count - 1).
         /// </summary>
-        public int GetCarPositionByCarID( string carID, bool defaultToEnd = false)
+        public int GetCarPosition(TrainCar car, bool defaultToEnd = false)
         {
-            int carIdx = Cars.FindIndex(x => x.CarID == carID);
+            int carIdx = Cars.IndexOf(car);
             if (carIdx < 0)
             {
-                Debug.WriteLine($"Warning: car {carID} not found in train {Name}");
                 carIdx = defaultToEnd ? Cars.Count - 1 : 0;
+                Debug.WriteLine($"Warning: car {car.CarID} not found in train {Name}; using index {carIdx}");
             }
             return carIdx;
         }

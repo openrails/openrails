@@ -890,7 +890,7 @@ namespace Orts.Common
         public WagonHandbrakeCommand(CommandLog log, MSTSWagon car, bool toState)
             : base(log, 0, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
+            Index = car.Train.GetCarPosition(car);
             Redo(car);
         }
 
@@ -980,7 +980,7 @@ namespace Orts.Common
         public WagonBrakeHoseConnectCommand(CommandLog log, MSTSWagon car, bool toState)
             : base(log, 0, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
+            Index = car.Train.GetCarPosition(car);
             Redo(car);
         }
 
@@ -1020,7 +1020,7 @@ namespace Orts.Common
         public WagonBrakeHoseRearConnectCommand(CommandLog log, MSTSWagon car, bool toState)
             : base(log, 0, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
+            Index = car.Train.GetCarPosition(car);
             Redo(car);
         }
 
@@ -1061,7 +1061,7 @@ namespace Orts.Common
         public ToggleAngleCockACommand(CommandLog log, MSTSWagon car, bool toState)
             : base(log, 0, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
+            Index = car.Train.GetCarPosition(car);
             Redo(car);
         }
 
@@ -1102,7 +1102,7 @@ namespace Orts.Common
         public ToggleAngleCockBCommand(CommandLog log, MSTSWagon car, bool toState)
             : base(log, 0, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
+            Index = car.Train.GetCarPosition(car);
             Redo(car);
         }
 
@@ -1142,7 +1142,7 @@ namespace Orts.Common
         public ToggleBleedOffValveCommand(CommandLog log, MSTSWagon car, bool toState)
             : base(log, 0, toState)
         {
-            Index = car.Train.GetCarPositionByCarID(car.CarID);
+            Index = car.Train.GetCarPosition(car);
             Redo(car);
         }
 
