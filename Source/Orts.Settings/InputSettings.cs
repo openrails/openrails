@@ -506,6 +506,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DisplayTrainListWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Alt);
             Commands[(int)UserCommand.DisplayCarLabels] = new UserCommandModifiableKeyInput(0x41, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);
+            Commands[(int)UserCommand.GameVROverlay] = new UserCommandKeyInput(0x18, KeyModifiers.Alt);
             Commands[(int)UserCommand.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayHUD] = new UserCommandModifiableKeyInput(0x3F, KeyModifiers.Alt, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayTrainDrivingWindow] = new UserCommandModifiableKeyInput(0x3F, Commands[(int)UserCommand.DisplayNextWindowTab]);

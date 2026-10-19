@@ -200,6 +200,7 @@ namespace Orts.Viewer3D
         Vector3? HandHit;
         int PointerHand = Orts.Viewer3D.VR.VRSession.RightHand;
         readonly bool[] HandMenuWasDown = new bool[Orts.Viewer3D.VR.VRSession.HandCount];
+        readonly bool[] HandSecondaryWasDown = new bool[Orts.Viewer3D.VR.VRSession.HandCount];
         Orts.Viewer3D.VR.VRTexturedMaterial LaserMaterial, LaserHitMaterial, ControllerMaterial;
         Orts.Viewer3D.VR.VRBoxPrimitive ControllerBox;
         Matrix[] HandWorlds;
@@ -928,6 +929,7 @@ namespace Orts.Viewer3D
             frame.PrepareFrame(elapsedTime);
             World.PrepareFrame(frame, elapsedTime);
             PrepareHandPointers(frame);
+            UpdateVROverlayCrop();
             InfoDisplay.PrepareFrame(frame, elapsedTime);
             // TODO: This is not correct. The ActivityWindow's PrepareFrame is already called by the WindowManager!
             if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
@@ -991,6 +993,9 @@ namespace Orts.Viewer3D
                 if (hands[h].Enabled && hands[h].MenuButton && !HandMenuWasDown[h])
                     vr.RequestRecenter();
                 HandMenuWasDown[h] = hands[h].MenuButton;
+                if (hands[h].Enabled && hands[h].SecondaryButton && !HandSecondaryWasDown[h])
+                    ToggleVROverlay();
+                HandSecondaryWasDown[h] = hands[h].SecondaryButton;
             }
             var seatView = Camera.XnaSeatView;
             var rays = new Ray?[hands.Length];
@@ -1011,6 +1016,33 @@ namespace Orts.Viewer3D
             var up = Microsoft.Xna.Framework.Input.ButtonState.Released;
             var trigger = hands[PointerHand].TriggerDown ? Microsoft.Xna.Framework.Input.ButtonState.Pressed : up;
             return new MouseState((int)screen.X, (int)screen.Y, lastMouse.ScrollWheelValue, trigger, up, up, up, up);
+        }
+
+        /// <summary>The overlay panel in the headset; when it comes up with no window open, the HUD opens on it so there is something to see.</summary>
+        void ToggleVROverlay()
+        {
+            RenderProcess.VROverlayVisible = !RenderProcess.VROverlayVisible;
+            if (RenderProcess.VROverlayVisible && HUDWindow != null && !HUDWindow.Visible && !WindowManager.VisibleWindows.Any(w => !(w is Popups.LayeredWindow)))
+                HUDWindow.Visible = true;
+            Trace.TraceInformation("VR: overlay panel {0}", RenderProcess.VROverlayVisible ? "shown" : "hidden");
+        }
+
+        /// <summary>The headset's overlay panel shows just the open popup windows, so their text is legible; with the HUD up it shows the whole window.</summary>
+        void UpdateVROverlayCrop()
+        {
+            if (VR == null || !RenderProcess.VROverlayVisible)
+                return;
+            var crop = Rectangle.Empty;
+            if (HUDWindow == null || !HUDWindow.Visible)
+                foreach (var window in WindowManager.VisibleWindows)
+                {
+                    if (window is Popups.LayeredWindow)
+                        continue;
+                    var location = window.Location;
+                    location.Inflate(6, 6);
+                    crop = crop.IsEmpty ? location : Rectangle.Union(crop, location);
+                }
+            RenderProcess.VROverlayCrop = crop;
         }
 
         /// <summary>Draws each tracked controller's beam, green from the pointing hand when it is on a cab control.</summary>
@@ -1183,6 +1215,7 @@ namespace Orts.Viewer3D
 
             if (UserInput.IsPressed(UserCommand.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayCompassWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.GameVROverlay)) ToggleVROverlay();
             if (UserInput.IsPressed(UserCommand.DisplayTrainForcesWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainForcesWindow.TabAction(); else TrainForcesWindow.Visible = !TrainForcesWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugTracks)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugSignalling)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;

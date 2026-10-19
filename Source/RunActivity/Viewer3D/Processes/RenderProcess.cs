@@ -50,6 +50,10 @@ namespace Orts.Viewer3D.Processes
 
         /// <summary>The headset session when VR is on and a runtime accepted us; null means draw flat.</summary>
         public VRSession VR { get; private set; }
+        /// <summary>Show the 2D overlays (HUD, popup windows) on a panel in the headset too.</summary>
+        public bool VROverlayVisible;
+        /// <summary>The part of the window the overlay panel shows (window pixels); empty means all of it. The viewer sets it to the open windows' bounds so they fill the panel.</summary>
+        public Rectangle VROverlayCrop;
         readonly bool VRRequested;
         VRSessionStarter VRStarter; // the session being created in the background, until it arrives or fails
         /// <summary>What happened to the VR request so far, for the log; the runtime may answer before the log file is open.</summary>

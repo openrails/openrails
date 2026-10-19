@@ -68,6 +68,7 @@ namespace ORTS.Common.Input
         [GetString("Display Next Station Window")] DisplayNextStationWindow,
         [GetString("Display Train Forces Window")] DisplayTrainForcesWindow,
         [GetString("Display Compass Window")] DisplayCompassWindow,
+        [GetString("Game VR Overlay Panel")] GameVROverlay,
         [GetString("Display Train List Window")] DisplayTrainListWindow,
         [GetString("Display EOT List Window")] DisplayEOTListWindow,
         [GetString("Display Control Rectangles")] DisplayControlRectangle,

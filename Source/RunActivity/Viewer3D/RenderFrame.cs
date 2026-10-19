@@ -416,6 +416,26 @@ namespace Orts.Viewer3D
         static Orts.Viewer3D.VR.VRQuadPrimitive FlatPanelQuad;
         const float FlatPanelDistanceM = 2.2f;
         const float FlatPanelWidthM = 2.6f;
+        // In the cab the 2D overlays (HUD, popups) can be shown on a panel low in front of the driver.
+        static RenderTarget2D OverlaySurface;
+        static Orts.Viewer3D.VR.VRTexturedMaterial OverlayPanelMaterial;
+        static Orts.Viewer3D.VR.VRQuadPrimitive OverlayPanelQuad;
+        static Rectangle OverlayPanelCrop = new Rectangle(-1, -1, 0, 0);
+        // Defaults put it at reading distance; OPENRAILS_VR_PANEL=distance,width,drop,tilt (metres and degrees) overrides them.
+        static readonly float OverlayPanelDistanceM = EnvFloat(0, 0.6f);
+        static readonly float OverlayPanelWidthM = EnvFloat(1, 0.8f);
+        static readonly float OverlayPanelDropM = EnvFloat(2, 0.22f);
+        static readonly float OverlayPanelTiltDeg = EnvFloat(3, -30f); // negative: top toward the driver, since the panel sits below eye level
+        static readonly Vector3 OverlayPanelCentre = new Vector3(0, -OverlayPanelDropM, -OverlayPanelDistanceM);
+
+        static float EnvFloat(int index, float fallback)
+        {
+            var value = Environment.GetEnvironmentVariable("OPENRAILS_VR_PANEL");
+            if (String.IsNullOrEmpty(value)) return fallback;
+            var parts = value.Split(',');
+            float result;
+            return index < parts.Length && float.TryParse(parts[index], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out result) ? result : fallback;
+        }
 
         public RenderFrame(Game game)
         {
@@ -949,6 +969,39 @@ namespace Orts.Viewer3D
                 graphicsDevice.SetRenderTarget(null);
             }
 
+            var overlayPanel = hasView && Game.RenderProcess.VROverlayVisible;
+            if (overlayPanel)
+            {
+                // The overlays drawn once at window size, shown on a panel in the seat frame in every eye.
+                var window = graphicsDevice.PresentationParameters;
+                if (OverlaySurface == null || OverlaySurface.IsDisposed || OverlaySurface.Width != window.BackBufferWidth || OverlaySurface.Height != window.BackBufferHeight || OverlaySurface.GraphicsDevice != graphicsDevice)
+                {
+                    if (OverlaySurface != null) OverlaySurface.Dispose();
+                    OverlaySurface = new RenderTarget2D(graphicsDevice, window.BackBufferWidth, window.BackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8, 0, RenderTargetUsage.PreserveContents);
+                    OverlayPanelMaterial = new Orts.Viewer3D.VR.VRTexturedMaterial(graphicsDevice, OverlaySurface, true) { AlwaysOnTop = true };
+                    OverlayPanelCrop = new Rectangle(-1, -1, 0, 0);
+                }
+                // The panel shows the part of the window the viewer asked for (the open windows), filling its width.
+                var crop = Game.RenderProcess.VROverlayCrop;
+                if (crop.IsEmpty || crop.Width <= 0 || crop.Height <= 0)
+                    crop = new Rectangle(0, 0, window.BackBufferWidth, window.BackBufferHeight);
+                crop = Rectangle.Intersect(crop, new Rectangle(0, 0, window.BackBufferWidth, window.BackBufferHeight));
+                if (crop != OverlayPanelCrop && crop.Width > 0 && crop.Height > 0)
+                {
+                    OverlayPanelCrop = crop;
+                    var height = OverlayPanelWidthM * crop.Height / crop.Width;
+                    if (height > OverlayPanelWidthM * 0.75f)
+                        height = OverlayPanelWidthM * 0.75f;
+                    var widthM = height * crop.Width / crop.Height;
+                    OverlayPanelQuad = new Orts.Viewer3D.VR.VRQuadPrimitive(graphicsDevice, widthM, height,
+                        (float)crop.Left / window.BackBufferWidth, (float)crop.Top / window.BackBufferHeight, (float)crop.Right / window.BackBufferWidth, (float)crop.Bottom / window.BackBufferHeight);
+                }
+                graphicsDevice.SetRenderTarget(OverlaySurface);
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
+                DrawSequences(graphicsDevice, logging, SequenceFilter.Overlay);
+                graphicsDevice.SetRenderTarget(null);
+            }
+
             for (var eye = 0; eye < EyeSurface.Length; eye++)
             {
                 if (logging) Console.WriteLine("  Eye {0} {{", eye);
@@ -960,7 +1013,18 @@ namespace Orts.Viewer3D
                 }
                 graphicsDevice.SetRenderTarget(EyeSurface[eye]);
                 if (hasView)
+                {
                     DrawScene(graphicsDevice, logging, SequenceFilter.Scene);
+                    if (overlayPanel)
+                    {
+                        var view = Matrix.Invert(vr.EyePose(eye));
+                        var projection = vr.EyeProjection(eye, 0.1f, 100f);
+                        var panel = Matrix.CreateRotationX(MathHelper.ToRadians(OverlayPanelTiltDeg)) * Matrix.CreateTranslation(OverlayPanelCentre);
+                        OverlayPanelMaterial.SetState(graphicsDevice, null);
+                        OverlayPanelMaterial.Render(graphicsDevice, new[] { new RenderItem(OverlayPanelMaterial, OverlayPanelQuad, ref panel, ShapeFlags.None) }, ref view, ref projection);
+                        OverlayPanelMaterial.ResetState(graphicsDevice);
+                    }
+                }
                 else
                 {
                     graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Black, 1, 0);

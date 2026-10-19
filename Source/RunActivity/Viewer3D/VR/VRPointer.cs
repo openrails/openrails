@@ -90,14 +90,20 @@ namespace Orts.Viewer3D.VR
         readonly VertexBuffer VertexBuffer;
 
         public VRQuadPrimitive(GraphicsDevice graphicsDevice, float width, float height)
+            : this(graphicsDevice, width, height, 0, 0, 1, 1)
+        {
+        }
+
+        /// <summary>A quad showing only the part of the texture between (u0, v0) and (u1, v1).</summary>
+        public VRQuadPrimitive(GraphicsDevice graphicsDevice, float width, float height, float u0, float v0, float u1, float v1)
         {
             var w = width / 2;
             var h = height / 2;
             var vertices = new[] {
-                new VertexPositionTexture(new Vector3(-w, +h, 0), new Vector2(0, 0)),
-                new VertexPositionTexture(new Vector3(+w, +h, 0), new Vector2(1, 0)),
-                new VertexPositionTexture(new Vector3(-w, -h, 0), new Vector2(0, 1)),
-                new VertexPositionTexture(new Vector3(+w, -h, 0), new Vector2(1, 1)),
+                new VertexPositionTexture(new Vector3(-w, +h, 0), new Vector2(u0, v0)),
+                new VertexPositionTexture(new Vector3(+w, +h, 0), new Vector2(u1, v0)),
+                new VertexPositionTexture(new Vector3(-w, -h, 0), new Vector2(u0, v1)),
+                new VertexPositionTexture(new Vector3(+w, -h, 0), new Vector2(u1, v1)),
             };
             VertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionTexture), vertices.Length, BufferUsage.WriteOnly);
             VertexBuffer.SetData(vertices);
@@ -191,6 +197,8 @@ namespace Orts.Viewer3D.VR
         readonly VRPanelShader Shader;
         public Texture2D Texture { get; set; }
         readonly bool Blended;
+        /// <summary>Draw over everything (no depth test), for panels that must not sink into the cab.</summary>
+        public bool AlwaysOnTop;
 
         public VRTexturedMaterial(GraphicsDevice graphicsDevice, Texture2D texture, bool blended)
             : base(null, null)
@@ -211,7 +219,7 @@ namespace Orts.Viewer3D.VR
             Shader.Texture = Texture;
             graphicsDevice.BlendState = Blended ? BlendState.NonPremultiplied : BlendState.Opaque;
             graphicsDevice.RasterizerState = RasterizerState.CullNone;
-            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.DepthStencilState = AlwaysOnTop ? DepthStencilState.None : DepthStencilState.Default;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -228,6 +236,7 @@ namespace Orts.Viewer3D.VR
         {
             graphicsDevice.BlendState = BlendState.Opaque;
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
     }
 
