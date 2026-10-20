@@ -1031,7 +1031,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Determines the maximum axle adhesion (MaximumWheelAdhesion) at the current conditions,
         /// as well as the slip speed that causes this level of adhesion (WheelSlipThresholdMpS)
-        /// using Newton's method
+        /// using Newton's method, falling back to the bisection algorithm if Newton's method fails.
         /// </summary>
         public void ComputeWheelSlipThresholdMpS()
         {
@@ -1039,56 +1039,54 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // Not feasible to determine analytically, determine iteratively
             // Newton's method (technically secant method). We use the previous wheel slip threshold as the initial guess
             double nextSlipMpS = WheelSlipThresholdMpS;
-            const double minSlipThresholdMpS = 0.01;
 
-            if (Math.Abs(TrainSpeedMpS) > 0.25f)
+            // Assumption: Slip threshold should remain within the range of 0.01 to 5 m/s
+            // values outside this range are assumed to be in error
+            double minSlipThresholdMpS = 0.01;
+            double maxSlipThresholdMpS = 5;
+
+            // We have to find the zero of the derivative of adhesion curve
+            // i.e. the point where slope changes from positive (adhesion region)
+            // to negative (slip region), this is done by inspecting the slope of
+            // the derivative (the second derivative) 
+            double dx = 0.001;
+            int remainingIterations = 10;
+
+            double currentSlipMpS;
+            double currentAdhesion;
+            double firstDerivative;
+            double secondDerivative;
+
+            do
             {
-                // We have to find the zero of the derivative of adhesion curve
-                // i.e. the point where slope changes from positive (adhesion region)
-                // to negative (slip region), this is done by inspecting the slope of
-                // the derivative (the second derivative) 
-                double dx = 0.001;
-                int remainingIterations = 10;
+                // next estimate for slip = current estimate for slip - (first derivative of adhesion at current estimate) / (second derivative of adhesion at current estimate)
+                currentSlipMpS = nextSlipMpS;
+                // Our "f(x)" is the adhesion at a slip speed of x, ie: f(x) = SlipCharacteristicsPolach(x)
+                currentAdhesion = SlipCharacteristicsPolach(currentSlipMpS);
+                // Estimate for first derivative: f'(x) ~ f(x+dx) - f(x)
+                firstDerivative = SlipCharacteristicsPolach(currentSlipMpS + dx) - currentAdhesion;
+                // Estimate for second derivative: f''(x) ~ f'(x+dx) - f'(x-dx) = f'(x) - [f(x) - f(x-dx)]
+                secondDerivative = firstDerivative - (currentAdhesion - SlipCharacteristicsPolach(currentSlipMpS - dx));
 
-                double currentSlipMpS;
-                double deltaAdhesion;
-                double firstDerivative;
-                double secondDerivative;
+                // Update bounds based on current derivative
+                // Positive derivative indicates current slip is too low, set as new minimum
+                if (currentSlipMpS > minSlipThresholdMpS && firstDerivative > 0)
+                    minSlipThresholdMpS = currentSlipMpS;
+                // Negative derivative indicates current slip is too high, set as new maximum
+                if (currentSlipMpS < maxSlipThresholdMpS && firstDerivative < 0)
+                    maxSlipThresholdMpS = currentSlipMpS;
 
-                do
+                nextSlipMpS = Math.Abs(currentSlipMpS - (firstDerivative / secondDerivative) * dx);
+
+                if (secondDerivative >= 0 || nextSlipMpS < minSlipThresholdMpS || nextSlipMpS > maxSlipThresholdMpS)
                 {
-                    // next estimate for slip = current estimate for slip - (first derivative of adhesion at current estimate) / (second derivative of adhesion at current estimate)
-                    currentSlipMpS = nextSlipMpS;
-                    deltaAdhesion = SlipCharacteristicsPolach(currentSlipMpS + dx);
-                    // Our "f(x)" is the adhesion at a slip speed of x, ie: f(x) = SlipCharacteristicsPolach(x)
-                    // Estimate for first derivative: f'(x) ~ f(x+dx) - f(x)
-                    firstDerivative = deltaAdhesion - SlipCharacteristicsPolach(currentSlipMpS);
-                    // Estimate for second derivative: f''(x) ~ f'(x+dx) - f'(x) = f(x+2*dx) - f(x+dx) - f'(x)
-                    secondDerivative = SlipCharacteristicsPolach(currentSlipMpS + 2 * dx) - deltaAdhesion - firstDerivative;
-
-                    // If situation becomes incomputable, or unreasonable values are being produced,
-                    // fall back to a default case (this usually happens at very low speed)
-                    if (secondDerivative != 0 && currentSlipMpS < 5)
-                    {
-                        nextSlipMpS = Math.Abs(currentSlipMpS - (firstDerivative / secondDerivative) * dx);
-                    }
-                    else
-                    {
-                        // Failure to converge, set slip speed back to minimum value to try again.
-                        nextSlipMpS = minSlipThresholdMpS;
-                        break;
-                    }
+                    // If Newton's method fails to converge (indicated by positive second derivative,
+                    // or by estimate escaping the bounds, recalculate using bisection algorithm
+                    BisectionComputeWheelSlipThresholdMpS(minSlipThresholdMpS, maxSlipThresholdMpS);
+                    return;
                 }
-                while (Math.Abs(nextSlipMpS - currentSlipMpS) > 0.001 && --remainingIterations > 0);
-
-                nextSlipMpS = Math.Max(nextSlipMpS, minSlipThresholdMpS);
             }
-            else
-            {
-                // Due to nature of Polach implementation, at very low train speeds Newton's method fails
-                // to converge, set slip threshold to minimum speed in this situation.
-                nextSlipMpS = minSlipThresholdMpS;
-            }
+            while (Math.Abs(nextSlipMpS - currentSlipMpS) > 0.001 && --remainingIterations > 0);
 
             MaximumWheelAdhesion = (float)SlipCharacteristicsPolach(nextSlipMpS);
             WheelSlipThresholdMpS = (float)nextSlipMpS;
@@ -1099,14 +1097,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// as well as the slip speed that causes this level of adhesion (WheelSlipThresholdMpS)
         /// using the bisection algorithm.
         /// </summary>
-        // NOTE: THIS IS DEPRICATED, BUT RETAINED FOR REFERENCE PURPOSES. SEE INSTEAD: ComputeWheelSlipThresholdMpS()
-        public void BisectionComputeWheelSlipThresholdMpS()
+        /// <param name="lowerSlipMpS">The lower bound of slip speed for the algorithm</param>
+        /// <param name="upperSlipMpS">The upper bound of slip speed for the algorithm</param>
+        public void BisectionComputeWheelSlipThresholdMpS(double lowerSlipMpS = 0.01, double upperSlipMpS = 5)
         {
             // Goal: Determine the slip speed that causes the largest adhesion
             // Not feasible to determine analytically, determine iteratively
-            // Bisection algorithm. We assume adhesion maximum is between half and double the previous slip speed
-            double lowerSlipMpS = Math.Max(WheelSlipThresholdMpS / 2, 0.005);
-            double upperSlipMpS = 2 * Math.Max(WheelSlipThresholdMpS, lowerSlipMpS);
+            // Bisection algorithm.
 
             double lowerAdhesion = SlipCharacteristicsPolach(lowerSlipMpS);
             double upperAdhesion = SlipCharacteristicsPolach(upperSlipMpS);
@@ -1114,13 +1111,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // i.e. the point where slope changes from positive (adhesion region)
             // to negative (slip region)
             double dx = 0.001;
-            double fa = SlipCharacteristicsPolach(lowerSlipMpS + dx) - lowerAdhesion;
-            double fb = SlipCharacteristicsPolach(upperSlipMpS + dx) - upperAdhesion;
+            double lowerDerivative = SlipCharacteristicsPolach(lowerSlipMpS + dx) - lowerAdhesion;
+            double upperDerivative = SlipCharacteristicsPolach(upperSlipMpS + dx) - upperAdhesion;
 
-            if (fa * fb > 0)
+            if (lowerDerivative * upperDerivative > 0)
             {
                 // If sign does not change, bisection fails
-                if (fa > 0) // Max adhesion is somewhere above the upper threshold
+                if (lowerDerivative > 0) // Max adhesion is somewhere above the upper threshold
                 {
                     MaximumWheelAdhesion = (float)upperAdhesion;
                     WheelSlipThresholdMpS = (float)upperSlipMpS;
@@ -1132,16 +1129,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
                 return;
             }
+
+            double middleSlipMpS;
+            double middleAdhesion;
+            double middleDerivative;
+
             while (Math.Abs(upperSlipMpS - lowerSlipMpS) > 0.005)
             {
-                double middleSlipMpS = (lowerSlipMpS + upperSlipMpS) / 2;
-                double middleAdhesion = SlipCharacteristicsPolach(middleSlipMpS);
-                double fc = SlipCharacteristicsPolach(middleSlipMpS + dx) - middleAdhesion;
-                if (fa * fc > 0)
+                middleSlipMpS = (lowerSlipMpS + upperSlipMpS) / 2;
+                middleAdhesion = SlipCharacteristicsPolach(middleSlipMpS);
+                middleDerivative = SlipCharacteristicsPolach(middleSlipMpS + dx) - middleAdhesion;
+                if (lowerDerivative * middleDerivative > 0)
                 {
                     lowerAdhesion = middleAdhesion;
                     lowerSlipMpS = middleSlipMpS;
-                    fa = fc;
+                    lowerDerivative = middleDerivative;
                 }
                 else
                 {
