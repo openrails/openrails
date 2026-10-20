@@ -475,7 +475,8 @@ namespace Orts.Viewer3D
                     // Assign the first three animations to Wipers [V], Item1Continuous [Shift+,], Item2Continuous [Shift+.] respectively,
                     // because these are the ones capable of playing a loop.
                     for (var i = 0; i < GltfAnimations.Count; i++)
-                        MatrixNames[i] = TestControls[i % TestControls.Length];
+                        if (GltfAnimations[i].Channels?.FirstOrDefault()?.TimeArray != null)
+                            MatrixNames[i] = TestControls[i % TestControls.Length];
                 }
             }
 
@@ -1700,6 +1701,9 @@ namespace Orts.Viewer3D
 
             foreach (var channel in GltfAnimations[animationNumber].Channels)
             {
+                if (channel.TimeArray == null || channel.TimeArray.Length == 0)
+                    continue;
+
                 // Interpolating between two frames
                 var frame1 = 0;
                 for (var i = 0; i < channel.TimeArray.Length; i++)

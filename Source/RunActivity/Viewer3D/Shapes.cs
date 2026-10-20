@@ -1064,8 +1064,10 @@ namespace Orts.Viewer3D
             if (FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
             {
                 var key = GetStateFromPosition(new Vector3(ContainerHandlingItem.TargetX, ContainerHandlingItem.TargetY, ContainerHandlingItem.TargetZ));
-                var keyGrabber01 = 1.0f - GetStateFromPosition(ContainerHandlingItem.TargetGrabber01 * Math.Sign(AnimationGrabber12Span.X), AnimationGrabber12Start.X, AnimationGrabber12Span.X);
-                var keyGrabber02 = 1.0f - GetStateFromPosition(ContainerHandlingItem.TargetGrabber02 * Math.Sign(AnimationGrabber12Span.Y), AnimationGrabber12Start.Y, AnimationGrabber12Span.Y);
+
+                // The grabber animation state is 0 when fully stretched out, 1 when fully contracted (to the size of a 6 ft container).
+                var keyGrabber01 = 1 - ContainerHandlingItem.TargetGrabber01 / Math.Abs(AnimationGrabber12Span.X);
+                var keyGrabber02 = 1 - ContainerHandlingItem.TargetGrabber02 / Math.Abs(AnimationGrabber12Span.Y);
 
                 AnimatedPartX.SlowDownFactor = Math.Abs(AnimatedPartX.AnimationKeyFraction() - key.X) > SlowDownThreshold / AnimatedPartX.MaxFrame ? 1.0f : 0.25f;
                 AnimatedPartY.SlowDownFactor = Math.Abs(AnimatedPartY.AnimationKeyFraction() - key.Y) > SlowDownThreshold / AnimatedPartY.MaxFrame ? 1.0f : 0.25f;
@@ -1084,7 +1086,7 @@ namespace Orts.Viewer3D
                 if (AnimatedPartX.AnimationKeyFraction() == key.X) ContainerHandlingItem.MoveX = false;
                 if (AnimatedPartY.AnimationKeyFraction() == key.Y) ContainerHandlingItem.MoveY = false;
                 if (AnimatedPartZ.AnimationKeyFraction() == key.Z) ContainerHandlingItem.MoveZ = false;
-                if (AnimatedPartGrabber01.AnimationKeyFraction() == keyGrabber01 && AnimatedPartGrabber02 .AnimationKeyFraction() == keyGrabber02) ContainerHandlingItem.MoveGrabber = false;
+                if (AnimatedPartGrabber01.AnimationKeyFraction() == keyGrabber01 && AnimatedPartGrabber02.AnimationKeyFraction() == keyGrabber02) ContainerHandlingItem.MoveGrabber = false;
             }
 
             ContainerHandlingItem.ActualX = AnimatedPartX.AnimationKeyFraction() * AnimationXYZSpan.X + AnimationXYZStart.X;
@@ -1122,8 +1124,6 @@ namespace Orts.Viewer3D
             OldMoveY = ContainerHandlingItem.MoveY;
             OldMoveZ = ContainerHandlingItem.MoveZ;
         }
-
-        float GetStateFromPosition(float input, float start, float span) => MathHelper.Clamp(Math.Abs((input - start) / span), 0.0f, 1.0f);
 
         Vector3 GetStateFromPosition(Vector3 input)
         {
