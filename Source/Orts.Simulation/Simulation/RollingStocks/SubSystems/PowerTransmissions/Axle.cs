@@ -1076,7 +1076,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (currentSlipMpS < maxSlipThresholdMpS && firstDerivative < 0)
                     maxSlipThresholdMpS = currentSlipMpS;
 
-                nextSlipMpS = Math.Abs(currentSlipMpS - (firstDerivative / secondDerivative) * dx);
+                nextSlipMpS = currentSlipMpS - (firstDerivative / secondDerivative) * dx;
 
                 if (secondDerivative >= 0 || nextSlipMpS < minSlipThresholdMpS || nextSlipMpS > maxSlipThresholdMpS)
                 {
