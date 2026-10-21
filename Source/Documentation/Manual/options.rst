@@ -380,6 +380,36 @@ Viewing vertical FOV
 This value defines the vertical angle of the world that is shown. Higher
 values correspond roughly to a zoom out effect. The default is 45 degrees.
 
+.. _options-vr:
+
+Virtual reality headset (OpenXR)
+--------------------------------
+
+When this option is checked, Open Rails shows the driver's view in a
+head-mounted display through the OpenXR runtime that is active on the
+computer (for example SteamVR, the Meta Quest Link app or WMR). The game
+asks the runtime for a headset in the background while it starts and runs
+on the monitor until the runtime answers; if there is no runtime or no
+headset, it stays on the monitor and the reason is written to the log.
+The window keeps showing the left eye as a mirror.
+
+The 3D cab is used whenever it exists, with the seat at the cab's head
+position. Alt+V recentres the view on the current head position, and the
+2D windows (HUD, popups) are shown on a panel in front of the driver with
+Alt+O. Vertical sync is not used while a headset is in use: the headset
+paces the frames.
+
+*VR hand controllers*: point at the cab's controls and at the 2D panels
+with the controllers' beams and operate them with the trigger, as with
+the mouse. Alt+F switches the controllers off and on in the game.
+
+*VR hand tracking*: some headsets present tracked hands in place of the
+controllers whenever they are put down; with this option they are
+accepted as a pointer (pinch to click). Unchecked, they are ignored.
+
+The default settings are: headset unchecked, hand controllers checked,
+hand tracking unchecked.
+
 
 
 .. _options-simulation:

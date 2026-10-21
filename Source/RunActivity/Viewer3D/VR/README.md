@@ -6,8 +6,8 @@ as a mirror with the usual 2D overlays (HUD, popup windows, labels) on top of it
 
 ## Turning it on
 
-* Set the `VR` option (`-vr` on the RunActivity command line, or `VR=bool:True` in the
-  settings), or set the environment variable `OPENRAILS_VR=1`.
+* Set the `VR` option (Options > Video, `-vr` on the RunActivity command line, or `VR=bool:True`
+  in the settings).
 * The runtime is asked for a headset in the background while the game starts, so the game
   runs flat until the runtime answers. Some runtimes (WiVRn) answer only once a headset is
   connected; with others the answer is immediate. If there is no runtime or no headset, a
@@ -52,18 +52,17 @@ controller's aim pose in the seat frame and its inputs. A beam is drawn from eac
 * A controller that is put down goes idle after three seconds without movement or a press (its beam
   disappears and it drives nothing) until it is picked up again. A Quest switches to hand tracking whenever
   it decides the controllers are at rest, even while they are held still, and WiVRn then presents the
-  hands as the simple controller; they are accepted as a pointer (pinch to click), or ignored with
-  `OPENRAILS_VR_HAND_TRACKING=0`. Turning hand tracking off in the headset's settings avoids the
-  switching altogether. `Alt+F` (`GameVRControllers`)
-  switches the controllers off and on altogether, and `OPENRAILS_VR_CONTROLLERS=0` starts with them off.
+  hands as the simple controller; they are accepted as a pointer (pinch to click) only when the
+  `VRHandTracking` option is on (it is off by default). Turning hand tracking off in the headset's settings avoids the
+  switching altogether. `Alt+F` (`GameVRControllers`) switches the controllers off and on altogether,
+  and the `VRControllers` option (`-VRControllers=no`) starts with them off.
 * Before the world exists (the loading screen) the 2D picture is drawn at window size and shown on a
   panel 2.2 m in front of the driver, fixed in space, instead of being pasted onto each eye.
 * The 2D overlays (HUD pages, popup windows) are not drawn
-  into the eyes; `Alt+O` (`GameVROverlay`) or a controller's B/Y button shows them on a panel 1 m in
+  into the eyes; `Alt+O` (`GameVROverlay`) or a controller's B/Y button shows them on a panel in
   front of and below the driver (`RenderProcess.VROverlayVisible`), drawn over the cab. The panel
-  opens the Brakes and Load window (Alt+K) if nothing else is showing. It sits 0.6 m away, 0.8 m
-  wide, 0.22 m below the eyes, tilted 30 degrees toward the driver;
-  `OPENRAILS_VR_PANEL=distance,width,drop,tilt` changes that without rebuilding.
+  opens the HUD if nothing else is showing. It sits 0.6 m away, 0.8 m wide, 0.22 m below the eyes,
+  tilted 30 degrees toward the driver.
 
 ## What it needs
 

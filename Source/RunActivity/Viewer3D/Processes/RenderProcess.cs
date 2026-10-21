@@ -109,7 +109,7 @@ namespace Orts.Viewer3D.Processes
 
             // Set up the rest of the graphics according to the settings. A headset paces the frames
             // itself (xrWaitFrame), so the monitor's vsync must not throttle it too.
-            VRRequested = Game.Settings.VR || Environment.GetEnvironmentVariable("OPENRAILS_VR") == "1";
+            VRRequested = Game.Settings.VR;
             GraphicsDeviceManager.SynchronizeWithVerticalRetrace = Game.Settings.VerticalSync && !VRRequested;
             GraphicsDeviceManager.PreferredBackBufferFormat = SurfaceFormat.Color;
             GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
@@ -223,7 +223,7 @@ namespace Orts.Viewer3D.Processes
             {
                 VRStatus = "VR: asking the OpenXR runtime for a headset; the game runs flat until it answers";
                 Trace.TraceInformation(VRStatus);
-                VRStarter = VRSession.StartInBackground(GraphicsDevice);
+                VRStarter = VRSession.StartInBackground(GraphicsDevice, Game.Settings);
             }
         }
 

@@ -20,6 +20,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
+using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -87,18 +88,18 @@ namespace Orts.Viewer3D.VR
         public bool HasControllers { get { return ActionsAvailable; } }
 
         /// <summary>
-        /// Whether the controllers are listened to at all (Alt+F in the cab, or OPENRAILS_VR_CONTROLLERS=0).
+        /// Whether the controllers are listened to at all (the VRControllers setting; Alt+F toggles it in the cab).
         /// Independently of this, a controller that has not moved for a few seconds (put down) goes idle:
         /// <see cref="VRHand.Active"/> is false until it is picked up again.
         /// </summary>
-        public bool ControllersEnabled = Environment.GetEnvironmentVariable("OPENRAILS_VR_CONTROLLERS") != "0";
+        public volatile bool ControllersEnabled;
         /// <summary>
         /// Runtimes that track bare hands (WiVRn on a Quest) present them as the Khronos simple controller, and a
         /// Quest switches to them whenever it decides the controllers are at rest, even in the driver's hands.
-        /// So hands are accepted as a pointer (pinch to click) unless OPENRAILS_VR_HAND_TRACKING=0; the idle rule
-        /// still silences a hand that lies still. Turning hand tracking off on the headset avoids the switching.
+        /// They are accepted as a pointer (pinch to click) only when the VRHandTracking setting is on; otherwise a hand
+        /// drives nothing. Turning hand tracking off on the headset avoids the switching.
         /// </summary>
-        public readonly bool HandTrackingAllowed = Environment.GetEnvironmentVariable("OPENRAILS_VR_HAND_TRACKING") != "0";
+        public readonly bool HandTrackingAllowed;
         const string SimpleControllerProfile = "/interaction_profiles/khr/simple_controller";
         readonly string[] HandProfiles = new string[HandCount];
         bool ProfilesLogged;
@@ -156,13 +157,15 @@ namespace Orts.Viewer3D.VR
         /// xrCreateInstance until a headset connects, which may be never. Until the runtime answers
         /// the game runs flat; when it does, the owner adopts the session (or reads why there is none).
         /// </summary>
-        public static VRSessionStarter StartInBackground(GraphicsDevice graphicsDevice)
+        public static VRSessionStarter StartInBackground(GraphicsDevice graphicsDevice, UserSettings settings)
         {
-            return new VRSessionStarter(graphicsDevice);
+            return new VRSessionStarter(graphicsDevice, settings);
         }
 
-        internal VRSession(GraphicsDevice graphicsDevice)
+        internal VRSession(GraphicsDevice graphicsDevice, UserSettings settings)
         {
+            ControllersEnabled = settings.VRControllers;
+            HandTrackingAllowed = settings.VRHandTracking;
             D3DDevice = (SharpDX.Direct3D11.Device)GetMonoGameField(graphicsDevice, "_d3dDevice");
             D3DContext = (SharpDX.Direct3D11.DeviceContext)GetMonoGameField(graphicsDevice, "_d3dContext");
 
@@ -1016,19 +1019,19 @@ namespace Orts.Viewer3D.VR
         volatile bool abandoned;
         readonly object Lock = new object();
 
-        internal VRSessionStarter(GraphicsDevice graphicsDevice)
+        internal VRSessionStarter(GraphicsDevice graphicsDevice, UserSettings settings)
         {
             Started = DateTime.Now;
-            var thread = new System.Threading.Thread(() => Run(graphicsDevice)) { Name = "OpenXR Startup", IsBackground = true };
+            var thread = new System.Threading.Thread(() => Run(graphicsDevice, settings)) { Name = "OpenXR Startup", IsBackground = true };
             thread.Start();
         }
 
-        void Run(GraphicsDevice graphicsDevice)
+        void Run(GraphicsDevice graphicsDevice, UserSettings settings)
         {
             VRSession session = null;
             try
             {
-                session = new VRSession(graphicsDevice);
+                session = new VRSession(graphicsDevice, settings);
             }
             catch (DllNotFoundException error)
             {
