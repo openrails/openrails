@@ -771,6 +771,11 @@ namespace Orts.Viewer3D
             {
                 Trace.WriteLine(error);
             }
+            catch (PlatformNotSupportedException error)
+            {
+                // System.Management needs the .NET Framework's WMI helper, which Wine (Proton) does not have.
+                Trace.WriteLine(error);
+            }
         }
 
         [CallOnThread("Loader")]
