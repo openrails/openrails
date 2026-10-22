@@ -166,6 +166,12 @@ namespace ORTS.Settings
         public bool Wire { get; set; }
         [Default(true)]
         public bool VerticalSync { get; set; }
+        [Default(false)]
+        public bool VR { get; set; } // Drive from an OpenXR headset; the window becomes a mirror.
+        [Default(true)]
+        public bool VRControllers { get; set; } // Point at the menu and cab controls with the hand controllers; Alt+F toggles in game.
+        [Default(false)]
+        public bool VRHandTracking { get; set; } // Accept tracked hands (presented as the Khronos simple controller) as a pointer.
         [Default(2000)]
         public int ViewingDistance { get; set; }
         [Default(true)]
