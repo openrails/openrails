@@ -98,15 +98,8 @@ namespace Orts.Parsers.Msts
                 throw new System.Exception("Unrecognized subHeader \"" + subHeader + "\" in " + filename);
             }
 
-            // And for binary types, select where their tokens will appear in our TokenID enum
-            if (subHeader[5] == 'w')  // and [7] must be 'b'
-            {
-                return new BinaryFileReader(fb, filename, 300);
-            }
-            else
-            {
-                return new BinaryFileReader(fb, filename, 0);
-            }
+            // Binary block IDs already contain their namespace, independent of file type.
+            return new BinaryFileReader(fb, filename);
         }
 
         public abstract SBR ReadSubBlock();
@@ -387,16 +380,14 @@ namespace Orts.Parsers.Msts
         /// <summary>
         /// Assumes that fb is positioned just after the SIMISA@F header
         /// filename is provided for error reporting purposes
-        /// Each block has a token ID.  It's value corresponds to the value of
-        /// the TokenID enum.  For some file types, ie .W files, the token value's 
-        /// will be offset into the TokenID table by the specified tokenOffset.
+        /// Each block has a complete 32-bit token ID matching the TokenID enum:
+        /// the high word is the namespace and the low word is the local ID.
         /// </summary>
         /// <param name="fb"></param>
-        public BinaryFileReader(Stream inputStream, string filename, int tokenOffset)
+        public BinaryFileReader(Stream inputStream, string filename)
         {
             Filename = filename;
             InputStream = new BinaryReader(inputStream);
-            TokenOffset = tokenOffset;
         }
 
         public override void Skip()
@@ -426,8 +417,6 @@ namespace Orts.Parsers.Msts
         public string Filename;  // for error reporting
         public BinaryReader InputStream;
         public uint RemainingBytes;  // number of bytes in this block not yet read from the stream
-        public uint Flags;
-        protected int TokenOffset;     // the binaryTokens are offset by this amount, ie for binary world files 
 
         public override SBR ReadSubBlock()
         {
@@ -435,11 +424,8 @@ namespace Orts.Parsers.Msts
 
             block.Filename = Filename;
             block.InputStream = InputStream;
-            block.TokenOffset = TokenOffset;
 
-            int MSTSToken = InputStream.ReadUInt16();
-            block.ID = (TokenID)(MSTSToken + TokenOffset);
-            block.Flags = InputStream.ReadUInt16();
+            block.ID = (TokenID)InputStream.ReadUInt32();
             block.RemainingBytes = InputStream.ReadUInt32(); // record length
 
             uint blockSize = block.RemainingBytes + 8; //for the header
