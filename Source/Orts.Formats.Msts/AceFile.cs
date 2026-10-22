@@ -25,10 +25,24 @@ using ORTS.IO;
 
 namespace Orts.Formats.Msts
 {
-    public class AceInfo
+    // Note: Used by both .ace and .dds textures
+    public class TextureTag
     {
         public byte AlphaBits;
+        public bool StaleData;
+
+        public TextureTag(bool staleData = false)
+        {
+            AlphaBits = 0; // No transparency
+            StaleData = staleData;
+        }
+        public TextureTag(byte alpha, bool staleData = false)
+        {
+            AlphaBits = alpha;
+            StaleData = staleData;
+        }
     }
+
     public class AceFile
     {
         public static Texture2D Texture2DFromFile(GraphicsDevice graphicsDevice, string fileName)
@@ -116,13 +130,13 @@ namespace Orts.Formats.Msts
                 channels.Add(new SimisAceChannel(size, (SimisAceChannelId)type));
             }
 
-            // Construct some info about this texture for the game to use in optimisations.
-            var aceInfo = new AceInfo();
-            texture.Tag = aceInfo;
+            // Construct some info about this texture for the game to use in optimizations.
             if (channels.Any(c => c.Type == SimisAceChannelId.Alpha))
-                aceInfo.AlphaBits = 8;
+                texture.Tag = new TextureTag(8);
             else if (channels.Any(c => c.Type == SimisAceChannelId.Mask))
-                aceInfo.AlphaBits = 1;
+                texture.Tag = new TextureTag(1);
+            else
+                texture.Tag = new TextureTag();
 
             if ((options & SimisAceFormatOptions.RawData) != 0)
             {
