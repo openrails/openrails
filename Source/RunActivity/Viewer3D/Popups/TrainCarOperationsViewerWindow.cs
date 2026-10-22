@@ -779,7 +779,7 @@ class buttonHandBrake : Image
                 {
                     if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
                     {
-                        new WagonHandbrakeCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus());
+                        new WagonHandbrakeCommand(Viewer.Log, CarPosition, !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus());
                         if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus())
                         {
                             Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Handbrake set"));
@@ -821,12 +821,12 @@ class buttonHandBrake : Image
                     var rearBrakeHose = CarOperations.RearBrakeHoseChanged;
                     if (rearBrakeHose)
                     {
-                        new WagonBrakeHoseRearConnectCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarOperations.CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarOperations.CarPosition] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
+                        new WagonBrakeHoseRearConnectCommand(Viewer.Log, CarOperations.CarPosition, !(Viewer.PlayerTrain.Cars[CarOperations.CarPosition] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
                         CarOperations.RearBrakeHoseChanged = false;
                     }
                     else
                     {
-                        new WagonBrakeHoseRearConnectCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarOperations.CarPosition - 1] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarOperations.CarPosition - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
+                        new WagonBrakeHoseRearConnectCommand(Viewer.Log, CarOperations.CarPosition - 1, !(Viewer.PlayerTrain.Cars[CarOperations.CarPosition - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
                         CarOperations.FrontBrakeHoseChanged = false;
                     }
                     TrainCar.ModifiedSetting = true;

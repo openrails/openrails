@@ -255,7 +255,7 @@ protected override ControlLayout Layout(ControlLayout layout)
 
         void buttonHandbrake_Click(Control arg1, Point arg2)
         {
-            new WagonHandbrakeCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus());
+            new WagonHandbrakeCommand(Viewer.Log, CarPosition, !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus());
             if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus())
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Handbrake set"));
             else
@@ -335,7 +335,7 @@ protected override ControlLayout Layout(ControlLayout layout)
 
         void buttonToggleFrontBrakeHose_Click(Control arg1, Point arg2)
         {
-            new WagonBrakeHoseConnectCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
+            new WagonBrakeHoseConnectCommand(Viewer.Log, CarPosition, !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
             if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected)
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Front brake hose connected"));
             else
@@ -347,7 +347,7 @@ protected override ControlLayout Layout(ControlLayout layout)
 
         void buttonToggleRearBrakeHose_Click(Control arg1, Point arg2)
         {
-            new WagonBrakeHoseConnectCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition + 1] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition + 1] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
+            new WagonBrakeHoseConnectCommand(Viewer.Log, CarPosition + 1, !(Viewer.PlayerTrain.Cars[CarPosition + 1] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
             if ((Viewer.PlayerTrain.Cars[CarPosition + 1] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected)
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Rear brake hose connected"));
             else
@@ -359,7 +359,7 @@ protected override ControlLayout Layout(ControlLayout layout)
 
         void buttonToggleAngleCockA_Click(Control arg1, Point arg2)
         {
-            new ToggleAngleCockACommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockAOpen);
+            new ToggleAngleCockACommand(Viewer.Log, CarPosition, !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockAOpen);
             if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockAOpen)
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Front angle cock opened"));
             else
@@ -369,7 +369,7 @@ protected override ControlLayout Layout(ControlLayout layout)
 
         void buttonToggleAngleCockB_Click(Control arg1, Point arg2)
         {
-            new ToggleAngleCockBCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen);
+            new ToggleAngleCockBCommand(Viewer.Log, CarPosition, !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen);
             if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen)
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Rear angle cock opened"));
             else
@@ -382,7 +382,7 @@ protected override ControlLayout Layout(ControlLayout layout)
             if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem is SingleTransferPipe)
                 return;
 
-            new ToggleBleedOffValveCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.BleedOffValveOpen);
+            new ToggleBleedOffValveCommand(Viewer.Log, CarPosition, !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.BleedOffValveOpen);
             if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.BleedOffValveOpen)
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Bleed off valve opened"));
             else
