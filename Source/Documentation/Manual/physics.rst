@@ -694,9 +694,9 @@ is enabled.
 |     MaxExhaustMagnitude ( 2.8 )          | Lifespan of exhaust particles at MaxRPM (default seconds) |
 |     ExhaustDynamics ( 3 )                | Exhaust particle per second multiplier at increasing RPM  |
 |     ExhaustDynamicsDown ( 0.5 )          | Exhaust particle per second multiplier at decreasing RPM  |
-|     ExhaustTransientColor ( ff 00 00 00 )| Exhaust color at increasing RPM                           |
-|     ExhaustColor ( ff 80 80 80 )         | Exhaust color at steady RPM                               |
-|     ExhaustDecelColor ( ff f5 f5 f5 )    | Exhaust color at decreasing RPM                           |
+|     ExhaustTransientColor ( ff000000 )   | Exhaust color at increasing RPM                           |
+|     ExhaustColor ( 7f808080 )            | Exhaust color at steady RPM                               |
+|     ExhaustDecelColor ( 3ff5f5f5 )       | Exhaust color at decreasing RPM                           |
 |                                          |                                                           |
 |     DieselPowerTab (                     | Engine Gross Power vs. RPM Table                          |
 |         0       0                        |   RPM / Power (default watts)                             |
@@ -2907,9 +2907,9 @@ They will appear whenever the relevant safety valve operates.
 
 OR supports the following special visual effects in a diesel locomotive:
 
-- Exhaust (named ``Exhaustnumber``) -- is a diesel exhaust. Multiple exhausts can
-  be defined, simply by adjusting the numerical value of the number after the key
-  word exhaust.
+- Exhaust (named ``Exhaustnumber``, eg: ``Exhaust2``) -- is a diesel exhaust. Multiple
+  exhausts can be defined, simply by adjusting the numerical value of the number after
+  the key word Exhaust.
 
 OR supports the following special visual effects in a wagon (also the wagon section of
 an ENG file):
