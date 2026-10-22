@@ -472,6 +472,12 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("xover_4axle_trigger", ()=>{ Add(new Xover_Trigger_4(stf)); }),
                 new STFReader.TokenProcessor("xover_6axle_trigger", ()=>{ Add(new Xover_Trigger_6(stf)); }),
                 new STFReader.TokenProcessor("xover_8axle_trigger", ()=>{ Add(new Xover_Trigger_8(stf)); }),
+                new STFReader.TokenProcessor("wind_beaufort_calm", ()=>{ Add(new Wind_Calm(stf)); }),
+                new STFReader.TokenProcessor("wind_beaufort_light", ()=>{ Add(new Wind_Light(stf)); }),
+                new STFReader.TokenProcessor("wind_beaufort_moderate", ()=>{ Add(new Wind_Moderate(stf)); }),
+                new STFReader.TokenProcessor("wind_beaufort_gale", ()=>{ Add(new Wind_Gale(stf)); }),
+                new STFReader.TokenProcessor("wind_beaufort_storm", ()=>{ Add(new Wind_Storm(stf)); }),
+                new STFReader.TokenProcessor("wind_beaufort_gust", ()=>{ Add(new Wind_Gust(stf)); }),
                 new STFReader.TokenProcessor("discrete_trigger", ()=>{ Add(new Discrete_Trigger(stf)); }),
                 new STFReader.TokenProcessor("random_trigger", ()=>{ Add(new Random_Trigger(stf)); }),
                 new STFReader.TokenProcessor("variable_trigger", ()=>{ Add(new Variable_Trigger(stf)); }),
@@ -946,6 +952,84 @@ namespace Orts.Formats.Msts
             }
         }
     }
+
+    public class Wind_Calm : Trigger
+    {
+        public Wind_Calm(STFReader f)
+        {
+
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+                ParsePlayCommand(f, f.ReadString().ToLower());
+
+            /*
+                        f.MustMatch("(");
+                        while (!f.EndOfBlock())
+                        {
+                            string lowtok = f.ReadString().ToLower();
+                            switch (lowtok)
+                            {
+                                case "car_camera_dist": f.MustMatch("("); Gale = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                                default: ParsePlayCommand(f, lowtok); break;
+                            }
+                        }
+            */
+        }
+    }
+
+    public class Wind_Light : Trigger
+    {
+        public Wind_Light(STFReader f)
+        {
+
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+                ParsePlayCommand(f, f.ReadString().ToLower());
+        }
+    }
+
+    public class Wind_Moderate : Trigger
+    {
+        public Wind_Moderate(STFReader f)
+        {
+
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+                ParsePlayCommand(f, f.ReadString().ToLower());
+        }
+    }
+
+    public class Wind_Gale : Trigger
+    {
+        public Wind_Gale(STFReader f)
+        {
+
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+                ParsePlayCommand(f, f.ReadString().ToLower());
+        }
+    }
+
+    public class Wind_Storm : Trigger
+    {
+        public Wind_Storm(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+                ParsePlayCommand(f, f.ReadString().ToLower());
+        }
+    }
+
+    public class Wind_Gust : Trigger
+    {
+        public Wind_Gust(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+                ParsePlayCommand(f, f.ReadString().ToLower());
+        }
+    }
+
 
     public class Random_Trigger : Trigger
     {
