@@ -19,9 +19,11 @@
 namespace Orts.Parsers.Msts
 {
     /// <summary>
-    /// Provides an enum for all the binary tokens used
-    /// in the header record in the Kuju compressed
-    /// binary file format.
+    /// Complete binary block IDs: (namespace &lt;&lt; 16) | local ID.
+    /// Namespace 0 is Kuju Core; 4 is MSTS Train. Proposed extension namespaces
+    /// are 5 for ORTS and 6 for TSRE. In extension namespaces, local IDs 0-2047
+    /// are reserved for internal/non-file use; file tokens start at 2048.
+    /// Preserve assigned IDs when adding tokens; Unicode uses the member names.
     /// </summary>
     public enum TokenID : uint
     {
@@ -284,22 +286,30 @@ namespace Orts.Parsers.Msts
         terrain_sample_asbuffer = 281,
 
         /// //////////////////////////////////////////////////////
-        // To avoid duplicates, the rest of these offset up 300 from their actual values
-        // as stored in the binary files 
+        // MSTS Train namespace (4). Values match the complete IDs in binary files.
         /// //////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////
-        // These ones were made up by reading values in binary world files
+        // Object/form IDs from the MSTS forms table and binary world files.
         /// //////////////////////////////////////////////////////
-        Static = 303,
-        TrackObj = 305,
-        Forest = 308,
-        CollideObject = 311,
-        Signal = 317,
-        Platform = 360,
-        LevelCr = 362,
-        Speedpost = 364,
-        Hazard=365,
+        Static = 0x00040003,
+        TrackObj = 0x00040005,
+        Dyntrack = 0x00040006,
+        Forest = 0x00040008,
+        Telepole = 0x00040009,
+        CollideObject = 0x0004000B,
+        Wagon = 0x0004000D,
+        Engine = 0x0004000E,
+        Signal = 0x00040011,
+        Gantry = 0x00040038,
+        CarSpawner = 0x00040039,
+        Pickup = 0x0004003B,
+        Platform = 0x0004003C,
+        Siding = 0x0004003D,
+        LevelCr = 0x0004003E,
+        Transfer = 0x0004003F,
+        Speedpost = 0x00040040,
+        Hazard = 0x00040041,
 
 
 
@@ -307,7 +317,7 @@ namespace Orts.Parsers.Msts
         // These were taken from the loadstr.hdr file - file encapsulation for ffedit compression
         ///////////////////////////////////////////////////////////
 
-        Tr_Worldfile = 375,   // ie in the binary file this has a token value of 75
+        Tr_Worldfile = 0x0004004B,   // Train namespace, local ID 75
         Tr_Watermark,
         Tr_DataFile,
         Tr_ConfigFile,
@@ -786,7 +796,6 @@ namespace Orts.Parsers.Msts
         TrainBrakesControllerGraduatedSelfLapStart,
         TrainBrakesControllerGraduatedSelfLapLimitedStart,
         TrainBrakesControllerGraduatedSelfLapLimitedHoldingStart,
-        EngineBrakesControllerGraduatedSelfLapLimitedHoldingStart,
         TrainBrakesControllerGraduatedSelfLapLimitedKeepPsiStart,
 
         TrainBrakesControllerNeutralhandleOffStart,
@@ -824,6 +833,9 @@ namespace Orts.Parsers.Msts
         EngineBrakesControllerSelfLapStart,
         EngineBrakesControllerGraduatedSelfLapStart,
         EngineBrakesControllerGraduatedSelfLapLimitedStart,
+        // The supplied loadstr.hdr misplaced this entry among TrainBrakesController
+        // tokens. Its native MSTS ID is 0x0004020E, here in the engine-brake run.
+        EngineBrakesControllerGraduatedSelfLapLimitedHoldingStart,
         EngineBrakesControllerGraduatedSelfLapLimitedKeepPsiStart,
 
         EngineBrakesControllerNeutralHandleOffStart,
@@ -1689,38 +1701,27 @@ namespace Orts.Parsers.Msts
 
         DEMPath,
 
-        // these assigned ID's are arbitrary - I haven't seen them in a compressed MSTS W file yet
-        // TODO determine proper ID from a compressed world file
-        CarSpawner, 
-        Siding, 
-        Dyntrack,
-        Transfer,
-        Gantry,
-        Pickup,  
+        // Proposed ORTS namespace (5), file-token range starting at local ID 2048.
+        // Keep explicit assignments stable; append new IDs without renumbering.
+        ORTSListName = 0x00050800, // Multi-carspawner lists
+        ORTSSoundFileName = 0x00050801, // Individual level crossing sounds
+        ORTSPantographToggle3 = 0x00050802,
+        ORTSPantographToggle4 = 0x00050803,
+        ORTSCraneSound = 0x00050804,
+        ORTSMaxStackedContainers = 0x00050805,
+        ORTSStackLocations = 0x00050806,
+        ORTSStackLocationsLength = 0x00050807,
+        ORTSPickingSurfaceYOffset = 0x00050808,
+        ORTSPickingSurfaceRelativeTopStartPosition = 0x00050809,
+        ORTSGrabberArmsParts = 0x0005080A,
+        StackLocation = 0x0005080B,
+        MaxStackedContainers = 0x0005080C,
+        Length = 0x0005080D,
+        Flipped = 0x0005080E,
 
-        Wagon,
-        Engine,
-
-        // ORTS specific
-        ORTSListName, // ORTS specific for multi-carspawnerlists
-        ORTSSoundFileName, // ORTS specific for individual level crossing sounds
-        ORTSPantographToggle3,
-        ORTSPantographToggle4,
-        // ORTS Specific for container stations
-        ORTSCraneSound, 
-        ORTSMaxStackedContainers,
-        ORTSStackLocations,
-        ORTSStackLocationsLength,
-        ORTSPickingSurfaceYOffset,
-        ORTSPickingSurfaceRelativeTopStartPosition,
-        ORTSGrabberArmsParts,
-        StackLocation,
-        MaxStackedContainers,
-        Length,
-        Flipped,
-
-        // TSRE specific
-        Ruler
+        // Proposed TSRE namespace (6), with the same reserved local range.
+        Ruler = 0x00060800,
+        ShapeTemplate = 0x00060801
     }
 
 }
