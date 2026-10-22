@@ -1389,7 +1389,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             outf.Write(EvaporationLBpS);
             outf.Write(FireMassKG);
             outf.Write(FlueTempK);
-            outf.Write(SandingSteamUsageLBpS);
             outf.Write(SteamGearPosition);
             ControllerFactory.Save(CutoffController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
@@ -1456,7 +1455,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             EvaporationLBpS = inf.ReadSingle();
             FireMassKG = inf.ReadSingle();
             FlueTempK = inf.ReadSingle();
-            SandingSteamUsageLBpS = inf.ReadSingle();
             SteamGearPosition = inf.ReadSingle();
             ControllerFactory.Restore(CutoffController, inf);
             ControllerFactory.Restore(Injector1Controller, inf);
@@ -7766,14 +7764,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Assume steam sanding usage is 1000lbs/hr
             if (Sanding && SandingSystemType == SandingSystemTypes.Steam)
             {
-                BoilerMassLB -= elapsedClockSeconds * SandingSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by generator  
-                BoilerHeatBTU -= elapsedClockSeconds * SandingSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
-                BoilerHeatOutBTUpS += SandingSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
-                TotalSteamUsageLBpS += SandingSteamUsageLBpS;
-            }
-            else
-            {
-                SandingSteamUsageLBpS = 0.0f; // No generator fitted to locomotive
+                BoilerMassLB -= elapsedClockSeconds * CurrentTrackSanderSteamConsumptionLBpS; // Reduce boiler mass to reflect steam usage by generator  
+                BoilerHeatBTU -= elapsedClockSeconds * CurrentTrackSanderSteamConsumptionLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
+                BoilerHeatOutBTUpS += CurrentTrackSanderSteamConsumptionLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
+                TotalSteamUsageLBpS += CurrentTrackSanderSteamConsumptionLBpS;
             }
 
             // Calculate Generator steam Usage if turned on
@@ -9696,7 +9690,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         Simulator.Catalog.GetString("S/Use"),
                         FormatStrings.FormatSmallVolume(pS.TopH(CurrentTrackSanderSandConsumptionM3pS), IsMetric),
                         Simulator.Catalog.GetString("St/Use"),
-                        FormatStrings.FormatMass(pS.TopH(SandingSteamUsageLBpS), IsMetric),
+                        FormatStrings.FormatMass(pS.TopH(CurrentTrackSanderSteamConsumptionLBpS), IsMetric),
                         FormatStrings.h);
 
                 }

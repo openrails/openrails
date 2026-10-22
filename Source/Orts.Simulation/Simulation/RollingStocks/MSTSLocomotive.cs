@@ -218,8 +218,6 @@ namespace Orts.Simulation.RollingStocks
         public float BoilerPressurePSI;     // Steam Gauge pressure - what the engineer sees.
         public float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
 
-        public float SandingSteamUsageLBpS;       // Sanding Steam Usage
-
         // Vacuum Reservoir and Exhauster Settings
 
         // Steam heating Flags
@@ -276,7 +274,10 @@ namespace Orts.Simulation.RollingStocks
         public float MaxTrackSanderSandConsumptionForwardM3pS = -1;
         public float MaxTrackSanderSandConsumptionReverseM3pS = -1;
         public float CurrentTrackSanderAirConsumptionM3pS;
+
+        public float CurrentTrackSanderSteamConsumptionLBpS;
         public float CurrentTrackSanderSandConsumptionM3pS;
+        public float CurrentTrackSanderSandConsumptionFraction;
         public float SandWeightKgpM3 = 1600; // One cubic metre of sand weighs about 1.54-1.78 tonnes. 
 
 
@@ -1494,8 +1495,6 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(previousChangedGearBoxNotch);
             outf.Write(DynamicBrake);
             outf.Write(CurrentTrackSandBoxCapacityM3);
-            outf.Write(CurrentTrackSanderSandConsumptionM3pS);
-            outf.Write(CurrentTrackSanderAirConsumptionM3pS);
             outf.Write(AbsTractionSpeedMpS);
 
             base.Save(outf);
@@ -1553,8 +1552,6 @@ namespace Orts.Simulation.RollingStocks
 
             DynamicBrake = inf.ReadBoolean();
             CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
-            CurrentTrackSanderSandConsumptionM3pS = inf.ReadSingle();
-            CurrentTrackSanderAirConsumptionM3pS = inf.ReadSingle();
 
             AbsTractionSpeedMpS = inf.ReadSingle();
 
@@ -3438,7 +3435,6 @@ namespace Orts.Simulation.RollingStocks
         public virtual void UpdateFrictionCoefficient(float elapsedClockSeconds)
         {
             float BaseuMax = (Curtius_KnifflerA / (MpS.ToKpH(AbsSpeedMpS) + Curtius_KnifflerB) + Curtius_KnifflerC); // Base Curtius - Kniffler equation - u = 0.33, all other values are scaled off this formula
-            float SandingFrictionCoefficientFactor = 1.0f;
 
             //Set the friction coeff due to weather - uses the vlaues set in the precipitation module to determine whether clear, rain or snow.
 
@@ -3493,32 +3489,28 @@ namespace Orts.Simulation.RollingStocks
 
             BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f);
 
-            // Determine whether or not sanding should be occurring
-            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)
-            {
-                if (!Sanding)
-                    SignalEvent(Event.SandingOn);
-            }
-            else
-            {
-                // FUTURE: Facilitate automatic sanding even if sander switch is off
-                if (Sanding)
-                    SignalEvent(Event.SandingOff);
-            }
             // Determine whether or not sand should have an effect on adhesion
-            if (Sanding && CurrentTrackSanderSandConsumptionM3pS > 0.0 && MainResPressurePSI > 80.0)
+            if (Sanding && CurrentTrackSanderSandConsumptionM3pS > 0.0)
             {
+                float sandingFrictionIncreaseFactor = 0.0f;
+
                 switch (Simulator.WeatherType)
                 {
-                    case WeatherType.Clear: SandingFrictionCoefficientFactor = 1.40f; break;
-                    case WeatherType.Rain: SandingFrictionCoefficientFactor = 1.25f; break;
-                    case WeatherType.Snow: SandingFrictionCoefficientFactor = 1.50f; break;
+                    case WeatherType.Clear: sandingFrictionIncreaseFactor = 0.40f; break;
+                    case WeatherType.Rain: sandingFrictionIncreaseFactor = 0.25f; break;
+                    case WeatherType.Snow: sandingFrictionIncreaseFactor = 0.50f; break;
                 }
                 if (SanderSpeedEffectUpToMpS > 0.0f) // Reduce sander effectiveness if max effective speed is defined
                 {
-                    SandingFrictionCoefficientFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS);
+                    // 100% effectiveness at 1/2 max effective speed, 0% effectiveness at/above max effective speed
+                    sandingFrictionIncreaseFactor *= MathHelper.Clamp(2.0f * (1.0f - AbsSpeedMpS / SanderSpeedEffectUpToMpS), 0.0f, 1.0f);
                 }
-                BaseFrictionCoefficientFactor *= Math.Max(SandingFrictionCoefficientFactor, 1.0f); // Prevent sand from harming adhesion above max effective speed
+
+                // Reduce effectiveness of sand if rate of sand flow is too low compared to rated capacity
+                // 0% effectiveness at 25% sand flow, 100% effectiveness at 75% sand flow
+                sandingFrictionIncreaseFactor *= MathHelper.Clamp(2.0f * CurrentTrackSanderSandConsumptionFraction  - 0.5f, 0.0f, 1.0f);
+
+                BaseFrictionCoefficientFactor *= 1.0f + sandingFrictionIncreaseFactor;
             }
 
             // For wagons use base Curtius-Kniffler adhesion factor - u = 0.33
@@ -3585,13 +3577,25 @@ namespace Orts.Simulation.RollingStocks
         public void UpdateTrackSander(float elapsedClockSeconds)
         {
             // updates track sander in terms of sand usage and impact on air compressor
-            // The following assumptions have been made:
-            //
+
+            // Determine whether or not sanding should be occurring
+            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)
+            {
+                if (!Sanding)
+                    SignalEvent(Event.SandingOn);
+            }
+            else
+            {
+                // FUTURE: Facilitate automatic sanding even if sander switch is off
+                if (Sanding)
+                    SignalEvent(Event.SandingOff);
+            }
 
             if (Sanding)  // If sanding is occurring, adjust parameters
             {
                 // Calculate steam, air or gravity consumption for different sander modes
                 float sandingSandConsumptionM3pS;
+                float relativeFlow = 1;
                 if (Direction == Direction.Reverse)
                     sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
                 else
@@ -3607,9 +3611,10 @@ namespace Orts.Simulation.RollingStocks
                         sandingSteamConsumptionLbpS = MaxTrackSanderSteamConsumptionForwardLbpS;
 
                     // Calculate steam consumption
-                    float relativeFlow = BoilerPressurePSI / MaxBoilerPressurePSI;
-                    SandingSteamUsageLBpS = relativeFlow * sandingSteamConsumptionLbpS;
-                    sandingSandConsumptionM3pS = relativeFlow * sandingSandConsumptionM3pS;
+                    relativeFlow = BoilerPressurePSI / MaxBoilerPressurePSI;
+                    CurrentTrackSanderSteamConsumptionLBpS = relativeFlow * sandingSteamConsumptionLbpS;
+
+                    CurrentTrackSanderAirConsumptionM3pS = 0.0f;
                         }
                 else if (SandingSystemType == SandingSystemTypes.Air)
                 {
@@ -3621,22 +3626,25 @@ namespace Orts.Simulation.RollingStocks
                         sandingAirConsumptionM3pS = MaxTrackSanderAirConsumptionForwardM3pS;
 
                     // Calculate air consumption and change in main air reservoir pressure
-                    float relativeFlow = MainResPressurePSI / MaxMainResPressurePSI;
+                    relativeFlow = MainResPressurePSI / MaxMainResPressurePSI;
                     CurrentTrackSanderAirConsumptionM3pS = relativeFlow * sandingAirConsumptionM3pS;
-                    sandingSandConsumptionM3pS = relativeFlow * sandingSandConsumptionM3pS;
 
                     float SanderPressureDiffPSI = OneAtmospherePSI * (CurrentTrackSanderAirConsumptionM3pS * elapsedClockSeconds / MainResVolumeM3);
                     MainResPressurePSI -= SanderPressureDiffPSI;
 
                     if (MainResPressurePSI < 0.0f)
                         MainResPressurePSI = 0.0f;
+
+                    CurrentTrackSanderSteamConsumptionLBpS = 0.0f;
                 }
                 // Note: If "Gravity" sanding system is used, no air or steam is consumed, we skip to this step:
+                sandingSandConsumptionM3pS *= relativeFlow;
 
                 // Subtract sand from the sand box
                 if (CurrentTrackSandBoxCapacityM3 > 0.0f && sandingSandConsumptionM3pS > 0.0f)
                     {
                     CurrentTrackSanderSandConsumptionM3pS = sandingSandConsumptionM3pS * elapsedClockSeconds;
+                    CurrentTrackSanderSandConsumptionFraction = relativeFlow;
                         CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
                     if (CurrentTrackSandBoxCapacityM3 <= 0.0f)
                         {
@@ -3645,13 +3653,17 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
                 else // Can't sand, or no sand is requested, disable sander (air/steam will still be consumed)
+                {
                     CurrentTrackSanderSandConsumptionM3pS = 0.0f;
+                    CurrentTrackSanderSandConsumptionFraction = 0.0f;
+                }
             }
             else // reset to zero if sander is off
             {
                 CurrentTrackSanderSandConsumptionM3pS = 0.0f;
+                CurrentTrackSanderSandConsumptionFraction = 0.0f;
                 CurrentTrackSanderAirConsumptionM3pS = 0.0f;
-                SandingSteamUsageLBpS = 0.0f;
+                CurrentTrackSanderSteamConsumptionLBpS = 0.0f;
             }
         }
 
