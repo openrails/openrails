@@ -873,7 +873,7 @@ namespace Orts.Viewer3D
 
         protected override void OnActivate(bool sameCamera)
         {
-            if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain)
+            if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || !Viewer.SelectedTrain.Cars.Contains(attachedCar))
             {
                 if (Viewer.SelectedTrain.MUDirection != Direction.Reverse)
                     SetCameraCar(GetCameraCars().First());
@@ -1049,10 +1049,8 @@ namespace Orts.Viewer3D
         public int oldCarPosition;
         public bool IsCameraFront;
         public bool IsVisibleTrainCarViewerOrWebpage;
-        public bool IsVisibleTrainCarWebPage;
         public bool IsDownCameraOutsideFront;
         public bool IsDownCameraOutsideRear;
-        public UserCommand? CameraCommand;
         private static UserCommand? GetPressedKey(params UserCommand[] keysToTest) => keysToTest
             .Where((UserCommand key) => UserInput.IsDown(key))
             .FirstOrDefault();
@@ -1131,6 +1129,7 @@ namespace Orts.Viewer3D
         {
             BrowseMode = BrowseForwards = BrowseBackwards = false;
             var trainCars = GetCameraCars();
+
             // temporary fix for stale outside camera position
             if (Viewer.CameraOutsideFrontPosition >= trainCars.Count)
             {
@@ -1142,6 +1141,7 @@ namespace Orts.Viewer3D
                 Debug.WriteLine($"Warning: CameraOutsideRearPosition {Viewer.CameraOutsideRearPosition} is out of range 0..{trainCars.Count}");
                 Viewer.CameraOutsideRearPosition = trainCars.Count - 1;
             }
+
             var TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
             var carPosition = !(TrainCarViewer.CarPosition < trainCars.Count()) ? TrainCarViewer.CarPosition - 1 : TrainCarViewer.CarPosition;
             var isDownCameraOutsideFront = UserInput.IsDown(UserCommand.CameraOutsideFront);
@@ -1195,7 +1195,8 @@ namespace Orts.Viewer3D
                 Viewer.IsCameraPositionUpdated = Viewer.CameraFrontUpdated && Viewer.CameraRearUpdated;
             }
 
-            if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || carPosition != oldCarPosition)
+            if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || !Viewer.SelectedTrain.Cars.Contains(attachedCar) ||
+                carPosition != oldCarPosition)
             {
                 if (Front)
                 {
@@ -2486,7 +2487,7 @@ namespace Orts.Viewer3D
                 cameraLocation.TileX = 0;
                 cameraLocation.TileZ = 0;
             }
-            if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain)
+            if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || !Viewer.SelectedTrain.Cars.Contains(attachedCar))
             {
                 if (Viewer.SelectedTrain.MUDirection != Direction.Reverse)
                     attachedCar = Viewer.SelectedTrain.Cars.First();
