@@ -5340,7 +5340,8 @@ does not need to specify steam or air consumption, but should specify sand consu
 If the sanding system type is set to ``SandingSystemType ( "Steam" )``, steam from the steam
 locomotive's boiler will be consumed to power the sanding system. The consumption values entered here
 correspond to maximum boiler pressure. Actual consumption of steam and sand will vary proportionally
-with boiler pressure.
+with boiler pressure. As boiler pressure drops too low (below 75% of maximum), the reduction in
+sand flow will cause sanding to become less and less effective.
 
 All steam consumption parameters use units of pounds (per second).
 
@@ -5378,8 +5379,8 @@ can be added by using one or both of the following aparmeters.
 If the sanding system type is set to ``SandingSystemType ( "Air" )``, air from the locomotive's
 main reservoir will be consumed to power the sanding system. The consumption values here correspond
 to maximum main reservoir pressure. Actual consumption of air and sand will vary proportionally
-with main reservoir pressure. If main reservoir pressure drops below 80 psi, sand flow will be
-too low to increase adhesion.
+with main reservoir pressure. As main reservoir pressure drops too low (below 75% of maximum),
+the reduction in sand flow will cause sanding to become less and less effective.
 
 All air consumption parameters use units of volume of air consumed per second, default cubic feet.
 
