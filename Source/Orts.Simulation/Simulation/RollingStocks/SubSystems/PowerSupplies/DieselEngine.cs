@@ -254,13 +254,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// A summary of instantaneous auxiliary power output of all the diesel engines
         /// </summary>
-        public float AuxiliaryPowerSupplyLoadPowerW
+        public float MechanicalAuxiliaryPowerSupplyLoadPowerW
         {
             get
             {
                 float temp = 0f;
                 foreach (DieselEngine de in DEList)
-                    temp += de.AuxiliarySupplyLoad.CurrentPowerW;
+                    temp += de.MechanicalAuxiliaryPowerW;
                 return temp;
             }
         }
@@ -302,7 +302,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 float temp = 0f;
                 foreach (DieselEngine de in DEList)
                     if (de.ProvidesElectricalAuxiliaryPower)
-                        temp += de.CurrentMaximumPowerW - de.AuxiliarySupplyLoad.CurrentPowerW;
+                        temp += de.CurrentMaximumPowerW - de.MechanicalAuxiliaryPowerW;
                 return temp;
             }
         }
@@ -731,6 +731,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public float AuxiliaryPowerW;
         /// <summary>
+        /// Instantaneous power output of the engine that is consumed by auxiliary mechanical loads
+        /// </summary>
+        public float MechanicalAuxiliaryPowerW;
+        /// <summary>
         /// Instantaneous power output of the engine that is consumed by ETS
         /// </summary>
         public float ETSPowerW;
@@ -792,7 +796,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
         }
-        public PowerSupplyLoad AuxiliarySupplyLoad;
+        public List<PowerSupplyLoad> MechanicalAuxiliaryLoads = new List<PowerSupplyLoad>();
         /// <summary>
         /// The proportion of total locomotive electrical auxiliary power this engine currently provides
         /// </summary>
@@ -806,7 +810,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         float availableAuxW = Locomotive.DieselEngines.AvailableElectricalAuxiliaryPowerW;
                         if (availableAuxW > 0)
-                            return (CurrentMaximumPowerW - AuxiliarySupplyLoad.CurrentPowerW) / availableAuxW;
+                            return (CurrentMaximumPowerW - MechanicalAuxiliaryPowerW) / availableAuxW;
                         else
                             return 0;
                     }
@@ -1175,8 +1179,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 GearBox = new GearBox(this);
                 GearBox.Initialize();
             }
-            AuxiliarySupplyLoad = new PowerSupplyLoad(PowerSupplyLoadType.DieselMechanical, Id.ToString());
-            Locomotive.DieselPowerSupply.AuxiliaryPowerSupplyLoads.Add(AuxiliarySupplyLoad);
         }
 
         public void InitializeMoving()
@@ -1284,13 +1286,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 CurrentMaximumPowerW = MathHelper.Clamp(DieselPowerTab[RealRPM], 0.0f, MaximumDieselPowerW) * (1 - Locomotive.PowerReduction);
             }
-
-            AuxiliarySupplyLoad.CurrentPowerW = State == DieselEngineState.Running ? AuxPowerTab[RealRPM] * (1 - AuxiliarySupplyLoad.PowerReduction) : 0.0f;
-            AuxiliaryPowerW = AuxiliarySupplyLoad.CurrentPowerW;
+            MechanicalAuxiliaryPowerW = 0;
+            if (State == DieselEngineState.Running)
+            {
+                MechanicalAuxiliaryPowerW += AuxPowerTab[RealRPM];
+                foreach (var load in MechanicalAuxiliaryLoads)
+                {
+                    MechanicalAuxiliaryPowerW += load.CurrentPowerW;
+                }
+            }
+            AuxiliaryPowerW = MechanicalAuxiliaryPowerW;
             ETSPowerW = 0;
             if (Locomotive.LocomotivePowerSupply != null)
             {
-                if (ProvidesElectricalAuxiliaryPower) AuxiliaryPowerW += (Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyPowerW - Locomotive.DieselEngines.AuxiliaryPowerSupplyLoadPowerW) * ElectricalAuxiliaryPowerProportion;
+                if (ProvidesElectricalAuxiliaryPower) AuxiliaryPowerW += Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyPowerW * ElectricalAuxiliaryPowerProportion;
                 if (ProvidesETS) ETSPowerW = Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW * ETSPowerProportion;
             }
 
