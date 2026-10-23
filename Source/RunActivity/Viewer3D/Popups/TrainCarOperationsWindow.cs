@@ -678,24 +678,29 @@ namespace Orts.Viewer3D.Popups
 
                     // Checks if the lead locomotive is at the front of the train.
                     var LeadLocoIndex = PlayerTrain.GetCarPositionByCarID(Owner.Viewer.PlayerLocomotive.CarID);
-                    var firstCarIdIndex = PlayerTrain.GetCarPositionByCarID(PlayerTrain.Cars[0].CarID);
-                    var lastCarIdSelectedIndex = PlayerTrain.GetCarPositionByCarID(LastCarIDSelected);
+                    var lastCarIdSelectedIndex = PlayerTrain.Cars.FindIndex(x => x.CarID == LastCarIDSelected);  // need to know when not found
                     lastCarIdSelectedIndex = lastCarIdSelectedIndex < 0 && CouplerClicked ? 0 : lastCarIdSelectedIndex;
 
-                    IsLocoAtFront = (!IsLocoAtFront && LeadLocoIndex == firstCarIdIndex)
-                        || (IsLocoAtFront && LeadLocoIndex <= firstCarIdIndex)
+                    IsLocoAtFront = (!IsLocoAtFront && LeadLocoIndex == 0)
+                        || (IsLocoAtFront && LeadLocoIndex <= 0)
                         || LeadLocoIndex < lastCarIdSelectedIndex;
 
                     if (lastCarIdSelectedIndex < 0)
                     {// It assigns a valid value to the lastCarIdSelectedIndex variable.
                         var currentCarID = trainCarViewer.CurrentCarID != null ? trainCarViewer.CurrentCarID : PlayerTrain.Cars[LastPlayerTrainCars - 1].CarID;
-                        lastCarIdSelectedIndex = PlayerTrain.GetCarPositionByCarID(currentCarID);
+                        lastCarIdSelectedIndex = PlayerTrain.Cars.FindIndex(x => x.CarID == currentCarID);  // need to know when not found
                     }
 
                     SelectedCarPosition = IsLocoAtFront
                         ? CouplerClicked && lastCarIdSelectedIndex != 0 ? LastPlayerTrainCars - 1
                         : lastCarIdSelectedIndex < 0 ? LastPlayerTrainCars - 1 : lastCarIdSelectedIndex
                         : CouplerClicked ? 0 : lastCarIdSelectedIndex;
+
+                    if (SelectedCarPosition < 0 || SelectedCarPosition >= PlayerTrain.Cars.Count)
+                    {
+                        SelectedCarPosition = 0;
+                        Debug.WriteLine($"Warning: SelectedCarPosition {SelectedCarPosition} is out of range 0..{PlayerTrain.Cars.Count - 1} for train {PlayerTrain.Name}");
+                    }
 
                     CouplerClicked = false; CarPosition = trainCarViewer.CarPosition = SelectedCarPosition;
                     trainCarViewer.CurrentCarID = PlayerTrain.Cars.Count > CarPosition ? PlayerTrain.Cars[CarPosition].CarID : "";
