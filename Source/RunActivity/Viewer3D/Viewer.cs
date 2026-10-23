@@ -763,17 +763,11 @@ namespace Orts.Viewer3D
                     if (((string)videoController["Description"] == adapterDescription) && (videoController["AdapterRAM"] != null))
                         adapterMemory = (uint)videoController["AdapterRAM"];
             }
-            catch (ManagementException error)
+            catch (Exception error)
             {
-                Trace.WriteLine(error);
-            }
-            catch (UnauthorizedAccessException error)
-            {
-                Trace.WriteLine(error);
-            }
-            catch (PlatformNotSupportedException error)
-            {
-                // System.Management needs the .NET Framework's WMI helper, which Wine (Proton) does not have.
+                // The adapter memory is only informational, so any failure to read it is logged and ignored:
+                // ManagementException, UnauthorizedAccessException, or PlatformNotSupportedException when
+                // System.Management cannot reach WMI at all (Wine and Proton have no WMI helper).
                 Trace.WriteLine(error);
             }
         }
