@@ -1371,7 +1371,6 @@ namespace Orts.Simulation.RollingStocks
             CompressorIsMechanical = locoCopy.CompressorIsMechanical;
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
             CompressorIsMUControlled = locoCopy.CompressorIsMUControlled;
-            CompressorChargingRateM3pS = locoCopy.CompressorChargingRateM3pS;
             CompressorMaxPowerW = locoCopy.CompressorMaxPowerW;
             TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
             BrakePipeTimeFactorS = locoCopy.BrakePipeTimeFactorS;

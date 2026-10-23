@@ -25,44 +25,18 @@ using System.IO;
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
 
-    public class ScriptedControlCarPowerSupply : ScriptedLocomotivePowerSupply, ISubSystem<ScriptedControlCarPowerSupply>
+    public class ScriptedControlCarPowerSupply : ScriptedLocomotivePowerSupply
     {
         public MSTSControlTrailerCar ControlTrailer => Locomotive as MSTSControlTrailerCar;
 
         public override PowerSupplyType Type => PowerSupplyType.ControlCar;
 
-        public override PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
-        public override PowerSupplyDirection ElectricTrainSupplyDirection { get; set; } = PowerSupplyDirection.Sink;
-
         private ControlCarPowerSupply Script => AbstractScript as ControlCarPowerSupply;
 
-        private bool IsFirstUpdate = true;
         public ScriptedControlCarPowerSupply(MSTSControlTrailerCar controlcar) :
         base(controlcar)
         {
-
-        }
-
-
-        public void Copy(ScriptedControlCarPowerSupply other)
-        {
-            base.Copy(other);
-        }
-        public override void Save(BinaryWriter outf)
-        {
-            base.Save(outf);
-
-            outf.Write(FrontElectricTrainSupplyCableConnected);
-            outf.Write(ElectricTrainSupplyState.ToString());
-        }
-        public override void Restore(BinaryReader inf)
-        {
-            base.Restore(inf);
-
-            FrontElectricTrainSupplyCableConnected = inf.ReadBoolean();
-            ElectricTrainSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-
-            IsFirstUpdate = false;
+            ElectricTrainSupplyDirection = PowerSupplyDirection.Sink;
         }
 
         public override void Initialize()
@@ -94,39 +68,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        //================================================================================================//
-        /// <summary>
-        /// Initialization when simulation starts with moving train
-        /// <\summary>
-        public override void InitializeMoving()
-        {
-            base.InitializeMoving();
-
-            Script?.InitializeMoving();
-        }
-
         public override void Update(float elapsedClockSeconds)
         {
-            CarId = Train?.Cars.IndexOf(Locomotive) ?? 0;
-
-            if (IsFirstUpdate)
-            {
-                IsFirstUpdate = false;
-
-                // At this point, we can expect Train to be initialized.
-                var previousCar = CarId > 0 ? Train.Cars[CarId - 1] : null;
-
-                // Connect the power supply cable if the previous car is a locomotive or another passenger car
-                if (previousCar != null
-                    && (previousCar is MSTSLocomotive locomotive && locomotive.LocomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable
-                        || previousCar.WagonSpecialType == TrainCar.WagonSpecialTypes.PowerVan
-                        || previousCar.WagonType == TrainCar.WagonTypes.Passenger && previousCar.PowerSupply is ScriptedPassengerCarPowerSupply)
-                    )
-                {
-                    FrontElectricTrainSupplyCableConnected = true;
-                }
-            }
-
             base.Update(elapsedClockSeconds);
 
             Script?.Update(elapsedClockSeconds);

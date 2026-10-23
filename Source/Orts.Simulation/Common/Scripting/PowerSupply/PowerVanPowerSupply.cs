@@ -120,6 +120,7 @@ namespace ORTS.Scripting.Api
             base.HandleEvent(evt, id);
 
             // By default, send the event to every component
+            SignalEventToDieselEngine(evt, id);
             SignalEventToCircuitBreaker(evt, id);
         }
 
