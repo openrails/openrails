@@ -1753,12 +1753,20 @@ namespace Orts.Simulation.RollingStocks
                 MainResVolumeM3 = 0.3f;
             }
 
-            if (!CompressorIsMechanical)
+            CompressorLoad = new PowerSupplyLoad(PowerSupplyLoadType.Compressor)
             {
-                CompressorLoad = new PowerSupplyLoad(PowerSupplyLoadType.Compressor)
+                MaxPowerW = CompressorMaxPowerW
+            };
+            if (CompressorIsMechanical)
+            {
+                if (this is MSTSDieselLocomotive diesel)
                 {
-                    MaxPowerW = CompressorMaxPowerW
-                };
+                    // By default, attach to the first engine
+                    diesel.DieselEngines[0].MechanicalAuxiliaryLoads.Add(CompressorLoad);
+                }
+            }
+            else
+            {
                 LocomotivePowerSupply.AuxiliaryPowerSupplyLoads.Add(CompressorLoad);
             }
 
@@ -3009,7 +3017,8 @@ namespace Orts.Simulation.RollingStocks
         protected virtual void UpdateCompressor(float elapsedClockSeconds)
         {
 
-            var reservoirChargingRate = MainResChargingRatePSIpS;
+            float powerFraction = 1;
+            bool compressorPowered = false;
 
             // For a mechanical compressor (typically fitted to a diesel locomotive) the charging rate will be related to the RpM of the diesel engine, and therefore 
             // derated by an amount equivalent to the diesel RpM.
@@ -3031,7 +3040,8 @@ namespace Orts.Simulation.RollingStocks
                     if (ControlActiveLocomotive is MSTSDieselLocomotive activeloco)
                     {
                         // Set charging rate depending upon compressor rpm
-                        reservoirChargingRate = (activeloco.DieselEngines[0].RealRPM / activeloco.DieselEngines[0].MaxRPM) * MainResChargingRatePSIpS;
+                        powerFraction = activeloco.DieselEngines[0].RealRPM / activeloco.DieselEngines[0].MaxRPM;
+                        compressorPowered = activeloco.DieselEngines[0].State == DieselEngineState.Running;
                     }
                 }
                 else
@@ -3040,9 +3050,16 @@ namespace Orts.Simulation.RollingStocks
                     var mstsDieselLocomotive = this as MSTSDieselLocomotive;
 
                     // Set charging rate depending upon compressor rpm
-                    reservoirChargingRate = (mstsDieselLocomotive.DieselEngines[0].RealRPM / mstsDieselLocomotive.DieselEngines[0].MaxRPM) * MainResChargingRatePSIpS;
+                    powerFraction = mstsDieselLocomotive.DieselEngines[0].RealRPM / mstsDieselLocomotive.DieselEngines[0].MaxRPM;
+                    compressorPowered = mstsDieselLocomotive.DieselEngines[0].State == DieselEngineState.Running;
                 }
             }
+            else
+            {
+                compressorPowered = LocomotivePowerSupply.AuxiliaryPowerSupplyOn;
+            }
+            compressorPowered &= CompressorLoad.PowerReduction >= 1;
+            powerFraction *= 1 - CompressorLoad.PowerReduction;
 
             // Determine compressor synchronization
             bool syncCompressor = false;
@@ -3071,8 +3088,6 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            bool compressorPowered = LocomotivePowerSupply.AuxiliaryPowerSupplyOn && (CompressorLoad == null || CompressorLoad.PowerReduction < 1);
-
             if ((MainResPressurePSI < CompressorRestartPressurePSI || (syncCompressor && MainResPressurePSI < MaxMainResPressurePSI))
                 && compressorPowered && !CompressorIsOn)
                 SignalEvent(Event.CompressorOn);
@@ -3080,13 +3095,16 @@ namespace Orts.Simulation.RollingStocks
                 || !compressorPowered) && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
 
-            if (CompressorLoad != null)
-            {
-                reservoirChargingRate *= 1 - CompressorLoad.PowerReduction;
-                CompressorLoad.CurrentPowerW = CompressorIsOn ? (1 - CompressorLoad.PowerReduction) * CompressorMaxPowerW : 0;
-            }
             if (CompressorIsOn)
+            {
+                float reservoirChargingRate = MainResChargingRatePSIpS * powerFraction;
                 MainResPressurePSI += elapsedClockSeconds * reservoirChargingRate;
+                CompressorLoad.CurrentPowerW = CompressorLoad.MaxPowerW * powerFraction;
+            }
+            else
+            {
+                CompressorLoad.CurrentPowerW = 0;
+            }
         }
 
         /// <summary>

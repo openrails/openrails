@@ -23,10 +23,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float CurrentCapacityJ { get; protected set; }
         public float MaxCapacityJ = 3.6e7f;
         public PowerSupplyLoad BatteryCharger;
+        protected int ChargerDieselEngine = -1;
         protected float LowVoltageSupplyPowerW => Car.PowerSupply.LowVoltagePowerSupplyPowerW;
         protected float PowerFlowW; // Charging (positive) or discharging (negative) power to the battery
         protected float ChargingVoltageV;
-        protected bool IsChargerOn => (Car.PowerSupply?.AuxiliaryPowerSupplyOn ?? false) && BatteryCharger.PowerReduction < 1;
+        protected bool ChargerOn = false;
         public Interpolator ChargeVoltageCurve;
         public PowerSupplyState State;
         public Battery(MSTSWagon wagon)
@@ -62,6 +63,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             case "chargevoltagecurve":
                                 ChargeVoltageCurve = new Interpolator(stf);
                                 break;
+                            case "chargerdieselengine":
+                                ChargerDieselEngine = stf.ReadInt(0);
+                                break;
                             case "mode":
                             case "delay":
                             case "defaulton":
@@ -82,10 +86,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             MaxCapacityJ = other.MaxCapacityJ;
             ChargeVoltageCurve = other.ChargeVoltageCurve;
             BatteryCharger.MaxPowerW = other.BatteryCharger.MaxPowerW;
+            ChargerDieselEngine = other.ChargerDieselEngine;
         }
         public virtual void Initialize()
         {
-            Car.PowerSupply.AuxiliaryPowerSupplyLoads.Add(BatteryCharger);
+            if (ChargerDieselEngine >= 0)
+            {
+                if (Car is MSTSDieselLocomotive diesel)
+                {
+                    diesel.DieselEngines[ChargerDieselEngine].MechanicalAuxiliaryLoads.Add(BatteryCharger);
+                }
+                else
+                {
+                    ChargerDieselEngine = -1;
+                    Trace.TraceWarning("Battery can only be charged from the diesel engine in a diesel locomotive");
+                }
+            }
+            if (ChargerDieselEngine < 0)
+            {
+                Car.PowerSupply.AuxiliaryPowerSupplyLoads.Add(BatteryCharger);
+            }
             CurrentCapacityJ = MaxCapacityJ;
             if (ChargingVoltageV == 0) ChargingVoltageV = NominalVoltageV * 1.15f;
             if (ChargeVoltageCurve == null)
@@ -114,6 +134,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
         public virtual void Update(float elapsedClockSeconds)
         {
+            if (ChargerDieselEngine >= 0)
+            {
+                ChargerOn = (Car as MSTSDieselLocomotive).DieselEngines[ChargerDieselEngine].State == DieselEngineState.Running;
+            }
+            else
+            {
+                ChargerOn = Car.PowerSupply?.AuxiliaryPowerSupplyOn ?? false;
+            }
+            ChargerOn &= BatteryCharger.PowerReduction < 1;
             BatterySwitch.Update(elapsedClockSeconds);
 
             if (State != PowerSupplyState.PowerOn)
@@ -122,7 +151,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 VoltageV = ChargeVoltageCurve[CurrentCapacityJ];
                 BatteryCharger.CurrentPowerW = 0;
             }
-            else if (IsChargerOn)
+            else if (ChargerOn)
             {
                 float chargerPowerW = BatteryCharger.MaxPowerW * (1 - BatteryCharger.PowerReduction);
                 if ((ChargeVoltageCurve[CurrentCapacityJ] < ChargingVoltageV && CurrentCapacityJ < MaxCapacityJ) || LowVoltageSupplyPowerW > chargerPowerW)
