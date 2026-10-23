@@ -259,7 +259,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
 
             if (DieselLocomotive.TractiveForcePowerLimited)
-                AvailableTractionPowerW = Math.Max(DieselEnginesAvailableTractionPowerW, 0);
+                AvailableTractionPowerW = Math.Max(DieselEnginesAvailableTractionPowerW * DieselLocomotive.DieselTransmissionEfficiency, 0);
+            else
+                AvailableTractionPowerW = -1; // No limit on traction power
 
             UpdateSounds();
         }

@@ -115,7 +115,7 @@ namespace SimulatorTester
                 var step = 1f / settings.FPS;
                 for (var tick = 0f; tick < data.TimeElapsed; tick += step)
                 {
-                    simulator.Update(step);
+                    simulator.Update(step, step);
                     simulator.Log.Update(simulator.ReplayCommandList);
                 }
 

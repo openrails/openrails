@@ -144,6 +144,8 @@ namespace Orts.Common
         ReverserToNeutral,
         SanderOff,
         SanderOn,
+        SandingOff,
+        SandingOn,
         SemaphoreArm,
         ServiceRetentionButtonOff,
         ServiceRetentionButtonOn,
@@ -330,8 +332,8 @@ namespace Orts.Common
                         // Event 1 is unused in MSTS.
                         case 2: return Event.DynamicBrakeIncrease;
                         case 3: return Event.DynamicBrakeOff;
-                        case 4: return Event.SanderOn;
-                        case 5: return Event.SanderOff;
+                        case 4: return Event.SandingOn;
+                        case 5: return Event.SandingOff;
                         case 6: return Event.WiperOn;
                         case 7: return Event.WiperOff;
                         case 8: return Event.HornOn;
