@@ -1285,7 +1285,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 CurrentMaximumPowerW = MathHelper.Clamp(DieselPowerTab[RealRPM], 0.0f, MaximumDieselPowerW) * (1 - Locomotive.PowerReduction);
             }
 
-            AuxiliarySupplyLoad.CurrentPowerW = State == DieselEngineState.Running ? AuxPowerTab[RealRPM] * AuxiliarySupplyLoad.PowerReduction : 0.0f;
+            AuxiliarySupplyLoad.CurrentPowerW = State == DieselEngineState.Running ? AuxPowerTab[RealRPM] * (1 - AuxiliarySupplyLoad.PowerReduction) : 0.0f;
             AuxiliaryPowerW = AuxiliarySupplyLoad.CurrentPowerW;
             ETSPowerW = 0;
             if (Locomotive.LocomotivePowerSupply != null)
@@ -1294,7 +1294,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 if (ProvidesETS) ETSPowerW = Locomotive.LocomotivePowerSupply.ElectricTrainSupplyPowerW * ETSPowerProportion;
             }
 
-            AvailableTractionPowerW = State == DieselEngineState.Running ? CurrentMaximumPowerW - AuxiliaryPowerW : 0.0f;
+            AvailableTractionPowerW = State == DieselEngineState.Running ? CurrentMaximumPowerW - AuxiliaryPowerW - ETSPowerW : 0.0f;
 
             if (ProvidesTraction)
                 TractionPowerW = Math.Max(Locomotive.LocomotiveAxles.DrivePowerW / Locomotive.DieselTransmissionEfficiency * TractionPowerProportion, 0.0f);

@@ -265,6 +265,7 @@ namespace ORTS.Scripting.Api
         BatteryCharger,
         Compressor,
         EngineCooling,
+        TransmissionCooling,
         CarHeating,
         CarVentilation,
         AirConditioning,
