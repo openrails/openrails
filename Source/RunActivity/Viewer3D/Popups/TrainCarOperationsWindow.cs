@@ -698,8 +698,8 @@ namespace Orts.Viewer3D.Popups
 
                     if (SelectedCarPosition < 0 || SelectedCarPosition >= PlayerTrain.Cars.Count)
                     {
-                        SelectedCarPosition = 0;
                         Debug.WriteLine($"Warning: SelectedCarPosition {SelectedCarPosition} is out of range 0..{PlayerTrain.Cars.Count - 1} for train {PlayerTrain.Name}");
+                        SelectedCarPosition = 0;
                     }
 
                     CouplerClicked = false; CarPosition = trainCarViewer.CarPosition = SelectedCarPosition;
