@@ -19,7 +19,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
     public interface ITractionCutOffSubsystem : ISubSystem<ITractionCutOffSubsystem>, IParsable
     {
-        ILocomotivePowerSupply PowerSupply { get; }
+        IPowerSupply PowerSupply { get; }
 
         float DelayS { get; }
 
