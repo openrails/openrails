@@ -32,7 +32,7 @@ namespace Orts.Viewer3D
     {
         readonly Viewer Viewer;
         readonly WorldPosition Position;
-        readonly Material Material;
+        public readonly Material Material;
         readonly ForestPrimitive Primitive;
 
         public float MaximumCenterlineOffset = 0.0f;
@@ -459,6 +459,22 @@ namespace Orts.Viewer3D
         public override Texture2D GetShadowTexture()
         {
             return TreeTexture;
+        }
+
+        /// <summary>
+        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this material changed from fresh to stale</returns>
+        public override bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                StaleData = TreeTexture.Tag is TextureTag tag && tag.StaleData;
+
+                return StaleData;
+            }
+            else
+                return false;
         }
 
         public override void Mark()

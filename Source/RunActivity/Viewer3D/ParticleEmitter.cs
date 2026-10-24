@@ -26,6 +26,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using Orts.Simulation.RollingStocks;
+using Orts.Formats.Msts;
 
 namespace Orts.Viewer3D
 {
@@ -44,6 +45,8 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
         readonly float EmissionHoleM2 = 1;
         readonly ParticleEmitterPrimitive Emitter;
+
+        public bool StaleData = false;
 
         ParticleEmitterMaterial Material;
 
@@ -140,6 +143,22 @@ namespace Orts.Viewer3D
             InputCycle++;
             InputCycle %= InputCycleLimit;
 #endif
+        }
+
+        /// <summary>
+        /// Checks all particle materials for stale textures and sets the stale data flag if any materials are stale
+        /// </summary>
+        /// <returns>bool indicating if this particle emitter changed from fresh to stale</returns>
+        public bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                StaleData = Material.StaleData;
+
+                return StaleData;
+            }
+            else
+                return false;
         }
 
         [CallOnThread("Loader")]
@@ -504,6 +523,21 @@ namespace Orts.Viewer3D
         public override bool GetBlending()
         {
             return true;
+        }
+
+        /// <summary>
+        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this material changed from fresh to stale</returns>
+        public override bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                StaleData = Texture.Tag is TextureTag tag && tag.StaleData;
+                return StaleData;
+            }
+            else
+                return false;
         }
 
         public override void Mark()

@@ -15,8 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -34,15 +35,15 @@ namespace Orts.Formats.Msts
 
         public ShapeDescriptorFile(string filename)
         {
-            var shapeDescriptorPath = filename.ToLowerInvariant();
+            var shapeDescriptorPath = Path.GetFullPath(filename).ToLowerInvariant();
 
-            if (Cache.ContainsKey(shapeDescriptorPath))
+            if (Cache.ContainsKey(shapeDescriptorPath) && !Cache[shapeDescriptorPath].StaleData)
             {
                 shape = Cache[shapeDescriptorPath];
             }
             else
             {
-                if (!System.IO.File.Exists(filename)) // If not found, skip
+                if (!File.Exists(filename)) // If not found, skip
                 {
                     shape = null;
                     return;
@@ -56,12 +57,46 @@ namespace Orts.Formats.Msts
                     //TODO This should be changed to STFException.TraceError() with defaults values created
                     if (shape == null) throw new STFException(stf, "Missing shape statement");
                 }
-                Cache.Add(shapeDescriptorPath, shape);
+                Cache[shapeDescriptorPath] = shape;
             }
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for the shape descriptors in the given set of paths
+        /// </summary>
+        /// <returns>bool indicating if any shape descriptor changed from fresh to stale</returns>
+        public static bool MarkStale(HashSet<string> sdPaths)
+        {
+            bool found = false;
+
+            foreach (string sdPath in sdPaths)
+            {
+                if (Cache.ContainsKey(sdPath) && !Cache[sdPath].StaleData)
+                {
+                    Cache[sdPath].StaleData = true;
+                    found = true;
+
+                    Trace.TraceInformation("Shape descriptor file {0} was updated on disk and will be reloaded.", sdPath);
+                }
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Sets the stale data flag for ALL shape descriptors to the given bool
+        /// (default true)
+        /// </summary>
+        public static void SetAllStale(bool stale = true)
+        {
+            foreach (SDShape shape in Cache.Values)
+                shape.StaleData = stale;
         }
 
         public class SDShape
         {
+            public bool StaleData = false;
+
             public SDShape()
             {
                 ESD_Bounding_Box = new ESD_Bounding_Box();
