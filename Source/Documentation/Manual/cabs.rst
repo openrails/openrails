@@ -1325,6 +1325,23 @@ Development Rules
    one on the longitudinal axis.
 
 .. index::
+   single: ORTS3DCabDamping
+
+-  The driver's head position moves slightly in response to the accelerations
+   of the cab (braking and traction, curves, track irregularities). The damping
+   ratio of this motion can be set separately for the lateral, vertical and
+   longitudinal axes by adding ``ORTS3DCabDamping`` within the ``ORTS3DCab``
+   block. Values range from 0 (very lively) to 1 (no overshoot); the default is
+   0.5 for all three axes. The setting applies to all 3D cab viewpoints of the
+   locomotive::
+
+     ORTS3DCab(
+         ORTS3DCabFile ( Cab.s )
+         ORTS3DCabHeadPos ( -0.9 2.4 5.2 )
+         ORTS3DCabDamping ( 0.6 0.4 0.7 )
+     )
+
+.. index::
    single: EXTERNALWIPERS
    single: AMMETER
    single: CLOCK
