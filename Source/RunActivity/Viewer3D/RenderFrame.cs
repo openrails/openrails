@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -778,7 +778,6 @@ namespace Orts.Viewer3D
 
             // Render terrain shadow items now, with their magic.
             if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (normal)", RenderShadowTerrainItems[shadowMapIndex].Count);
-            graphicsDevice.Indices = TerrainPrimitive.SharedPatchIndexBuffer;
             ShadowMapMaterial.Render(graphicsDevice, RenderShadowTerrainItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for blocking rendering of terrain.
