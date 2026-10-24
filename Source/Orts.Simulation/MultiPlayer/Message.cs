@@ -1172,6 +1172,7 @@ namespace Orts.MultiPlayer
                 {
                     if (!SwitchOccupiedByPlayerTrain(t.Value))
                     {
+                        MPManager.Simulator.Signals.RequestSetSwitch(t.Value.TN, state);
                         SetSwitch(t.Value.TN, state);
                         //t.Value.SelectedRoute = state;
                     }
