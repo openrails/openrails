@@ -389,7 +389,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
         // ENG file data
-        public string CabSoundFileName;
+        public List<string> CabSoundFileNames;
         public string CVFFileName;
         public float MaxMainResPressurePSI;
         public float MainResVolumeM3;
@@ -958,7 +958,12 @@ namespace Orts.Simulation.RollingStocks
         {
             switch (lowercasetoken)
             {
-                case "engine(sound": CabSoundFileName = stf.ReadStringBlock(null); break;
+                case "engine(sound":
+                    stf.MustMatch("(");
+                    CabSoundFileNames = new List<string> { stf.ReadString() }; // Reset any existing sound files
+                    while (!stf.EndOfBlock()) // Additional sound files have been defined, add these to the list
+                        CabSoundFileNames.Add(stf.ReadString());
+                    break;
                 case "engine(cabview": CVFFileName = stf.ReadStringBlock(null); break;
                 case "engine(maxpower": MaxPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(maxforce": MaxForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
@@ -1274,7 +1279,7 @@ namespace Orts.Simulation.RollingStocks
             base.Copy(copy);  // each derived level initializes its own variables
 
             MSTSLocomotive locoCopy = (MSTSLocomotive)copy;
-            CabSoundFileName = locoCopy.CabSoundFileName;
+            CabSoundFileNames = locoCopy.CabSoundFileNames;
             CVFFileName = locoCopy.CVFFileName;
             CabViewList = locoCopy.CabViewList;
             CabView3D = locoCopy.CabView3D;
