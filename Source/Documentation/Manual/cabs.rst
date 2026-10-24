@@ -1324,6 +1324,14 @@ Development Rules
    pressing ``Ctrl-Shift-1`` toggles between the base viewpoint and a symmetrical 
    one on the longitudinal axis.
 
+-  In the 3D cab, holding the right mouse button and moving the mouse turns
+   the view, as in the other cameras. Clicking the right mouse button without
+   moving the mouse starts free look: the mouse cursor is hidden and a small
+   dot is shown at the center of the screen, moving the mouse turns the view
+   and the mouse wheel zooms. While free look is active, the left mouse button
+   operates the cab control under the dot. Clicking the right mouse button
+   again stops free look and keeps the current view direction.
+
 .. index::
    single: EXTERNALWIPERS
    single: AMMETER
