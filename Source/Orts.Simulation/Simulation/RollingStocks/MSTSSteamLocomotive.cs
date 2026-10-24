@@ -3409,6 +3409,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // calculate total back pressure from all exhausts
             BackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpH)];
+            SteamLocomotiveNormalisedMEPPSI = MeanEffectivePressurePSI / MaxBoilerPressurePSI;
 
             UpdateTractiveForce(elapsedClockSeconds);
 
@@ -3498,36 +3499,44 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         if (i == 0 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi )))
                         {
                             CylinderSteamExhaust1On = true;
+                            SignalEvent(Event.CylinderExhaust1ValveOpen);
                         }
                         else if (i == 0)
                         {
                             CylinderSteamExhaust1On = false;
+                            SignalEvent(Event.CylinderExhaust1ValveClose);
                         }
 
                         else if (i == 1 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi)))
                         {
                             CylinderSteamExhaust2On = true;
+                            SignalEvent(Event.CylinderExhaust2ValveOpen);
                         }
                         else if (i == 1)
                         {
                             CylinderSteamExhaust2On = false;
+                            SignalEvent(Event.CylinderExhaust2ValveClose);
                         }
                         else if (i == 2 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi)))
                         {
                             CylinderSteamExhaust3On = true;
+                            SignalEvent(Event.CylinderExhaust3ValveOpen);
                         }
                         else if (i == 2)
                         {
                             CylinderSteamExhaust3On = false;
+                            SignalEvent(Event.CylinderExhaust3ValveClose);
                         }
 
                         else if (i == 3 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi)))
                         {
                             CylinderSteamExhaust4On = true;
+                            SignalEvent(Event.CylinderExhaust4ValveOpen);
                         }
                         else if (i == 3)
                         {
                             CylinderSteamExhaust4On = false;
+                            SignalEvent(Event.CylinderExhaust4ValveClose);
                         }
                     }
 
@@ -9559,8 +9568,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     {
                         status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7} \t{8:N0} {9}\t{10} \t{11:N0}{12}\n",
                          Simulator.Catalog.GetString("Force:"),
-                         Simulator.Catalog.GetString("Eng#"),
-                        i + 1,
+                         Simulator.Catalog.GetString("Eng#"), i + 1,
                          Simulator.Catalog.GetString("TheorTE"),
                          FormatStrings.FormatForce(N.FromLbf(SteamEngines[i].MaxTractiveEffortLbf), IsMetric),
                          Simulator.Catalog.GetString("AvTE"),
@@ -9607,7 +9615,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
                 else
                 {
-                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13} \t{14:N0}{15}\n",
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14:N0} {15} \t{16} \t{17:N0}{18}\n",
                     Simulator.Catalog.GetString("ForceTot:"),
                     Simulator.Catalog.GetString("TheorTE"),
                     FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
@@ -9621,6 +9629,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
                     Simulator.Catalog.GetString("SpdLmt"),
                     IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                    Simulator.Catalog.GetString("DrvWhl"),
+                    pS.TopM(SteamEngines[0].DriveWheelRevRpS),
+                    FormatStrings.rpm,
                     Simulator.Catalog.GetString("Hammer"),
                     FormatStrings.FormatForce(N.FromLbf(SteamEngines[0].HammerForceLbs), IsMetric),
                     SteamEngines[0].IsWheelHammerForce ? "!!!" : SteamEngines[0].IsWheelHammerForceWarning ? "???" : ""
