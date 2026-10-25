@@ -1027,6 +1027,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         ///   maximum can be found as a derivation f'(dV) = 0
         /// </summary>
         public float WheelSlipThresholdMpS = 0.01f;
+        /// <summary>
+        /// If the wheel slip threshold is below this value, the Polach integrator
+        /// may diverge, so a different method should be used
+        /// </summary>
+        public const double MinWheelSlipThresholdMpS = 0.01;
 
         /// <summary>
         /// Determines the maximum axle adhesion (MaximumWheelAdhesion) at the current conditions,
@@ -1040,9 +1045,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // Newton's method (technically secant method). We use the previous wheel slip threshold as the initial guess
             double nextSlipMpS = WheelSlipThresholdMpS;
 
-            // Assumption: Slip threshold should remain within the range of 0.01 to 5 m/s
-            // values outside this range are assumed to be in error
-            double minSlipThresholdMpS = 0.01;
+            // Assumption: Slip threshold should remain within the range of 0 to 5 m/s
+            // values outside this range are assumed to be in error, or are caused by very
+            // unusual rolling stock
+            double minSlipThresholdMpS = 0;
             double maxSlipThresholdMpS = 5;
 
             // We have to find the zero of the derivative of adhesion curve
@@ -1062,11 +1068,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 // next estimate for slip = current estimate for slip - (first derivative of adhesion at current estimate) / (second derivative of adhesion at current estimate)
                 currentSlipMpS = nextSlipMpS;
                 // Our "f(x)" is the adhesion at a slip speed of x, ie: f(x) = SlipCharacteristicsPolach(x)
-                currentAdhesion = SlipCharacteristicsPolach(currentSlipMpS);
+                currentAdhesion = SlipCharacteristicsPolach(currentSlipMpS, false);
                 // Estimate for first derivative: f'(x) ~ f(x+dx) - f(x)
-                firstDerivative = SlipCharacteristicsPolach(currentSlipMpS + dx) - currentAdhesion;
+                firstDerivative = SlipCharacteristicsPolach(currentSlipMpS + dx, false) - currentAdhesion;
                 // Estimate for second derivative: f''(x) ~ f'(x+dx) - f'(x-dx) = f'(x) - [f(x) - f(x-dx)]
-                secondDerivative = firstDerivative - (currentAdhesion - SlipCharacteristicsPolach(currentSlipMpS - dx));
+                secondDerivative = firstDerivative - (currentAdhesion - SlipCharacteristicsPolach(currentSlipMpS - dx, false));
 
                 // Update bounds based on current derivative
                 // Positive derivative indicates current slip is too low, set as new minimum
@@ -1099,20 +1105,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         /// <param name="lowerSlipMpS">The lower bound of slip speed for the algorithm</param>
         /// <param name="upperSlipMpS">The upper bound of slip speed for the algorithm</param>
-        public void BisectionComputeWheelSlipThresholdMpS(double lowerSlipMpS = 0.01, double upperSlipMpS = 5)
+        public void BisectionComputeWheelSlipThresholdMpS(double lowerSlipMpS = 0, double upperSlipMpS = 5)
         {
             // Goal: Determine the slip speed that causes the largest adhesion
             // Not feasible to determine analytically, determine iteratively
             // Bisection algorithm.
 
-            double lowerAdhesion = SlipCharacteristicsPolach(lowerSlipMpS);
-            double upperAdhesion = SlipCharacteristicsPolach(upperSlipMpS);
+            double lowerAdhesion = SlipCharacteristicsPolach(lowerSlipMpS, false);
+            double upperAdhesion = SlipCharacteristicsPolach(upperSlipMpS, false);
             // We have to find the zero of the derivative of adhesion curve
             // i.e. the point where slope changes from positive (adhesion region)
             // to negative (slip region)
             double dx = 0.001;
-            double lowerDerivative = SlipCharacteristicsPolach(lowerSlipMpS + dx) - lowerAdhesion;
-            double upperDerivative = SlipCharacteristicsPolach(upperSlipMpS + dx) - upperAdhesion;
+            double lowerDerivative = SlipCharacteristicsPolach(lowerSlipMpS + dx, false) - lowerAdhesion;
+            double upperDerivative = SlipCharacteristicsPolach(upperSlipMpS + dx, false) - upperAdhesion;
 
             if (lowerDerivative * upperDerivative > 0)
             {
@@ -1137,8 +1143,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             while (Math.Abs(upperSlipMpS - lowerSlipMpS) > 0.005)
             {
                 middleSlipMpS = (lowerSlipMpS + upperSlipMpS) / 2;
-                middleAdhesion = SlipCharacteristicsPolach(middleSlipMpS);
-                middleDerivative = SlipCharacteristicsPolach(middleSlipMpS + dx) - middleAdhesion;
+                middleAdhesion = SlipCharacteristicsPolach(middleSlipMpS, false);
+                middleDerivative = SlipCharacteristicsPolach(middleSlipMpS + dx, false) - middleAdhesion;
                 if (lowerDerivative * middleDerivative > 0)
                 {
                     lowerAdhesion = middleAdhesion;
@@ -2117,12 +2123,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (polach_Ks < 0.1) polach_Ks = 0.1f;
             }
 
-            public double SlipCharacteristics(double slipSpeedMpS)
+            public double SlipCharacteristics(double slipSpeedMpS, out double polach_uAdhesion)
             {
-                var polach_uadhesion = zeroSpeedAdhesion * (((1 - polach_A) * Math.Exp(-polach_B * slipSpeedMpS)) + polach_A);
-
-                if (trainSpeedMpS < 0.05f)
-                    return polach_uadhesion;
+                polach_uAdhesion = SlipBaseline(slipSpeedMpS);
 
                 var Sx = slipSpeedMpS / trainSpeedMpS;
                 var Sx2 = Sx * Sx;
@@ -2138,9 +2141,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
 
                 // Calculate adhesion forces
-                var Stiffness = StiffnessPreFactors1 * kalker_Cjj * Sc / polach_uadhesion;
+                var Stiffness = StiffnessPreFactors1 * kalker_Cjj * Sc / polach_uAdhesion;
                 StiffnessPreFactors2 = (2.0f * wheelLoadN) / Math.PI;
-                var Stiffness2 = StiffnessPreFactors2 * polach_uadhesion;
+                var Stiffness2 = StiffnessPreFactors2 * polach_uAdhesion;
                 var KaStiffness = polach_Ka * Stiffness;
                 var adhesionComponent = KaStiffness / (1 + (polach_Ka * Stiffness * Stiffness));
                 var slipComponent = Math.Atan(polach_Ks * Stiffness);
@@ -2149,6 +2152,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var fx = (f * Sx / Sc) / wheelLoadN;
 
                 return fx;
+            }
+
+            public double SlipBaseline(double slipSpeedMpS)
+            {
+                return zeroSpeedAdhesion * (((1 - polach_A) * Math.Exp(-polach_B * slipSpeedMpS)) + polach_A);
             }
         }
 
@@ -2165,11 +2173,33 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// 
         /// </summary>
         /// <param name="slipSpeedMpS">Difference between train speed and wheel speed</param>
+        /// <param name="approximate">(Default true) True if low speed approximation should be applied</param>
         /// <returns>Relative force transmitted to the rail</returns>
-        public double SlipCharacteristicsPolach(double slipSpeedMpS)
+        public double SlipCharacteristicsPolach(double slipSpeedMpS, bool approximate = true)
         {
             slipSpeedMpS = Math.Abs(slipSpeedMpS);
-            double fx = Polach.SlipCharacteristics(slipSpeedMpS);
+
+            double fx;
+            if (TrainSpeedMpS == 0)
+            {
+                // 0 speed causes division by 0, use base adhesion
+                fx = Polach.SlipBaseline(slipSpeedMpS);
+            }
+            else
+            {
+                fx = Polach.SlipCharacteristics(slipSpeedMpS, out double fxBase);
+
+                // Results tend to be unstable when slip threshold is low,
+                // mix calculated adhesion with base adhesion
+                if (approximate)
+                {
+                    // Use baseline adhesion at min slip threshold,
+                    // use calculated adhesion 0.02 m/s above min slip threshold
+                    double blend = Math.Min(Math.Max((WheelSlipThresholdMpS - MinWheelSlipThresholdMpS) / 0.02, 0), 1);
+
+                    fx = fx * blend + fxBase * (1 - blend);
+                }
+            }
             return fx;
         }
 
