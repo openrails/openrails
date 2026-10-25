@@ -3058,7 +3058,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 compressorPowered = LocomotivePowerSupply.AuxiliaryPowerSupplyOn;
             }
-            compressorPowered &= CompressorLoad.PowerReduction >= 1;
+            compressorPowered &= CompressorLoad.PowerReduction < 1;
             powerFraction *= 1 - CompressorLoad.PowerReduction;
 
             // Determine compressor synchronization
