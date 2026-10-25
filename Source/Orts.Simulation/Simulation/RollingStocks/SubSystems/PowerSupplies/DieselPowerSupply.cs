@@ -263,7 +263,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AuxContinuousLoads.CurrentPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() : 0;
 
             if (DieselLocomotive.TractiveForcePowerLimited)
-                AvailableTractionPowerW = Math.Max(DieselEnginesAvailableTractionPowerW * DieselLocomotive.DieselTransmissionEfficiency, 0);
+                AvailableTractionPowerW = Math.Max(DieselEnginesAvailableTractionPowerW, 0);
             else
                 AvailableTractionPowerW = -1; // No limit on traction power
 
