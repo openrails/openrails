@@ -2130,6 +2130,134 @@ namespace Orts.Viewer3D
             if (ActViewPoint >= car.CabViewpoints.Count) ActViewPoint = 0;
             SetCameraCar(car);
         }
+
+        protected override void OnActivate(bool sameCamera)
+        {
+            // Restart head motion, as its history is stale after another camera was in use.
+            HeadMotionCar = null;
+            HeadOffsetM = Vector3.Zero;
+            base.OnActivate(sameCamera);
+        }
+
+        #region Head motion
+        // The driver's head is modelled as a damped spring which lags behind the cab under acceleration.
+        // Damping ratios per axis (lateral, vertical, longitudinal) come from ORTS3DCabDamping in the .eng file.
+        const float HeadMotionFrequencyHz = 1.0f;
+        const float HeadMotionMaxOffsetM = 0.1f;
+        const float HeadMotionMaxElapsedTimeS = 0.25f;
+        const float HeadMotionForceFilterS = 0.15f; // Smooths the impulses from track vibration
+        const float HeadMotionLeanHeightM = 1.0f; // Height of the head above the point the upper body leans from
+        static readonly Vector3 HeadMotionStrength = new Vector3(0.5f, 0.5f, 0.65f); // Lateral, vertical, longitudinal
+        const float GravityMpSS = 9.81f;
+
+        Vector3 HeadOffsetM; // In cab coordinates, +Z forward
+        Vector3 HeadVelocityMpS;
+        Vector3 HeadForceMpSS;
+        TrainCar HeadMotionCar;
+        Vector3 HeadMotionReferenceM;
+        Vector3 HeadPreviousPositionM;
+        Vector3 HeadPreviousVelocityMpS;
+        int HeadPreviousTileX;
+        int HeadPreviousTileZ;
+        int HeadMotionSamples;
+
+        public override void Update(ElapsedTime elapsedTime)
+        {
+            base.Update(elapsedTime);
+            UpdateHeadMotion(elapsedTime.ClockSeconds);
+        }
+
+        void UpdateHeadMotion(float elapsedTimeS)
+        {
+            if (elapsedTimeS <= 0)
+                return;
+            if (attachedCar == null || elapsedTimeS > HeadMotionMaxElapsedTimeS || attachedCar != HeadMotionCar || StartViewPointLocation != HeadMotionReferenceM)
+                ResetHeadMotion();
+            if (attachedCar != null && TryMeasureCabForce(elapsedTimeS, out var forceMpSS))
+                IntegrateHeadMotion(forceMpSS, elapsedTimeS);
+        }
+
+        void ResetHeadMotion()
+        {
+            HeadOffsetM = HeadVelocityMpS = HeadForceMpSS = Vector3.Zero;
+            HeadMotionSamples = 0;
+            HeadMotionCar = attachedCar;
+            HeadMotionReferenceM = StartViewPointLocation;
+        }
+
+        /// <summary>
+        /// Measures the specific force at the default head position, in cab coordinates (+Z forward), once enough samples are available.
+        /// The default head position is used so that moving the camera within the cab does not cause motion.
+        /// </summary>
+        bool TryMeasureCabForce(float elapsedTimeS, out Vector3 forceMpSS)
+        {
+            forceMpSS = Vector3.Zero;
+            var carMatrix = attachedCar.WorldPosition.XNAMatrix;
+            var positionM = Vector3.Transform(new Vector3(HeadMotionReferenceM.X, HeadMotionReferenceM.Y, -HeadMotionReferenceM.Z), carMatrix);
+            var tileX = attachedCar.WorldPosition.TileX;
+            var tileZ = attachedCar.WorldPosition.TileZ;
+            var tileSizeM = (float)WorldPosition.TileSize;
+
+            var measured = false;
+            if (HeadMotionSamples > 0)
+            {
+                // Velocity and acceleration by backward finite differences: https://en.wikipedia.org/wiki/Finite_difference
+                var displacementM = positionM - HeadPreviousPositionM + new Vector3(tileSizeM * (tileX - HeadPreviousTileX), 0, -tileSizeM * (tileZ - HeadPreviousTileZ));
+                var velocityMpS = displacementM / elapsedTimeS;
+                if (HeadMotionSamples > 1)
+                {
+                    // Specific force is the acceleration felt by an occupant, f = a - g: https://en.wikipedia.org/wiki/Specific_force
+                    // With g pointing down, f = a + (0, g, 0) in world axes; the static 1g is then removed in cab axes.
+                    var accelerationMpSS = (velocityMpS - HeadPreviousVelocityMpS) / elapsedTimeS;
+                    var rotation = carMatrix;
+                    rotation.Translation = Vector3.Zero;
+                    forceMpSS = Vector3.TransformNormal(accelerationMpSS + new Vector3(0, GravityMpSS, 0), Matrix.Transpose(rotation));
+                    forceMpSS.Y -= GravityMpSS;
+                    forceMpSS.Z *= -1;
+                    measured = true;
+                }
+                HeadPreviousVelocityMpS = velocityMpS;
+            }
+            HeadPreviousPositionM = positionM;
+            HeadPreviousTileX = tileX;
+            HeadPreviousTileZ = tileZ;
+            HeadMotionSamples = Math.Min(HeadMotionSamples + 1, 2);
+            return measured;
+        }
+
+        /// <summary>
+        /// Moves the head as a damped harmonic oscillator driven by the specific force in the cab.
+        /// </summary>
+        void IntegrateHeadMotion(Vector3 forceMpSS, float elapsedTimeS)
+        {
+            // First-order low-pass filter (exponential smoothing): https://en.wikipedia.org/wiki/Low-pass_filter#Discrete-time_realization
+            HeadForceMpSS += (forceMpSS * HeadMotionStrength - HeadForceMpSS) * Math.Min(1, elapsedTimeS / HeadMotionForceFilterS);
+
+            // Damped harmonic oscillator, x'' = -w^2 x - 2 z w x' - f: https://en.wikipedia.org/wiki/Harmonic_oscillator#Damped_harmonic_oscillator
+            // where w is the natural angular frequency and z the damping ratio; integrated with semi-implicit Euler.
+            var angularFrequencyRadpS = MathHelper.TwoPi * HeadMotionFrequencyHz;
+            var dampingRatio = ((MSTSWagon)attachedCar).Cab3DDamping;
+            var accelerationMpSS = -angularFrequencyRadpS * angularFrequencyRadpS * HeadOffsetM - 2 * angularFrequencyRadpS * dampingRatio * HeadVelocityMpS - HeadForceMpSS;
+            HeadVelocityMpS += accelerationMpSS * elapsedTimeS;
+            HeadOffsetM = Vector3.Clamp(HeadOffsetM + HeadVelocityMpS * elapsedTimeS, new Vector3(-HeadMotionMaxOffsetM), new Vector3(HeadMotionMaxOffsetM));
+        }
+
+        protected override Matrix GetCameraView()
+        {
+            var view = base.GetCameraView();
+            if (attachedCar == null || HeadOffsetM == Vector3.Zero)
+                return view;
+            var carRotation = attachedCar.WorldPosition.XNAMatrix;
+            carRotation.Translation = Vector3.Zero;
+            var offsetM = Vector3.TransformNormal(new Vector3(HeadOffsetM.X, HeadOffsetM.Y, -HeadOffsetM.Z), carRotation);
+            // The head pitches and rolls with the upper body as it leans about a point below the eye.
+            // Small-angle approximation, angle = arc length / radius: https://en.wikipedia.org/wiki/Small-angle_approximation
+            var lean = Matrix.CreateRotationX(-HeadOffsetM.Z / HeadMotionLeanHeightM) * Matrix.CreateRotationZ(-HeadOffsetM.X / HeadMotionLeanHeightM);
+            var leanWorld = Matrix.Transpose(carRotation) * lean * carRotation;
+            var eyeM = XnaLocation(cameraLocation);
+            return Matrix.CreateTranslation(-offsetM - eyeM) * Matrix.Transpose(leanWorld) * Matrix.CreateTranslation(eyeM) * view;
+        }
+        #endregion
     }
 
     public class HeadOutCamera : NonTrackingCamera

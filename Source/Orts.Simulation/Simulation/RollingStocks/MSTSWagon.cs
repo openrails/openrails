@@ -131,6 +131,7 @@ namespace Orts.Simulation.RollingStocks
         public float FreightAnimMinLevelM;
         public float FreightAnimFlag = 1;   // if absent or >= 0 causes the freightanim to drop in tenders
         public string Cab3DShapeFileName; // 3DCab view shape file name
+        public Vector3 Cab3DDamping = new Vector3(0.5f, 0.5f, 0.5f); // 3DCab head motion damping ratio (lateral, vertical, longitudinal)
         public string InteriorShapeFileName; // passenger view shape file name
         public List<string> MainSoundFileNames;
         public List<string> InteriorSoundFileNames;
@@ -1818,6 +1819,7 @@ namespace Orts.Simulation.RollingStocks
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileNames = copy.InteriorSoundFileNames;
             Cab3DShapeFileName = copy.Cab3DShapeFileName;
+            Cab3DDamping = copy.Cab3DDamping;
             Cab3DSoundFileNames = copy.Cab3DSoundFileNames;
             Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
@@ -1941,6 +1943,7 @@ namespace Orts.Simulation.RollingStocks
                 }),
                 new STFReader.TokenProcessor("orts3dcabfile", ()=>{ Cab3DShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
+                new STFReader.TokenProcessor("orts3dcabdamping", ()=>{ Cab3DDamping = stf.ReadVector3Block(STFReader.UNITS.None, Cab3DDamping); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
             });
