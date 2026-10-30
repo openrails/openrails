@@ -891,7 +891,6 @@ namespace Orts.Simulation.Timetables
                     if (car.IsDriveable) // First loco is the one the player drives
                     {
                         simulator.PlayerLocomotive = playerTrain.LeadLocomotive = car;
-                        playerTrain.leadLocoAntiSlip = ((MSTSLocomotive)car).AntiSlip;
                         break;
                     }
                 }
