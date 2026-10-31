@@ -78,6 +78,8 @@ namespace Orts.Viewer3D
             lunarDirection.X = MathHelper.Lerp(lunarPosArray[Step1].X, lunarPosArray[Step2].X, diff);
             lunarDirection.Y = MathHelper.Lerp(lunarPosArray[Step1].Y, lunarPosArray[Step2].Y, diff);
             lunarDirection.Z = MathHelper.Lerp(lunarPosArray[Step1].Z, lunarPosArray[Step2].Z, diff);
+            solarDirection = Vector3.Normalize(solarDirection);
+            lunarDirection = Vector3.Normalize(lunarDirection);
         }
 
         /// <summary>
