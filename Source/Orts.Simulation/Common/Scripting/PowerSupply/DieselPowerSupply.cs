@@ -83,7 +83,7 @@ namespace ORTS.Scripting.Api
             return state;
         }
         protected float DieselEnginesOutputPowerW => DieselEngines.MaxOutputPowerW;
-        protected float DieselEnginesAvailableTractionPowerW => DieselEngines.AvailableTractionPowerW;
+        protected float DieselEnginesAvailableTractionPowerW => DieselEngines.AvailableTractionPowerW * DieselLocomotive.DieselTransmissionEfficiency;
 
         public float DieselEngineMinRpmForElectricTrainSupply => DpsHost.DieselEngineMinRpmForElectricTrainSupply;
 
@@ -162,6 +162,7 @@ namespace ORTS.Scripting.Api
             base.HandleEvent(evt, id);
 
             // By default, send the event to every component
+            SignalEventToDieselEngine(evt, id);
             SignalEventToTractionCutOffRelay(evt, id);
         }
 

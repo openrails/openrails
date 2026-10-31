@@ -22,49 +22,16 @@ using System.Linq;
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
-    public class ScriptedPassengerCarPowerSupply : IPassengerCarPowerSupply, ISubSystem<ScriptedPassengerCarPowerSupply>
+    public class ScriptedPassengerCarPowerSupply : ScriptedPowerSupply
     {
-        public TrainCar Car { get; }
-        public MSTSWagon Wagon => Car as MSTSWagon;
-        protected Simulator Simulator => Wagon.Simulator;
-        protected Train Train => Wagon.Train;
-        public Pantographs Pantographs => Wagon.Pantographs;
-        protected int CarId = 0;
-
-        public Battery Battery { get; protected set; }
-        public BatterySwitch BatterySwitch => Battery.BatterySwitch;
-
         protected bool Activated = false;
         protected string ScriptName = "Default";
-        protected PassengerCarPowerSupply Script;
-
-        // Variables
-        public List<MSTSLocomotive> ElectricTrainSupplyConnectedLocomotives = new List<MSTSLocomotive>();
-        public PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
-        public bool ElectricTrainSupplyOn => ElectricTrainSupplyState == PowerSupplyState.PowerOn;
-        public bool FrontElectricTrainSupplyCableConnected { get; set; }
-        public float ElectricTrainSupplyPowerW { get; set; } = 0f;
-
-        public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
-        public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
-
-        public PowerSupplyState BatteryState
-        {
-            get
-            {
-                return Battery.State;
-            }
-            set
-            {
-                Battery.State = value;
-            }
-        }
-        public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
-        public float BatteryVoltageV => BatteryOn ? Battery.VoltageV : 0;
+        protected PassengerCarPowerSupply Script => AbstractScript as PassengerCarPowerSupply;
 
         public PowerSupplyState VentilationState { get; set; }
         public PowerSupplyState HeatingState { get; set; }
@@ -78,16 +45,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float AirConditioningPowerW { get; protected set; } = 0f;
         public float AirConditioningYield { get; protected set; } = 0.9f;
 
-        private bool IsFirstUpdate = true;
-
-        public ScriptedPassengerCarPowerSupply(MSTSWagon wagon)
+        public ScriptedPassengerCarPowerSupply(MSTSWagon wagon) : base(wagon)
         {
-            Car = wagon;
-
-            Battery = new Battery(Wagon);
         }
 
-        public virtual void Parse(string lowercasetoken, STFReader stf)
+        public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
@@ -121,39 +83,33 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        public void Copy(IPowerSupply other)
+        public override void Copy(IPowerSupply other)
         {
+            base.Copy(other);
             if (other is ScriptedPassengerCarPowerSupply scriptedOther)
             {
-                Copy(scriptedOther);
+                ScriptName = scriptedOther.ScriptName;
+
+                PowerOnDelayS = scriptedOther.PowerOnDelayS;
+                ContinuousPowerW = scriptedOther.ContinuousPowerW;
+                HeatingPowerW = scriptedOther.HeatingPowerW;
+                AirConditioningPowerW = scriptedOther.AirConditioningPowerW;
+                AirConditioningYield = scriptedOther.AirConditioningYield;
             }
         }
 
-        public void Copy(ScriptedPassengerCarPowerSupply other)
-        {
-            Battery.Copy(other.Battery);
-
-            ScriptName = other.ScriptName;
-
-            PowerOnDelayS = other.PowerOnDelayS;
-            ContinuousPowerW = other.ContinuousPowerW;
-            HeatingPowerW = other.HeatingPowerW;
-            AirConditioningPowerW = other.AirConditioningPowerW;
-            AirConditioningYield = other.AirConditioningYield;
-        }
-
-        public virtual void Initialize()
+        public override void Initialize()
         {
             if (!Activated)
             {
                 if (ScriptName != null && ScriptName != "Default")
                 {
                     var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Wagon.WagFilePath), "Script") };
-                    Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as PassengerCarPowerSupply;
+                    AbstractScript = Simulator.ScriptManager.Load(pathArray, ScriptName) as PassengerCarPowerSupply;
                 }
                 if (Script == null)
                 {
-                    Script = new DefaultPassengerCarPowerSupply();
+                    AbstractScript = new DefaultPassengerCarPowerSupply();
                 }
 
                 AssignScriptFunctions();
@@ -162,32 +118,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Script.Initialize();
                 Activated = true;
             }
-
-            Battery.Initialize();
+            base.Initialize();
         }
 
-        /// <summary>
-        /// Initialization when simulation starts with moving train
-        /// <\summary>
-        public virtual void InitializeMoving()
+        public override void Update(float elapsedClockSeconds)
         {
-            Battery.InitializeMoving();
+            base.Update(elapsedClockSeconds);
 
-            ElectricTrainSupplyState = PowerSupplyState.PowerOn;
-            BatteryState = PowerSupplyState.PowerOn;
-
-            Script?.InitializeMoving();
+            Script?.Update(elapsedClockSeconds);
         }
 
-        public virtual void Save(BinaryWriter outf)
+        public override void Save(BinaryWriter outf)
         {
-            Battery.Save(outf);
+            base.Save(outf);
 
-            outf.Write(FrontElectricTrainSupplyCableConnected);
-
-            outf.Write(ElectricTrainSupplyState.ToString());
-            outf.Write(LowVoltagePowerSupplyState.ToString());
-            outf.Write(BatteryState.ToString());
             outf.Write(VentilationState.ToString());
             outf.Write(HeatingState.ToString());
             outf.Write(AirConditioningState.ToString());
@@ -195,154 +139,37 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             outf.Write(HeatFlowRateW);
         }
 
-        public virtual void Restore(BinaryReader inf)
+        public override void Restore(BinaryReader inf)
         {
-            Battery.Restore(inf);
+            base.Restore(inf);
 
-            FrontElectricTrainSupplyCableConnected = inf.ReadBoolean();
-
-            ElectricTrainSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-            LowVoltagePowerSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-            BatteryState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
             VentilationState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
             HeatingState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
             AirConditioningState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
 
             HeatFlowRateW = inf.ReadSingle();
-
-            IsFirstUpdate = false;
-        }
-
-        public virtual void Update(float elapsedClockSeconds)
-        {
-            CarId = Train?.Cars.IndexOf(Wagon) ?? 0;
-
-            if (IsFirstUpdate)
-            {
-                IsFirstUpdate = false;
-
-                // At this point, we can expect Train to be initialized.
-                var previousCar = CarId > 0 ? Train.Cars[CarId - 1] : null;
-
-                // Connect the power supply cable if the previous car is a locomotive or another passenger car
-                if (previousCar != null
-                    && (previousCar is MSTSLocomotive locomotive && locomotive.LocomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable
-                        || previousCar.WagonSpecialType == TrainCar.WagonSpecialTypes.PowerVan
-                        || previousCar.WagonType == TrainCar.WagonTypes.Passenger && previousCar.PowerSupply is ScriptedPassengerCarPowerSupply)
-                    )
-                {
-                    FrontElectricTrainSupplyCableConnected = true;
-                }
-            }
-
-            ElectricTrainSupplyConnectedLocomotives.Clear();
-            foreach (TrainCar car in Train.Cars)
-            {
-                if (car is MSTSLocomotive locomotive)
-                {
-                    int locomotiveId = Train.Cars.IndexOf(locomotive);
-                    bool locomotiveInFront = locomotiveId < CarId;
-
-                    bool connectedToLocomotive = true;
-                    if (locomotiveInFront)
-                    {
-                        for (int i = locomotiveId; i < CarId; i++)
-                        {
-                            if (Train.Cars[i + 1].PowerSupply == null)
-                            {
-                                connectedToLocomotive = false;
-                                break;
-                            }
-                            if (!Train.Cars[i + 1].PowerSupply.FrontElectricTrainSupplyCableConnected)
-                            {
-                                connectedToLocomotive = false;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (int i = locomotiveId; i > CarId; i--)
-                        {
-                            if (Train.Cars[i].PowerSupply == null)
-                            {
-                                connectedToLocomotive = false;
-                                break;
-                            }
-                            if (!Train.Cars[i].PowerSupply.FrontElectricTrainSupplyCableConnected)
-                            {
-                                connectedToLocomotive = false;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (connectedToLocomotive && locomotive.LocomotivePowerSupply.Type != PowerSupplyType.ControlCar) ElectricTrainSupplyConnectedLocomotives.Add(locomotive);
-                }
-            }
-
-            ElectricTrainSupplyState = PowerSupplyState.PowerOff;
-            foreach (var locomotive in ElectricTrainSupplyConnectedLocomotives)
-            {
-                if (locomotive.LocomotivePowerSupply.ElectricTrainSupplyState > ElectricTrainSupplyState)
-                {
-                    ElectricTrainSupplyState = locomotive.LocomotivePowerSupply.ElectricTrainSupplyState;
-                }
-            }
-
-            Battery.Update(elapsedClockSeconds);
-            Script?.Update(elapsedClockSeconds);
-        }
-
-        public void HandleEvent(PowerSupplyEvent evt)
-        {
-            Script?.HandleEvent(evt);
-        }
-
-        public void HandleEvent(PowerSupplyEvent evt, int id)
-        {
-            Script?.HandleEvent(evt, id);
-        }
-
-        public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
-        {
-            Script?.HandleEventFromLeadLocomotive(evt);
-        }
-
-        public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt, int id)
-        {
-            Script?.HandleEventFromLeadLocomotive(evt, id);
-        }
-
-        protected virtual void AssignScriptFunctions()
-        {
-            // AbstractScriptClass
-            Script.ClockTime = () => (float)Simulator.ClockTime;
-            Script.GameTime = () => (float)Simulator.GameTime;
-            Script.PreUpdate = () => Simulator.PreUpdate;
-            Script.DistanceM = () => Wagon.DistanceM;
-            Script.SpeedMpS = () => Math.Abs(Wagon.SpeedMpS);
-            Script.Confirm = Simulator.Confirmer.Confirm;
-            Script.Message = Simulator.Confirmer.Message;
-            Script.SignalEvent = Wagon.SignalEvent;
-            Script.SignalEventToTrain = (evt) => Train?.SignalEvent(evt);
         }
     }
 
     public class DefaultPassengerCarPowerSupply : PassengerCarPowerSupply
     {
         private Timer PowerOnTimer;
-        PowerSupplyState PassengerPowerSupplyState;
+        PowerSupplyLoad ContinuousLoads = new PowerSupplyLoad(PowerSupplyLoadType.Other);
+        PowerSupplyLoad AirConditioning = new PowerSupplyLoad(PowerSupplyLoadType.AirConditioning);
+        PowerSupplyLoad Heating = new PowerSupplyLoad(PowerSupplyLoadType.CarHeating);
 
         public override void Initialize()
         {
             PowerOnTimer = new Timer(this);
             PowerOnTimer.Setup(PowerOnDelayS());
 
-            PassengerPowerSupplyState = PowerSupplyState.PowerOff;
             SetCurrentVentilationState(PowerSupplyState.PowerOff);
             SetCurrentHeatingState(PowerSupplyState.PowerOff);
             SetCurrentAirConditioningState(PowerSupplyState.PowerOff);
+
+            AuxiliaryPowerSupplyLoads.Add(ContinuousLoads);
+            AuxiliaryPowerSupplyLoads.Add(AirConditioning);
+            AuxiliaryPowerSupplyLoads.Add(Heating);
         }
 
         public override void InitializeMoving()
@@ -359,9 +186,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case PowerSupplyState.PowerOff:
                     if (PowerOnTimer.Started)
                         PowerOnTimer.Stop();
-                    if (PassengerPowerSupplyState != PowerSupplyState.PowerOff)
+                    if (CurrentAuxiliaryPowerSupplyState() != PowerSupplyState.PowerOff)
                     {
-                        PassengerPowerSupplyState = PowerSupplyState.PowerOff;
+                        SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
                         SignalEvent(Event.PowerConverterOff);
                     }
                     break;
@@ -369,25 +196,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case PowerSupplyState.PowerOn:
                     if (!PowerOnTimer.Started)
                         PowerOnTimer.Start();
-                    switch (PassengerPowerSupplyState)
+                    switch (CurrentAuxiliaryPowerSupplyState())
                     {
                         case PowerSupplyState.PowerOff:
-                            PassengerPowerSupplyState = PowerSupplyState.PowerOnOngoing;
+                            SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOnOngoing);
+                            SignalEvent(Event.PowerConverterOn);
                             break;
                         case PowerSupplyState.PowerOnOngoing:
                             if (PowerOnTimer.Triggered)
                             {
-                                PassengerPowerSupplyState = PowerSupplyState.PowerOn;
-                                SignalEvent(Event.PowerConverterOn);
+                                SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
                             }
                             break;
                     }
                     break;
             }
 
-            switch (PassengerPowerSupplyState)
+            switch (CurrentAuxiliaryPowerSupplyState())
             {
-                case PowerSupplyState.PowerOff:
+                default:
                     if (CurrentVentilationState() == PowerSupplyState.PowerOn)
                     {
                         SetCurrentVentilationState(PowerSupplyState.PowerOff);
@@ -405,6 +232,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         SetCurrentAirConditioningState(PowerSupplyState.PowerOff);
                         SignalEvent(Event.AirConditioningOff);
                     }
+
+                    AirConditioning.CurrentPowerW = 0;
+                    Heating.CurrentPowerW = 0;
+                    ContinuousLoads.CurrentPowerW = 0;
 
                     SetCurrentElectricTrainSupplyPowerW(0f);
                     SetCurrentHeatFlowRateW(0f);
@@ -447,7 +278,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     float airConditioningElectricPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? AirConditioningPowerW() : 0f;
                     float airConditioningThermalPowerW = CurrentAirConditioningState() == PowerSupplyState.PowerOn ? - AirConditioningPowerW() * AirConditioningYield() : 0f;
 
-                    SetCurrentElectricTrainSupplyPowerW(ContinuousPowerW() + heatingPowerW + airConditioningElectricPowerW);
+                    AirConditioning.CurrentPowerW = airConditioningElectricPowerW;
+                    Heating.CurrentPowerW = heatingPowerW;
+                    ContinuousLoads.CurrentPowerW = ContinuousPowerW();
+
+                    SetCurrentElectricTrainSupplyPowerW(AuxiliaryPowerSupplyPowerW);
                     SetCurrentHeatFlowRateW(heatingPowerW + airConditioningThermalPowerW);
                     break;
             }
