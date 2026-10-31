@@ -1056,8 +1056,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public virtual void Parse(STFReader stf)
         {
             stf.MustMatch("(");
-            bool end = false;
-            while (!end)
+            while (!stf.EndOfBlock())
             {
                 string lowercasetoken = stf.ReadItem().ToLower();
                 switch (lowercasetoken)
@@ -1105,8 +1104,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "temptimeconstant": TempTimeConstantS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0); break;
                     case "opttemperature": OptimalTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, 95f); break;
                     case "idletemperature": IdleTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, 75f); break;
+                    case "(": stf.SkipRestOfBlock(); break; // Encountered an unrecognized parameter, skip it
                     default:
-                        end = true;
                         break;
                 }
             }
