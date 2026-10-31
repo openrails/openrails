@@ -365,7 +365,7 @@ namespace Orts.Formats.Msts
         }
 
         /// <summary>
-        /// Attemps to extract an integer index contained in the middle of a given string by
+        /// Attempts to extract an integer index contained in the middle of a given string by
         /// removing specified text from the beginning and end of the string to isolate the
         /// index in the middle. Returns 0 if the value in the middle could not be interpreted
         /// as a number.
@@ -379,7 +379,12 @@ namespace Orts.Formats.Msts
         {
             // Replace the specified beginning and end strings inside the main string with empty space
             // Resulting string should contain only the desired index, nothing else
-            string indexStr = main.ToLower().Replace(beginning.ToLower(), "").Replace(end.ToLower(), "");
+            string indexStr = main.ToLower();
+
+            if (!string.IsNullOrEmpty(beginning))
+                indexStr = indexStr.Replace(beginning.ToLower(), "");
+            if (!string.IsNullOrEmpty(end))
+                indexStr = indexStr.Replace(end.ToLower(), "");
 
             // If index can't be determined, assume the user wanted the first thing
             if (!int.TryParse(indexStr, out int index))
