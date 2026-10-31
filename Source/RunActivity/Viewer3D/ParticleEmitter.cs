@@ -392,17 +392,17 @@ namespace Orts.Viewer3D
         int DrawCounter;
 
         ParticleEmitterViewer ParticleViewer;
-        GraphicsDevice graphicsDevice;
+        GraphicsDevice GraphicsDevice;
 
         public ParticleEmitterPrimitive(ParticleEmitterViewer particleViewer, ParticleEmitterData data, MSTSWagonViewer car, WorldPosition worldPosition)
         {
             ParticleViewer = particleViewer;
             EmitterData = data;
-            graphicsDevice = ParticleViewer.Viewer.GraphicsDevice;
+            GraphicsDevice = ParticleViewer.Viewer.GraphicsDevice;
             Vertices = new ParticleVertex[EmitterData.MaxParticles * VerticesPerParticle];
             VertexDeclaration = new VertexDeclaration(ParticleVertex.VertexStride, ParticleVertex.VertexElements);
-            VertexBuffer = new DynamicVertexBuffer(graphicsDevice, VertexDeclaration, EmitterData.MaxParticles * VerticesPerParticle, BufferUsage.WriteOnly);
-            IndexBuffer = InitIndexBuffer(graphicsDevice, EmitterData.MaxParticles * IndiciesPerParticle);
+            VertexBuffer = new DynamicVertexBuffer(GraphicsDevice, VertexDeclaration, EmitterData.MaxParticles * VerticesPerParticle, BufferUsage.WriteOnly);
+            IndexBuffer = InitIndexBuffer(GraphicsDevice, EmitterData.MaxParticles * IndiciesPerParticle);
 
             XNAInitialVelocity = data.InitialVelocityFactor;
             XNAFinalVelocity = data.FinalVelocityMpS;
@@ -549,6 +549,10 @@ namespace Orts.Viewer3D
                 // Limit particle spawn rate to try and prevent overfilling the particle buffer
                 // This should only be needed when the particle spawn rate is visually excessive
                 float effectiveParticlesPerSecond = Math.Min(ParticlesPerSecond, (EmitterData.MaxParticles * 0.9f) / (ParticleDuration * (1.0f + EmitterData.LifetimeVariationFactor)));
+
+                // Momentary Infinity/NaN values can occur, treat these as 0
+                if (!float.IsFinite(effectiveParticlesPerSecond))
+                    effectiveParticlesPerSecond = 0;
 
                 AccumulatedParticles += elapsedTime.ClockSeconds * effectiveParticlesPerSecond;
 

@@ -503,6 +503,7 @@ namespace Menu
         {
             UpdateTimetableSet();
             ShowTimetableList();
+            ShowTimetableEnvironment();  // Analoguous to activity change; may need to reload from menu selection (settings)
             ShowDetails();
         }
         #endregion
@@ -995,20 +996,7 @@ namespace Menu
                 comboBoxStartAt.Items.Clear();
                 foreach (var place in Paths.Select(p => p.Start).Distinct().OrderBy(s => s.ToString()))
                     comboBoxStartAt.Items.Add(place);
-                if (comboBoxStartAt.Items.Count > 0)
-                {
-                    comboBoxStartAt.SelectedIndex = 0;
-                }
-                // Because this list is unique names, we have to do some extra work to select it.
-                if (Settings.Menu_Selection.Length >= (int)UserSettings.Menu_SelectionIndex.Path)
-                {
-                    var pathFilePath = Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Path];
-                    var path = Paths.FirstOrDefault(p => p.FilePath == pathFilePath);
-                    if (path != null)
-                        SelectComboBoxItem<string>(comboBoxStartAt, s => s == path.Start);
-                    else if (comboBoxStartAt.Items.Count > 0)
-                        comboBoxStartAt.SelectedIndex = 0;
-                }
+                UpdateFromMenuSelection<Path>(comboBoxStartAt, UserSettings.Menu_SelectionIndex.Path, c => c.FilePath);
             }
             else
             {
@@ -1400,10 +1388,20 @@ namespace Menu
             string value = GetValueFromMenuSelection(index);
             if (!string.IsNullOrEmpty(value))
             {
-                if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
-                    comboBox.Text = value;
+                // index 5 is both Path and Day
+                if (comboBox == comboBoxStartAt || comboBox == comboBoxHeadTo)
+                {
+                    var path = Paths.Find(x => x.FilePath.Equals(value, StringComparison.OrdinalIgnoreCase));
+                    if (path == null) value = "";
+                    else if (comboBox == comboBoxStartAt) value = path.Start;
+                    else value = path.End;
+                    searchInComboBoxAndSet(comboBox, value);
+                }
                 else
-                    SelectComboBoxItem<T>(comboBox, item => map(item) == value);
+                {
+                    if (comboBox.DropDownStyle == ComboBoxStyle.DropDown) comboBox.Text = value;
+                    else SelectComboBoxItem<T>(comboBox, item => map(item) == value);
+                }
             }
             else
             {
@@ -1414,24 +1412,25 @@ namespace Menu
                 {
                     var route = routes[SelectedFolder.Name];
                     string valueComboboxToSetTo = "";
-                    string conditionalSecondValue = "";
                     switch (index)
                     {
                         case UserSettings.Menu_SelectionIndex.Route:
                             valueComboboxToSetTo = route.Start.Route;
                             break;
-                        case UserSettings.Menu_SelectionIndex.Activity:
+                        case UserSettings.Menu_SelectionIndex.Activity:  // also matches TimetableSet (in timetable mode)
                             valueComboboxToSetTo = route.Start.Activity;
                             break;
-                        case UserSettings.Menu_SelectionIndex.Locomotive:
+                        case UserSettings.Menu_SelectionIndex.Locomotive:  // also matches Timetable (in timetable mode)
                             valueComboboxToSetTo = route.Start.Locomotive;
                             break;
                         case UserSettings.Menu_SelectionIndex.Consist:
                             valueComboboxToSetTo = route.Start.Consist;
                             break;
-                        case UserSettings.Menu_SelectionIndex.Path:
-                            valueComboboxToSetTo = route.Start.StartingAt;
-                            conditionalSecondValue = route.Start.HeadingTo;
+                        case UserSettings.Menu_SelectionIndex.Path:  // also matches Day (in timetable mode)
+                            if (comboBox == comboBoxStartAt) valueComboboxToSetTo = route.Start.StartingAt;
+                            else if (comboBox == comboBoxHeadTo) valueComboboxToSetTo = route.Start.HeadingTo;
+                            else if (comboBox == comboBoxTimetableDay) valueComboboxToSetTo = route.Start.HeadingTo;  // also used for Day
+                            else valueComboboxToSetTo = "";  // should never happen
                             break;
                         case UserSettings.Menu_SelectionIndex.Time:
                             valueComboboxToSetTo = route.Start.Time;
@@ -1446,19 +1445,7 @@ namespace Menu
                             break;
                     }
 
-                    if (index == UserSettings.Menu_SelectionIndex.Path)
-                    {
-                        if (!string.IsNullOrEmpty(valueComboboxToSetTo))
-                            searchInComboBoxAndSet(comboBoxStartAt, valueComboboxToSetTo);
-                        else
-                            SetToDefault(comboBoxStartAt, index, map, defaultValue);
-
-                        if (!string.IsNullOrEmpty(conditionalSecondValue))
-                            searchInComboBoxAndSet(comboBoxHeadTo, conditionalSecondValue);
-                        else
-                            SetToDefault(comboBoxHeadTo, index, map, defaultValue);
-                    }
-                    else if (!string.IsNullOrEmpty(valueComboboxToSetTo))
+                    if (!string.IsNullOrEmpty(valueComboboxToSetTo))
                     {
                         if (comboBox.DropDownStyle == ComboBoxStyle.DropDown) 
                             comboBox.Text = valueComboboxToSetTo;

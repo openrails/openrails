@@ -1135,6 +1135,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             ExhaustMagnitude = InitialMagnitude + (MagnitudeRange * normRPM);
             ExhaustColor = ExhaustSteadyColor;
 
+            if (dRPM > 0.25f * ChangeUpRPMpS) // Only change particle emitter if RPM is still increasing substantially
+            {
+                ExhaustParticles *= ExhaustAccelIncrease;
+                ExhaustMagnitude *= ExhaustAccelIncrease;
+                ExhaustColor = ExhaustTransientColor;
+            }
+            else if (dRPM < -0.25f * ChangeDownRPMpS) // Only change particle emitter if RPM is still decreasing substantially
+            {
+                ExhaustParticles *= ExhaustDecelReduction;
+                ExhaustMagnitude *= ExhaustDecelReduction;
+                ExhaustColor = ExhaustDecelColor;
+            }
+
             if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
                 if (State == DieselEngineState.Stopped && !HasGearBox)
@@ -1540,12 +1553,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     dRPM = (DemandedRPM - RealRPM) / elapsedClockSeconds;
                     return DemandedRPM;
                 }
-                else if (dRPM > 0.25f * ChangeUpRPMpS) // Only change particle emitter if RPM is still increasing substantially
-                {
-                    ExhaustParticles *= ExhaustAccelIncrease;
-                    ExhaustMagnitude *= ExhaustAccelIncrease;
-                    ExhaustColor = ExhaustTransientColor;
-                }
             }
             else if (RealRPM > DemandedRPM)
             {
@@ -1560,12 +1567,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     dRPM = (DemandedRPM - RealRPM) / elapsedClockSeconds;
                     return DemandedRPM;
-                }
-                else if (dRPM < -0.25f * ChangeDownRPMpS) // Only change particle emitter if RPM is still decreasing substantially
-                {
-                    ExhaustParticles *= ExhaustDecelReduction;
-                    ExhaustMagnitude *= ExhaustDecelReduction;
-                    ExhaustColor = ExhaustDecelColor;
                 }
             }
             else
