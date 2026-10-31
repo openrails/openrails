@@ -122,6 +122,7 @@ namespace Orts.Viewer3D
         public EnvironmentFile ENVFile { get; private set; }
         public SignalConfigurationFile SIGCFG { get; private set; }
         public TrackTypesFile TrackTypes { get; private set; }
+        public TelepoleDataFile TelepoleDataFile { get; private set; }
         public SpeedpostDatFile SpeedpostDatFile;
         public bool MilepostUnitsMetric { get; private set; }
         // Cameras
@@ -354,6 +355,11 @@ namespace Orts.Viewer3D
             }
 
             TrackTypes = new TrackTypesFile(Simulator.RoutePath + @"\TTYPE.DAT");
+
+            string telepoleDataPath = Simulator.RoutePath + @"\telepole.dat";
+            if (File.Exists(telepoleDataPath))
+                TelepoleDataFile = new TelepoleDataFile(telepoleDataPath,
+                    Simulator.RoutePath + @"\shapes\");
 
             Tiles = new TileManager(Simulator.RoutePath + @"\TILES\", false);
             LoTiles = new TileManager(Simulator.RoutePath + @"\LO_TILES\", true);
