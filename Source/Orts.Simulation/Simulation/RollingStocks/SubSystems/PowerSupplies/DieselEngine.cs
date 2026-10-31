@@ -427,26 +427,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         /// <summary>
-        /// Returns the maximum allowed tractive effort output of the gear box
-        /// at the current gear setting.
-        /// </summary>
-        public float MaxTractiveForceN
-        {
-            get
-            {
-                float temp = 0;
-                foreach (DieselEngine de in DEList)
-                {
-                    if (de.GearBox != null && de.GearBox.CurrentGear != null)
-                    {
-                        temp += de.GearBox.CurrentGear.MaxTractiveForceN;
-                    }
-                }
-                return temp;
-            }
-        }
-
-        /// <summary>
         /// Updates all diesel engines
         /// </summary>
         /// <param name="elapsedClockSeconds">Time span within the simulation cycle</param>
@@ -578,18 +558,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                float totalRunningPower = 0;
-                float totalMaxPower = 0;
+                float percent = 0;
+                float totalMaxPower = MaxPowerW;
                 foreach (DieselEngine eng in DEList)
                 {
-                    if (eng.ProvidesTraction)
-                    {
-                        totalMaxPower += eng.MaximumDieselPowerW;
                     if (eng.State == DieselEngineState.Running)
-                            totalRunningPower += eng.MaximumDieselPowerW;
+                        percent += eng.MaximumDieselPowerW / totalMaxPower;
                 }
-                }
-                return totalRunningPower / totalMaxPower;
+                return percent;
             }
         }
     }
@@ -1194,9 +1170,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             RPMRange = MaxRPM - IdleRPM;
             MagnitudeRange = MaxMagnitude - InitialMagnitude;
             ExhaustRange = MaxExhaust - InitialExhaust;
-            ExhaustSteadyColor.A = 10;
-            ExhaustDecelColor.A = 10;
             TemperatureDegC = IdleTemperatureDegC;
+
             // Do not attach a gearbox to engines that do not provide traction
             if (GearBoxParams.IsInitialized && ProvidesTraction)
             {

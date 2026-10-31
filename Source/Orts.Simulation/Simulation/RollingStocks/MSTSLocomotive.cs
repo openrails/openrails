@@ -134,8 +134,7 @@ namespace Orts.Simulation.RollingStocks
 
         public bool AlerterSnd;
         public bool VigilanceMonitor;
-        public bool Sander; // State of physical sander switch
-        public bool Sanding; // True if sanding is occurring (manual or otherwise) 
+        public bool Sander;
         public bool Wiper;
         public bool BailOff;
         public bool DynamicBrake;
@@ -143,6 +142,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxForceN;
         public float RunUpTimeToMaxForceS = -1;
         public float AbsTractionSpeedMpS;
+        public float PrevAbsTractionSpeedMpS;
         public float MaxCurrentA = 0;
         public float MaxSpeedMpS = 1e3f;
         public float UnloadingSpeedMpS;
@@ -218,6 +218,8 @@ namespace Orts.Simulation.RollingStocks
         public float BoilerPressurePSI;     // Steam Gauge pressure - what the engineer sees.
         public float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
 
+        public float SandingSteamUsageLBpS;       // Sanding Steam Usage
+
         // Vacuum Reservoir and Exhauster Settings
 
         // Steam heating Flags
@@ -253,7 +255,7 @@ namespace Orts.Simulation.RollingStocks
             Full
         }
         public SlipControlType SlipControlSystem;
-        public bool IndividualAxleControl = false; // Can the tractive effort of axles be managed individually? FUTURE: Add user input for this
+        public bool[] SlipControlActive;
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
         float SlipFrictionCoefficientFactor;
         public float SteamStaticWheelForce;
@@ -264,21 +266,18 @@ namespace Orts.Simulation.RollingStocks
         float DebugSpeedIncrement = 1; // Used for debugging adhesion coefficient
         float DebugSpeed = 1; // Used for debugging adhesion coefficient
 
-        // parameters for Track Sander, value of -1 means undefined, value of 0 means sander not equipped
-        public float MaxTrackSandBoxCapacityM3 = -1; // Capacity of sandbox
-        public float CurrentTrackSandBoxCapacityM3 = -1;
-        public float MaxTrackSanderAirConsumptionForwardM3pS = -1;
-        public float MaxTrackSanderAirConsumptionReverseM3pS = -1;
-        public float MaxTrackSanderSteamConsumptionForwardLbpS = -1;
-        public float MaxTrackSanderSteamConsumptionReverseLbpS = -1;
-        public float MaxTrackSanderSandConsumptionForwardM3pS = -1;
-        public float MaxTrackSanderSandConsumptionReverseM3pS = -1;
+        // parameters for Track Sander based upon compressor air and abrasive table for 1/2" sand blasting nozzle @ 50psi
+        public float MaxTrackSandBoxCapacityM3; // Capacity of sandbox
+        public float MaxTrackSanderAirComsumptionForwardM3pS;
+        public float MaxTrackSanderAirComsumptionReverseM3pS = 0;
+        public float MaxTrackSanderSandConsumptionForwardM3pS;
         public float CurrentTrackSanderAirConsumptionM3pS;
-
-        public float CurrentTrackSanderSteamConsumptionLBpS;
         public float CurrentTrackSanderSandConsumptionM3pS;
-        public float CurrentTrackSanderSandConsumptionFraction;
+        public float CurrentTrackSandBoxCapacityM3;
+        public float MaxTrackSanderSandConsumptionReverseM3pS = 0;
         public float SandWeightKgpM3 = 1600; // One cubic metre of sand weighs about 1.54-1.78 tonnes. 
+        public float MaxTrackSanderSteamConsumptionForwardLbpS;
+        public float MaxTrackSanderSteamConsumptionReverseLbpS = 0;
 
 
         // Vacuum Braking parameters
@@ -459,6 +458,7 @@ namespace Orts.Simulation.RollingStocks
         public float SpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs
         public float MSTSSpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs - MSTS parameter if used
         public float ContinuousForceTimeFactor = 1800;
+        public bool AntiSlip;
         public bool AdvancedAdhesionModel = false; // flag set depending upon adhesion model used.
         public float SanderSpeedEffectUpToMpS;
         public float SanderSpeedOfMpS = 30.0f;
@@ -468,6 +468,7 @@ namespace Orts.Simulation.RollingStocks
         public bool EmergencyCausesPowerDown { get; private set; }
         public bool EmergencyCausesThrottleDown { get; private set; }
         public bool EmergencyEngagesHorn { get; private set; }
+        public bool WheelslipCausesThrottleDown { get; private set; }
 
         public float BrakeRestoresPowerAtBrakePipePressurePSI;
         public float BrakeCutsPowerAtBrakePipePressurePSI;
@@ -1135,10 +1136,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsemergencyengageshorn":
                 case "engine(orts(ortsemergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
                 case "engine(ortswheelslipcausesthrottledown":
-                case "engine(orts(ortswheelslipcausesthrottledown": // WheelSlipCausesThrottleDown has been superseded by SlipControlType.CutPower
-                    if (stf.ReadBoolBlock(false) && SlipControlSystem == SlipControlType.Unknown)
-                        SlipControlSystem = SlipControlType.CutPower;
-                    break;
+                case "engine(orts(ortswheelslipcausesthrottledown": WheelslipCausesThrottleDown = stf.ReadBoolBlock(false); break;
                 case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
@@ -1155,11 +1153,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(ortsnumberdriveaxles": LocoNumDrvAxles = stf.ReadIntBlock(null); if (LocoNumDrvAxles < 1) STFException.TraceWarning(stf, "Engine:ORTSNumberDriveAxles is less than 1, parts of the simulation may not function correctly"); break;
-                case "wagon(antislip": // Some Kuju content, eg: Acela, places AntiSlip in the wagon section
-                case "engine(antislip": // AntiSlip has been superseded by SlipControlType.Full
-                    if (stf.ReadBoolBlock(true) && SlipControlSystem == SlipControlType.Unknown)
-                        SlipControlSystem = SlipControlType.Full;
-                    break;
+                case "engine(antislip": AntiSlip = stf.ReadBoolBlock(true); break;
                 case "engine(ortsdrivewheelweight": InitialDrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout":
@@ -1250,27 +1244,24 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortswaterscoopwidth": WaterScoopWidthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                 // Convert the following default ft^3 to Me^3 units
                 case "engine(ortsmaxtracksanderboxcapacity":
-                    MaxTrackSandBoxCapacityM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
-                    break;
-                case "engine(ortsmaxtracksandersandconsumption": // Pre 1.6 parameter: Same sand use in both directions
-                    float sandM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
-                    MaxTrackSanderSandConsumptionForwardM3pS = MaxTrackSanderSandConsumptionReverseM3pS = sandM3pS;
+                    MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null);
+                    MaxTrackSandBoxCapacityM3 = Me3.FromFt3(MaxTrackSandBoxCapacityM3);
                     break;
                 case "engine(ortsmaxtracksandersandconsumptionforward":
-                    MaxTrackSanderSandConsumptionForwardM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    Me3.FromFt3(MaxTrackSanderSandConsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderSandConsumptionForwardM3pS = Me3.FromFt3(MaxTrackSanderSandConsumptionForwardM3pS);
                     break;
                 case "engine(ortsmaxtracksandersandconsumptionreverse":
-                    MaxTrackSanderSandConsumptionReverseM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
-                    break;
-                case "engine(ortsmaxtracksanderairconsumption": // Pre 1.6 parameter: Same air use in both directions
-                    float sandAirM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
-                    MaxTrackSanderAirConsumptionForwardM3pS = MaxTrackSanderAirConsumptionReverseM3pS = sandAirM3pS;
+                    Me3.FromFt3(MaxTrackSanderSandConsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderSandConsumptionReverseM3pS = Me3.FromFt3(MaxTrackSanderSandConsumptionReverseM3pS);
                     break;
                 case "engine(ortsmaxtracksanderairconsumptionforward":
-                    MaxTrackSanderAirConsumptionForwardM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    Me3.FromFt3(MaxTrackSanderAirComsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderAirComsumptionForwardM3pS = Me3.FromFt3(MaxTrackSanderAirComsumptionForwardM3pS);
                     break;
                 case "engine(ortsmaxtracksanderairconsumptionreverse":
-                    MaxTrackSanderAirConsumptionReverseM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    Me3.FromFt3(MaxTrackSanderAirComsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderAirComsumptionReverseM3pS = Me3.FromFt3(MaxTrackSanderAirComsumptionReverseM3pS);
                     break;
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
@@ -1303,7 +1294,6 @@ namespace Orts.Simulation.RollingStocks
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
             UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
             SlipControlSystem = locoCopy.SlipControlSystem;
-            IndividualAxleControl = locoCopy.IndividualAxleControl;
             EngineType = locoCopy.EngineType;
             SandingSystemType = locoCopy.SandingSystemType;
             TractionMotorType = locoCopy.TractionMotorType;
@@ -1342,6 +1332,7 @@ namespace Orts.Simulation.RollingStocks
             HasSmoothStruc = locoCopy.HasSmoothStruc;
             LocoNumDrvAxles = locoCopy.LocoNumDrvAxles;
             MSTSLocoNumDrvWheels = locoCopy.MSTSLocoNumDrvWheels;
+            AntiSlip = locoCopy.AntiSlip;
             VacuumPumpFitted = locoCopy.VacuumPumpFitted;
             FastVacuumExhausterFitted = locoCopy.FastVacuumExhausterFitted;
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
@@ -1351,8 +1342,8 @@ namespace Orts.Simulation.RollingStocks
             MaxTrackSandBoxCapacityM3 = locoCopy.MaxTrackSandBoxCapacityM3;
             MaxTrackSanderSandConsumptionForwardM3pS = locoCopy.MaxTrackSanderSandConsumptionForwardM3pS;
             MaxTrackSanderSandConsumptionReverseM3pS = locoCopy.MaxTrackSanderSandConsumptionReverseM3pS;
-            MaxTrackSanderAirConsumptionForwardM3pS = locoCopy.MaxTrackSanderAirConsumptionForwardM3pS;
-            MaxTrackSanderAirConsumptionReverseM3pS = locoCopy.MaxTrackSanderAirConsumptionReverseM3pS;
+            MaxTrackSanderAirComsumptionForwardM3pS = locoCopy.MaxTrackSanderAirComsumptionForwardM3pS;
+            MaxTrackSanderAirComsumptionReverseM3pS = locoCopy.MaxTrackSanderAirComsumptionReverseM3pS;
             PowerOnDelayS = locoCopy.PowerOnDelayS;
             DoesHornTriggerBell = locoCopy.DoesHornTriggerBell;
             MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
@@ -1367,6 +1358,8 @@ namespace Orts.Simulation.RollingStocks
             EmergencyEngagesHorn = locoCopy.EmergencyEngagesHorn;
             HornTimerS = locoCopy.HornTimerS;
             BellTimerS = locoCopy.BellTimerS;
+
+            WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
 
             CompressorIsMechanical = locoCopy.CompressorIsMechanical;
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
@@ -1459,7 +1452,6 @@ namespace Orts.Simulation.RollingStocks
             // we won't save the horn state
             outf.Write(Bell);
             outf.Write(Sander);
-            outf.Write(Sanding);
             outf.Write(VacuumExhausterPressed);
             outf.Write(Wiper);
             outf.Write(OdometerResetPositionM);
@@ -1494,6 +1486,8 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(previousChangedGearBoxNotch);
             outf.Write(DynamicBrake);
             outf.Write(CurrentTrackSandBoxCapacityM3);
+            outf.Write(CurrentTrackSanderSandConsumptionM3pS);
+            outf.Write(CurrentTrackSanderAirConsumptionM3pS);
             outf.Write(AbsTractionSpeedMpS);
 
             base.Save(outf);
@@ -1511,7 +1505,6 @@ namespace Orts.Simulation.RollingStocks
         {
             if (inf.ReadBoolean()) SignalEvent(Event.BellOn);
             if (inf.ReadBoolean()) SignalEvent(Event.SanderOn);
-            if (inf.ReadBoolean()) SignalEvent(Event.SandingOn);
             if (inf.ReadBoolean()) SignalEvent(Event.VacuumExhausterOn);
             if (inf.ReadBoolean()) SignalEvent(Event.WiperOn);
             OdometerResetPositionM = inf.ReadSingle();
@@ -1551,8 +1544,10 @@ namespace Orts.Simulation.RollingStocks
 
             DynamicBrake = inf.ReadBoolean();
             CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
+            CurrentTrackSanderSandConsumptionM3pS = inf.ReadSingle();
+            CurrentTrackSanderAirConsumptionM3pS = inf.ReadSingle();
 
-            AbsTractionSpeedMpS = inf.ReadSingle();
+            AbsTractionSpeedMpS = PrevAbsTractionSpeedMpS = inf.ReadSingle();
 
             base.Restore(inf);
 
@@ -1693,6 +1688,12 @@ namespace Orts.Simulation.RollingStocks
                 WaterScoopWidthM = 0.3048f; // Set to default of 1 ft
             }
 
+            // Check if current sander has been set
+            if (CurrentTrackSandBoxCapacityM3 == 0 )
+            {
+                CurrentTrackSandBoxCapacityM3 = MaxTrackSandBoxCapacityM3;
+            }
+
             // Ensure Drive Axles is set with a default value if user doesn't supply an OR value in ENG file
             if (LocoNumDrvAxles == 0)
             {
@@ -1733,8 +1734,13 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
             }
+            SlipControlActive = new bool[LocomotiveAxles.Count];
             if (SlipControlSystem == SlipControlType.Unknown)
-                SlipControlSystem = SlipControlType.None;
+            {
+                if (AntiSlip) SlipControlSystem = SlipControlType.ReduceForce;
+                else if (WheelslipCausesThrottleDown) SlipControlSystem = SlipControlType.CutPower;
+                else SlipControlSystem = SlipControlType.None;
+            }
 
             // Calculate minimum speed to pickup water
             const float Aconst = 2;
@@ -1964,37 +1970,28 @@ namespace Orts.Simulation.RollingStocks
                     DynamicBrakeBlendingRetainedPressurePSI = 0.0f;
             }
 
-            // Initialize track sanding parameters
-            // Negative values means no data provided, 0 means no sander is installed, do not overwrite values of 0
-            // Check if sand level has been defined
-            if (MaxTrackSandBoxCapacityM3 < 0)
+            // Initialise track sanding parameters
+            if (MaxTrackSandBoxCapacityM3 == 0)
+            {
                 MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
-            if (CurrentTrackSandBoxCapacityM3 < 0)
-                CurrentTrackSandBoxCapacityM3 = MaxTrackSandBoxCapacityM3; // Assume sand box begins full
+            }
 
-            // Set sander parameters
-            if (SandingSystemType == SandingSystemTypes.Unknown)
-                SandingSystemType = SandingSystemTypes.Gravity;
+            if (MaxTrackSanderAirComsumptionForwardM3pS == 0 && SandingSystemType == SandingSystemTypes.Air)
+            {
+                MaxTrackSanderAirComsumptionForwardM3pS = Me3.FromFt3(56.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 28 ft3/m x 2 sanders @ 140 psi - convert to /sec values
+            }
 
-            // Assume equal forward and reverse rates if neither were given
-            if (MaxTrackSanderAirConsumptionForwardM3pS < 0 && MaxTrackSanderAirConsumptionReverseM3pS < 0) // Default value - cubic feet per min (CFM) 28 ft3/m x 2 sanders @ 140 psi - convert to /sec values
-                MaxTrackSanderAirConsumptionForwardM3pS = MaxTrackSanderAirConsumptionReverseM3pS = Me3.FromFt3(56.0f) / 60.0f;
+            if (MaxTrackSanderSandConsumptionForwardM3pS == 0)
+            {
+                MaxTrackSanderSandConsumptionForwardM3pS = Me3.FromFt3(3.4f) / 3600.0f; // Default value - 1.7 ft3/h x 2 sanders @ 140 psi - convert to /sec values
+            }
 
-            if (MaxTrackSanderSteamConsumptionForwardLbpS < 0 && MaxTrackSanderSteamConsumptionReverseLbpS < 0)// Default value - 300lbs/hr - this value is un confirmed at this stage.
-                MaxTrackSanderSteamConsumptionForwardLbpS = MaxTrackSanderSteamConsumptionReverseLbpS = 300f / 3600f; 
+            if (MaxTrackSanderSteamConsumptionForwardLbpS == 0 && SandingSystemType == SandingSystemTypes.Steam)
+            {
+                MaxTrackSanderSteamConsumptionForwardLbpS = 300f / 3600f; // Default value - 300lbs/hr - this value is un confirmed at this stage.
+            }
 
-            if (MaxTrackSanderSandConsumptionForwardM3pS < 0 && MaxTrackSanderSandConsumptionReverseM3pS < 0) // Default value - 1.7 ft3/h x 2 sanders @ 140 psi - convert to /sec values
-                MaxTrackSanderSandConsumptionForwardM3pS = MaxTrackSanderSandConsumptionReverseM3pS = Me3.FromFt3(3.4f) / 3600.0f;
-
-            // Any values still left undefined will be set to 0 (equivalent to sander being unequipped)
-            if (MaxTrackSanderAirConsumptionForwardM3pS < 0) MaxTrackSanderAirConsumptionForwardM3pS = 0;
-            if (MaxTrackSanderAirConsumptionReverseM3pS < 0) MaxTrackSanderAirConsumptionReverseM3pS = 0;
-
-            if (MaxTrackSanderSteamConsumptionForwardLbpS < 0) MaxTrackSanderSteamConsumptionForwardLbpS = 0;
-            if (MaxTrackSanderSteamConsumptionReverseLbpS < 0) MaxTrackSanderSteamConsumptionReverseLbpS = 0;
-
-            if (MaxTrackSanderSandConsumptionForwardM3pS < 0) MaxTrackSanderSandConsumptionForwardM3pS = 0;
-            if (MaxTrackSanderSandConsumptionReverseM3pS < 0) MaxTrackSanderSandConsumptionReverseM3pS = 0;
+            bool notDrivenAxle = false;
 
             for (int i = 0; i < LocomotiveAxles.Count; i++)
             {
@@ -2072,8 +2069,7 @@ namespace Orts.Simulation.RollingStocks
                 float maxPowerW = MaxPowerW * Train.MUThrottlePercent / 100.0f;
                 if (TractionForceN * SpeedMpS > maxPowerW) TractionForceN = maxPowerW / SpeedMpS;
             }
-            LocomotiveAxles.ApplyTractionForce(TractionForceN);
-            AverageForceN = TractiveForceN = TractionForceN;
+            AverageForceN = TractionForceN;
 
             LocomotivePowerSupply?.InitializeMoving();
             if (Train.IsActualPlayerTrain)
@@ -2083,7 +2079,7 @@ namespace Orts.Simulation.RollingStocks
                 BrakeSystem.LocoInitializeMoving();
                 EngineBrakeController?.InitializeMoving();
             }
-            AbsTractionSpeedMpS = SpeedMpS;
+            AbsTractionSpeedMpS = PrevAbsTractionSpeedMpS = SpeedMpS;
         }
 
         //================================================================================================//
@@ -2324,6 +2320,7 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
 
+                    AntiSlip = true; // Always set AI trains to AntiSlip
                     AdvancedAdhesionModel = false;
                     UpdateAxles(elapsedClockSeconds);   // Simple adhesion model used for AI trains
                     WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
@@ -2357,9 +2354,6 @@ namespace Orts.Simulation.RollingStocks
                     // SimpleControlPhysics and if locomotive is a control car advanced adhesion will be "disabled".
                     if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control)
                     {
-                        if (!AdvancedAdhesionModel) // Changing from simple adhesion to advanced adhesion
-                            Axles.AdhesionPrecision.Reset(Simulator.GameTime);
-
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
                     }
                     else
@@ -2375,6 +2369,12 @@ namespace Orts.Simulation.RollingStocks
                     break;
 
             }
+
+            // always set AntiSlip for AI trains
+              if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                 {
+                    AntiSlip = true;
+                 }
 
             // If the train is vacuumed braked then no need to update the compressor, but udate the ejector instead
             if (BrakeSystem is VacuumSinglePipe)
@@ -2575,7 +2575,7 @@ namespace Orts.Simulation.RollingStocks
             if (IsLeadLocomotive())
 //            if (IsLeadLocomotive() || RemoteControlGroup == -1)
             {
-                Train.ConfirmWheelslip();
+                ConfirmWheelslip(elapsedClockSeconds);
                 if (ThrottleController.CurrentNotch < throttleCurrentNotch && ThrottleController.ToZero)
                     HandleThrottleChangedSound();
                 ThrottlePercent = LocalThrottlePercent;
@@ -2605,7 +2605,45 @@ namespace Orts.Simulation.RollingStocks
 			}
 #endif
         }
-
+        public void UpdateForceWithRamp(ref float forceN, float elapsedClockSeconds, float targetForceN, float maxForceN, float rampUpNpS=0, float rampDownNpS=0, float rampZeroNpS=0, float rampUpWpS=0, float rampDownWpS=0, float rampZeroWpS=0)
+        {
+            if (targetForceN > maxForceN) targetForceN = maxForceN;
+            if (forceN > maxForceN) forceN = maxForceN;
+            bool toZero = targetForceN == 0;
+            if (AbsTractionSpeedMpS > 0)
+            {
+                float powerW = forceN * PrevAbsTractionSpeedMpS;
+                float targetPowerW = targetForceN * AbsTractionSpeedMpS;
+                if (targetPowerW > powerW && rampUpWpS > 0)
+                {
+                    float maxChangeW = rampUpWpS * elapsedClockSeconds;
+                    if (powerW + maxChangeW < targetPowerW)
+                    {
+                        targetPowerW = powerW + maxChangeW;
+                        targetForceN = Math.Min(targetForceN, targetPowerW / AbsTractionSpeedMpS);
+                    }
+                }
+                if (targetPowerW < powerW && (toZero ? rampZeroWpS : rampDownWpS) > 0)
+                {
+                    float maxChangeW = (toZero ? rampZeroWpS : rampDownWpS) * elapsedClockSeconds;
+                    if (powerW - maxChangeW > targetPowerW)
+                    {
+                        targetPowerW = powerW - maxChangeW;
+                        targetForceN = Math.Max(targetForceN, Math.Min(forceN, targetPowerW / AbsTractionSpeedMpS));
+                    }
+                }
+            }
+            if (targetForceN > forceN)
+            {
+                if (rampUpNpS > 0) forceN = Math.Min(forceN + rampUpNpS * elapsedClockSeconds, targetForceN);
+                else forceN = targetForceN;
+            }
+            else if (targetForceN < forceN)
+            {
+                if ((toZero ? rampZeroNpS : rampDownNpS) > 0) forceN = Math.Max(forceN - (toZero ? rampZeroNpS : rampDownNpS) * elapsedClockSeconds, targetForceN);
+                else forceN = targetForceN;
+            }
+        }
         /// <summary>
         /// Provides the theoretical tractive force that can be achieved at current speed
         /// Takes into account number of available engines and power limitation effects from the power supply.
@@ -2613,62 +2651,43 @@ namespace Orts.Simulation.RollingStocks
         /// (e.g. diesel engine still revving up)
         /// </summary>
         /// <param name="t">Throttle position (0-1)</param>
-        /// <param name="limit">True (default false) if the force returned should be the absolute limit on force</param>
-        /// <returns>Tractive effort currently available at the given throttle setting</returns>
-        public virtual float GetAvailableTractionForceN(float t, bool limit = false)
+        /// <returns></returns>
+        public virtual float GetAvailableTractionForceN(float t)
         {
             if (t <= 0) return 0;
             float powerW = float.MaxValue;
             float forceN;
-
-            if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
-            {
-                // Consider influence of power supply on target force
-                // This limit influences the target force, and can be exceeded in transient situations
-                if (!limit && supply.MaximumPowerW > 0)
-                    powerW = supply.MaximumPowerW * t;
-                // This limit influences the absolute maximum force, and cannot be exceeded, not even transiently
-                if (supply.AvailableTractionPowerW > 0)
-                    powerW = Math.Min(powerW, supply.AvailableTractionPowerW);
-            }
+            // Take into account power limitation
+            if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply && supply.MaximumPowerW > 0)
+                powerW = supply.MaximumPowerW * t * (1-PowerReduction);
             // This section calculates the traction force of the locomotive as follows:
             // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 
             // Advanced configuration (TF table) - use a user defined tractive force table
             if (TractiveForceCurves == null)
             {
-                // Calculate target power based on throttle setting, electric locomotives use quadratic throttle response
-                if (this is MSTSDieselLocomotive)
-                    powerW = Math.Min(powerW, MaxPowerW * t);
-                else
-                    powerW = Math.Min(powerW, MaxPowerW * t * t);
-
-                // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
-                if (UnloadingSpeedMpS != 0 && AbsTractionSpeedMpS > UnloadingSpeedMpS)
-                {
-                    // use straight line curve to decay power to zero by 2 x unloading speed
-                    float unloadingSpeedDecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsTractionSpeedMpS - UnloadingSpeedMpS);
-                    unloadingSpeedDecay = MathHelper.Clamp(unloadingSpeedDecay, 0.0f, 1.0f);  // Clamp decay within bounds
-                    powerW *= unloadingSpeedDecay;
-                }
-
-                // Consider speed-dependent effects on target force
+                powerW = Math.Min(powerW, MaxPowerW * t * t * (1 - PowerReduction));
+                
                 if (AbsTractionSpeedMpS > MaxSpeedMpS)
+                {
                     forceN = 0;
+                }
                 else if (AbsTractionSpeedMpS > MaxSpeedMpS - 0.05f)
-                    forceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * MaxForceN;
+                {
+                    forceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * MaxForceN * (1 - PowerReduction);
+                }
                 else
-                    forceN = MaxForceN;
+                {
+                    forceN = MaxForceN * (1 - PowerReduction);
+                }
                 forceN *= t;
             }
             else
             {
-                forceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS);
+                forceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS) * (1 - PowerReduction);
                 if (forceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                     forceN = 0;
             }
             if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
-
-            forceN *= (1 - PowerReduction);
 
             // Dynamically evolving tractive force:
             // Reduce max allowed tractive effort to continuous tractive effort after sustained high force output
@@ -2683,25 +2702,56 @@ namespace Orts.Simulation.RollingStocks
 
             return forceN;
         }
+        protected virtual void UpdateTractionForce(float elapsedClockSeconds)
+        {
+            float t = ThrottlePercent / 100;
 
-        /// <summary>
-        /// Provides the theoretical dynamic brake force that can be achieved at current speed
-        /// Takes into account power limitation effects from the power supply.
-        /// This method does not take into account transient effects that temporary limit tractive force.
-        /// </summary>
-        /// <param name="d">Dynamic brake position (0-1)</param>
-        /// <param name="limit">True (default false) if the force returned should be the absolute limit on force</param>
-        /// <returns>Dynamic brake effort currently available at the given dynamic brake setting</returns>
-        public float GetAvailableDynamicBrakeForceN(float d, bool limit = false)
+            // Ensure that throttle never exceeds the limits imposed by other subsystems
+            float maxthrottle = MaxThrottlePercent / 100;
+            if (DynamicBrake) maxthrottle = 0;
+            if (t > maxthrottle) t = maxthrottle;
+            t = MathHelper.Clamp(t, 0, 1);
+
+            if (maxthrottle > 0 && Direction != Direction.N && LocomotivePowerSupply.MainPowerSupplyOn)
+            {
+                // Set the target force to the theoretically available tractive force for current throttle setting
+                // If there is a limit on the amount of throttle, ensure that tractive force never exceeds the limit
+                // imposed by that throttle setting
+                float targetForceN = GetAvailableTractionForceN(t);
+                float limitForceN = GetAvailableTractionForceN(maxthrottle);
+                float maxForceN = float.MaxValue;
+                // Ignore force limit for exotic curves where higher throttle settings provide less tractive force
+                if (limitForceN >= targetForceN)
+                    maxForceN = limitForceN;
+                // Ensure that power consumption never exceeds the power that is available for traction at the moment
+                if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
+                {
+                    float maxPowerW = supply.AvailableTractionPowerW;
+                    if (this is MSTSDieselLocomotive dL)
+                        maxPowerW *= dL.DieselTransmissionEfficiency;
+                    if (maxForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
+                }
+                UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS, TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);
+            }
+            else
+            {
+                TractionForceN = 0f;
+            }
+
+            // Dynamically evolving tractive force:
+            // Determine long-term average traction force as an estimate of motor/transmission heat
+            float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
+            if (w < 0)
+                w = 0;
+            AverageForceN = w * AverageForceN + (1 - w) * TractionForceN;
+        }
+        public float GetAvailableDynamicBrakeForceN(float d)
         {
             float forceN = 0;
-            // Note: All locomotives, even using MSTS settings, should have dynamic brake curves
             if (d > 0 && DynamicBrakeForceCurves != null && AbsTractionSpeedMpS > 0)
             {
                 forceN = DynamicBrakeForceCurves.Get(d, AbsTractionSpeedMpS) * (1 - PowerReduction);
-                // Consider influence of power supply on target force
-                // This limit influences the target dynamic brake force, and can be exceeded in transient situations
-                if (!limit && LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
+                if (LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
                 {
                     float powerW = LocomotivePowerSupply.MaximumDynamicBrakePowerW * (1 - PowerReduction);
                     if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
@@ -2709,11 +2759,7 @@ namespace Orts.Simulation.RollingStocks
             }
             return forceN;
         }
-
-        /// <summary>
-        /// Updates the dynamic braking system to determine if dynamic braking is enabled or not
-        /// </summary>
-        protected void UpdateDynamicBrakeStatus()
+        protected virtual void UpdateDynamicBrakeForce(float elapsedClockSeconds)
         {
             if (ThrottlePercent <= 0 && TractionForceN == 0 && LocomotivePowerSupply.DynamicBrakeAvailable && Direction != Direction.N && DynamicBrakePercent >= 0)
             {
@@ -2738,125 +2784,22 @@ namespace Orts.Simulation.RollingStocks
                 DynamicBrake = false;
                 DynamicBrakeCommandStartTime = null;
             }
-        }
-
-        /// <summary>
-        /// Determines the drive force currently targeted by the locomotive (whether in power or dynamic braking),
-        /// as well as the current maximum force that must not be exceeded
-        /// </summary>
-        /// <returns>Pair of floating point values, first is the target force, second is the maximum allowed force</returns>
-        protected (float, float) GetTargetForce()
-        {
-            float targetForceN = 0.0f;
-            float maxForceN = 0.0f;
-
-            if (LocomotivePowerSupply.MainPowerSupplyOn && Direction != Direction.N)
-            {
-                float limitForceN;
-
-                if (DynamicBrake)
-                {
+            float maxdynamic = DynamicBrake ? MaxDynamicBrakePercent / 100 : 0;
             float d = DynamicBrakePercent / 100;
-                    float maxDynamic = MaxDynamicBrakePercent / 100;
-                    if (d > maxDynamic) d = maxDynamic;
+            bool dynamicLimited = d > maxdynamic;
+            if (dynamicLimited) d = maxdynamic;
             d = MathHelper.Clamp(d, 0, 1);
 
-                    // Determine dynamic brake force from force curves and power supply
-                    // Prevent dynamic brake force from exceeding that which occurs at the maximum dynamic brake value
-                    targetForceN = GetAvailableDynamicBrakeForceN(d);
-                    limitForceN = GetAvailableDynamicBrakeForceN(maxDynamic, true);
+            if (maxdynamic > 0 && AbsTractionSpeedMpS > 0)
+            {
+                float limitForceN = GetAvailableDynamicBrakeForceN(maxdynamic);
+                float targetForceN = GetAvailableDynamicBrakeForceN(d);
+                float maxForceN = limitForceN >= targetForceN ? limitForceN : float.MaxValue;
+                UpdateForceWithRamp(ref DynamicBrakeForceN, elapsedClockSeconds, targetForceN, maxForceN, DynamicBrakeForceRampUpNpS, DynamicBrakeForceRampDownNpS, DynamicBrakeForceRampDownToZeroNpS, DynamicBrakePowerRampUpWpS, DynamicBrakePowerRampDownWpS, DynamicBrakePowerRampDownToZeroWpS);
             }
             else
             {
-                    float t = ThrottlePercent / 100;
-                    float maxThrottle = MaxThrottlePercent / 100;
-                    if (t > maxThrottle) t = maxThrottle;
-                    t = MathHelper.Clamp(t, 0, 1);
-
-                    // Determine tractive effort from force curves (or default curves) and power supply
-                    // Prevent tractive effort from exceeding that which occurs at the maximum throttle value
-                    targetForceN = GetAvailableTractionForceN(t);
-                    limitForceN = GetAvailableTractionForceN(maxThrottle, true);
-                }
-                // Ignore limit force for unusual force curves where higher settings give less force
-                maxForceN = limitForceN >= targetForceN ? limitForceN : float.MaxValue;
-            }
-
-            return (targetForceN, maxForceN);
-        }
-
-        /// <summary>
-        /// Updates the behavior of the wheel slip control system on each of the locomotive's axles.
-        /// The wheel slip control system, depending on the style equipped, influences the locomotive control
-        /// system to reduce tractive effort/dynamic brake effort demand in order to control wheel slip.
-        /// Returns the tractive effort/dynamic brake effort demanded by the wheel slip control system.
-        /// </summary>
-        /// <param name="targetForceN">The tractive effort the locomotive is attempting to output, without considering slip control.</param>
-        /// <param name="elapsedClockSeconds">Simulation delta time.</param>
-        /// <returns>The tractive effort the locomotive should attempt to output after considering slip control.</returns>
-        protected float UpdateSlipControl(float targetForceN, float elapsedClockSeconds)
-        {
-            // Should we use ramp rates or hardcoded run up/down for slip control?
-            bool useRampRates;
-            if (DynamicBrake)
-                useRampRates = DynamicBrakeForceRampDownToZeroNpS > 0 && DynamicBrakeForceRampDownToZeroNpS > DynamicBrakeForceRampDownNpS;
-            else
-                useRampRates = TractionForceRampDownToZeroNpS > 0 && TractionForceRampDownToZeroNpS > TractionForceRampDownNpS;
-
-            float slipControlForceN = LocomotiveAxles.UpdateSlipControl(targetForceN, SlipControlSystem, elapsedClockSeconds, useRampRates);
-            // Without individual axle control, force setpoint is reduced for the entire locomotive
-            if (!IndividualAxleControl && Math.Abs(slipControlForceN) < Math.Abs(targetForceN))
-                targetForceN = slipControlForceN;
-
-            return targetForceN;
-        }
-
-        /// <summary>
-        /// Updates the force used to drive the locomotive axles from the current force
-        /// toward a given target force, while limiting the force to a given maximum value.
-        /// Works for both power and dynamic braking.
-        /// </summary>
-        /// <param name="targetForceN">The total drive force that should be applied</param>
-        /// <param name="maxForceN">The maximum drive force currently allowed</param>
-        /// <param name="elapsedClockSeconds">Simulation delta time</param>
-        protected void UpdateDriveForce(float targetForceN, float maxForceN, float elapsedClockSeconds)
-        {
-            float axleForceN;
-            float axleTargetForceN;
-            float axleMaxForceN;
-
-            foreach (Axle axle in LocomotiveAxles)
-            {
-                if (axle.DriveType != AxleDriveType.NotDriven)
-                {
-                    // With overall force/power limits established, update force used to drive each axle
-                    if (IndividualAxleControl)
-                        axleTargetForceN = axle.SlipControlForceN;
-                    else // If individual axle control is not used, slip will be limited by overall force limit
-                        axleTargetForceN = targetForceN * axle.TractiveForceFraction;
-                    axleMaxForceN = maxForceN * axle.TractiveForceFraction;
-
-                    if (DynamicBrake)
-                    {
-                        // Adjust sign convention: Positive is against actual direction of motion (braking)
-                        axleForceN = axle.DriveForceN * -Math.Sign((float)axle.AxleSpeedMpS);
-
-                        axle.UpdateForceWithRamp(ref axleForceN, elapsedClockSeconds, axleTargetForceN, axleMaxForceN,
-                            DynamicBrakeForceRampUpNpS, DynamicBrakeForceRampDownNpS, DynamicBrakeForceRampDownToZeroNpS,
-                            DynamicBrakePowerRampUpWpS, DynamicBrakePowerRampDownWpS, DynamicBrakePowerRampDownToZeroWpS);
-                        axle.ApplyDynamicBrakeForce(axleForceN);
-                    }
-                    else
-                    {
-                        // Adjust sign convention: Positive is with direction of reverser (powering)
-                        axleForceN = axle.DriveForceN * (Direction == Direction.Reverse ? -1 : 1);
-
-                        axle.UpdateForceWithRamp(ref axleForceN, elapsedClockSeconds, axleTargetForceN, axleMaxForceN,
-                            TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS,
-                            TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);
-                        axle.ApplyTractionForce(axleForceN);
-                    }
-                }
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
             }
         }
 
@@ -2865,7 +2808,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateTractiveForce(float elapsedClockSeconds)
         {
-            // Method to set force and power info for diesel and electric locomotives
+            // Method to set force and power info
             // An alternative method in the steam locomotive will override this and input force and power info for it.
 
             // Motive force is calculated from traction and dynamic brake force
@@ -2879,12 +2822,115 @@ namespace Orts.Simulation.RollingStocks
             // the traction motor/gearbox/steam piston does not "know" or "care" if the wheels are slipping or not, and behaves the same either way).
             // For a locomotive to respond to ground speed or slippage, additional systems (such as wheel slip protection) are required, these are
             // implemented elsewhere.
+            PrevAbsTractionSpeedMpS = AbsTractionSpeedMpS;
             AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+            UpdateTractionForce(elapsedClockSeconds);
+            TractiveForceN = TractionForceN;
+            ApplyDirectionToTractiveForce(ref TractiveForceN);
 
-            UpdateDynamicBrakeStatus();
-            (float targetForceN, float maxForceN) = GetTargetForce();
-            targetForceN = UpdateSlipControl(targetForceN, elapsedClockSeconds);
-            UpdateDriveForce(targetForceN, maxForceN, elapsedClockSeconds);
+            UpdateDynamicBrakeForce(elapsedClockSeconds);
+            TractiveForceN -= Math.Sign(WheelSpeedMpS) * DynamicBrakeForceN;
+
+            for (int i=0; i<LocomotiveAxles.Count; i++)
+            {
+                var axle = LocomotiveAxles[i];
+                if (axle.DriveType == AxleDriveType.ForceDriven)
+                {
+                    float prevForceN = axle.DriveForceN;
+                    axle.DriveForceN = TractiveForceN * axle.TractiveForceFraction;
+                    if (SlipControlSystem == SlipControlType.Full)
+                    {
+                        // Simple slip control
+                        // Motive force is limited to the maximum adhesive force
+                        // In wheelslip situations, motive force is reduced to zero
+                        float absForceN = Math.Min(Math.Abs(axle.DriveForceN), axle.MaximumWheelAdhesion * axle.AxleGradientForceN);
+                        float newForceN;
+                        if (axle.DriveForceN != 0)
+                        {
+                            if (axle.HuDIsWheelSlip) SlipControlActive[i] = true;
+                        }
+                        else
+                        {
+                            SlipControlActive[i] = false;
+                        }
+
+                        if (SlipControlActive[i])
+                        {
+                            if (!axle.HuDIsWheelSlip)
+                            {
+                                // If well below slip threshold, restore full power in 10 seconds
+                                newForceN = Math.Min(Math.Abs(prevForceN) + absForceN * elapsedClockSeconds / 10, absForceN);
+
+                                // If full force is restored, disengage slip control (but limiting force to max adhesion)
+                                if (newForceN / absForceN > 0.95f) SlipControlActive[i] = false;
+                            }
+                            else if (axle.IsWheelSlip)
+                            {
+                                newForceN = Math.Max(Math.Abs(prevForceN) - absForceN * elapsedClockSeconds / 3, 0);
+                            }
+                            else
+                            {
+                                newForceN = Math.Min(Math.Abs(prevForceN), absForceN);
+                            }
+                        }
+                        else
+                        {
+                            newForceN = absForceN;
+                        }
+
+                        if (axle.DriveForceN > 0 && prevForceN >= 0) axle.DriveForceN = newForceN;
+                        else if (axle.DriveForceN < 0 && prevForceN <= 0) axle.DriveForceN = -newForceN;
+                    }
+                    else if (SlipControlSystem == SlipControlType.CutPower)
+                    {
+                        if (axle.DriveForceN != 0)
+                        {
+                            if (axle.HuDIsWheelSlip) SlipControlActive[i] = true;
+                        }
+                        else
+                        {
+                            // Only restore traction when throttle is set to 0
+                            SlipControlActive[i] = false;
+                        }
+                        // Disable traction in the axle if slipping
+                        if (SlipControlActive[i]) axle.DriveForceN = 0;
+                    }
+                    else if (SlipControlSystem == SlipControlType.ReduceForce)
+                    {
+                        if (axle.DriveForceN != 0 && (AdvancedAdhesionModel || !AntiSlip))
+                        {
+                            if (axle.HuDIsWheelSlipWarning) SlipControlActive[i] = true;
+                        }
+                        else
+                        {
+                            SlipControlActive[i] = false;
+                        }
+                        if (SlipControlActive[i])
+                        {
+                            float absForceN = Math.Abs(axle.DriveForceN);
+                            float newForceN;
+                            if (!axle.HuDIsWheelSlipWarning)
+                            {
+                                // If well below slip threshold, restore full power in 10 seconds
+                                newForceN = Math.Min(Math.Abs(prevForceN) + absForceN * elapsedClockSeconds / 10, absForceN);
+
+                                // If full force is restored, disengage slip control
+                                if (newForceN / absForceN > 0.95f) SlipControlActive[i] = false;
+                            }
+                            else if (axle.IsWheelSlipWarning)
+                            {
+                                newForceN = Math.Max(Math.Abs(prevForceN) - absForceN * elapsedClockSeconds / 3, 0);
+                            }
+                            else
+                            {
+                                newForceN = Math.Min(Math.Abs(prevForceN), absForceN);
+                            }
+                            if (axle.DriveForceN > 0 && prevForceN >= 0) axle.DriveForceN = newForceN;
+                            else if (axle.DriveForceN < 0 && prevForceN <= 0) axle.DriveForceN = -newForceN;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -2919,6 +2965,66 @@ namespace Orts.Simulation.RollingStocks
                         break;
                 }
             }// end AI locomotive            
+        }
+
+        protected enum Wheelslip
+        {
+            None,
+            Warning,
+            Occurring
+        };
+
+        protected Wheelslip WheelslipState = Wheelslip.None;
+
+        public void ConfirmWheelslip(float elapsedClockSeconds)
+        {
+            if (elapsedClockSeconds > 0 && Simulator.GameTime - LocomotiveAxles.ResetTime > 5)
+            {
+                if (AdvancedAdhesionModel)
+                {
+                    // Wheelslip
+                    if (HuDIsWheelSlip)
+                    {
+                        if (WheelslipState != Wheelslip.Occurring)
+                        {
+                            WheelslipState = Wheelslip.Occurring;
+                            Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
+                        }
+                    }
+                    else
+                    {
+                        if (HuDIsWheelSlipWarninq)
+                        {
+                            if (WheelslipState != Wheelslip.Warning)
+                            {
+                                WheelslipState = Wheelslip.Warning;
+                                Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Warn1);
+                            }
+                        }
+                        else
+                        {
+                            if (WheelslipState != Wheelslip.None)
+                            {
+                                WheelslipState = Wheelslip.None;
+                                Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (WheelSlip && (WheelslipState != Wheelslip.Occurring))
+                    {
+                        WheelslipState = Wheelslip.Occurring;
+                        Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
+                                            }
+                    if ((!WheelSlip) && (WheelslipState != Wheelslip.None))
+                    {
+                        WheelslipState = Wheelslip.None;
+                        Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -3224,16 +3330,8 @@ namespace Orts.Simulation.RollingStocks
             // TODO: Rolling friction should be handled by the axle module
 
             TractiveForceN = LocomotiveAxles.DriveForceN;
-            if (DynamicBrake)
-            {
-                TractionForceN = 0.0f;
-                DynamicBrakeForceN = Math.Abs(TractiveForceN);
-            }
-            else
-            {
-                TractionForceN = Math.Abs(TractiveForceN);
-                DynamicBrakeForceN = 0.0f;
-            }
+            if (DynamicBrake) DynamicBrakeForceN = Math.Abs(TractiveForceN);
+            else TractionForceN = Math.Abs(TractiveForceN);
             MotiveForceN = LocomotiveAxles.AxleMotiveForceN;
             BrakeForceN = LocomotiveAxles.AxleBrakeForceN;
             RollingFrictionForceN = LocomotiveAxles.AxleFrictionForceN;
@@ -3243,14 +3341,7 @@ namespace Orts.Simulation.RollingStocks
                 WheelSlip = LocomotiveAxles.IsWheelSlip;
                 WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
                 HuDIsWheelSlip = LocomotiveAxles.HuDIsWheelSlip;
-                HuDIsWheelSlipWarning = LocomotiveAxles.HuDIsWheelSlipWarning;
-
-                // Dynamically evolving tractive force:
-                // Determine long-term average traction force as an estimate of motor/transmission heat
-                float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
-                if (w < 0)
-                    w = 0;
-                AverageForceN = w * AverageForceN + (1 - w) * Math.Abs(TractiveForceN);
+                HuDIsWheelSlipWarninq = LocomotiveAxles.HuDIsWheelSlipWarning;
             }
 
             WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
@@ -3452,6 +3543,7 @@ namespace Orts.Simulation.RollingStocks
         public virtual void UpdateFrictionCoefficient(float elapsedClockSeconds)
         {
             float BaseuMax = (Curtius_KnifflerA / (MpS.ToKpH(AbsSpeedMpS) + Curtius_KnifflerB) + Curtius_KnifflerC); // Base Curtius - Kniffler equation - u = 0.33, all other values are scaled off this formula
+            float SandingFrictionCoefficientFactor = 1.0f;
 
             //Set the friction coeff due to weather - uses the vlaues set in the precipitation module to determine whether clear, rain or snow.
 
@@ -3506,28 +3598,20 @@ namespace Orts.Simulation.RollingStocks
 
             BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f);
 
-            // Determine whether or not sand should have an effect on adhesion
-            if (Sanding && CurrentTrackSanderSandConsumptionM3pS > 0.0)
+            // Increase friction coefficient when sanding
+            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
             {
-                float sandingFrictionIncreaseFactor = 0.0f;
-
                 switch (Simulator.WeatherType)
                 {
-                    case WeatherType.Clear: sandingFrictionIncreaseFactor = 0.40f; break;
-                    case WeatherType.Rain: sandingFrictionIncreaseFactor = 0.25f; break;
-                    case WeatherType.Snow: sandingFrictionIncreaseFactor = 0.50f; break;
+                    case WeatherType.Clear: SandingFrictionCoefficientFactor = 1.40f; break;
+                    case WeatherType.Rain: SandingFrictionCoefficientFactor = 1.25f; break;
+                    case WeatherType.Snow: SandingFrictionCoefficientFactor = 1.50f; break;
                 }
                 if (SanderSpeedEffectUpToMpS > 0.0f) // Reduce sander effectiveness if max effective speed is defined
                 {
-                    // 100% effectiveness at 1/2 max effective speed, 0% effectiveness at/above max effective speed
-                    sandingFrictionIncreaseFactor *= MathHelper.Clamp(2.0f * (1.0f - AbsSpeedMpS / SanderSpeedEffectUpToMpS), 0.0f, 1.0f);
+                    SandingFrictionCoefficientFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS);
                 }
-
-                // Reduce effectiveness of sand if rate of sand flow is too low compared to rated capacity
-                // 0% effectiveness at 25% sand flow, 100% effectiveness at 75% sand flow
-                sandingFrictionIncreaseFactor *= MathHelper.Clamp(2.0f * CurrentTrackSanderSandConsumptionFraction  - 0.5f, 0.0f, 1.0f);
-
-                BaseFrictionCoefficientFactor *= 1.0f + sandingFrictionIncreaseFactor;
+                BaseFrictionCoefficientFactor *= Math.Max(SandingFrictionCoefficientFactor, 1.0f); // Prevent sand from harming adhesion above max effective speed
             }
 
             // For wagons use base Curtius-Kniffler adhesion factor - u = 0.33
@@ -3594,103 +3678,92 @@ namespace Orts.Simulation.RollingStocks
         public void UpdateTrackSander(float elapsedClockSeconds)
         {
             // updates track sander in terms of sand usage and impact on air compressor
+            // The following assumptions have been made:
+            //
 
-            // Determine whether or not sanding should be occurring
-            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)
+            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)  // If sander switch is on, and not blocked by speed, adjust parameters
             {
-                if (!Sanding)
-                    SignalEvent(Event.SandingOn);
-            }
-            else
-            {
-                // FUTURE: Facilitate automatic sanding even if sander switch is off
-                if (Sanding)
-                    SignalEvent(Event.SandingOff);
-            }
 
-            if (Sanding)  // If sanding is occurring, adjust parameters
-            {
                 // Calculate steam, air or gravity consumption for different sander modes
-                float sandingSandConsumptionM3pS;
-                float relativeFlow = 1;
-                if (Direction == Direction.Reverse)
-                    sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
-                else
-                    sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
-
                 if (SandingSystemType == SandingSystemTypes.Steam)
                 {
-                    float sandingSteamConsumptionLbpS;
+                    float sandingSteamConsumptionLbpS = 0.0f;
+                    float sandingSandConsumptionM3pS = 0.0f;
 
                     if (Direction == Direction.Reverse)
+                    {
                         sandingSteamConsumptionLbpS = MaxTrackSanderSteamConsumptionReverseLbpS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
+                    }
                     else
+                    {
                         sandingSteamConsumptionLbpS = MaxTrackSanderSteamConsumptionForwardLbpS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
+                    }
 
                     // Calculate steam consumption
-                    relativeFlow = BoilerPressurePSI / MaxBoilerPressurePSI;
-                    CurrentTrackSanderSteamConsumptionLBpS = relativeFlow * sandingSteamConsumptionLbpS;
+                    SandingSteamUsageLBpS = (BoilerPressurePSI / MaxBoilerPressurePSI) * sandingSteamConsumptionLbpS * elapsedClockSeconds;
 
-                    CurrentTrackSanderAirConsumptionM3pS = 0.0f;
-                        }
-                else if (SandingSystemType == SandingSystemTypes.Air)
-                {
-                    float sandingAirConsumptionM3pS;
-
-                    if (Direction == Direction.Reverse)
-                        sandingAirConsumptionM3pS = MaxTrackSanderAirConsumptionReverseM3pS;
-                    else
-                        sandingAirConsumptionM3pS = MaxTrackSanderAirConsumptionForwardM3pS;
-
-                    // Calculate air consumption and change in main air reservoir pressure
-                    relativeFlow = MainResPressurePSI / MaxMainResPressurePSI;
-                    CurrentTrackSanderAirConsumptionM3pS = relativeFlow * sandingAirConsumptionM3pS;
-
-                    float SanderPressureDiffPSI = OneAtmospherePSI * (CurrentTrackSanderAirConsumptionM3pS * elapsedClockSeconds / MainResVolumeM3);
-                    MainResPressurePSI -= SanderPressureDiffPSI;
-
-                    if (MainResPressurePSI < 0.0f)
-                        MainResPressurePSI = 0.0f;
-
-                    CurrentTrackSanderSteamConsumptionLBpS = 0.0f;
-                }
-                // Note: If "Gravity" sanding system is used, no air or steam is consumed, we skip to this step:
-                sandingSandConsumptionM3pS *= relativeFlow;
-
-                // Subtract sand from the sand box
-                if (CurrentTrackSandBoxCapacityM3 > 0.0f && sandingSandConsumptionM3pS > 0.0f)
+                    // Calculate sand consumption for sander
+                    if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
                     {
-                    CurrentTrackSanderSandConsumptionM3pS = sandingSandConsumptionM3pS * elapsedClockSeconds;
-                    CurrentTrackSanderSandConsumptionFraction = relativeFlow;
+                        // Calculate consumption of sand, and drop in sand box level
+                        CurrentTrackSanderSandConsumptionM3pS = (BoilerPressurePSI / MaxBoilerPressurePSI) * sandingSandConsumptionM3pS * elapsedClockSeconds;
                         CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
-                    if (CurrentTrackSandBoxCapacityM3 <= 0.0f)
+                        CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
+                        if (CurrentTrackSandBoxCapacityM3 <= 0.0)
                         {
-                        CurrentTrackSandBoxCapacityM3 = 0.0f;
                             Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
                         }
                     }
-                else // Can't sand, or no sand is requested, disable sander (air/steam will still be consumed)
+                }
+                else // air consumption
                 {
-                    CurrentTrackSanderSandConsumptionM3pS = 0.0f;
-                    CurrentTrackSanderSandConsumptionFraction = 0.0f;
+                    float sandingAirConsumptionM3pS = 0.0f;
+                    float sandingSandConsumptionM3pS = 0.0f;
+
+                    if (Direction == Direction.Reverse)
+                    {
+                        sandingAirConsumptionM3pS = MaxTrackSanderAirComsumptionReverseM3pS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
+                    }
+                    else
+                    {
+                        sandingAirConsumptionM3pS = MaxTrackSanderAirComsumptionForwardM3pS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
+                    }
+
+                    // Calculate air consumption and change in main air reservoir pressure
+                    CurrentTrackSanderAirConsumptionM3pS = (MainResPressurePSI / MaxMainResPressurePSI) * sandingAirConsumptionM3pS * elapsedClockSeconds;
+                    float SanderPressureDiffPSI = CurrentTrackSanderAirConsumptionM3pS / Me3.ToFt3(MainResVolumeM3);
+                    MainResPressurePSI -= SanderPressureDiffPSI;
+                    MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.001f, MaxMainResPressurePSI);
+
+                    // Calculate sand consumption for sander
+                    if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
+                    {
+                        // Calculate consumption of sand, and drop in sand box level
+                        CurrentTrackSanderSandConsumptionM3pS = (MainResPressurePSI / MaxMainResPressurePSI) * sandingSandConsumptionM3pS * elapsedClockSeconds;
+                        CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
+                        CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
+                        if (CurrentTrackSandBoxCapacityM3 <= 0.0)
+                        {
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
+                        }
+                    }
                 }
             }
             else // reset to zero if sander is off
             {
-                CurrentTrackSanderSandConsumptionM3pS = 0.0f;
-                CurrentTrackSanderSandConsumptionFraction = 0.0f;
-                CurrentTrackSanderAirConsumptionM3pS = 0.0f;
-                CurrentTrackSanderSteamConsumptionLBpS = 0.0f;
+                CurrentTrackSanderSandConsumptionM3pS = 0;
+                CurrentTrackSanderAirConsumptionM3pS = 0;
+                SandingSteamUsageLBpS = 0;
             }
         }
 
         public override bool GetSanderOn()
         {
             return Sander;
-        }
-        public override bool GetSandingOn()
-        {
-            return Sanding;
         }
                                  
         #region Reverser
@@ -5155,8 +5228,6 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
                 case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
-                case Event.SandingOn: { Sanding = true; break; }
-                case Event.SandingOff: { Sanding = false; break; }
                 case Event.WiperOn: { Wiper = true; if (this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
                 case Event.WiperOff: { Wiper = false; if (this == Simulator.PlayerLocomotive) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
 
@@ -5756,7 +5827,7 @@ namespace Orts.Simulation.RollingStocks
                 // the independant sanding light found in some cabs would not work.
                 case CABViewControlTypes.SANDING:
                     {
-                        data = Sanding ? 1 : 0;
+                        data = Sander ? 1 : 0;
                         break;
                     }
                 case CABViewControlTypes.CLOCK:
@@ -5772,8 +5843,9 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                        // FUTURE: Implement "WHEELSLIP_TRAINLINED"
-                        // to show if ANY locomotive is wheelslipping, not just current one
+                        if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
+                            data = HuDIsWheelSlipWarninq ? 1 : 0;
+                        else
                             data = HuDIsWheelSlip ? 1 : 0;
                         break;
                     }

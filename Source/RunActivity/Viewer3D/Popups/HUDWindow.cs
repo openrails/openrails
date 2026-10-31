@@ -482,7 +482,7 @@ namespace Orts.Viewer3D.Popups
 
             if (Viewer.PlayerTrain.HuDIsWheelSlip)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel slip") + "!!!");
-            else if (Viewer.PlayerTrain.HuDIsWheelSlipWarning)
+            else if (Viewer.PlayerTrain.HuDIsWheelSlipWarninq)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel slip warning") + "???");
 
             if (Viewer.PlayerTrain.IsBrakeSkid )
@@ -490,7 +490,7 @@ namespace Orts.Viewer3D.Popups
 
             if (Viewer.PlayerLocomotive.GetSanderOn())
             {
-                bool sanderBlocked = !Viewer.PlayerLocomotive.GetSandingOn();
+                var sanderBlocked = Viewer.PlayerLocomotive is MSTSLocomotive && Math.Abs(playerTrain.SpeedMpS) > ((MSTSLocomotive)Viewer.PlayerLocomotive).SanderSpeedOfMpS;
                 if (sanderBlocked)
                     TableAddLine(table, Viewer.Catalog.GetString("Sander blocked") + "!!!");
                 else

@@ -97,6 +97,7 @@ namespace Orts.Simulation.RollingStocks
         public SmoothedData ExhaustColorR = new SmoothedData(1);
         public SmoothedData ExhaustColorG = new SmoothedData(1);
         public SmoothedData ExhaustColorB = new SmoothedData(1);
+        public SmoothedData ExhaustColorA = new SmoothedData(1);
 
         public float DieselOilPressurePSI = 0f;
         public float DieselMinOilPressurePSI;
@@ -658,6 +659,7 @@ namespace Orts.Simulation.RollingStocks
             ExhaustColorR.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.R);
             ExhaustColorG.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.G);
             ExhaustColorB.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.B);
+            ExhaustColorA.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.A);
 
             base.Update(elapsedClockSeconds);
 
@@ -716,42 +718,78 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
         }
-
-        /// <summary>
-        /// Provides the theoretical tractive force that can be achieved at current speed
-        /// Takes into account number of available engines and power limitation effects from the power supply.
-        /// This method does not take into account transient effects that temporary limit tractive force
-        /// (e.g. diesel engine still revving up)
-        /// </summary>
-        /// <param name="t">Throttle position (0-1)</param>
-        /// <param name="limit">True (default false) if the force returned should be the absolute limit on force</param>
-        /// <returns>Tractive effort currently available at the given throttle setting</returns>
-        public override float GetAvailableTractionForceN(float t, bool limit = false)
+        public override float GetAvailableTractionForceN(float t)
         {
             if (t <= 0) return 0;
-            float forceN = float.MaxValue;
-
             if (DieselEngines.HasGearBox && (TractiveForceCurves == null || DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic))
             {
-                // Mechanical transmissions use force produced by the gearbox directly
-                if (!limit)
-                    forceN = DieselEngines.TractiveForceN;
-                
-                forceN = Math.Min(forceN, DieselEngines.MaxTractiveForceN);
+                // TODO: provide more accurate values
+                // Note: if this clause is fulfilled, this method is not used to calculate TractiveForceN, it just provides information for other subsystems about theoretical tractive force
+                return base.GetAvailableTractionForceN(t);
+            }
+            float forceN;
+            float powerW = float.MaxValue;
+            // If there is more then one diesel engine, and one or more engines is stopped, then the Fraction Power will give a fraction less then 1 depending upon power definitions of engines.
+            float DieselEngineFractionPower = 1.0f;
+
+            if (DieselEngines.Count > 1)
+                DieselEngineFractionPower = DieselEngines.RunningPowerFraction;
+
+            DieselEngineFractionPower = MathHelper.Clamp(DieselEngineFractionPower, 0.0f, 1.0f);  // Clamp decay within bounds
+
+            if (!DieselEngines.HasGearBox && DieselPowerSupply.MaximumPowerW > 0)
+                powerW = DieselPowerSupply.AvailableTractionPowerW * DieselTransmissionEfficiency;
+
+            // This section calculates the traction force of the locomotive as follows:
+            // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 
+            // Advanced configuration (TF table) - use a user defined tractive force table
+            if (TractiveForceCurves == null)
+            {
+                // This sets the maximum force of the locomotive, it will be adjusted down if it exceeds the max power of the locomotive.
+                forceN = MaxForceN * (1 - PowerReduction) * t;
+
+                // Maximum rail power is reduced by apparent throttle factor and the number of engines running (power ratio)
+                powerW = Math.Min(powerW, MaxPowerW * DieselEngineFractionPower * t);
+
+                // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
+                if (UnloadingSpeedMpS != 0 && AbsTractionSpeedMpS > UnloadingSpeedMpS && AbsTractionSpeedMpS < MaxSpeedMpS && !WheelSlip)
+                {
+                    // use straight line curve to decay power to zero by 2 x unloading speed
+                    float unloadingspeeddecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsTractionSpeedMpS - UnloadingSpeedMpS);
+                    unloadingspeeddecay = MathHelper.Clamp(unloadingspeeddecay, 0.0f, 1.0f);  // Clamp decay within bounds
+                    powerW *= unloadingspeeddecay;
+                }
             }
             else
             {
-                // Electric/hydraulic transmissions use force produced by tractive force curves
-                forceN = base.GetAvailableTractionForceN(t, limit);
-
-                // Tractive force curves do not consider disabled engines, proportionally reduce force target if some are shut down
-                if (DieselEngines.Count > 1)
-                {
-                    float DieselEngineFractionPower = MathHelper.Clamp(DieselEngines.RunningPowerFraction, 0.0f, 1.0f);
-                    forceN *= DieselEngineFractionPower;
-                }
+                // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
+                forceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
+                if (forceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
+                    forceN = 0;
             }
+            if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
+
+            // Dynamically evolving tractive force:
+            // Reduce max allowed tractive effort to continuous tractive effort after sustained high force output
+            if (MaxForceN > 0 && MaxContinuousForceN > 0 && MaxForceN != MaxContinuousForceN)
+            {
+                // Go from regular tractive effort limit at 75% average force, limit to continuous force at 100% average force
+                float heatFactor = MathHelper.Clamp((AverageForceN - 0.75f * MaxContinuousForceN) / ((1 - 0.75f) * MaxContinuousForceN), 0.0f, 1.0f);
+                float heatLimitedForce = MaxForceN * (1 - ((MaxForceN - MaxContinuousForceN) / MaxForceN) * heatFactor);
+                if (forceN > heatLimitedForce)
+                    forceN = heatLimitedForce;
+            }
+
             return forceN;
+        }
+        protected override void UpdateTractionForce(float elapsedClockSeconds)
+        {
+            if (DieselEngines.HasGearBox && (TractiveForceCurves == null || DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic))
+            {
+                TractionForceN = DieselEngines.TractiveForceN;
+                return;
+            }
+            base.UpdateTractionForce(elapsedClockSeconds);
         }
 
         /// <summary>
@@ -1392,13 +1430,14 @@ namespace Orts.Simulation.RollingStocks
         }
 
         //used by remote diesels to update their exhaust
-        public void RemoteUpdate(float exhPart, float exhMag, float exhColorR, float exhColorG, float exhColorB)
+        public void RemoteUpdate(float exhPart, float exhMag, float exhColorR, float exhColorG, float exhColorB, float exhColorA)
         {
             ExhaustParticles.ForceSmoothValue(exhPart);
             ExhaustMagnitude.ForceSmoothValue(exhMag);
             ExhaustColorR.ForceSmoothValue(exhColorR);
             ExhaustColorG.ForceSmoothValue(exhColorG);
             ExhaustColorB.ForceSmoothValue(exhColorB);
+            ExhaustColorA.ForceSmoothValue(exhColorA);
         }
 
 

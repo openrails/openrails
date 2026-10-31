@@ -26,6 +26,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float TargetForceN;
         public float EngineMaxSpeedMpS;
         public float OptimalAsyncSpeedRadpS = 1;
+        public bool SlipControl;
 
         /// <summary>
         /// Motor drive frequency
@@ -49,12 +50,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
         public override void Update(float timeSpan)
         {
+            TargetForceN = Locomotive.TractiveForceN * AxleConnected.TractiveForceFraction;
             EngineMaxSpeedMpS = Locomotive.MaxSpeedMpS;
+            SlipControl = Locomotive.SlipControlSystem == MSTSLocomotive.SlipControlType.Full;
             float linToAngFactor = TransmissionRatio / AxleConnected.WheelRadiusM;
-
-            if (TargetForceN > 0) DriveSpeedRadpS = EngineMaxSpeedMpS * linToAngFactor + OptimalAsyncSpeedRadpS;
-            else if (TargetForceN < 0) DriveSpeedRadpS = -EngineMaxSpeedMpS * linToAngFactor - OptimalAsyncSpeedRadpS;
-
+            if (SlipControl)
+            {
+                if (TargetForceN > 0) DriveSpeedRadpS = (AxleConnected.TrainSpeedMpS + AxleConnected.WheelSlipThresholdMpS * 0.95f) * linToAngFactor + OptimalAsyncSpeedRadpS;
+                else if (TargetForceN < 0) DriveSpeedRadpS = (AxleConnected.TrainSpeedMpS - AxleConnected.WheelSlipThresholdMpS * 0.95f) * linToAngFactor - OptimalAsyncSpeedRadpS;
+            }
+            else
+            {
+                if (TargetForceN > 0) DriveSpeedRadpS = EngineMaxSpeedMpS * linToAngFactor + OptimalAsyncSpeedRadpS;
+                else if (TargetForceN < 0) DriveSpeedRadpS = -EngineMaxSpeedMpS * linToAngFactor - OptimalAsyncSpeedRadpS;
+            }
             requiredTorqueNm = Math.Abs(TargetForceN) * AxleConnected.WheelRadiusM / TransmissionRatio / TransmissionEfficiency;
             base.Update(timeSpan);
         }

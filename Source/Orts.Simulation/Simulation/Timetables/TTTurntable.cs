@@ -1204,6 +1204,17 @@ namespace Orts.Simulation.Timetables
                     {
                         throw new InvalidDataException("Can't find player locomotive in " + train.Name);
                     }
+                    else
+                    {
+                        foreach (TrainCar car in train.Cars)
+                        {
+                            if (car.WagonType == TrainCar.WagonTypes.Engine)
+                            {
+                                MSTSLocomotive loco = car as MSTSLocomotive;
+                                loco.AntiSlip = train.leadLocoAntiSlip;
+                            }
+                        }
+                    }
                 }
 
                 // normal AI train

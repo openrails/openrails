@@ -157,9 +157,9 @@ namespace Orts.Simulation.Physics
         public bool WagonsAttached = false;    // Wagons are attached to train
         public float LeadPipePressurePSI;       // Keeps record of Lead locomootive brake pipe pressure
 
-        public bool IsWheelSlipWarning;
+        public bool IsWheelSlipWarninq;
         public bool IsWheelSlip;
-        public bool HuDIsWheelSlipWarning;
+        public bool HuDIsWheelSlipWarninq;
         public bool HuDIsWheelSlip;
         public bool IsBrakeSkid;
 
@@ -2152,7 +2152,7 @@ namespace Orts.Simulation.Physics
 
                 if (car.HuDIsWheelSlip)
                     hudwhlslp = true;
-                if (car.HuDIsWheelSlipWarning)
+                if (car.HuDIsWheelSlipWarninq)
                     hudwhlslpwrn = true;
 
                 if (car.BrakeSkid)
@@ -2186,10 +2186,10 @@ namespace Orts.Simulation.Physics
             MassKg = massKg;
 
             IsWheelSlip = whlslp;
-            IsWheelSlipWarning = whlslpwrn;
+            IsWheelSlipWarninq = whlslpwrn;
 
             HuDIsWheelSlip = hudwhlslp;
-            HuDIsWheelSlipWarning = hudwhlslpwrn;
+            HuDIsWheelSlipWarninq = hudwhlslpwrn;
 
             IsBrakeSkid = whlskd;
 
@@ -2705,42 +2705,6 @@ namespace Orts.Simulation.Physics
 
                         car.CarInsideTempC = J.ToKJ(car.CarHeatCurrentCompartmentHeatJ) / (SpecificHeatCapacityAirKJpKgK * DensityAirKgpM3 * car.CarHeatVolumeM3) + car.CarOutsideTempC;
                     }
-                }
-            }
-        }
-
-        protected enum Wheelslip
-        {
-            None,
-            Warning,
-            Occurring
-        };
-        protected Wheelslip WheelslipState = Wheelslip.None;
-
-        public void ConfirmWheelslip()
-        {
-            if (HuDIsWheelSlip)
-            {
-                if (WheelslipState != Wheelslip.Occurring)
-                {
-                    WheelslipState = Wheelslip.Occurring;
-                    Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
-                }
-            }
-            else if (HuDIsWheelSlipWarning)
-            {
-                if (WheelslipState != Wheelslip.Warning)
-                {
-                    WheelslipState = Wheelslip.Warning;
-                    Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Warn1);
-                }
-            }
-            else
-            {
-                if (WheelslipState != Wheelslip.None)
-                {
-                    WheelslipState = Wheelslip.None;
-                    Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
                 }
             }
         }

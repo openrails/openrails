@@ -384,7 +384,7 @@ namespace Orts.Viewer3D.WebServices
             // Sander
             if (locomotive.GetSanderOn())
             {
-                bool sanderBlocked = !locomotive.GetSandingOn();
+                var sanderBlocked = locomotive.AbsSpeedMpS > locomotive.SanderSpeedOfMpS;
                 var sanderKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
                 AddLabel(new ListLabel
                 {
@@ -991,7 +991,7 @@ namespace Orts.Viewer3D.WebServices
             }
 
             // Wheel
-            if (train.HuDIsWheelSlip || train.HuDIsWheelSlipWarning || train.IsBrakeSkid)
+            if (train.HuDIsWheelSlip || train.HuDIsWheelSlipWarninq || train.IsBrakeSkid)
             {
                 wheelLabelVisible = true;
                 clockWheelTime = viewer.Simulator.ClockTime;
@@ -1005,7 +1005,7 @@ namespace Orts.Viewer3D.WebServices
                     LastCol = Viewer.Catalog.GetString("slip") + ColorCode[Color.OrangeRed],
                 });
             }
-            else if (train.HuDIsWheelSlipWarning)
+            else if (train.HuDIsWheelSlipWarninq)
             {
                 AddLabel(new ListLabel
                 {
