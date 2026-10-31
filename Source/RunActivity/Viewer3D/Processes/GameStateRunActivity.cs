@@ -120,6 +120,7 @@ namespace Orts.Viewer3D.Processes
 
         internal override void Update(RenderFrame frame, double totalRealSeconds)
         {
+            frame.ResetView(); // in case the in-game menu left its view on this frame
             UpdateLoading();
 
             if (Loading != null)
@@ -800,36 +801,11 @@ namespace Orts.Viewer3D.Processes
 
         void InitLogging(UserSettings settings, string[] args, bool appendLog)
         {
-            if (settings.Logging && (settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
-            {
-                string fileName;
-                try
-                {
-                    fileName = string.Format(settings.LoggingFilename, Application.ProductName, VersionInfo.VersionOrBuild, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
-                }
-                catch (FormatException)
-                {
-                    fileName = settings.LoggingFilename;
-                }
-                logFileName = GetFilePath(settings, fileName);
-
-                // Ensure we start with an empty file.
-                if (!appendLog)
-                    File.Delete(logFileName);
-                // Make Console.Out go to the log file AND the output stream.
-                Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
-                // Make Console.Error go to the new Console.Out.
-                Console.SetError(Console.Out);
-            }
-
-            // Captures Trace.Trace* calls and others and formats.
-            ORTraceListener = new ORTraceListener(Console.Out, !settings.Logging);
-            ORTraceListener.TraceOutputOptions = TraceOptions.Callstack;
-            // Trace.Listeners and Debug.Listeners are the same list.
-            Trace.Listeners.Add(ORTraceListener);
-
-            Console.WriteLine("This is a log file for {0}. Please include this file in bug reports.", Application.ProductName);
-            LogSeparator();
+            // The in-game menu may have started the log already; then just carry on in it.
+            if (ORTraceListener == null)
+                StartLogFile(settings, appendLog);
+            else
+                LogSeparator();
             if (settings.Logging)
             {
                 SystemInfo.WriteSystemDetails(Console.Out);
@@ -886,7 +862,42 @@ namespace Orts.Viewer3D.Processes
         /// <param name="settings"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        private string GetFilePath(UserSettings settings, string fileName)
+        /// <summary>Opens the log file (or clears it) and routes Console and Trace output into it; called once per process.</summary>
+        internal static void StartLogFile(UserSettings settings, bool appendLog)
+        {
+            if (settings.Logging && (settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
+            {
+                string fileName;
+                try
+                {
+                    fileName = string.Format(settings.LoggingFilename, Application.ProductName, VersionInfo.VersionOrBuild, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
+                }
+                catch (FormatException)
+                {
+                    fileName = settings.LoggingFilename;
+                }
+                logFileName = GetFilePath(settings, fileName);
+
+                // Ensure we start with an empty file.
+                if (!appendLog)
+                    File.Delete(logFileName);
+                // Make Console.Out go to the log file AND the output stream.
+                Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
+                // Make Console.Error go to the new Console.Out.
+                Console.SetError(Console.Out);
+            }
+
+            // Captures Trace.Trace* calls and others and formats.
+            ORTraceListener = new ORTraceListener(Console.Out, !settings.Logging);
+            ORTraceListener.TraceOutputOptions = TraceOptions.Callstack;
+            // Trace.Listeners and Debug.Listeners are the same list.
+            Trace.Listeners.Add(ORTraceListener);
+
+            Console.WriteLine("This is a log file for {0}. Please include this file in bug reports.", Application.ProductName);
+            Console.WriteLine(new String('-', 80));
+        }
+
+        private static string GetFilePath(UserSettings settings, string fileName)
         {
             foreach (var ch in Path.GetInvalidFileNameChars())
                 fileName = fileName.Replace(ch, '.');
