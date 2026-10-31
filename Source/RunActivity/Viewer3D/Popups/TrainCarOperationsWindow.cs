@@ -355,6 +355,13 @@ namespace Orts.Viewer3D.Popups
                 int carPosition = 0;
                 ControlLayout scrollbox;
 
+                if (SelectedCarPosition >= PlayerTrain.Cars.Count)
+                {
+                    SelectedCarPosition = PlayerTrain.Cars.Count - 1;
+                    LastCarIDSelected = null;  // will be initialized below
+                    CarPosition = trainCarViewer.CarPosition = SelectedCarPosition;
+                }
+
                 scrollbox = PlayerTrain.Cars.Count == 1 ? Vbox.AddLayoutHorizontal(Vbox.RemainingHeight)
                             : Vbox.AddLayoutScrollboxVertical(Vbox.RemainingWidth);
 
