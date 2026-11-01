@@ -55,13 +55,13 @@ namespace ActivityEditor.Engine
         Pen orangePen = new Pen(Color.Orange);
         Pen darkGrayPen = new Pen(Color.DarkGray);
         Pen bluePen = new Pen(Color.Blue);
-        Icon StationIcon;
+        Bitmap StationIcon;
         Icon TagIcon;
-        Icon SignalIco;
-        Icon ShuntIco;
-        Icon OtherSigIco;
-        Icon RepeatIco;
-        Icon SpeedIco;
+        Bitmap SignalIco;
+        Bitmap ShuntIco;
+        Bitmap OtherSigIco;
+        Bitmap RepeatIco;
+        Bitmap SpeedIco;
         Icon StationConnector;
         Image Ruler;
         private Font sidingFont;
@@ -529,7 +529,7 @@ namespace ActivityEditor.Engine
                         myMatrix.RotateAt(item.stationWidget.icoAngle, scaledA, MatrixOrder.Append);
                         gMod.Transform = myMatrix;
                     }
-                    gMod.DrawIcon(StationIcon, rect);
+                    gMod.DrawImage(StationIcon, rect);
                     gMod.ResetTransform();
                     if (station.isItSeen())
                     {
@@ -761,19 +761,19 @@ namespace ActivityEditor.Engine
                                 {
                                     case MstsSignalFunction.NORMAL:
                                     case MstsSignalFunction.DISTANCE:
-                                        g.DrawIcon(SignalIco, rect);
+                                        g.DrawImage(SignalIco, rect);
                                         break;
                                     case MstsSignalFunction.REPEATER:
-                                        g.DrawIcon(RepeatIco, rect);
+                                        g.DrawImage(RepeatIco, rect);
                                         break;
                                     case MstsSignalFunction.SHUNTING:
-                                        g.DrawIcon(ShuntIco, rect);
+                                        g.DrawImage(ShuntIco, rect);
                                         break;
                                     case MstsSignalFunction.ALERT:
-                                        g.DrawIcon(OtherSigIco, rect);
+                                        g.DrawImage(OtherSigIco, rect);
                                         break;
                                     case MstsSignalFunction.SPEED:
-                                        g.DrawIcon(SpeedIco, rect);
+                                        g.DrawImage(SpeedIco, rect);
                                         break;
                                 }
                             }
@@ -783,7 +783,7 @@ namespace ActivityEditor.Engine
                                 {
                                     case MstsSignalFunction.NORMAL:
                                     case MstsSignalFunction.DISTANCE:
-                                        g.DrawIcon(SignalIco, rect);
+                                        g.DrawImage(SignalIco, rect);
                                         break;
                                 }
                             }
@@ -1758,18 +1758,18 @@ namespace ActivityEditor.Engine
             string[] resName = a.GetManifestResourceNames();
             st = a.GetManifestResourceStream("ActivityEditor.icon.tag.ico");
             TagIcon = new System.Drawing.Icon(st);
-            st = a.GetManifestResourceStream("ActivityEditor.icon.SignalBox.ico");
-            StationIcon = new System.Drawing.Icon(st);
-            st = a.GetManifestResourceStream("ActivityEditor.icon.signal.ico");
-            SignalIco = new System.Drawing.Icon(st);
-            st = a.GetManifestResourceStream("ActivityEditor.icon.signalShunt.ico");
-            ShuntIco = new System.Drawing.Icon(st);
-            st = a.GetManifestResourceStream("ActivityEditor.icon.signalOther.ico");
-            OtherSigIco = new System.Drawing.Icon(st);
-            st = a.GetManifestResourceStream("ActivityEditor.icon.speedLimit.ico");
-            SpeedIco = new System.Drawing.Icon(st);
-            st = a.GetManifestResourceStream("ActivityEditor.icon.signalRepeat.ico");
-            RepeatIco = new System.Drawing.Icon(st);
+            st = a.GetManifestResourceStream("ActivityEditor.icon.signalBox.png");
+            StationIcon = new System.Drawing.Bitmap(st);
+            st = a.GetManifestResourceStream("ActivityEditor.icon.signal.png");
+            SignalIco = new System.Drawing.Bitmap(st);
+            st = a.GetManifestResourceStream("ActivityEditor.icon.signalShunt.png");
+            ShuntIco = new System.Drawing.Bitmap(st);
+            st = a.GetManifestResourceStream("ActivityEditor.icon.signalOther.png");
+            OtherSigIco = new System.Drawing.Bitmap(st);
+            st = a.GetManifestResourceStream("ActivityEditor.icon.speedLimit.png");
+            SpeedIco = new System.Drawing.Bitmap(st);
+            st = a.GetManifestResourceStream("ActivityEditor.icon.signalRepeat.png");
+            RepeatIco = new System.Drawing.Bitmap(st);
             st = a.GetManifestResourceStream("ActivityEditor.icon.StationConnector.ico");
             StationConnector = new System.Drawing.Icon(st);
 
