@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Formats.Msts;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -54,6 +53,7 @@ namespace Orts.Viewer3D
         public float SlowDownFactor = 1.0f;
 
         bool MstsChildrenAnimation = true;
+        bool MstsFrameNumbersOneBased;
 
         /// <summary>
         /// The saved direction of the loop update.
@@ -80,6 +80,7 @@ namespace Orts.Viewer3D
             SpeedFromFrameCount         = 1 << 5,
             SpeedFromFrameRate          = 1 << 6,
             SpeedFromFrameRatePer30     = 1 << 7,
+            FrameNumbersCanBeOneBased   = 1 << 8,
         }
 
         /// <summary>
@@ -172,6 +173,9 @@ namespace Orts.Viewer3D
                 Speed *= PoseableShape?.SharedShape?.Animations?.FirstOrDefault()?.FrameRate ?? 30f;
             if ((options & MstsOptions.SpeedFromFrameRatePer30) != 0)
                 Speed *= (PoseableShape?.SharedShape?.Animations?.FirstOrDefault()?.FrameRate ?? 30f) / 30f;
+            if ((options & MstsOptions.FrameNumbersCanBeOneBased) != 0)
+                MstsFrameNumbersOneBased = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?
+                    .controllers?.FirstOrDefault()?.FirstOrDefault()?.Frame == 1;
         }
 
         /// <summary>
@@ -206,7 +210,7 @@ namespace Orts.Viewer3D
             AnimationKey = frame;
 
             foreach (var matrix in MatrixIndexes)
-                PoseableShape.SharedShape.Animate(matrix, AnimationKey, PoseableShape.XNAMatrices);
+                PoseableShape.SharedShape.Animate(matrix, MstsFrameNumbersOneBased ? AnimationKey + 1 : AnimationKey, PoseableShape.XNAMatrices);
         }
 
         /// <summary>
@@ -243,7 +247,7 @@ namespace Orts.Viewer3D
             if (minFrame < 0) minFrame = 0;
             if (maxFrame > MaxFrame) maxFrame = MaxFrame;
 
-            if (minFrame <= frame && frame <= MaxFrame)
+            if (minFrame <= frame && frame <= maxFrame)
                 return false;
 
             if (maxFrame - minFrame != 0)
@@ -251,11 +255,13 @@ namespace Orts.Viewer3D
                 frame = minFrame + (frame - minFrame) % (maxFrame - minFrame);
                 // If frame was negative (eg: animation run in reverse), it will still be negative
                 // and needs one additional offset by MaxFrame to be in the correct range
-                if (frame < 0)
-                    frame += maxFrame;
+                if (frame < minFrame)
+                    frame += maxFrame - minFrame;
             }
             else
+            {
                 frame = minFrame;
+            }
             
             return true;
         }
@@ -318,7 +324,7 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="runningSign">1 for forward, -1 for reverse, 0 for stopped</param>
         /// <param name="elapsedTime">The elapsed time since the last update</param>
-        public void UpdateLoop(float runningSign, ElapsedTime elapsedTime, float targetKey = 0, float minFrame = 0, float maxFrame = float.MaxValue)
+        public void UpdateLoop(float runningSign, ElapsedTime elapsedTime, float targetKey = 0)
         {
             if (runningSign == 0 && AnimationKey == targetKey)
                 return;
@@ -327,7 +333,7 @@ namespace Orts.Viewer3D
                 LoopSign = Math.Sign(runningSign);
 
             var resultKey = AnimationKey + elapsedTime.ClockSeconds * Speed * SlowDownFactor * LoopSign;
-            var wrapped = CalculateFrameWrap(ref resultKey, minFrame, maxFrame);
+            var wrapped = CalculateFrameWrap(ref resultKey, 0, MaxFrame);
 
             bool targetReached = LoopSign < 0
                 ? (wrapped ? (AnimationKey > targetKey || targetKey >= resultKey)

@@ -370,10 +370,10 @@ namespace Orts.Viewer3D
             MinuteHand.AddAnimation("orts_mhand_clock*");
             HourHand.AddAnimation("orts_hhand_clock*");
 
-            CentiSecondHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
-            SecondHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
-            MinuteHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
-            HourHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour);
+            CentiSecondHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour | AnimatedPart.MstsOptions.FrameNumbersCanBeOneBased);
+            SecondHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour | AnimatedPart.MstsOptions.FrameNumbersCanBeOneBased);
+            MinuteHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour | AnimatedPart.MstsOptions.FrameNumbersCanBeOneBased);
+            HourHand.SetMstsAnimationOptions(AnimatedPart.MstsOptions.MaxFrameIsFour | AnimatedPart.MstsOptions.FrameNumbersCanBeOneBased);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
