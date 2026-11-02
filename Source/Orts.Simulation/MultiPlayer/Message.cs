@@ -1,4 +1,4 @@
-// COPYRIGHT 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -2753,8 +2753,12 @@ namespace Orts.MultiPlayer
                     if (car == null) continue;
                     tmpcars2.Add(car);
                     car.Flipped = flipped2[i] == 0 ? false : true;
+                    car.Train = train2;
+                    if (car.CarID == firstCarIDNew && newIDIsLead) train2.LeadLocomotive = car;
                 }
+
                 if (tmpcars2.Count == 0) return;
+
                 train2.Cars = tmpcars2;
                 train2.Name = String.Concat(train.Name, Train.TotalNumber.ToString());
                 train2.LeadLocomotive = null;
@@ -2808,8 +2812,6 @@ namespace Orts.MultiPlayer
                 }
                 foreach (TrainCar car in train2.Cars)
                 {
-                    if (car.CarID == firstCarIDNew && newIDIsLead) train2.LeadLocomotive = car;
-                    car.Train = train2;
                     foreach (var p in MPManager.OnlineTrains.Players)
                     {
                         if (car.CarID.StartsWith(p.Value.LeadingLocomotiveID))
