@@ -60,6 +60,11 @@ namespace Orts.Viewer3D
 
         internal static bool HighlightMissingTextures = false;
 
+        public static readonly string[] MstsExtensionFilter = new[] { ".dds", ".ace" };
+        public static readonly string[] GltfCoreTextureExtensionFilter = new[] { ".png", ".jpg", ".jpeg" };
+        public static readonly string[] GltfDdsTextureExtensionFilter = new[] { ".dds" };
+
+
         [CallOnThread("Render")]
         internal SharedTextureManager(Viewer viewer, GraphicsDevice graphicsDevice)
         {
@@ -74,6 +79,9 @@ namespace Orts.Viewer3D
         /// <returns>The <see cref="Texture2D"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
         public Texture2D Get(string path, bool required = false)
         {
+            if (!MstsExtensionFilter.Contains(Path.GetExtension(path).ToLowerInvariant()))
+                return SharedMaterialManager.MissingTexture;
+
             return Get(path, SharedMaterialManager.MissingTexture, required);
         }
 
@@ -109,13 +117,13 @@ namespace Orts.Viewer3D
                             if (File.Exists(dds))
                             {
                                 DDSLib.DDSFromFile(dds, GraphicsDevice, true, out Texture2D texture, srgb);
-                                if (Debugger.IsAttached) texture.Name = path;
+                                texture.Name = path;
                                 return Textures[textureKey] = texture;
                             }
                             if (File.Exists(ace))
                             {
                                 var texture = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, ace);
-                                if (Debugger.IsAttached) texture.Name = path;
+                                texture.Name = path;
                                 return Textures[textureKey] = texture;
                             }
                             if (defaultTexture != SharedMaterialManager.MissingTexture)
@@ -177,7 +185,7 @@ namespace Orts.Viewer3D
                 Textures[textureKey] = Texture2D.FromStream(GraphicsDevice, stream);
             }
 
-            if (Debugger.IsAttached) Textures[textureKey].Name = textureKey;
+            Textures[textureKey].Name = textureKey;
             return Textures[textureKey];
 
         }
@@ -322,6 +330,10 @@ namespace Orts.Viewer3D
         static TextureCube EnvironmentMapSpecularNight;
         static Texture2D BrdfLutTexture;
 
+        /// <summary>
+        /// Represents a soft, warm, and natural daylight environment where the lighting is predominantly ambient (diffuse) but with a strong top-down directionality.
+        /// The color ratios describe a bright, slightly blueish-white base light from the sky, complemented by a warm, yellowish-red directional light.
+        /// </summary>
         static readonly Vector3[] ShDay = new[]
         {
             new Vector3(0.933248f,  0.827154f,  0.734785f), // L0,0
@@ -335,6 +347,10 @@ namespace Orts.Viewer3D
             new Vector3(0.027432f,  0.010342f,  0.003231f)  // L2,2
         };
 
+        /// <summary>
+        /// Represents a dim, cold, and blueish night environment where the lighting is highly ambient (diffuse) but with a distinct top-down directionality like a moonlight.
+        /// The overall intensity is drastically reduced compared to daylight, shifting the color profile toward a deep, blue-gray tone with very subtle highlights.
+        /// </summary>
         static readonly Vector3[] ShNight = new[]
         {
             new Vector3(0.080f, 0.110f, 0.180f),    // L0,0
@@ -913,7 +929,7 @@ namespace Orts.Viewer3D
 
     public class SceneryMaterial : Material
     {
-        public SceneryMaterialOptions Options;
+        public SceneryMaterialOptions Options { get; init; }
         readonly float MipMapBias;
         protected Texture2D Texture;
         private readonly string TexturePath;
@@ -1362,9 +1378,6 @@ namespace Orts.Viewer3D
             [(TextureFilter.Linear, TextureAddressMode.Wrap, TextureAddressMode.Wrap)] = new SamplerState { Filter = TextureFilter.Linear, AddressU = TextureAddressMode.Wrap, AddressV = TextureAddressMode.Wrap, MaxAnisotropy = 16 },
         };
 
-        static readonly string[] StandardTextureExtensionFilter = new[] { ".png", ".jpg", ".jpeg" };
-        static readonly string[] DdsTextureExtensionFilter = new[] { ".dds" };
-
         public PbrMaterial(Viewer viewer, string materialUniqueId, SceneryMaterialOptions options, float mipMapBias, Gltf gltfFile)
             : base(viewer, null, options, mipMapBias, 0)
         {
@@ -1587,13 +1600,13 @@ namespace Orts.Viewer3D
             {
                 var texture = GltfFile.Textures[(int)textureIndex];
                 var source = texture?.Source;
-                var extensionFilter = StandardTextureExtensionFilter;
+                var extensionFilter = SharedTextureManager.GltfCoreTextureExtensionFilter;
                 object extension = null;
                 if (GltfFile.ExtensionsUsed?.Contains("MSFT_texture_dds") & texture?.Extensions?.TryGetValue("MSFT_texture_dds", out extension) ?? false)
                 {
                     var ext = Newtonsoft.Json.JsonConvert.DeserializeObject<MSFT_texture_dds>(extension.ToString(), GltfShape.PopulateDefaults);
                     source = ext?.Source ?? source;
-                    extensionFilter = DdsTextureExtensionFilter;
+                    extensionFilter = SharedTextureManager.GltfDdsTextureExtensionFilter;
                 }
                 if (source != null)
                 {

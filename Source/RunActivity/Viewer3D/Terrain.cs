@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.IO;
 
 namespace Orts.Viewer3D
 {
@@ -518,7 +519,12 @@ namespace Orts.Viewer3D
             : base(viewer, terrainTexture)
         {
             var textures = terrainTexture.Split('\0');
-            PatchTexture = Viewer.TextureManager.Get(textures[0], defaultTexture);
+
+            if (!SharedTextureManager.MstsExtensionFilter.Contains(Path.GetExtension(textures[0]).ToLowerInvariant()))
+                PatchTexture = defaultTexture;
+            else
+                PatchTexture = Viewer.TextureManager.Get(textures[0], defaultTexture);
+
             PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
             var converted = textures.Length > 2 && float.TryParse(textures[2], out OverlayScale);
             OverlayScale = OverlayScale != 0 && converted ?  OverlayScale : 32;
