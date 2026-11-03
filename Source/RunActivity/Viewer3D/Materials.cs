@@ -1807,7 +1807,6 @@ namespace Orts.Viewer3D
         TextureAddressMode GetTextureAddressMode(Sampler.WrapTEnum wrapEnum) => GetTextureAddressMode((Sampler.WrapSEnum)wrapEnum);
         TextureAddressMode GetTextureAddressMode(Sampler.WrapSEnum wrapEnum)
         {
-            //if (Shape.MsfsFlavoured) return TextureAddressMode.Clamp;
             switch (wrapEnum)
             {
                 case Sampler.WrapSEnum.REPEAT: return TextureAddressMode.Wrap;
@@ -1938,7 +1937,6 @@ namespace Orts.Viewer3D
 
         public enum Pass
         {
-            Extract,
             DownSample,
             UpSample,
             Merge
@@ -1990,7 +1988,6 @@ namespace Orts.Viewer3D
 
             switch (pass)
             {
-                case Pass.Extract: Shader.CurrentTechnique = Shader.Techniques[UseLuminance ? "ExtractLuminance" : "Extract"]; ShaderPass = UseLuminance ? ShaderPassExtractLuminance : ShaderPassExtract; break;
                 case Pass.UpSample: Shader.CurrentTechnique = Shader.Techniques[UseLuminance ? "UpsampleLuminance" : "Upsample"]; ShaderPass = UseLuminance ? ShaderPassUpsampleLuminance : ShaderPassUpsample; break;
                 case Pass.DownSample: Shader.CurrentTechnique = Shader.Techniques["Downsample"]; ShaderPass = ShaderPassDownsample; break;
                 case Pass.Merge: Shader.CurrentTechnique = Shader.Techniques["Merge"]; ShaderPass = ShaderPassMerge; break;
@@ -1998,7 +1995,7 @@ namespace Orts.Viewer3D
 
             graphicsDevice.RasterizerState = RasterizerState.CullNone;
             graphicsDevice.BlendState = pass == Pass.UpSample ? BlendState.Additive : BlendState.Opaque;
-            graphicsDevice.DepthStencilState = pass == Pass.Extract ? BloomStencilState : DepthStencilState.Default;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             Shader.ScreenTexture = sourceTexture;
             graphicsDevice.SetRenderTarget(targetTexture);
@@ -2023,9 +2020,6 @@ namespace Orts.Viewer3D
             Shader.InverseResolution = new Vector2(1f / screen.Width, 1f / screen.Height);
 
             // Extracting is not needed with deferred bloom shading.
-            // Extract the pixels to be bloomed
-            //SetState(graphicsDevice, screen, mip0, Pass.Extract);
-            //Render(graphicsDevice);
 
             SetState(graphicsDevice, mip0, mip1, Pass.DownSample);
             Render(graphicsDevice);
@@ -2068,13 +2062,6 @@ namespace Orts.Viewer3D
             SetState(graphicsDevice, screen, mip0, result, Pass.Merge);
             Render(graphicsDevice);
         }
-
-        public DepthStencilState BloomStencilState = new DepthStencilState()
-        {
-            StencilEnable = true,
-            StencilMask = 0x08,
-            StencilFunction = CompareFunction.Greater,
-        };
     }
 
     public class ShadowMapMaterial : Material

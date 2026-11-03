@@ -107,8 +107,6 @@ namespace Orts.Viewer3D
 
         protected override void LoadContent()
         {
-            Trace.Write("G");
-
             FileDir = Path.GetDirectoryName(FilePath);
             var inputFilename = Path.GetFileNameWithoutExtension(FilePath).ToUpper();
             if (inputFilename.Contains("_LOD"))
@@ -240,14 +238,14 @@ namespace Orts.Viewer3D
                         }
                         if (unsupportedExtensions.Any())
                         {
-                            var message = $"glTF required extension {string.Join(", ", unsupportedExtensions)} is unsupported by Openrails, skipping file {externalLods[id]}";
+                            var message = $"Skipped entire glTF model which requires unsupported extensions {string.Join(", ", unsupportedExtensions)} in model {externalLods[id]}";
                             Trace.TraceWarning(message);
                             if (!ConsistGenerator.GltfVisualTestRun)
                                 continue;
                         }
                         if (unusedExtensions.Any())
                         {
-                            var message = $"glTF required extension {string.Join(", ", unusedExtensions)} is not listed as \"extensionsUsed\", skipping file {externalLods[id]}";
+                            var message = $"Skipped entire glTF model with required extension {string.Join(", ", unusedExtensions)} is not listed as \"extensionsUsed\" in model {externalLods[id]}";
                             Trace.TraceWarning(message);
                             if (!ConsistGenerator.GltfVisualTestRun)
                                 continue;

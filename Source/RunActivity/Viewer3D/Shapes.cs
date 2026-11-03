@@ -607,9 +607,6 @@ namespace Orts.Viewer3D
             // TODO: Make this use AddAutoPrimitive instead.
             frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
 
-            // Update the pose
-            //AnimatedPart?.SetState(0); // Currently it seems to be always zero. Unfinished development in the original code?
-
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
