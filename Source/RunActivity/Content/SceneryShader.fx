@@ -808,7 +808,6 @@ void _PSApplyFog(inout float3 Color, in VERTEX_OUTPUT In)
 
 void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 {
-	//if (ReferenceAlpha < 0.01) Color.a = 1;
 	Color.a *= saturate((ZFar - length(In.RelPosition.xyz)) / 50);
 }
 
@@ -1276,18 +1275,12 @@ PIXEL_OUTPUT PSPbr(in VERTEX_OUTPUT_PBR In, bool isBackFace : SV_IsFrontFace)
 
     }
 
-	///////////////////////
-	// Contributions from the OpenRails environment:
-	// Overcast blanks out ambient, shadow and specular effects (so use original Color).
-	//litColor = lerp(litColor, _PSGetOvercastColor(Color, InGeneral), Overcast.x);
-
 	// And fogging is last.
     litColor = lerp(litColor, FogPbr.rgb, InGeneral.Fog);
 
 #ifdef DEBUG_SHADOW_COLORS
 	_PSApplyShadowColor(litColor, InGeneral);
 #endif
-	///////////////////////
 
 	litColor = _PSLinearToSrgb(litColor);
 

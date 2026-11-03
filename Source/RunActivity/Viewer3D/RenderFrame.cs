@@ -399,8 +399,9 @@ namespace Orts.Viewer3D
         static readonly Vector3 BaseMoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
         const float BaseSunIntensity = 1;
         const float BaseMoonIntensity = BaseSunIntensity / 380000;
-        //public const float HeadLightIntensity = 250000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
-        public const float HeadLightIntensity = 4; // Using the old linear attenuation model
+        public const float HeadLightIntensity = 4; // Using the old linear attenuation model.
+        // If ever switching to the new physically based model, this should be changed to about 250000 and the attenuation formula in the shader should be updated accordingly.
+        // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
 
         /// <summary>
         /// In the order of <see cref="LightMode"/>, by visual inspection of PlaysetLightTest at nighttime. For Point probably should be 1 / 4π = 0.08

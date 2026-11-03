@@ -150,9 +150,9 @@ namespace Orts.Viewer3D
             int vIn = Program.Simulator.Settings.DayAmbientLight;
             
             float FullBrightness = (float)vIn / 20.0f ;
-            //const float HalfShadowBrightness = 0.75;
+            // For the full overview, HalfShadowBrightness = 0.75
             const float HalfNightBrightness = 0.6f;
-            //const float ShadowBrightness = 0.5f;
+            // For the full overview, ShadowBrightness = 0.5f
             const float NightBrightness = 0.2f;
 
             if (_imageTextureIsNight)
