@@ -214,6 +214,8 @@ namespace ORTS.Common
         public static float FromLbpH(float poundsPerHour)    { return poundsPerHour      * (1.0f / 7936.64144f); }
         /// <summary>Convert from kilograms/second to pounds/hour</summary>
         public static float ToLbpH(float kilogramsPerSecond) { return kilogramsPerSecond * 7936.64144f; }
+        /// <summary>Convert from pounds/second to kilogram/second</summary>
+        public static float FromLbpS(float poundsPerSecond) { return poundsPerSecond * (1.0f / 2.20462f); }
     }
 
     /// <summary>
@@ -419,6 +421,10 @@ namespace ORTS.Common
         public static float FromGUS(float gallonUS) { return gallonUS * 3.78541f; }
         /// <summary>Convert from litres to US Gallons</summary>
         public static float ToGUS(float litre) { return litre * (1.0f / 3.78541f); }
+        /// <summary>Convert from pounds to liters for a fluid with the specified density, default 1.0 (water).</summary>
+        public static float FromLb(float pounds, float densityKgpL = 1.0f) { return pounds * (1.0f / 2.20462f) * (1.0f / densityKgpL); }
+        /// <summary>Convert from pounds to liters for a fluid with the specified density, default 1.0 (water).</summary>
+        public static float FromKg(float kilogram, float densityKgpL = 1.0f) { return kilogram * (1.0f / densityKgpL); }
     }
 
 
@@ -580,6 +586,7 @@ namespace ORTS.Common
         public static string ft2 = Catalog.GetString("ft²");
         public static string m3 = Catalog.GetString("m³");
         public static string ft3 = Catalog.GetString("ft³");
+        public static string mps = Catalog.GetString("m/s");
         public static string kmph = Catalog.GetString("km/h");
         public static string mph = Catalog.GetString("mph");
         public static string kpa = Catalog.GetString("kPa");
@@ -589,6 +596,13 @@ namespace ORTS.Common
         public static string kgfpcm2 = Catalog.GetString("kgf/cm²");
         public static string lps = Catalog.GetString("L/s");
         public static string lpm = Catalog.GetString("L/min");
+        public static string lph = Catalog.GetString("L/h");
+        public static string gphUK = Catalog.GetString("gal-uk/h");
+        public static string gphUS = Catalog.GetString("gal-us/h");
+        public static string kgps = Catalog.GetString("kg/s");
+        public static string kgph = Catalog.GetString("kg/h");
+        public static string lbps = Catalog.GetString("lb/s");
+        public static string lbph = Catalog.GetString("lb/h");
         public static string cfm = Catalog.GetString("cfm");
         public static string kg = Catalog.GetString("kg");
         public static string t = Catalog.GetString("t");
@@ -602,6 +616,7 @@ namespace ORTS.Common
         public static string galUK = Catalog.GetString("g-uk");
         public static string galUS = Catalog.GetString("g-us");
         public static string rpm = Catalog.GetString("rpm");
+        public static string w = Catalog.GetString("W");
         public static string kW = Catalog.GetString("kW");
         public static string hp = Catalog.GetString("hp"); // mechanical (or brake) horsepower
         public static string bhp = Catalog.GetString("bhp"); // boiler horsepower
