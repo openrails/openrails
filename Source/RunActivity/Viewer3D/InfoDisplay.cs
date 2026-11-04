@@ -19,14 +19,14 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using GNU.Gettext;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using ORTS.Common;
 using ORTS.Common.Input;
-using Orts.Simulation.RollingStocks.SubSystems.Brakes;
-using GNU.Gettext;
 
 namespace Orts.Viewer3D
 {
@@ -259,6 +259,7 @@ namespace Orts.Viewer3D
                     Logger.Data(ConvertForce(Viewer.PlayerLocomotive.MotiveForceN));
                     Logger.Data(ConvertForce(Viewer.PlayerLocomotive.BrakeForceN));
                     Logger.Data(ConvertForce((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.AxleMotiveForceN));
+                    Logger.Data(ConvertPower((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.AxleMotivePowerW));
                     Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.SlipSpeedPercent.ToString("F1"));
                     Logger.Data(ConvertSpeed(Viewer.PlayerLocomotive.SpeedMpS));
                     Logger.Data(ConvertSpeed(Viewer.PlayerTrain.AllowedMaxSpeedMpS));  // loco does not have a max speed
@@ -271,6 +272,7 @@ namespace Orts.Viewer3D
                     Logger.Data(ConvertPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnitEnum));
                     if (Viewer.PlayerLocomotive is MSTSDieselLocomotive diesel)
                     {
+                        // Logger.Data(ConvertPower(diesel.DieselEngines[0].AvailableTractionPowerW));  // need all engines  -- for now using axle power
                         Logger.Data(diesel.DieselEngines[0].RealRPM.ToString("F0"));
                         Logger.Data(diesel.DieselEngines[0].DemandedRPM.ToString("F0"));
                         Logger.Data(diesel.DieselEngines[0].LoadPercent.ToString("F0"));
@@ -295,6 +297,7 @@ namespace Orts.Viewer3D
                     }
                     else if (Viewer.PlayerLocomotive is MSTSElectricLocomotive electric)
                     {
+                        // Logger.Data(ConvertPower(electric.???);  -- for now using axle power
                         Logger.Data(electric.Pantographs[1].CommandUp.ToString());
                         Logger.Data(electric.Pantographs[2].CommandUp.ToString());
                         Logger.Data(electric.Pantographs.List.Count > 2 ? electric.Pantographs[3].CommandUp.ToString() : null);
@@ -310,6 +313,7 @@ namespace Orts.Viewer3D
                     }
                     else if (Viewer.PlayerLocomotive is MSTSSteamLocomotive steam)
                     {
+                        // Logger.Data(ConvertPower(W.FromHp(steam.IndicatedHorsePowerHP)));  -- for now using axle power
                         Logger.Data(ConvertMassConsumption(steam.BlowerSteamUsageLBpS, true));
                         Logger.Data(ConvertPressure(steam.BoilerPressurePSI, PressureUnitEnum));
                         Logger.Data(steam.CylinderCocksAreOpen.ToString());
@@ -407,6 +411,7 @@ namespace Orts.Viewer3D
                     Logger.Data($"Player Motive Force [{ForceUnit}]");
                     Logger.Data($"Player Brake Force [{ForceUnit}]");
                     Logger.Data($"Player Axle Force [{ForceUnit}]");
+                    Logger.Data($"Player Axle Power [{PowerUnit}]");
                     Logger.Data("Player Wheelslip");
                     Logger.Data($"Player Speed [{SpeedUnit}]");
                     Logger.Data($"Speed Limit [{SpeedUnit}]");
@@ -417,6 +422,7 @@ namespace Orts.Viewer3D
                     Logger.Data("Brakeman Brake");
                     Logger.Data($"Player Cylinder [{PressureUnitEnum.ToString()}]");
                     Logger.Data($"Player Main Res [{PressureUnitEnum.ToString()}]");
+                    // Logger.Data($"Available Traction Power [{PowerUnit}]");  -- for now using axle power
                     Logger.Data($"D:Real RPM / E:panto 1 / S:Blower usage [{(UseNativeUnits ? FormatStrings.lbps : MassConsumptionUnit)}]");
                     Logger.Data($"D:Demanded RPM / E:panto 2 / S:Boiler [{PressureUnitEnum.ToString()}]");
                     Logger.Data("D:Load [%] / E:panto 3 / S:Cylinder Cocks open");
