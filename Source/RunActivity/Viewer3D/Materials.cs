@@ -79,9 +79,8 @@ namespace Orts.Viewer3D
         /// <returns>The <see cref="Texture2D"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
         public Texture2D Get(string path, bool required = false)
         {
-            if (!MstsExtensionFilter.Contains(Path.GetExtension(path).ToLowerInvariant()))
+            if (string.IsNullOrEmpty(path) || !MstsExtensionFilter.Contains(Path.GetExtension(path).ToLowerInvariant()))
                 return SharedMaterialManager.MissingTexture;
-
             return Get(path, SharedMaterialManager.MissingTexture, required);
         }
 

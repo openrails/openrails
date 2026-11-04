@@ -60,8 +60,6 @@ namespace Orts.Viewer3D
         /// </summary>
         float LoopSign = 1.0f;
 
-        bool Initialized;
-
         /// <summary>
         /// shape format: List of the matrices we're animating for this part.
         /// glTF format: The animation clip's numbers we are playing for this part.
@@ -203,10 +201,6 @@ namespace Orts.Viewer3D
 
         void SetFrame(float frame)
         {
-            if (Initialized && frame == AnimationKey)
-                return;
-
-            Initialized = true;
             AnimationKey = frame;
 
             foreach (var matrix in MatrixIndexes)
