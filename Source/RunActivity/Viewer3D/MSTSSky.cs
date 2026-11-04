@@ -587,9 +587,6 @@ namespace Orts.Viewer3D
             MSTSSkyShader.SetFog(Viewer.World.MSTSSky.mstsskyfogDistance, ref SharedMaterialManager.FogColor);
             MSTSSkyShader.CloudScalePosition = Viewer.World.WeatherControl.CloudScalePosition;
 
-            for (var i = 0; i < 5; i++)
-                graphicsDevice.SamplerStates[i] = SamplerState.LinearWrap;
-
             // Sky dome
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;

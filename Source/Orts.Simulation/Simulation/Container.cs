@@ -1027,7 +1027,7 @@ namespace Orts.Simulation
         private void SetGrabbers(Container container)
         {
             TargetGrabber01 = Math.Min(Grabber01Max, (container.LengthM - Container.Length20ftM) / GrabberArmsParts);
-            TargetGrabber02 = Math.Max(Grabber02Max, (-container.LengthM + Container.Length20ftM) / GrabberArmsParts);
+            TargetGrabber02 = Math.Min(Grabber02Max, (container.LengthM - Container.Length20ftM) / GrabberArmsParts);
             MoveGrabber = true;
         }
         private void SelectUnloadPosition()

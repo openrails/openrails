@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Common;
+using Orts.Content;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems;
@@ -160,7 +161,9 @@ namespace Orts.Simulation.RollingStocks
 
             public void WagFile(string filenamewithpath)
             {
-                using (STFReader stf = new STFReader(filenamewithpath, false))
+                using (STFReader stf = ConsistGenerator.IsWagonRecognized(filenamewithpath)
+                    ? new STFReader(ConsistGenerator.GetWagon(filenamewithpath), filenamewithpath, System.Text.Encoding.UTF8, false)
+                    : new STFReader(filenamewithpath, false))
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("engine", ()=>{ IsEngine = true; Engine.Parse(stf); }),
                         new STFReader.TokenProcessor("_openrails", ()=>{ OpenRails.Parse(stf); }),

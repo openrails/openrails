@@ -1492,9 +1492,9 @@ namespace Orts.Viewer3D
                             && (controlRenderer.Control.Screens == null || controlRenderer.Control.Screens.Count == 0 || controlRenderer.Control.Screens[0] == "all" ||
                                 controlRenderer.Control.Screens.Contains(locoViewer.ThreeDimentionCabRenderer.ActiveScreen[controlRenderer.Control.Display])))
                         {
-                            foreach (var targetNode in animatedPart.MatrixIndexes)
+                            foreach (var index in animatedPart.MatrixIndexes)
                             {
-                                if (!trainCarShape.SharedShape.StoredResultMatrixes.TryGetValue(targetNode, out var matrix))
+                                if (!trainCarShape.SharedShape.StoredResultMatrixes.TryGetValue(trainCarShape.SharedShape.GetAnimationTargetNode(index), out var matrix))
                                     continue;
                                 var matrixWorldLocation = trainCarShape.Location.WorldLocation;
                                 matrixWorldLocation.Location.X = matrix.Translation.X;
