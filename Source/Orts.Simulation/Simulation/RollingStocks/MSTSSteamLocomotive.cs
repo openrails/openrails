@@ -1002,11 +1002,15 @@ namespace Orts.Simulation.RollingStocks
                     MSTSNumCylinders = stf.ReadIntBlock(null); break; // retained for legacy purposes
                 case "engine(numberofcylinders":
                     MSTSNumCylinders = stf.ReadIntBlock(null); break;
+                case "engine(ortsmaxtracksandersteamconsumption":
+                    float sandSteamLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
+                    MaxTrackSanderSteamConsumptionForwardLbpS = MaxTrackSanderSteamConsumptionReverseLbpS = sandSteamLbpS;
+                    break;
                 case "engine(ortsmaxtracksandersteamconsumptionforward":
-                    Me3.FromFt3(MaxTrackSanderSteamConsumptionForwardLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null));
+                    MaxTrackSanderSteamConsumptionForwardLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                     break;
                 case "engine(ortsmaxtracksandersteamconsumptionreverse":
-                    Me3.FromFt3(MaxTrackSanderSteamConsumptionReverseLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null));
+                    MaxTrackSanderSteamConsumptionReverseLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                     break;
                 case "engine(cylinderstroke": MSTSCylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(cylinderdiameter": MSTSCylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1361,7 +1365,6 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(EvaporationLBpS);
             outf.Write(FireMassKG);
             outf.Write(FlueTempK);
-            outf.Write(SandingSteamUsageLBpS);
             outf.Write(SteamGearPosition);
             ControllerFactory.Save(CutoffController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
@@ -1428,7 +1431,6 @@ namespace Orts.Simulation.RollingStocks
             EvaporationLBpS = inf.ReadSingle();
             FireMassKG = inf.ReadSingle();
             FlueTempK = inf.ReadSingle();
-            SandingSteamUsageLBpS = inf.ReadSingle();
             SteamGearPosition = inf.ReadSingle();
             ControllerFactory.Restore(CutoffController, inf);
             ControllerFactory.Restore(Injector1Controller, inf);
@@ -3907,8 +3909,8 @@ namespace Orts.Simulation.RollingStocks
 
             float SteamEffectsFactor = MathHelper.Clamp(BoilerPressurePSI / MaxBoilerPressurePSI, 0.1f, 1.0f);  // Factor to allow for drops in boiler pressure reducing steam effects
 
-            SanderSteamExhaustForwardVelocityMpS = Sander && SandingSystemType == SandingSystemTypes.Steam && (Direction == Direction.Forward || Direction == Direction.N) ? (1.0f * SteamEffectsFactor) : 0.0f;
-            SanderSteamExhaustReverseVelocityMpS = Sander && SandingSystemType == SandingSystemTypes.Steam && Direction == Direction.Reverse ? (1.0f * SteamEffectsFactor) : 0.0f;
+            SanderSteamExhaustForwardVelocityMpS = Sanding && SandingSystemType == SandingSystemTypes.Steam && (Direction == Direction.Forward || Direction == Direction.N) ? (1.0f * SteamEffectsFactor) : 0.0f;
+            SanderSteamExhaustReverseVelocityMpS = Sanding && SandingSystemType == SandingSystemTypes.Steam && Direction == Direction.Reverse ? (1.0f * SteamEffectsFactor) : 0.0f;
             SanderSteamExhaustParticleDurationS = 1.0f;
 
             Cylinders1SteamVolumeM3pS = CylinderCock1On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.0f * SteamEffectsFactor) : 0.0f;
@@ -7240,7 +7242,6 @@ namespace Orts.Simulation.RollingStocks
             // Ensure traction calculations for steam locomotives use the driver wheel speed, not the idler wheel speed
             // Idler wheels don't slip from excessive tractive effort, drivers do, we want to account for slipping wheels
             // Note: On geared steam locos, DriveWheelSpeed is the same as WheelSpeed
-            PrevAbsTractionSpeedMpS = AbsTractionSpeedMpS;
             AbsTractionSpeedMpS = Math.Abs(DriveWheelSpeedMpS);
 
             // Update tractive effort across all steam engines
@@ -7518,7 +7519,7 @@ namespace Orts.Simulation.RollingStocks
                 WheelSlip = LocomotiveAxles.IsWheelSlip;
                 WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
                 HuDIsWheelSlip = LocomotiveAxles.HuDIsWheelSlip;
-                HuDIsWheelSlipWarninq = LocomotiveAxles.HuDIsWheelSlipWarning;
+                HuDIsWheelSlipWarning = LocomotiveAxles.HuDIsWheelSlipWarning;
             }
 
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.
@@ -7684,16 +7685,12 @@ namespace Orts.Simulation.RollingStocks
 
             // Calculate sanding steam Usage if a steam based system and turned on
             // Assume steam sanding usage is 1000lbs/hr
-            if (Sander && SandingSystemType == SandingSystemTypes.Steam)
+            if (Sanding && SandingSystemType == SandingSystemTypes.Steam)
             {
-                BoilerMassLB -= elapsedClockSeconds * SandingSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by generator  
-                BoilerHeatBTU -= elapsedClockSeconds * SandingSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
-                BoilerHeatOutBTUpS += SandingSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
-                TotalSteamUsageLBpS += SandingSteamUsageLBpS;
-            }
-            else
-            {
-                SandingSteamUsageLBpS = 0.0f; // No generator fitted to locomotive
+                BoilerMassLB -= elapsedClockSeconds * CurrentTrackSanderSteamConsumptionLBpS; // Reduce boiler mass to reflect steam usage by generator  
+                BoilerHeatBTU -= elapsedClockSeconds * CurrentTrackSanderSteamConsumptionLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
+                BoilerHeatOutBTUpS += CurrentTrackSanderSteamConsumptionLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
+                TotalSteamUsageLBpS += CurrentTrackSanderSteamConsumptionLBpS;
             }
 
             // Calculate Generator steam Usage if turned on
@@ -9614,7 +9611,7 @@ namespace Orts.Simulation.RollingStocks
                         Simulator.Catalog.GetString("S/Use"),
                         FormatStrings.FormatSmallVolume(pS.TopH(CurrentTrackSanderSandConsumptionM3pS), IsMetric),
                         Simulator.Catalog.GetString("St/Use"),
-                        FormatStrings.FormatMass(pS.TopH(SandingSteamUsageLBpS), IsMetric),
+                        FormatStrings.FormatMass(pS.TopH(CurrentTrackSanderSteamConsumptionLBpS), IsMetric),
                         FormatStrings.h);
 
                 }
