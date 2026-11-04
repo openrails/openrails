@@ -22,7 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace ORTS.Common
+namespace Orts.Content
 {
     /// <summary>
     /// Utility functions to procedurally generate con and eng files to display the Khronos glTF-Sample-Assets for testing purposes.

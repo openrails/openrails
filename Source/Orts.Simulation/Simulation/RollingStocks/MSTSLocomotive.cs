@@ -52,6 +52,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
+using Orts.Content;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Parsers.Msts;

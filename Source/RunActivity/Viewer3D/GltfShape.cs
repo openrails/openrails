@@ -29,7 +29,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Processes;
-using ORTS.Common;
+using Orts.Content;
 using glTFLoader.Schema;
 using System.Collections.Concurrent;
 
