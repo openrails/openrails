@@ -19,6 +19,7 @@ using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Common.Scripting;
+using Orts.Content;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.MultiPlayer;

@@ -38,6 +38,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Common;
+using Orts.Content;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems;
