@@ -2068,6 +2068,136 @@ namespace Orts.Viewer3D
             if (ActViewPoint >= car.CabViewpoints.Count) ActViewPoint = 0;
             SetCameraCar(car);
         }
+
+        // A right click without dragging toggles free look; dragging with the right button held still turns the view as in the other cameras.
+        // During free look the cursor is held at the screen center (see UserInput.MouseLocked), so the left button operates the control in view.
+        public bool MouseLookActive { get; private set; }
+        const float MouseLookSensitivity = 0.5f;
+        const float MouseLookSmoothingS = 0.072f;
+        const int MouseLookClickMaxPixels = 4; // Larger movements with the right button held are drags, not clicks
+        Vector2 MouseLookPendingRadians; // Rotation still to be applied by the smoothing
+        bool MouseLookClickPending;
+        int MouseLookClickMovedPixels;
+
+        protected override void OnActivate(bool sameCamera)
+        {
+            MouseLookActive = false;
+            MouseLookClickPending = false;
+            MouseLookPendingRadians = Vector2.Zero;
+            base.OnActivate(sameCamera);
+        }
+
+        protected override void RotateByMouse()
+        {
+            var stoppedMouseLook = false;
+            if (MouseLookActive && (UserInput.IsMouseRightButtonPressed || !Viewer.Game.IsActive))
+            {
+                StopMouseLook();
+                stoppedMouseLook = true;
+            }
+
+            if (MouseLookActive)
+            {
+                // Hold the view still while a cab control is being dragged.
+                if (!UserInput.IsMouseLeftButtonDown && !UserInput.IsMouseLeftButtonReleased)
+                    MouseLookPendingRadians += MouseLookSensitivity * new Vector2(GetMouseDelta(UserInput.MouseMoveY), GetMouseDelta(UserInput.MouseMoveX));
+                return;
+            }
+
+            base.RotateByMouse();
+            if (UserInput.IsMouseRightButtonPressed)
+            {
+                // The click that stops free look must not start it again when released.
+                MouseLookClickPending = !stoppedMouseLook;
+                MouseLookClickMovedPixels = 0;
+            }
+            if (UserInput.IsMouseRightButtonDown)
+            {
+                MouseLookClickMovedPixels += Math.Abs(UserInput.MouseMoveX) + Math.Abs(UserInput.MouseMoveY);
+                if (MouseLookClickMovedPixels > MouseLookClickMaxPixels)
+                    MouseLookClickPending = false;
+            }
+            if (UserInput.IsMouseRightButtonReleased && MouseLookClickPending && Viewer.Game.IsActive)
+                StartMouseLook();
+        }
+
+        void StartMouseLook()
+        {
+            MouseLookActive = true;
+            Viewer.CheckReplaying();
+            CommandStartTime = Viewer.Simulator.ClockTime;
+        }
+
+        void StopMouseLook()
+        {
+            ApplyMouseLook(1);
+            new CameraMouseRotateCommand(Viewer.Log, CommandStartTime, Viewer.Simulator.ClockTime, RotationXRadians, RotationYRadians);
+            viewPointRotationXRadians = RotationXRadians;
+            viewPointRotationYRadians = RotationYRadians;
+            MouseLookActive = false;
+        }
+
+        void ApplyMouseLook(float fraction)
+        {
+            var stepRadians = MouseLookPendingRadians * fraction;
+            MouseLookPendingRadians -= stepRadians;
+            RotationXRadians = VerticalClamper.Clamp(RotationXRadians + stepRadians.X);
+            RotationYRadians += stepRadians.Y;
+        }
+
+        public override void Update(ElapsedTime elapsedTime)
+        {
+            if (MouseLookActive)
+                ApplyMouseLook(Math.Min(1, elapsedTime.RealSeconds / MouseLookSmoothingS));
+            base.Update(elapsedTime);
+        }
+
+        #region Free look center dot
+        SpriteBatchMaterial CenterDotMaterial;
+        CenterDotPrimitive CenterDot;
+        Matrix CenterDotMatrix = Matrix.Identity;
+
+        [CallOnThread("Loader")]
+        public void LoadCenterDot()
+        {
+            CenterDotMaterial = (SpriteBatchMaterial)Viewer.MaterialManager.Load("SpriteBatch");
+            CenterDot = new CenterDotPrimitive(CenterDotMaterial, Viewer);
+        }
+
+        [CallOnThread("Updater")]
+        public void PrepareCenterDot(RenderFrame frame)
+        {
+            if (MouseLookActive && CenterDot != null)
+                frame.AddPrimitive(CenterDotMaterial, CenterDot, RenderPrimitiveGroup.Overlay, ref CenterDotMatrix);
+        }
+
+        class CenterDotPrimitive : RenderPrimitive
+        {
+            const int DotSizePixels = 4;
+            const int OutlineSizePixels = 1;
+            const float OutlineOpacity = 0.6f;
+
+            readonly SpriteBatchMaterial Material;
+            readonly Viewer Viewer;
+
+            public CenterDotPrimitive(SpriteBatchMaterial material, Viewer viewer)
+            {
+                Material = material;
+                Viewer = viewer;
+            }
+
+            [CallOnThread("Render")]
+            public override void Draw(Microsoft.Xna.Framework.Graphics.GraphicsDevice graphicsDevice)
+            {
+                var spriteBatch = Material.SpriteBatch;
+                var x = Viewer.DisplaySize.X / 2;
+                var y = Viewer.DisplaySize.Y / 2;
+                var outlinePixels = DotSizePixels / 2 + OutlineSizePixels;
+                spriteBatch.Draw(WindowManager.WhiteTexture, new Rectangle(x - outlinePixels, y - outlinePixels, 2 * outlinePixels, 2 * outlinePixels), Color.Black * OutlineOpacity);
+                spriteBatch.Draw(WindowManager.WhiteTexture, new Rectangle(x - DotSizePixels / 2, y - DotSizePixels / 2, DotSizePixels, DotSizePixels), Color.White);
+            }
+        }
+        #endregion
     }
 
     public class HeadOutCamera : NonTrackingCamera
