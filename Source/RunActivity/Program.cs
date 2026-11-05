@@ -64,7 +64,10 @@ namespace Orts
             Application.SetCompatibleTextRenderingDefault(false);
 
             var game = new Game(settings);
-            game.PushState(new GameStateRunActivity(args));
+            if (args.Any(a => a == "-menu" || a == "/menu"))
+                game.PushState(new GameStateVRMenu());
+            else
+                game.PushState(new GameStateRunActivity(args));
             game.Run();
         }
     }

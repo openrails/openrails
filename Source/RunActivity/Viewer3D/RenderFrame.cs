@@ -406,6 +406,27 @@ namespace Orts.Viewer3D
         Vector3 XNACameraLocation;
         Matrix XNACameraView;
         Matrix XNACameraProjection;
+        Matrix XNASeatView;
+
+        // Shared eye render targets for VR; only the render thread draws, so one pair serves both frames.
+        static RenderTarget2D[] EyeSurface;
+        // Before the world exists (loading screen) the 2D picture is drawn here and shown on a panel in front of the driver.
+        static RenderTarget2D FlatSurface;
+        static Orts.Viewer3D.VR.VRTexturedMaterial FlatPanelMaterial;
+        static Orts.Viewer3D.VR.VRQuadPrimitive FlatPanelQuad;
+        const float FlatPanelDistanceM = 2.2f;
+        const float FlatPanelWidthM = 2.6f;
+        // In the cab the 2D overlays (HUD, popups) can be shown on a panel low in front of the driver.
+        static RenderTarget2D OverlaySurface;
+        static Orts.Viewer3D.VR.VRTexturedMaterial OverlayPanelMaterial;
+        static Orts.Viewer3D.VR.VRQuadPrimitive OverlayPanelQuad;
+        static Rectangle OverlayPanelCrop = new Rectangle(-1, -1, 0, 0);
+        // At reading distance, low in front of the driver.
+        const float OverlayPanelDistanceM = 0.6f;
+        const float OverlayPanelWidthM = 0.8f;
+        const float OverlayPanelDropM = 0.22f;
+        const float OverlayPanelTiltDeg = -30f; // negative: top toward the driver, since the panel sits below eye level
+        static readonly Vector3 OverlayPanelCentre = new Vector3(0, -OverlayPanelDropM, -OverlayPanelDistanceM);
 
         public RenderFrame(Game game)
         {
@@ -513,13 +534,45 @@ namespace Orts.Viewer3D
                 SceneryShader = viewer.MaterialManager.SceneryShader;
         }
 
+        /// <summary>True when a view was given by <see cref="SetView"/> rather than a <see cref="Camera"/> (e.g. the menu).</summary>
+        bool HasView;
+
+        /// <summary>
+        /// Sets the view for a frame that has no <see cref="Camera"/>: the seat view (in VR each eye is placed relative to it,
+        /// and the window shows it from the tracked head) and the projection used when drawing flat.
+        /// </summary>
+        public void SetView(Matrix seatView, Matrix projection)
+        {
+            Camera = null;
+            HasView = true;
+            XNASeatView = seatView;
+            var vr = Game.RenderProcess.VR;
+            XNACameraView = vr != null ? seatView * Matrix.Invert(vr.HeadPose) : seatView;
+            XNACameraProjection = projection;
+            XNACameraLocation = Matrix.Invert(seatView).Translation;
+            XNACameraLocation.Z *= -1;
+        }
+
+        /// <summary>Back to the camera-less defaults (identity view, orthographic projection) used by the loading screen.</summary>
+        public void ResetView()
+        {
+            if (!HasView)
+                return;
+            HasView = false;
+            Camera = null;
+            XNACameraView = XNASeatView = Matrix.Identity;
+            XNACameraProjection = Matrix.CreateOrthographic(Game.RenderProcess.DisplaySize.X, Game.RenderProcess.DisplaySize.Y, 1, 100);
+        }
+
         public void SetCamera(Camera camera)
         {
+            HasView = false;
             Camera = camera;
             XNACameraLocation = CameraLocation = Camera.Location;
             XNACameraLocation.Z *= -1;
             XNACameraView = Camera.XnaView;
             XNACameraProjection = Camera.XnaProjection;
+            XNASeatView = Camera.XnaSeatView;
         }
 
         static bool LockShadows;
@@ -729,7 +782,11 @@ namespace Orts.Viewer3D
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ShadowMapMaterial != null)
                 DrawShadows(graphicsDevice, logging);
 
-            DrawSimple(graphicsDevice, logging);
+            var vr = Game.RenderProcess.VR;
+            if (vr != null && vr.FrameActive)
+                DrawVR(graphicsDevice, logging, vr);
+            else
+                DrawSimple(graphicsDevice, logging);
 
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
                 Game.RenderProcess.PrimitiveCount[i] = RenderItems[i].Values.Sum(l => l.Count);
@@ -821,24 +878,7 @@ namespace Orts.Viewer3D
                 graphicsDevice.SetRenderTarget(RenderSurface);
             }
 
-            if (Game.Settings.DistantMountains)
-            {
-                if (logging) Console.WriteLine("  DrawSimple (Distant Mountains) {");
-                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
-                DrawSequencesDistantMountains(graphicsDevice, logging);
-                if (logging) Console.WriteLine("  }");
-                if (logging) Console.WriteLine("  DrawSimple {");
-                graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Transparent, 1, 0);
-                DrawSequences(graphicsDevice, logging);
-                if (logging) Console.WriteLine("  }");
-            }
-            else
-            {
-                if (logging) Console.WriteLine("  DrawSimple {");
-                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
-                DrawSequences(graphicsDevice, logging);
-                if (logging) Console.WriteLine("  }");
-            }
+            DrawScene(graphicsDevice, logging, SequenceFilter.All);
 
             if (RenderSurfaceMaterial != null)
             {
@@ -850,7 +890,189 @@ namespace Orts.Viewer3D
             }
         }
 
-        void DrawSequences(GraphicsDevice graphicsDevice, bool logging)
+        /// <summary>
+        /// Clears the current render target and draws the sequences into it, distant mountains first when enabled.
+        /// </summary>
+        void DrawScene(GraphicsDevice graphicsDevice, bool logging, SequenceFilter filter)
+        {
+            if (Game.Settings.DistantMountains)
+            {
+                if (logging) Console.WriteLine("  DrawSimple (Distant Mountains) {");
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
+                DrawSequencesDistantMountains(graphicsDevice, logging);
+                if (logging) Console.WriteLine("  }");
+                if (logging) Console.WriteLine("  DrawSimple {");
+                graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Transparent, 1, 0);
+                DrawSequences(graphicsDevice, logging, filter);
+                if (logging) Console.WriteLine("  }");
+            }
+            else
+            {
+                if (logging) Console.WriteLine("  DrawSimple {");
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
+                DrawSequences(graphicsDevice, logging, filter);
+                if (logging) Console.WriteLine("  }");
+            }
+        }
+
+        /// <summary>
+        /// Executed in the RenderProcess thread - one pass per eye for the headset, then the window
+        /// gets the left eye as a mirror with the 2D overlays (HUD, popups, labels) drawn on top at
+        /// window size. The overlays are left out of the eyes: a flat HUD pinned to the lenses is
+        /// unreadable in a headset; a VR cab wants them on panels in the cab instead.
+        /// </summary>
+        void DrawVR(GraphicsDevice graphicsDevice, bool logging, Orts.Viewer3D.VR.VRSession vr)
+        {
+            if (EyeSurface == null || EyeSurface[0].Width != vr.EyeWidth || EyeSurface[0].Height != vr.EyeHeight || EyeSurface[0].IsDisposed)
+            {
+                if (EyeSurface != null)
+                    foreach (var surface in EyeSurface)
+                        surface.Dispose();
+                EyeSurface = new RenderTarget2D[Orts.Viewer3D.VR.VRSession.EyeCount];
+                for (var eye = 0; eye < EyeSurface.Length; eye++)
+                    EyeSurface[eye] = new RenderTarget2D(graphicsDevice, vr.EyeWidth, vr.EyeHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8, graphicsDevice.PresentationParameters.MultiSampleCount, RenderTargetUsage.PreserveContents);
+            }
+
+            var savedView = XNACameraView;
+            var savedProjection = XNACameraProjection;
+            var hasView = Camera != null || HasView;
+            var nearPlane = Camera != null ? Camera.NearPlane : 0.1f;
+            var farPlane = (float)Game.Settings.ViewingDistance;
+            var skyFarPlane = SkyPrimitive.RadiusM + 100;
+            var distantMountainNearPlane = MathHelper.Clamp(Game.Settings.ViewingDistance - 500, 500, 1500);
+            var distantMountainFarPlane = (float)Game.Settings.DistantMountainsViewingDistance;
+
+            if (!hasView)
+            {
+                // Before the world exists (loading screen) the 2D picture is drawn once at window size and then
+                // shown on a panel a couple of metres in front of the driver, so the headset sees one picture
+                // fixed in space rather than a flat image glued to each eye.
+                var window = graphicsDevice.PresentationParameters;
+                if (FlatSurface == null || FlatSurface.IsDisposed || FlatSurface.Width != window.BackBufferWidth || FlatSurface.Height != window.BackBufferHeight || FlatSurface.GraphicsDevice != graphicsDevice)
+                {
+                    if (FlatSurface != null) FlatSurface.Dispose();
+                    FlatSurface = new RenderTarget2D(graphicsDevice, window.BackBufferWidth, window.BackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8, 0, RenderTargetUsage.PreserveContents);
+                    FlatPanelMaterial = new Orts.Viewer3D.VR.VRTexturedMaterial(graphicsDevice, FlatSurface, false);
+                    FlatPanelQuad = new Orts.Viewer3D.VR.VRQuadPrimitive(graphicsDevice, FlatPanelWidthM, FlatPanelWidthM * window.BackBufferHeight / window.BackBufferWidth);
+                }
+                graphicsDevice.SetRenderTarget(FlatSurface);
+                DrawScene(graphicsDevice, logging, SequenceFilter.All);
+                graphicsDevice.SetRenderTarget(null);
+            }
+
+            var overlayPanel = hasView && Game.RenderProcess.VROverlayVisible;
+            if (overlayPanel)
+            {
+                // The overlays drawn once at window size, shown on a panel in the seat frame in every eye.
+                var window = graphicsDevice.PresentationParameters;
+                if (OverlaySurface == null || OverlaySurface.IsDisposed || OverlaySurface.Width != window.BackBufferWidth || OverlaySurface.Height != window.BackBufferHeight || OverlaySurface.GraphicsDevice != graphicsDevice)
+                {
+                    if (OverlaySurface != null) OverlaySurface.Dispose();
+                    OverlaySurface = new RenderTarget2D(graphicsDevice, window.BackBufferWidth, window.BackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8, 0, RenderTargetUsage.PreserveContents);
+                    OverlayPanelMaterial = new Orts.Viewer3D.VR.VRTexturedMaterial(graphicsDevice, OverlaySurface, true) { AlwaysOnTop = true };
+                    OverlayPanelCrop = new Rectangle(-1, -1, 0, 0);
+                }
+                // The panel shows the part of the window the viewer asked for (the open windows), filling its width.
+                var crop = Game.RenderProcess.VROverlayCrop;
+                if (crop.IsEmpty || crop.Width <= 0 || crop.Height <= 0)
+                    crop = new Rectangle(0, 0, window.BackBufferWidth, window.BackBufferHeight);
+                crop = Rectangle.Intersect(crop, new Rectangle(0, 0, window.BackBufferWidth, window.BackBufferHeight));
+                if (crop != OverlayPanelCrop && crop.Width > 0 && crop.Height > 0)
+                {
+                    OverlayPanelCrop = crop;
+                    var height = OverlayPanelWidthM * crop.Height / crop.Width;
+                    if (height > OverlayPanelWidthM * 0.75f)
+                        height = OverlayPanelWidthM * 0.75f;
+                    var widthM = height * crop.Width / crop.Height;
+                    OverlayPanelQuad = new Orts.Viewer3D.VR.VRQuadPrimitive(graphicsDevice, widthM, height,
+                        (float)crop.Left / window.BackBufferWidth, (float)crop.Top / window.BackBufferHeight, (float)crop.Right / window.BackBufferWidth, (float)crop.Bottom / window.BackBufferHeight);
+                }
+                graphicsDevice.SetRenderTarget(OverlaySurface);
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
+                DrawSequences(graphicsDevice, logging, SequenceFilter.Overlay);
+                graphicsDevice.SetRenderTarget(null);
+            }
+
+            for (var eye = 0; eye < EyeSurface.Length; eye++)
+            {
+                if (logging) Console.WriteLine("  Eye {0} {{", eye);
+                if (hasView)
+                {
+                    XNACameraView = XNASeatView * Matrix.Invert(vr.EyePose(eye));
+                    XNACameraProjection = vr.EyeProjection(eye, nearPlane, farPlane);
+                    Camera.SetRenderProjections(XNACameraProjection, vr.EyeProjection(eye, nearPlane, skyFarPlane), vr.EyeProjection(eye, distantMountainNearPlane, distantMountainFarPlane));
+                }
+                graphicsDevice.SetRenderTarget(EyeSurface[eye]);
+                if (hasView)
+                {
+                    DrawScene(graphicsDevice, logging, SequenceFilter.Scene);
+                    if (overlayPanel)
+                    {
+                        var view = Matrix.Invert(vr.EyePose(eye));
+                        var projection = vr.EyeProjection(eye, 0.1f, 100f);
+                        var panel = Matrix.CreateRotationX(MathHelper.ToRadians(OverlayPanelTiltDeg)) * Matrix.CreateTranslation(OverlayPanelCentre);
+                        OverlayPanelMaterial.SetState(graphicsDevice, null);
+                        OverlayPanelMaterial.Render(graphicsDevice, new[] { new RenderItem(OverlayPanelMaterial, OverlayPanelQuad, ref panel, ShapeFlags.None) }, ref view, ref projection);
+                        OverlayPanelMaterial.ResetState(graphicsDevice);
+                    }
+                }
+                else
+                {
+                    graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Black, 1, 0);
+                    var view = Matrix.Invert(vr.EyePose(eye));
+                    var projection = vr.EyeProjection(eye, 0.1f, 100f);
+                    var panel = Matrix.CreateTranslation(0, -0.1f, -FlatPanelDistanceM);
+                    FlatPanelMaterial.SetState(graphicsDevice, null);
+                    FlatPanelMaterial.Render(graphicsDevice, new[] { new RenderItem(FlatPanelMaterial, FlatPanelQuad, ref panel, ShapeFlags.None) }, ref view, ref projection);
+                    FlatPanelMaterial.ResetState(graphicsDevice);
+                }
+                graphicsDevice.SetRenderTarget(null); // also resolves multisampling into the texture we copy
+                vr.SubmitEye(eye, EyeSurface[eye]);
+                if (logging) Console.WriteLine("  }");
+            }
+
+            Camera.ClearRenderProjections();
+            XNACameraView = savedView;
+            XNACameraProjection = savedProjection;
+
+            graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
+            if (RenderSurfaceMaterial != null)
+            {
+                var window = graphicsDevice.PresentationParameters;
+                RenderSurfaceMaterial.SetState(graphicsDevice, null);
+                if (hasView)
+                {
+                    var scale = Math.Min((float)window.BackBufferWidth / vr.EyeWidth, (float)window.BackBufferHeight / vr.EyeHeight);
+                    var width = (int)(vr.EyeWidth * scale);
+                    var height = (int)(vr.EyeHeight * scale);
+                    var mirror = new Rectangle((window.BackBufferWidth - width) / 2, (window.BackBufferHeight - height) / 2, width, height);
+                    RenderSurfaceMaterial.SpriteBatch.Draw(EyeSurface[0], mirror, Color.White);
+                }
+                else
+                    RenderSurfaceMaterial.SpriteBatch.Draw(FlatSurface, Vector2.Zero, Color.White);
+                RenderSurfaceMaterial.ResetState(graphicsDevice);
+            }
+            if (hasView)
+            {
+                if (logging) Console.WriteLine("  Mirror overlay {");
+                DrawSequences(graphicsDevice, logging, SequenceFilter.Overlay);
+                if (logging) Console.WriteLine("  }");
+            }
+        }
+
+        enum SequenceFilter
+        {
+            All,
+            Scene,   // everything but the 2D overlays
+            Overlay, // the 2D overlays only: labels, HUD, popup windows
+        }
+
+        static bool IsOverlaySequence(int sequence)
+        {
+            return sequence == (int)RenderPrimitiveSequence.Labels || sequence == (int)RenderPrimitiveSequence.OverlayOpaque || sequence == (int)RenderPrimitiveSequence.OverlayBlended;
+        }
+
+        void DrawSequences(GraphicsDevice graphicsDevice, bool logging, SequenceFilter filter)
         {
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && SceneryShader != null)
                 SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
@@ -860,6 +1082,11 @@ namespace Orts.Viewer3D
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
             {
                 if (logging) Console.WriteLine("    {0} {{", (RenderPrimitiveSequence)i);
+                if (filter == SequenceFilter.Scene && IsOverlaySequence(i) || filter == SequenceFilter.Overlay && !IsOverlaySequence(i))
+                {
+                    if (logging) Console.WriteLine("    }");
+                    continue;
+                }
                 var sequence = RenderItems[i];
                 foreach (var sequenceMaterial in sequence)
                 {
@@ -927,6 +1154,7 @@ namespace Orts.Viewer3D
 
         void DrawSequencesDistantMountains(GraphicsDevice graphicsDevice, bool logging)
         {
+            var distantMountainProjection = Camera.XnaDistantMountainProjection;
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
             {
                 if (logging) Console.WriteLine("    {0} {{", (RenderPrimitiveSequence)i);
@@ -940,7 +1168,7 @@ namespace Orts.Viewer3D
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
                         if (logging) Console.WriteLine("      {0,-5} * {1}", sequenceMaterial.Value.Count, sequenceMaterial.Key);
-                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNACameraView, ref Camera.XnaDistantMountainProjection);
+                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNACameraView, ref distantMountainProjection);
                         sequenceMaterial.Key.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
                         DebugRenderState(graphicsDevice, sequenceMaterial.Key.ToString());
