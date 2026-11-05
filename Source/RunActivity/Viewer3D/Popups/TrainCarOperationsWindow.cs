@@ -1051,12 +1051,12 @@ namespace Orts.Viewer3D.Popups
                 var rearBrakeHose = CarOperations.RearBrakeHoseChanged;
                 if (rearBrakeHose)
                 {
-                    new WagonBrakeHoseRearConnectCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarOperations.CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarOperations.CarPosition] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
+                    new WagonBrakeHoseRearConnectCommand(Viewer.Log, CarOperations.CarPosition, !(Viewer.PlayerTrain.Cars[CarOperations.CarPosition] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
                     CarOperations.RearBrakeHoseChanged = false;
                 }
                 else
                 {
-                    new WagonBrakeHoseRearConnectCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarOperations.CarPosition - 1] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarOperations.CarPosition - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
+                    new WagonBrakeHoseRearConnectCommand(Viewer.Log, CarOperations.CarPosition - 1, !(Viewer.PlayerTrain.Cars[CarOperations.CarPosition - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
                     CarOperations.FrontBrakeHoseChanged = false;
                 }
                 Viewer.TrainCarOperationsWindow.ModifiedSetting = true;
@@ -1067,7 +1067,7 @@ namespace Orts.Viewer3D.Popups
             var viewerCarposition = TrainCarViewer.CarPosition;
             if (TrainCarViewer.Visible && TrainCarViewer.FrontBrakeHoseChanged && viewerCarposition >= 1)
             {
-                new WagonBrakeHoseRearConnectCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[viewerCarposition - 1] as MSTSWagon), !(Viewer.PlayerTrain.Cars[viewerCarposition - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
+                new WagonBrakeHoseRearConnectCommand(Viewer.Log, viewerCarposition - 1, !(Viewer.PlayerTrain.Cars[viewerCarposition - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
                 TrainCarViewer.FrontBrakeHoseChanged = false;
             }
             Source = new Rectangle(0, 0, size, size);
@@ -1096,7 +1096,7 @@ namespace Orts.Viewer3D.Popups
             var viewerCarposition = TrainCarViewer.CarPosition;
             if (TrainCarViewer.Visible && TrainCarViewer.RearBrakeHoseChanged && viewerCarposition < Viewer.PlayerTrain.Cars.Count - 1)
             {
-                new WagonBrakeHoseConnectCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[viewerCarposition + 1] as MSTSWagon), !(Viewer.PlayerTrain.Cars[viewerCarposition + 1] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
+                new WagonBrakeHoseConnectCommand(Viewer.Log, viewerCarposition + 1, !(Viewer.PlayerTrain.Cars[viewerCarposition + 1] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
                 TrainCarViewer.RearBrakeHoseChanged = false;
             }
             Source = new Rectangle(0, 0, size, size);
