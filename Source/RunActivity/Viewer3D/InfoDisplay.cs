@@ -55,7 +55,10 @@ namespace Orts.Viewer3D
         readonly string TemperatureUnit = FormatStrings.c;
         readonly string VolumeConsumptionUnit = FormatStrings.lps;
         readonly string MassConsumptionUnit = FormatStrings.kgps;
-        private PressureUnit PressureUnitEnum = PressureUnit.PSI;  // could change when player changes train or loco
+
+        // pressure units could change when the player train (pr locomotive) is changed
+        private PressureUnit MainPressureUnitEnum = PressureUnit.PSI;
+        private PressureUnit BrakePressureUnitEnum = PressureUnit.PSI;
 
         // conversion factors not defined in Conversions.cs
         const float DieselDensityKgpL = 0.85f;
@@ -113,11 +116,13 @@ namespace Orts.Viewer3D
             // being paranoid, as player locomotive should always be initialized at this time
             try
             {
-                // the manual settings have already been applied to the brake system
-                if (!(Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir].Equals(PressureUnit.None))
-                    PressureUnitEnum = (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir];
-                else if (!(Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.BrakeCylinder].Equals(PressureUnit.None))
-                    PressureUnitEnum = (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.BrakeCylinder];
+                // the manual settings from the options have already been applied
+                var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
+                BrakePressureUnitEnum = MainPressureUnitEnum = loco.MainPressureUnit;
+                if (!loco.BrakeSystemPressureUnits[BrakeSystemComponent.BrakeCylinder].Equals(PressureUnit.None))
+                    BrakePressureUnitEnum = loco.BrakeSystemPressureUnits[BrakeSystemComponent.BrakeCylinder];
+                else if (!loco.BrakeSystemPressureUnits[BrakeSystemComponent.BrakePipe].Equals(PressureUnit.None))
+                    BrakePressureUnitEnum = loco.BrakeSystemPressureUnits[BrakeSystemComponent.BrakePipe];
             }
             catch (Exception ex)
             {
@@ -200,13 +205,13 @@ namespace Orts.Viewer3D
                         Logger.Data(ConvertForce(steam.LocoTenderFrictionForceN));
                         Logger.Data(ConvertForce(steam.TotalFrictionForceN));
                         Logger.Data(ConvertMass(steam.TrainLoadKg, false, true));
-                        Logger.Data(ConvertPressure(steam.BoilerPressurePSI, PressureUnitEnum));
-                        Logger.Data(ConvertPressure(firstSteamEngine.LogSteamChestPressurePSI, PressureUnitEnum));
-                        Logger.Data(ConvertPressure(firstSteamEngine.LogInitialPressurePSI, PressureUnitEnum));
-                        Logger.Data(ConvertPressure(firstSteamEngine.LogCutoffPressurePSI, PressureUnitEnum));
-                        Logger.Data(ConvertPressure(firstSteamEngine.LogReleasePressurePSI, PressureUnitEnum));
-                        Logger.Data(ConvertPressure(firstSteamEngine.LogBackPressurePSI, PressureUnitEnum));
-                        Logger.Data(ConvertPressure(firstSteamEngine.MeanEffectivePressurePSI, PressureUnitEnum));
+                        Logger.Data(ConvertPressure(steam.BoilerPressurePSI, MainPressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.LogSteamChestPressurePSI, MainPressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.LogInitialPressurePSI, MainPressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.LogCutoffPressurePSI, MainPressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.LogReleasePressurePSI, MainPressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.LogBackPressurePSI, MainPressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.MeanEffectivePressurePSI, MainPressureUnitEnum));
                         Logger.Data(ConvertTemp(steam.CurrentSuperheatTempF, true));
                         Logger.Data(ConvertMassConsumption(steam.CylinderSteamUsageLBpS, true));
                         Logger.Data(ConvertVolumeConsumption(steam.WaterConsumptionLbpS, true, WaterDensityKgpL));
@@ -215,13 +220,13 @@ namespace Orts.Viewer3D
                         Logger.Data(ConvertMass(steam.CumulativeCylinderSteamConsumptionLbs, true));
                         Logger.Data(ConvertVolume(steam.CumulativeWaterConsumptionLbs, true, WaterDensityKgpL));
                         Logger.Data(steam.CutoffPressureDropRatio.ToString("F2"));
-                        Logger.Data(ConvertPressure(firstSteamEngine.HPCylinderMEPPSI, PressureUnitEnum));
-                        Logger.Data(ConvertPressure(firstSteamEngine.LogLPInitialPressurePSI, PressureUnitEnum));
-                        Logger.Data(ConvertPressure(firstSteamEngine.LogLPCutoffPressurePSI, PressureUnitEnum));
-                        Logger.Data(ConvertPressure(firstSteamEngine.LogLPReleasePressurePSI, PressureUnitEnum));
-                        Logger.Data(ConvertPressure(firstSteamEngine.LogLPBackPressurePSI, PressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.HPCylinderMEPPSI, MainPressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.LogLPInitialPressurePSI, MainPressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.LogLPCutoffPressurePSI, MainPressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.LogLPReleasePressurePSI, MainPressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.LogLPBackPressurePSI, MainPressureUnitEnum));
                         Logger.Data(steam.LPCutoffPressureDropRatio.ToString("F2"));
-                        Logger.Data(ConvertPressure(firstSteamEngine.LPCylinderMEPPSI, PressureUnitEnum));
+                        Logger.Data(ConvertPressure(firstSteamEngine.LPCylinderMEPPSI, MainPressureUnitEnum));
 
                         Logger.End();
                     }
@@ -285,8 +290,8 @@ namespace Orts.Viewer3D
                     Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeController?.CurrentValue.ToString("F2"));
                     Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeController?.CurrentValue.ToString("F2"));
                     Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).BrakemanBrakeController?.CurrentValue.ToString("F2"));
-                    Logger.Data(ConvertPressure(Viewer.PlayerLocomotive.BrakeSystem.GetCylPressurePSI(), PressureUnitEnum));
-                    Logger.Data(ConvertPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnitEnum));
+                    Logger.Data(ConvertPressure(Viewer.PlayerLocomotive.BrakeSystem.GetCylPressurePSI(), BrakePressureUnitEnum));
+                    Logger.Data(ConvertPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, BrakePressureUnitEnum));
                     if (Viewer.PlayerLocomotive is MSTSDieselLocomotive diesel)
                     {
                         // Logger.Data(ConvertPower(diesel.DieselEngines[0].AvailableTractionPowerW));  // need all engines  -- for now using axle power
@@ -314,7 +319,7 @@ namespace Orts.Viewer3D
                     {
                         // Logger.Data(ConvertPower(W.FromHp(steam.IndicatedHorsePowerHP)));  -- for now using axle power
                         Logger.Data(ConvertMassConsumption(steam.BlowerSteamUsageLBpS, true));
-                        Logger.Data(ConvertPressure(steam.BoilerPressurePSI, PressureUnitEnum));
+                        Logger.Data(ConvertPressure(steam.BoilerPressurePSI, MainPressureUnitEnum));
                         Logger.Data(steam.CylinderCocksAreOpen.ToString());
                         Logger.Data(steam.CylinderCompoundOn.ToString());
                         Logger.Data(ConvertMassConsumption(steam.EvaporationLBpS, true));
@@ -354,13 +359,13 @@ namespace Orts.Viewer3D
                 Logger.Data($"Loco & Tender Resistance [{ForceUnit}]");
                 Logger.Data($"Train Resistance [{ForceUnit}]");
                 Logger.Data($"Train Load [{LargeMassUnit}]");
-                Logger.Data($"Boiler Pressure [{PressureUnitEnum.ToString()}]");
-                Logger.Data($"Steam Chest Pressure [{PressureUnitEnum.ToString()}]");
-                Logger.Data($"Initial Pressure [{PressureUnitEnum.ToString()}]");
-                Logger.Data($"Cutoff Pressure [{PressureUnitEnum.ToString()}]");
-                Logger.Data($"Release Pressure [{PressureUnitEnum.ToString()}]");
-                Logger.Data($"Back Pressure [{PressureUnitEnum.ToString()}]");
-                Logger.Data($"MEP [{PressureUnitEnum.ToString()}]");
+                Logger.Data($"Boiler Pressure [{MainPressureUnitEnum.ToString()}]");
+                Logger.Data($"Steam Chest Pressure [{MainPressureUnitEnum.ToString()}]");
+                Logger.Data($"Initial Pressure [{MainPressureUnitEnum.ToString()}]");
+                Logger.Data($"Cutoff Pressure [{MainPressureUnitEnum.ToString()}]");
+                Logger.Data($"Release Pressure [{MainPressureUnitEnum.ToString()}]");
+                Logger.Data($"Back Pressure [{MainPressureUnitEnum.ToString()}]");
+                Logger.Data($"MEP [{MainPressureUnitEnum.ToString()}]");
                 Logger.Data($"Superheat Temp [{(UseNativeUnits ? FormatStrings.f : TemperatureUnit)}]");
                 Logger.Data($"Steam consumption [{(UseNativeUnits ? FormatStrings.lbps : MassConsumptionUnit)}]");
                 Logger.Data($"Water consumption [{(UseNativeUnits ? FormatStrings.lbps : VolumeConsumptionUnit)}]");
@@ -369,13 +374,13 @@ namespace Orts.Viewer3D
                 Logger.Data($"Cumulative Steam [{(UseNativeUnits ? FormatStrings.lb : MassUnit)}]");
                 Logger.Data($"Cumulative Water [{(UseNativeUnits ? FormatStrings.lb : VolumeUnit)}]");
                 Logger.Data("Cutoff pressure Ratio");
-                Logger.Data($"HP MEP [{PressureUnitEnum.ToString()}]");
-                Logger.Data($"LPInitial Pressure [{PressureUnitEnum.ToString()}]");
-                Logger.Data($"LPCutoff Pressure [{PressureUnitEnum.ToString()}]");
-                Logger.Data($"LPRelease Pressure [{PressureUnitEnum.ToString()}]");
-                Logger.Data($"LPBack Pressure [{PressureUnitEnum.ToString()}]");
+                Logger.Data($"HP MEP [{MainPressureUnitEnum.ToString()}]");
+                Logger.Data($"LPInitial Pressure [{MainPressureUnitEnum.ToString()}]");
+                Logger.Data($"LPCutoff Pressure [{MainPressureUnitEnum.ToString()}]");
+                Logger.Data($"LPRelease Pressure [{MainPressureUnitEnum.ToString()}]");
+                Logger.Data($"LPBack Pressure [{MainPressureUnitEnum.ToString()}]");
                 Logger.Data("LPCutoff pressure Ratio");
-                Logger.Data($"LP MEP [{PressureUnitEnum.ToString()}]");
+                Logger.Data($"LP MEP [{MainPressureUnitEnum.ToString()}]");
             }
             else if (Viewer.Settings.DataLogExclusiveSteamPowerCurve)
             {
@@ -424,8 +429,8 @@ namespace Orts.Viewer3D
                     Logger.Data("Train Brake");
                     Logger.Data("Engine Brake");
                     Logger.Data("Brakeman Brake");
-                    Logger.Data($"Player Cylinder [{PressureUnitEnum.ToString()}]");
-                    Logger.Data($"Player Main Res [{PressureUnitEnum.ToString()}]");
+                    Logger.Data($"Player Cylinder [{BrakePressureUnitEnum.ToString()}]");
+                    Logger.Data($"Player Main Res [{MainPressureUnitEnum.ToString()}]");
                     if (Viewer.PlayerLocomotive is MSTSDieselLocomotive diesel)
                     {
                         // Logger.Data($"Available Traction Power [{PowerUnit}]");  -- for now using axle power
@@ -453,7 +458,7 @@ namespace Orts.Viewer3D
                     {
                         // Logger.Data($"Available Traction Power [{PowerUnit}]");  -- for now using axle power
                         Logger.Data($"Blower usage [{(UseNativeUnits ? FormatStrings.lbps : MassConsumptionUnit)}]");
-                        Logger.Data($"Boiler [{PressureUnitEnum.ToString()}]");
+                        Logger.Data($"Boiler [{MainPressureUnitEnum.ToString()}]");
                         Logger.Data("Cylinder Cocks open");
                         Logger.Data("Cylinder Compound on");
                         Logger.Data($"Evaporation [{(UseNativeUnits ? FormatStrings.lbps : MassConsumptionUnit)}]");
