@@ -326,6 +326,8 @@ namespace Orts.Viewer3D
         public float SampleSize { get { return TFile.terrain.terrain_samples.terrain_sample_size; } }
         public int PatchCount { get { return TFile.terrain.terrain_patchsets[0].terrain_patchset_npatches; } }
         public terrain_shader[] Shaders { get { return TFile.terrain.terrain_shaders; } }
+        public terrain_materials TerrainMaterials { get { return TFile.terrain.terrain_materials; } }
+        public string TerrainFilePath { get; private set; }
         public float WaterNE { get { return TFile.terrain.terrain_water_height_offset.NE != 0 ? TFile.terrain.terrain_water_height_offset.NE : TFile.terrain.terrain_water_height_offset.SW; } } // in meters
         public float WaterNW { get { return TFile.terrain.terrain_water_height_offset.NW != 0 ? TFile.terrain.terrain_water_height_offset.NW : TFile.terrain.terrain_water_height_offset.SW; } }
         public float WaterSE { get { return TFile.terrain.terrain_water_height_offset.SE != 0 ? TFile.terrain.terrain_water_height_offset.SE : TFile.terrain.terrain_water_height_offset.SW; } }
@@ -372,6 +374,7 @@ namespace Orts.Viewer3D
             // T and Y files are expected to exist; F files are optional.
             try
             {
+                TerrainFilePath = fileName + ".t";
                 TFile = new TerrainFile(fileName + ".t");
             }
             catch (Exception error)
