@@ -55,7 +55,7 @@ namespace Orts.Viewer3D
         readonly string TemperatureUnit = FormatStrings.c;
         readonly string VolumeConsumptionUnit = FormatStrings.lps;
         readonly string MassConsumptionUnit = FormatStrings.kgps;
-        readonly PressureUnit PressureUnitEnum = PressureUnit.PSI;
+        private PressureUnit PressureUnitEnum = PressureUnit.PSI;  // could change when player changes train or loco
 
         // conversion factors not defined in Conversions.cs
         const float DieselDensityKgpL = 0.85f;
@@ -66,6 +66,7 @@ namespace Orts.Viewer3D
         double LastUpdateRealTime;   // update text message only 10 times per second
         double NextLogTime;
 
+        TrainCar PreviousPlayerLocomotive = null;
         float PreviousLoggedSpeedMpH = -1.0f;
 
         public InfoDisplay(Viewer viewer)
@@ -90,21 +91,7 @@ namespace Orts.Viewer3D
                 TemperatureUnit = IsMetric ? FormatStrings.c : FormatStrings.f;
                 VolumeConsumptionUnit = IsMetric ? FormatStrings.lph : IsUK ? FormatStrings.gphUK : FormatStrings.gphUS;
                 MassConsumptionUnit = IsMetric ? FormatStrings.kgph : FormatStrings.lbph;
-
-                // being paranoid, as player locomotive should always be initialized at this time
-                try
-                {
-                    // the manual settings have already been applied to the brake system
-                    if (!(Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir].Equals(PressureUnit.None))
-                        PressureUnitEnum = (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir];
-                    else if (!(Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.BrakeCylinder].Equals(PressureUnit.None))
-                        PressureUnitEnum = (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.BrakeCylinder];
-                }
-                catch (Exception ex)
-                {
-                    Trace.TraceWarning("Player Locomotive not initialized; cannot determine pressure unit.");
-                    // continue with default pressure unit
-                }
+                DetermineAndSetPressureUnitFromLoco();
             }
 
             Logger = new DataLogger(Path.Combine(Viewer.Settings.LoggingPath, "OpenRailsDump.csv"));
@@ -120,6 +107,25 @@ namespace Orts.Viewer3D
                 DataLoggerStop();
         }
 
+        /// <summary> Determine and set the Pressure unit from the player locomotive's brake system.</summary>
+        private void DetermineAndSetPressureUnitFromLoco()
+        {
+            // being paranoid, as player locomotive should always be initialized at this time
+            try
+            {
+                // the manual settings have already been applied to the brake system
+                if (!(Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir].Equals(PressureUnit.None))
+                    PressureUnitEnum = (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir];
+                else if (!(Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.BrakeCylinder].Equals(PressureUnit.None))
+                    PressureUnitEnum = (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.BrakeCylinder];
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceWarning("Player Locomotive not initialized; cannot determine pressure unit.");
+                // continue with default pressure unit
+            }
+        }
+
         public void HandleUserInput(ElapsedTime elapsedTime)
         {
             if (UserInput.IsPressed(UserCommand.DebugLogger))
@@ -127,6 +133,7 @@ namespace Orts.Viewer3D
                 Viewer.Settings.DataLogger = !Viewer.Settings.DataLogger;
                 if (Viewer.Settings.DataLogger)
                 {
+                    DetermineAndSetPressureUnitFromLoco();  // loco could have changed while logging was off
                     DataLoggerStart();
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Data Logger started"));
                 }
@@ -151,11 +158,20 @@ namespace Orts.Viewer3D
 
             if (Viewer.Settings.DataLogger && (Viewer.Settings.DataLoggerInterval == 0 || Viewer.RealTime >= NextLogTime))
             {
+                // when the player changes train or locomotive, rewrite the header as the logged parameters could change
+                if (Viewer.PlayerLocomotive != PreviousPlayerLocomotive)
+                {
+                    // PreviousPlayerLocomotive is set in DataLoggerStart()
+                    DetermineAndSetPressureUnitFromLoco();
+                    DataLoggerStart();
+                }
+
                 DataLoggerLog();
                 NextLogTime = Viewer.RealTime + Viewer.Settings.DataLoggerInterval / 1000f;
             }
         }
 
+        /// <summary>Log a data row.</summary>
         void DataLoggerLog()
         {
             // NOTE: Conditions and data here MUST match similar code in DataLoggerStart
@@ -222,6 +238,7 @@ namespace Orts.Viewer3D
 
                         Logger.Data(ConvertSpeed(steam.SpeedMpS));
                         Logger.Data(ConvertPower(steam.MotiveForceN * steam.SpeedMpS));
+                        Logger.Data(ConvertForce(Viewer.PlayerLocomotive.MotiveForceN));
                         Logger.Data(steam.ThrottlePercent.ToString("F0"));
                         Logger.Data(steam.Train.MUReverserPercent.ToString("F0"));
 
@@ -276,24 +293,14 @@ namespace Orts.Viewer3D
                         Logger.Data(diesel.DieselEngines[0].RealRPM.ToString("F0"));
                         Logger.Data(diesel.DieselEngines[0].DemandedRPM.ToString("F0"));
                         Logger.Data(diesel.DieselEngines[0].LoadPercent.ToString("F0"));
+                        Logger.Data(ConvertVolumeConsumption(diesel.DieselFlowLps));
+                        Logger.Data(ConvertVolume(diesel.DieselLevelL));
                         if (diesel.DieselEngines.HasGearBox)
                         {
                             Logger.Data(diesel.DieselEngines[0].GearBox.CurrentGearIndex.ToString());
                             Logger.Data(diesel.DieselEngines[0].GearBox.NextGearIndex.ToString());
                             Logger.Data(diesel.DieselEngines[0].GearBox.ClutchPercent.ToString());
                         }
-                        else
-                        {
-                            Logger.Data(null);
-                            Logger.Data(null);
-                            Logger.Data(null);
-                        }
-                        Logger.Data(ConvertVolumeConsumption(diesel.DieselFlowLps));
-                        Logger.Data(ConvertVolume(diesel.DieselLevelL));
-                        Logger.Data(null);
-                        Logger.Data(null);
-                        Logger.Data(null);
-                        Logger.Data(null);
                     }
                     else if (Viewer.PlayerLocomotive is MSTSElectricLocomotive electric)
                     {
@@ -302,14 +309,6 @@ namespace Orts.Viewer3D
                         Logger.Data(electric.Pantographs[2].CommandUp.ToString());
                         Logger.Data(electric.Pantographs.List.Count > 2 ? electric.Pantographs[3].CommandUp.ToString() : null);
                         Logger.Data(electric.Pantographs.List.Count > 3 ? electric.Pantographs[4].CommandUp.ToString() : null);
-                        Logger.Data(null);
-                        Logger.Data(null);
-                        Logger.Data(null);
-                        Logger.Data(null);
-                        Logger.Data(null);
-                        Logger.Data(null);
-                        Logger.Data(null);
-                        Logger.Data(null);
                     }
                     else if (Viewer.PlayerLocomotive is MSTSSteamLocomotive steam)
                     {
@@ -333,8 +332,12 @@ namespace Orts.Viewer3D
             }
         }
 
+        /// <summary>Start logging data. Logs a header row. Also saves the player locomotive to detect player train (or loco) changes.</summary>
         void DataLoggerStart()
         {
+            PreviousPlayerLocomotive = Viewer.PlayerLocomotive;
+            PreviousLoggedSpeedMpH = -1.0f;
+
             // NOTE: Conditions and data here MUST match similar code in DataLoggerLog
             // Failure to update both places will result in mismatched columns or worse
             if (Viewer.Settings.DataLogExclusiveSteamPerformance)
@@ -378,6 +381,7 @@ namespace Orts.Viewer3D
             {
                 Logger.Data($"Speed [{SpeedUnit}]");
                 Logger.Data($"Power [{PowerUnit}]");
+                Logger.Data($"ITE (MotiveForce) [{ForceUnit}]");
                 Logger.Data("Throttle [%]");
                 Logger.Data("Cut-off [%]");
             }
@@ -422,24 +426,51 @@ namespace Orts.Viewer3D
                     Logger.Data("Brakeman Brake");
                     Logger.Data($"Player Cylinder [{PressureUnitEnum.ToString()}]");
                     Logger.Data($"Player Main Res [{PressureUnitEnum.ToString()}]");
-                    // Logger.Data($"Available Traction Power [{PowerUnit}]");  -- for now using axle power
-                    Logger.Data($"D:Real RPM / E:panto 1 / S:Blower usage [{(UseNativeUnits ? FormatStrings.lbps : MassConsumptionUnit)}]");
-                    Logger.Data($"D:Demanded RPM / E:panto 2 / S:Boiler [{PressureUnitEnum.ToString()}]");
-                    Logger.Data("D:Load [%] / E:panto 3 / S:Cylinder Cocks open");
-                    Logger.Data("D:Gearbox Current Gear / E:panto 4 / S:Cylinder Compound on");
-                    Logger.Data($"D:Gearbox Next Gear / E:null / S:Evaporation [{(UseNativeUnits ? FormatStrings.lbps : MassConsumptionUnit)}]");
-                    Logger.Data($"D:Clutch [%] / E:null / S:Fire Mass [{MassUnit}]");
-                    Logger.Data($"D:Fuel Flow [{VolumeConsumptionUnit}] / E:null / S:Steam usage [{(UseNativeUnits ? FormatStrings.lbps : MassConsumptionUnit)}]");
-                    Logger.Data($"D:Fuel level [{VolumeUnit}] / E:null / S:Blower");
-                    Logger.Data("D:null / E:null / S:Damper");
-                    Logger.Data("D:null / E:null / S:Firing Rate");
-                    Logger.Data("D:null / E:null / S:Injector 1");
-                    Logger.Data("D:null / E:null / S:Injector 2");
+                    if (Viewer.PlayerLocomotive is MSTSDieselLocomotive diesel)
+                    {
+                        // Logger.Data($"Available Traction Power [{PowerUnit}]");  -- for now using axle power
+                        Logger.Data("Real RPM");
+                        Logger.Data("Demanded RPM");
+                        Logger.Data("Load [%]");
+                        Logger.Data($"Fuel Flow [{VolumeConsumptionUnit}]");
+                        Logger.Data($"Fuel level [{VolumeUnit}]");
+                        if (diesel.DieselEngines.HasGearBox)
+                        {
+                            Logger.Data("Gearbox Current Gear");
+                            Logger.Data("Gearbox Next Gear");
+                            Logger.Data("Clutch [%]");
+                        }
+                    }
+                    else if (Viewer.PlayerLocomotive is MSTSElectricLocomotive electric)
+                    {
+                        // Logger.Data($"Available Traction Power [{PowerUnit}]");  -- for now using axle power
+                        Logger.Data("Panto 1");
+                        Logger.Data("Panto 2");
+                        Logger.Data("Panto 3");
+                        Logger.Data("Panto 4");
+                    }
+                    else if (Viewer.PlayerLocomotive is MSTSSteamLocomotive steam)
+                    {
+                        // Logger.Data($"Available Traction Power [{PowerUnit}]");  -- for now using axle power
+                        Logger.Data($"Blower usage [{(UseNativeUnits ? FormatStrings.lbps : MassConsumptionUnit)}]");
+                        Logger.Data($"Boiler [{PressureUnitEnum.ToString()}]");
+                        Logger.Data("Cylinder Cocks open");
+                        Logger.Data("Cylinder Compound on");
+                        Logger.Data($"Evaporation [{(UseNativeUnits ? FormatStrings.lbps : MassConsumptionUnit)}]");
+                        Logger.Data($"Fire Mass [{MassUnit}]");
+                        Logger.Data($"Steam usage [{(UseNativeUnits ? FormatStrings.lbps : MassConsumptionUnit)}]");
+                        Logger.Data("Blower");
+                        Logger.Data("Damper");
+                        Logger.Data("Firing Rate");
+                        Logger.Data("Injector 1");
+                        Logger.Data("Injector 2");
+                    }
                 }
             }
             Logger.End();
         }
 
+        /// <summary>Stop logging data. Flushes the in-memory data to the dump file.</summary>
         void DataLoggerStop()
         {
             Logger.Flush();
