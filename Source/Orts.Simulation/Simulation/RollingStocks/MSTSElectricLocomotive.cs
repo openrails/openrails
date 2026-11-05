@@ -68,8 +68,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsauxpowerondelay":
                 case "engine(ortspowersupply":
                 case "engine(ortspowersupplyparameters":
-                case "engine(ortscircuitbreaker":
-                case "engine(ortscircuitbreakerclosingdelay":
                 case "engine(ortsbattery":
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
@@ -79,6 +77,10 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortspowerlimitationselector":
                 case "engine(ortselectrictrainsupply(mode":
                     LocomotivePowerSupply.Parse(lowercasetoken, stf);
+                    break;
+                case "engine(ortscircuitbreaker":
+                case "engine(ortscircuitbreakerclosingdelay":
+                    Pantographs.Parse(lowercasetoken, stf);
                     break;
 
                 default:

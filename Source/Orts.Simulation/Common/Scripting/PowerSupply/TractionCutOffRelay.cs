@@ -49,7 +49,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected CircuitBreakerState CurrentCircuitBreakerState()
         {
-            return PowerSupply.Type == PowerSupplyType.DualMode ? (PowerSupply as ScriptedDualModePowerSupply).CircuitBreaker.State : CircuitBreakerState.Unavailable;
+            return SupplyType() == PowerSupplyType.DualMode ? (PowerSupply as ScriptedDualModePowerSupply).CircuitBreaker.State : CircuitBreakerState.Unavailable;
         }
     }
 
