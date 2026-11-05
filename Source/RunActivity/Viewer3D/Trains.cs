@@ -93,6 +93,8 @@ namespace Orts.Viewer3D
             cars = Cars;
             if (PlayerCar != null && cars.ContainsKey(PlayerCar))
                 cars[PlayerCar].LoadForPlayer();
+
+            Viewer.Game.FlexibleConnections.ProcessPendingMaterials();
         }
 
         [CallOnThread("Loader")]
@@ -106,6 +108,7 @@ namespace Orts.Viewer3D
                 if (Viewer.LoaderProcess.CancellationToken.IsCancellationRequested) break;
             }
             CABTextureManager.Mark(Viewer);
+            Viewer.Game.FlexibleConnections.MarkMaterials();
         }
 
         [CallOnThread("Updater")]
@@ -140,8 +143,14 @@ namespace Orts.Viewer3D
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var cars = Cars;
+            // Reset every vehicle before any connected publication can mark either endpoint.
+            foreach (var car in cars.Values)
+                (car as MSTSWagonViewer)?.ResetFlexibleConnectionPoints(cars);
             foreach (var car in cars.Values)
                 car.PrepareFrame(frame, elapsedTime);
+            // Prepare disconnected visuals after all connected publications.
+            foreach (var car in cars.Values)
+                (car as MSTSWagonViewer)?.PrepareFlexibleConnectionHalves(frame);
             // Do the lights separately for proper alpha sorting
             foreach (var car in cars.Values)
                 car.lightDrawer?.PrepareFrame(frame, elapsedTime);
