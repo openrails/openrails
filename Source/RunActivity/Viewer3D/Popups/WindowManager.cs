@@ -38,16 +38,6 @@ namespace Orts.Viewer3D.Popups
         public static Texture2D NoticeTexture;
         public static Texture2D PauseTexture;
 
-        // This is all a bit of a hack, since SpriteBatch does not expose its own internal Flush() method. What we do
-        // is draw with a different texture to anything else; the change of texture triggers an internal flush. The
-        // texture is initialised to transparent black so although we draw it in a visible area, it will not actually
-        // be visible on screen.
-        static Texture2D FlushTexture;
-        public static void Flush(SpriteBatch spriteBatch)
-        {
-            spriteBatch.Draw(FlushTexture, Vector2.Zero, Color.Black);
-        }
-
 		public readonly Viewer Viewer;
         public readonly WindowTextManager TextManager;
         public readonly WindowTextFont TextFontDefault;
@@ -95,11 +85,6 @@ namespace Orts.Viewer3D.Popups
             {
                 WhiteTexture = new Texture2D(Viewer.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                 WhiteTexture.SetData(new[] { Color.White });
-            }
-            if (FlushTexture == null)
-            {
-                FlushTexture = new Texture2D(Viewer.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-                FlushTexture.SetData(new[] { Color.Transparent });
             }
             if (ScrollbarTexture == null)
                 // TODO: This should happen on the loader thread.
@@ -262,7 +247,7 @@ namespace Orts.Viewer3D.Popups
                 }
                 PopupWindowMaterial.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
                 PopupWindowMaterial.ResetState(graphicsDevice);
-                SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+                SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
                 window.Draw(SpriteBatch);
                 SpriteBatch.End();
                 if (Viewer.Settings.WindowGlass)
