@@ -73,6 +73,7 @@ namespace ORTS.Common
         /// <param name="maxAccelerationMpSS">Maximum force or acceleration developed with controller at 100%</param>
         public void Adjust(float maxAccelerationMpSS)
         {
+            if (maxAccelerationMpSS < 1e-5f) maxAccelerationMpSS = 1e-5f;
             ProportionalFactor = Coefficients[0] / maxAccelerationMpSS;
             IntegralFactor = Coefficients[1] / maxAccelerationMpSS;
             DerivativeFactor = Coefficients[2] / maxAccelerationMpSS;
