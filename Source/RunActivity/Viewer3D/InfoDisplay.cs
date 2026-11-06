@@ -265,6 +265,7 @@ namespace Orts.Viewer3D
                     Logger.Data(loco.EngineBrakeController?.CurrentValue.ToString("F2"));
                     Logger.Data(loco.BrakemanBrakeController?.CurrentValue.ToString("F2"));
                     Logger.Data(ConvertPressure(loco.BrakeSystem.GetCylPressurePSI(), MainPressureUnit));
+                    Logger.Data(ConvertPressure(loco.BrakeSystem.BrakeLine1PressurePSI, MainPressureUnit));
                     Logger.Data(ConvertPressure(loco.MainResPressurePSI, MainPressureUnit));
                     if (Viewer.PlayerLocomotive is MSTSDieselLocomotive diesel)
                     {
@@ -327,7 +328,7 @@ namespace Orts.Viewer3D
                 Logger.Data("Throttle [%]");
                 Logger.Data("Cut-off [%]");
                 Logger.Data($"ITE (MotiveForce) [{ForceUnit}]");
-                Logger.Data($"IHP [{PowerUnit}]");
+                Logger.Data($"IHP [{(UseNativeUnits ? FormatStrings.hp : PowerUnit)}]");
                 Logger.Data($"Drawbar TE [{(UseNativeUnits ? FormatStrings.lbf : ForceUnit)}]");
                 Logger.Data($"Drawbar HP [{(UseNativeUnits ? FormatStrings.hp : PowerUnit)}]");
                 Logger.Data($"Coupler Force [{ForceUnit}]");
@@ -404,7 +405,8 @@ namespace Orts.Viewer3D
                     Logger.Data("Train Brake");
                     Logger.Data("Engine Brake");
                     Logger.Data("Brakeman Brake");
-                    Logger.Data($"Player Cylinder [{MainPressureUnit.ToString()}]");
+                    Logger.Data($"Player Brake Cylinder [{MainPressureUnit.ToString()}]");
+                    Logger.Data($"Player Brake Pipe [{MainPressureUnit.ToString()}]");
                     Logger.Data($"Player Main Res [{MainPressureUnit.ToString()}]");
                     if (Viewer.PlayerLocomotive is MSTSDieselLocomotive diesel)
                     {
