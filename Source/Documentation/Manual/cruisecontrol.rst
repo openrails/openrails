@@ -102,6 +102,8 @@ A list of the available .eng file CC parameters follows here below.
    "SpeedDeltaToStopBraking", "Difference between train speed and set speed below which brakes are released", "Float (speed)", "0.5 m/s"
    "SpeedDeltaAcceleratingOffset", "Speed delta at which the demanded acceleration is 0", "Float (speed)", "0"
    "SpeedDeltaBrakingOffset", "Speed delta at which the demanded deceleration is 0", "Float (speed)", "0"
+   "MaxAcceleration", "Maximum acceleration achieved by CC", "Float (acceleration)", "2 m/s^2"
+   "MaxDeceleration", "Maximum deceleration achieved by CC", "Float (acceleration)", "2 m/s^2"
    "ForceRegulatorAutoWhenNonZeroSpeedSelected", "When a non zero speed is selected, the regulator is set to auto", "Boolean", "FALSE"
    "ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero", "Self explaining", "Boolean", "FALSE"
    "MaxForceKeepSelectedStepWhenManualModeSet", "Self explaining", "Boolean", "FALSE"
@@ -140,13 +142,15 @@ A list of the available .eng file CC parameters follows here below.
    "SpeedSelectorIsDiscrete", "Speed selected can have only values multiple of NominalSpeedStep", "Boolean", "TRUE"
    "ModeSwitchAllowedWithThrottleNotAtZero", "Switch from manual to auto and vice-versa can occur also when throttle lever is not at 0", "Boolean", "FALSE"
    "DisableManualSwitchToAutoWhenSetSpeedNotAtTop", "Manual Switch to Cruise Control Auto Mode can't occur when speed is not set at maximum value and at the same moment train speed is not 0", "Boolean", "FALSE"
-   "UseTrainBrakeAndDynBrake", "CC uses train brake and dyn brake together", "Boolean", "FALSE"
-   "UseDynBrake", "CC uses dyn brake", "Boolean", "TRUE"
+   "UseTrainBrakeAndDynBrake", "CC uses train brake and dyn brake together", "Boolean", "FALSE"
+   "UseDynBrake", "CC uses dyn brake", "Boolean", "TRUE"
    "TrainBrakeCommandHasPriorityOverCruiseControl", "A manual train braking inhibits Cruise Control to use both dynamic braking and tractive force", "Boolean", "TRUE"
    "TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl", "A manual train braking inhibits Cruise Control to use tractive force", "Boolean", "TRUE"
    "BrakeCommandHasPriorityOverASCBraking", "A manual train brake command inhibits the Automatic Speed Control braking, even if the latter is more restrictive", "Boolean", "FALSE"
    "ASCSpeedTakesPriorityOverSpeedSelector", "Set speed demanded by the Automatic Speed Control system overrides the speed selected by the driver, even if the latter is lower", "Boolean", "FALSE"
    "SpeedDeltaToEnableTrainBrake", "This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake", "Float(speed)", "5m/s"
+   "MinDynamicBrakePercentToEnableTrainBrake", "This is the minimum dynamic brake percent before the CC starts using also the train brake", "Float(percent)", "80"
+   "MinDynamicBrakePercentWhileUsingTrainBrake", "This is the minimum dynamic brake percent applied while the CC is using the train brake", "Float(percent)", "20"
    "TrainBrakeMinPercentValue", "This is the minimum train brake percent used by the CC. 0 means no braking, 100 means full service braking", "Float(percent)", "10"
    "TrainBrakeMaxPercentValue", "As above for maximum value. It must not be too high to avoid that the brake is not fully released timely", "Float(percent)", "85"
    "ThrottleNeutralPosition", "The zero throttle position is neutral in auto mode, that is in such position the CC does not intervene", "Boolean", "FALSE"
@@ -188,7 +192,8 @@ the target speed is higher than parameter SpeedDeltaToEnableTrainBrake.
 Above this value, the train brake is continuously adjusted to achieve
 the target deceleration. If available, dynamic brake takes priority. Only when
 the requested dynamic brake percent exceeds MinDynamicBrakePercentToEnableTrainBrake,
-the train brake is activated to supplement dynamic brakes.
+the train brake is activated to supplement dynamic brakes. Once the train brake is
+activated, dynamic brakes are kept above MinDynamicBrakePercentWhileUsingTrainBrake.
 
 		UseTrainBrakeAndDynBrake ( True ) comment (** CC uses train brake and dyn brake together **)
 		SpeedDeltaToEnableTrainBrake ( 5km/h ) comment (** This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake **)
