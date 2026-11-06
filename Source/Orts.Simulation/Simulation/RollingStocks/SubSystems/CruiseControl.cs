@@ -1290,7 +1290,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 if (car is MSTSLocomotive locomotive)
                 {
                     totalTractionN += locomotive.GetAvailableTractionForceN(1);
-                    totalDynamicBrakeN += locomotive.GetAvailableDynamicBrakeForceN(1);
+                    totalDynamicBrakeN += locomotive.GetAvailableDynamicBrakeForceN(1, false, true);
                 }
                 totalTrainBrakeN += car.FrictionBrakeBlendingMaxForceN; // TODO: consider changes with speed
                 totalMassKg += car.MassKG;
@@ -1298,26 +1298,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             MaxThrottleAccelerationMpSS = totalTractionN / totalMassKg;
             MaxDynamicBrakeDecelerationMpSS = totalDynamicBrakeN / totalMassKg;
             MaxTrainBrakeDecelerationMpSS = totalTrainBrakeN / totalMassKg;
-            float maxThrottleAccelerationMpSS = MaxThrottleAccelerationMpSS;
-            if (maxThrottleAccelerationMpSS < 0.01f)
-            {
-                float coeff = Math.Max(MpS.FromMpS(AbsWheelSpeedMpS, !SpeedIsMph) / 100 * 1.2f, 1);
-                maxThrottleAccelerationMpSS = 1.5f / coeff;
-            }
-            float maxDynamicBrakeDecelerationMpSS = MaxDynamicBrakeDecelerationMpSS;
-            if (maxDynamicBrakeDecelerationMpSS < 0.01f)
-            {
-                float coeff = Math.Max(MpS.FromMpS(AbsWheelSpeedMpS, !SpeedIsMph) / 100 * 1.2f, 1);
-                maxDynamicBrakeDecelerationMpSS = 1.5f / coeff;
-            }
-            float maxTrainBrakeDecelerationMpSS = MaxTrainBrakeDecelerationMpSS;
-            if (MaxTrainBrakeDecelerationMpSS < 0.01f)
-            {
-                maxTrainBrakeDecelerationMpSS = 1.5f;
-            }
-            ThrottlePID.Adjust(maxThrottleAccelerationMpSS);
-            DynamicBrakePID.Adjust(maxDynamicBrakeDecelerationMpSS);
-            TrainBrakePID.Adjust(maxTrainBrakeDecelerationMpSS);
+            ThrottlePID.Adjust(MaxThrottleAccelerationMpSS);
+            DynamicBrakePID.Adjust(MaxDynamicBrakeDecelerationMpSS);
+            TrainBrakePID.Adjust(MaxTrainBrakeDecelerationMpSS);
 
             float targetThrottleAccelerationMpSS = demandedAccelerationMpSS;
             if (SelectedMaxAccelerationStep > 0 && AccelerationTable.Count >= SelectedMaxAccelerationStep && MpS.FromMpS(AbsWheelSpeedMpS, !SpeedIsMph) > 5)

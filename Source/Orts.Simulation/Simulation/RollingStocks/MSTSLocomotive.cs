@@ -2592,15 +2592,14 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// Provides the theoretical tractive force that can be achieved at current speed
+        /// Provides the tractive force that can be achieved at current speed
         /// Takes into account number of available engines and power limitation effects from the power supply.
-        /// This method does not take into account transient effects that temporary limit tractive force
-        /// (e.g. diesel engine still revving up)
         /// </summary>
         /// <param name="t">Throttle position (0-1)</param>
         /// <param name="limit">True (default false) if the force returned should be the absolute limit on force</param>
+        /// <param name="theoretical">True (default false) if the force returned should ignore instantaneous power limits</param>
         /// <returns>Tractive effort currently available at the given throttle setting</returns>
-        public virtual float GetAvailableTractionForceN(float t, bool limit = false)
+        public virtual float GetAvailableTractionForceN(float t, bool limit = false, bool theoretical = false)
         {
             if (t <= 0) return 0;
             float powerW = float.MaxValue;
@@ -2613,7 +2612,7 @@ namespace Orts.Simulation.RollingStocks
                 if (!limit && supply.MaximumPowerW > 0)
                     powerW = supply.MaximumPowerW * t;
                 // This limit influences the absolute maximum force, and cannot be exceeded, not even transiently
-                if (supply.AvailableTractionPowerW > 0)
+                if (!theoretical && supply.AvailableTractionPowerW > 0)
                     powerW = Math.Min(powerW, supply.AvailableTractionPowerW);
             }
             // This section calculates the traction force of the locomotive as follows:
@@ -2670,14 +2669,14 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// Provides the theoretical dynamic brake force that can be achieved at current speed
+        /// Provides the dynamic brake force that can be achieved at current speed
         /// Takes into account power limitation effects from the power supply.
-        /// This method does not take into account transient effects that temporary limit tractive force.
         /// </summary>
         /// <param name="d">Dynamic brake position (0-1)</param>
         /// <param name="limit">True (default false) if the force returned should be the absolute limit on force</param>
+        /// <param name="theoretical">True (default false) if the force returned should ignore instantaneous power limits</param>
         /// <returns>Dynamic brake effort currently available at the given dynamic brake setting</returns>
-        public float GetAvailableDynamicBrakeForceN(float d, bool limit = false)
+        public float GetAvailableDynamicBrakeForceN(float d, bool limit = false, bool theoretical = false)
         {
             float forceN = 0;
             // Note: All locomotives, even using MSTS settings, should have dynamic brake curves
