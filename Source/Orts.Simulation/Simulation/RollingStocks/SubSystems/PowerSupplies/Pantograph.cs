@@ -28,8 +28,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
     public class Pantographs : ISubSystem<Pantographs>
     {
-        public static readonly int MinPantoID = 1; // minimum value of PantoID, applies to Pantograph 1
-        public static readonly int MaxPantoID = 4; // maximum value of PantoID, applies to Pantograph 4
         readonly MSTSWagon Wagon;
 
         bool LegacyPantographs = true;
@@ -69,7 +67,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     );
 
                     if (List.Count() == 0)
-                        throw new InvalidDataException("ORTSPantographs block with no pantographs");
+                        Trace.TraceWarning("ORTSPantographs block with no pantographs");
 
                     break;
 
@@ -170,7 +168,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 case PowerSupplyEvent.LowerPantograph:
                 case PowerSupplyEvent.RaisePantograph:
-                    if (id <= List.Count)
+                    if (id > 0 && id <= List.Count)
                     {
                         List[id - 1].HandleEvent(evt);
                     }
