@@ -92,6 +92,7 @@ A list of the available .eng file CC parameters follows here below.
    "SpeedIsMpH", "KpH if missing", "Boolean", "FALSE"
    "MaxForceSteps", "Usually will be 100 meaning 100%, but some locos have limited force steps", "Integer", "0"
    "SpeedSelectorStepTimeSeconds", "How fast the selected speed lever adds speed", "Float", "0.1"
+   "DynamicBrakeMaxForceAtSelectorStep", "The brake will reach 100% at this step, the lower the step, the lower the max brake percent", "Integer", "1"
    "NominalSpeedStep", "When pressing Shift+A or Shift+D how many speed units should the selected speed change ", "Integer", "0"
    "SpeedSelectorDelayTimeBeforeUpdating", "Time that the speed selector has to be kept unchanged before updating the set speed", "Seconds", "0"
    "StartReducingSpeedDelta", "The lower number, the sooner the regulator will decrease power", "Float", "1"

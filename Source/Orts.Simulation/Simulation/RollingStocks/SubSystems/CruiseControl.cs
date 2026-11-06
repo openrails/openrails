@@ -113,6 +113,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         } 
         public int SelectedNumberOfAxles = 0;
         public float SpeedRegulatorNominalSpeedStepMpS = 0;
+        public float DynamicBrakeMaxForceAtSelectorStep = 0;
         public float MaxAccelerationMpSS = 2;
         public float MaxDecelerationMpSS = 2;
         public float? ThrottlePercent { get; private set;}
@@ -252,6 +253,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             SpeedDeltaFunctionMode = other.SpeedDeltaFunctionMode;
             MaxAccelerationMpSS = other.MaxAccelerationMpSS;
             MaxDecelerationMpSS = other.MaxDecelerationMpSS;
+            DynamicBrakeMaxForceAtSelectorStep = other.DynamicBrakeMaxForceAtSelectorStep;
             StartReducingSpeedDelta = other.StartReducingSpeedDelta;
             StartReducingSpeedDeltaDownwards = other.StartReducingSpeedDeltaDownwards;
             SpeedDeltaToStartAcceleratingMpS = other.SpeedDeltaToStartAcceleratingMpS;
@@ -370,6 +372,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     case "disablezeroselectedspeedstep": DisableZeroSelectedSpeedStep = stf.ReadBoolBlock(false); break;
                     case "dynamicbrakeisselectedforcedependant": DynamicBrakeIsSelectedForceDependant = stf.ReadBoolBlock(false); break;
                     case "defaultforcestep": defaultMaxAccelerationStep = stf.ReadFloatBlock(STFReader.UNITS.Any, 1.0f); break;
+                    case "dynamicbrakemaxforceatselectorstep": DynamicBrakeMaxForceAtSelectorStep = stf.ReadFloatBlock(STFReader.UNITS.Any, 1.0f); break;
                     case "startreducingspeeddelta": StartReducingSpeedDelta = (stf.ReadFloatBlock(STFReader.UNITS.Any, 1.0f) / 10); break;
                     case "startreducingspeeddeltadownwards": StartReducingSpeedDeltaDownwards = (stf.ReadFloatBlock(STFReader.UNITS.Any, 1.0f) / 10); break;
                     case "speeddeltatostartaccelerating": SpeedDeltaToStartAcceleratingMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 0f); break;
@@ -1334,7 +1337,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 // If train brake is active, we force dynamic brakes to stay active to give preference to brake release
                 minDynamicBrakePercent = CCIsUsingTrainBrake ? MinDynamicBrakePercentWhileUsingTrainBrake : 0;
-                maxDynamicBrakePercent = DynamicBrakeIsSelectedForceDependant ? SelectedMaxAccelerationPercent : 100;
+                if (DynamicBrakeIsSelectedForceDependant)
+                {
+                    maxDynamicBrakePercent = SelectedMaxAccelerationPercent;
+                }
+                else if (DynamicBrakeMaxForceAtSelectorStep > 0 && SpeedRegulatorMaxForceSteps > 0 && SelectedMaxAccelerationStep < DynamicBrakeMaxForceAtSelectorStep)
+                {
+                    maxDynamicBrakePercent = SelectedMaxAccelerationStep / DynamicBrakeMaxForceAtSelectorStep * 100;
+                }
+                else
+                {
+                    maxDynamicBrakePercent = 100;
+                }
             }
             DynamicBrakePID.Update(elapsedClockSeconds, -demandedAccelerationMpSS, AbsWheelSpeedMpS > 0 ? -RelativeAccelerationMpSS : -demandedAccelerationMpSS, minDynamicBrakePercent, maxDynamicBrakePercent);
             float target = ThrottlePID.Percent - DynamicBrakePID.Percent;
