@@ -815,12 +815,11 @@ namespace Orts.Viewer3D
                     if (((string)videoController["Description"] == adapterDescription) && (videoController["AdapterRAM"] != null))
                         adapterMemory = (uint)videoController["AdapterRAM"];
             }
-            catch (ManagementException error)
+            catch (Exception error)
             {
-                Trace.WriteLine(error);
-            }
-            catch (UnauthorizedAccessException error)
-            {
+                // The adapter memory is only informational, so any failure to read it is logged and ignored:
+                // ManagementException, UnauthorizedAccessException, or PlatformNotSupportedException when
+                // System.Management cannot reach WMI at all (Wine and Proton have no WMI helper).
                 Trace.WriteLine(error);
             }
         }
@@ -882,7 +881,8 @@ namespace Orts.Viewer3D
                 Camera.AttachedCar.Train.FormationReversed = false;
                 (Camera as TrackingCamera).SwapCameras();
             }
-            Simulator.Update(elapsedTime.ClockSeconds);
+            float updaterTimeS = UpdaterProcess.Profiler.Wall.Value / 100.0f * elapsedTime.ClockSeconds; // Let simulator know how long updates are taking
+            Simulator.Update(elapsedTime.ClockSeconds, updaterTimeS);
             if (PlayerLocomotive.Train.BrakingTime == -2) // We just had a wagon with stuck brakes
             {
                 LoadDefectCarSound(PlayerLocomotive.Train.Cars[-(int)PlayerLocomotive.Train.ContinuousBrakingTime], "BrakesStuck.sms");
