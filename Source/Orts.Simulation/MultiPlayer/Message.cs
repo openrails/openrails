@@ -1,4 +1,4 @@
-// COPYRIGHT 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -2753,8 +2753,12 @@ namespace Orts.MultiPlayer
                     if (car == null) continue;
                     tmpcars2.Add(car);
                     car.Flipped = flipped2[i] == 0 ? false : true;
+                    car.Train = train2;
+                    if (car.CarID == firstCarIDNew && newIDIsLead) train2.LeadLocomotive = car;
                 }
+
                 if (tmpcars2.Count == 0) return;
+
                 train2.Cars = tmpcars2;
                 train2.Name = String.Concat(train.Name, Train.TotalNumber.ToString());
                 train2.LeadLocomotive = null;
@@ -2808,8 +2812,6 @@ namespace Orts.MultiPlayer
                 }
                 foreach (TrainCar car in train2.Cars)
                 {
-                    if (car.CarID == firstCarIDNew && newIDIsLead) train2.LeadLocomotive = car;
-                    car.Train = train2;
                     foreach (var p in MPManager.OnlineTrains.Players)
                     {
                         if (car.CarID.StartsWith(p.Value.LeadingLocomotiveID))
@@ -3864,11 +3866,11 @@ namespace Orts.MultiPlayer
 
         public MSGFlip(Train t, bool setMUParameters, int n)
         {
-            cars = new string[t.Cars.Count];
-            ids = new string[t.Cars.Count];
-            flipped = new int[t.Cars.Count];
-            var carGroup = Math.Min(t.Cars.Count, 20); // it is not needed to check for real flip on a full, long consist
-            for (var i = 0; i < carGroup; i++)
+            var carGroupSize = Math.Min(t.Cars.Count, 20); // it is not needed to check for real flip on a full, long consist
+            cars = new string[carGroupSize];
+            ids = new string[carGroupSize];
+            flipped = new int[carGroupSize];
+            for (var i = 0; i < carGroupSize; i++)
             {
                 cars[i] = t.Cars[i].RealWagFilePath;
                 ids[i] = t.Cars[i].CarID;
@@ -3885,7 +3887,7 @@ namespace Orts.MultiPlayer
             mDirection = (int)t.MUDirection;
             speed = t.SpeedMpS;
             tni = t.RearTDBTraveller.TrackNodeIndex;
-            count = t.Cars.Count;
+            count = carGroupSize;
             tdir = (int)t.RearTDBTraveller.Direction;
             len = t.Length;
             reverseMU = (setMUParameters ? 1 : 0);

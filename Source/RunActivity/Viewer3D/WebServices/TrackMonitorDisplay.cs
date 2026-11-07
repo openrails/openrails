@@ -918,7 +918,10 @@ namespace Orts.Viewer3D.WebServices
                 switch (Item.SpeedObjectType)
                 {
                     case SpeedItemType.Standard:
-                        color = Color.White;
+                        if (Item.IsWarning)
+                            color = Color.Yellow;
+                        else
+                            color = Color.White;
                         break;
                     case SpeedItemType.TempRestrictedStart:
                         color = Color.OrangeRed;
