@@ -38,6 +38,11 @@ namespace Orts.Parsers.OR
             {
                 var readLine = filestream.ReadLine();
 
+                if (string.IsNullOrEmpty(readLine))
+                {
+                    throw new InvalidDataException($"Timetable {filePath} is empty or has an empty first line");
+                }
+
                 // Extract the separator character from start of the first line.
                 char separator = readLine[0];
 
