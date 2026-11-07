@@ -573,13 +573,9 @@ namespace Orts.Viewer3D
                 {
                     Matrix transform = WorldPosition.XNAMatrix;
                     transform.Translation = Vector3.Zero; // Only want rotation data for this step
-                    // rotation = CarViewer.TrainCarShape.ResultMatrices[EmitterData.ShapeIndex] * rotation; // Future: ShapeHierarchy goes here
-
-                    Matrix rotation = transform;
-                    rotation.Translation = Vector3.Zero; // Last step needed translational effects, next step does not
 
                     // Final velocity should rotate with the attached train car, but only about the Y axis
-                    rotation.Decompose(out _, out Quaternion rotY, out _);
+                    transform.Decompose(out _, out Quaternion rotY, out _);
                     rotY.X = 0;
                     rotY.Z = 0;
                     rotY.Normalize();
@@ -655,7 +651,7 @@ namespace Orts.Viewer3D
                         // Interpolate the position of the particle in-between frames
                         position -= carVelocity * (currentTime - emitTime);
 
-                        initialVelocity = Vector3.Transform(initialVelocity, rotation);
+                        initialVelocity = Vector3.TransformNormal(initialVelocity, transform);
                         finalVelocity = Vector3.Transform(finalVelocity, rotY);
 
                         // Add on velocity of attached train car
