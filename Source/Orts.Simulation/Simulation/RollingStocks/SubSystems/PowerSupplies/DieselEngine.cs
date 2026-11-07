@@ -386,6 +386,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         /// <summary>
+        /// Returns the maximum allowed tractive effort output of the gear box
+        /// at the current gear setting.
+        /// </summary>
+        public float MaxTractiveForceN
+        {
+            get
+            {
+                float temp = 0;
+                foreach (DieselEngine de in DEList)
+                {
+                    if (de.GearBox != null && de.GearBox.CurrentGear != null)
+                    {
+                        temp += de.GearBox.CurrentGear.MaxTractiveForceN;
+                    }
+                }
+                return temp;
+            }
+        }
+
+        /// <summary>
         /// Updates all diesel engines
         /// </summary>
         /// <param name="elapsedClockSeconds">Time span within the simulation cycle</param>
@@ -517,14 +537,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                float percent = 0;
-                float totalMaxPower = MaxPowerW;
+                float totalRunningPower = 0;
+                float totalMaxPower = 0;
                 foreach (DieselEngine eng in DEList)
                 {
-                    if (eng.State == DieselEngineState.Running)
-                        percent += eng.MaximumDieselPowerW / totalMaxPower;
+                    if (eng.ProvidesTraction)
+                    {
+                        totalMaxPower += eng.MaximumDieselPowerW;
+                        if (eng.State == DieselEngineState.Running)
+                            totalRunningPower += eng.MaximumDieselPowerW;
+                    }
                 }
-                return percent;
+                return totalRunningPower / totalMaxPower;
             }
         }
     }
@@ -974,8 +998,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public virtual void Parse(STFReader stf)
         {
             stf.MustMatch("(");
-            bool end = false;
-            while (!end)
+            while (!stf.EndOfBlock())
             {
                 string lowercasetoken = stf.ReadItem().ToLower();
                 switch (lowercasetoken)
@@ -1022,8 +1045,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "temptimeconstant": TempTimeConstantS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0); break;
                     case "opttemperature": OptimalTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, 95f); break;
                     case "idletemperature": IdleTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, 75f); break;
+                    case "(": stf.SkipRestOfBlock(); break; // Encountered an unrecognized parameter, skip it
                     default:
-                        end = true;
                         break;
                 }
             }
@@ -1135,6 +1158,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             ExhaustParticles = InitialExhaust + (ExhaustRange * normRPM);
             ExhaustMagnitude = InitialMagnitude + (MagnitudeRange * normRPM);
             ExhaustColor = ExhaustSteadyColor;
+
+            if (dRPM > 0.25f * ChangeUpRPMpS) // Only change particle emitter if RPM is still increasing substantially
+            {
+                ExhaustParticles *= ExhaustAccelIncrease;
+                ExhaustMagnitude *= ExhaustAccelIncrease;
+                ExhaustColor = ExhaustTransientColor;
+            }
+            else if (dRPM < -0.25f * ChangeDownRPMpS) // Only change particle emitter if RPM is still decreasing substantially
+            {
+                ExhaustParticles *= ExhaustDecelReduction;
+                ExhaustMagnitude *= ExhaustDecelReduction;
+                ExhaustColor = ExhaustDecelColor;
+            }
 
             if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {
@@ -1541,12 +1577,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     dRPM = (DemandedRPM - RealRPM) / elapsedClockSeconds;
                     return DemandedRPM;
                 }
-                else if (dRPM > 0.25f * ChangeUpRPMpS) // Only change particle emitter if RPM is still increasing substantially
-                {
-                    ExhaustParticles *= ExhaustAccelIncrease;
-                    ExhaustMagnitude *= ExhaustAccelIncrease;
-                    ExhaustColor = ExhaustTransientColor;
-                }
             }
             else if (RealRPM > DemandedRPM)
             {
@@ -1561,12 +1591,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     dRPM = (DemandedRPM - RealRPM) / elapsedClockSeconds;
                     return DemandedRPM;
-                }
-                else if (dRPM < -0.25f * ChangeDownRPMpS) // Only change particle emitter if RPM is still decreasing substantially
-                {
-                    ExhaustParticles *= ExhaustDecelReduction;
-                    ExhaustMagnitude *= ExhaustDecelReduction;
-                    ExhaustColor = ExhaustDecelColor;
                 }
             }
             else
