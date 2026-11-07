@@ -516,7 +516,7 @@ namespace Orts.Viewer3D.WebServices
                     if (Viewer.PlayerTrain != null)
                     {
                         TrainCarSelected = true;
-                        TrainCarSelectedPosition = Viewer.PlayerTrain.Cars.TakeWhile(x => x.CarID != currentCameraCarID).Count();
+                        TrainCarSelectedPosition = Viewer.PlayerTrain.GetCarPositionByCarID(currentCameraCarID);
                         TrainCarViewer.CarPosition = TrainCar.SelectedCarPosition = TrainCarSelectedPosition;
                     }
                 }
