@@ -215,7 +215,7 @@ namespace ORTS.Common
         /// <summary>Convert from kilograms/second to pounds/hour</summary>
         public static float ToLbpH(float kilogramsPerSecond) { return kilogramsPerSecond * 7936.64144f; }
         /// <summary>Convert from pounds/second to kilogram/second</summary>
-        public static float FromLbpS(float poundsPerSecond) { return poundsPerSecond * (1.0f / 2.20462f); }
+        public static float FromLbpS(float poundsPerSecond) { return Kg.FromLb(poundsPerSecond); }
     }
 
     /// <summary>
@@ -422,7 +422,7 @@ namespace ORTS.Common
         /// <summary>Convert from litres to US Gallons</summary>
         public static float ToGUS(float litre) { return litre * (1.0f / 3.78541f); }
         /// <summary>Convert from pounds to liters for a fluid with the specified density, default 1.0 (water).</summary>
-        public static float FromLb(float pounds, float densityKgpL = 1.0f) { return pounds * (1.0f / 2.20462f) * (1.0f / densityKgpL); }
+        public static float FromLb(float pounds, float densityKgpL = 1.0f) { return Kg.FromLb(pounds) * (1.0f / densityKgpL); }
         /// <summary>Convert from pounds to liters for a fluid with the specified density, default 1.0 (water).</summary>
         public static float FromKg(float kilogram, float densityKgpL = 1.0f) { return kilogram * (1.0f / densityKgpL); }
     }
