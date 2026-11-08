@@ -600,9 +600,8 @@ namespace Orts.Viewer3D.WebServices
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Front brake hose disconnected"));
             }
 
-            int carPositionOneBefore = carPosition - 1;
-            TrainCar trainCarOneBefore = Viewer.PlayerTrain.Cars[carPositionOneBefore];
-            new WagonBrakeHoseRearConnectCommand(Viewer.Log, carPositionOneBefore, toState);
+            // also apply to adjacent brake hose (car ahead)
+            new WagonBrakeHoseRearConnectCommand(Viewer.Log, carPosition - 1, toState);
         }
 
         //
@@ -963,9 +962,8 @@ namespace Orts.Viewer3D.WebServices
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Rear brake hose disconnected"));
             }
 
-            int carPositionOneAfter = carPosition + 1;
-            TrainCar trainCarOneAfter = Viewer.PlayerTrain.Cars[carPositionOneAfter];
-            new WagonBrakeHoseConnectCommand(Viewer.Log, carPositionOneAfter, toState);
+            // also apply to adjacent brake hose (car behind)
+            new WagonBrakeHoseConnectCommand(Viewer.Log, carPosition + 1, toState);
         }
 
         //
