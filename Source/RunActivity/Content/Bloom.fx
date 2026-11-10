@@ -176,42 +176,14 @@ float4 UpsampleLuminancePS(float4 pos : SV_POSITION,  float2 texCoord : TEXCOORD
     return 0.0625f * (c0 + 2 * c1 + c2 + 2 * c3 + 4 * c4 + 2 * c5 + c6 + 2 * c7 + c8) * Strength;
 }
 
-float4 AdjustSaturation(float4 color, float saturation)
-{
-    // The constants 0.3, 0.59, and 0.11 are chosen because the 
-    // human eye is more sensitive to green light, and less to blue. 
-    float grey = dot(color.rgb, float3(0.3, 0.59, 0.11));
-    return lerp(grey, color, saturation);
-}
-
-float3 Reinhard(float3 x) // Tone mapping
-{
-    return x / (x + float3(1.0, 1.0, 1.0));
-}
-
-float3 ACESFilm(float3 x) // Tone mapping
-{
-    float a = 2.51f;
-    float b = 0.03f;
-    float c = 2.43f;
-    float d = 0.59f;
-    float e = 0.14f;
-    return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
-}
-
 float4 MergePS(float4 pos : SV_POSITION, float2 texCoord : TEXCOORD0) : SV_TARGET0
 {
     float4 base = ScreenTexture.Sample(LinearSampler, texCoord);
     float4 bloom = BloomTexture.Sample(LinearSampler, texCoord);
 
-    //base = AdjustSaturation(base, BaseSaturation) * BaseIntensity;
-    //bloom = AdjustSaturation(bloom, BloomSaturation) * BloomIntensity;
-
     float3 combined = base.rgb + bloom.rgb;
     combined *= Exposure;
     
-    //combined = ACESFilm(combined);
-
     return float4(combined, base.a);
 }
 

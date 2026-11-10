@@ -602,17 +602,14 @@ namespace Orts.Viewer3D
 
                                 if (Debugger.IsAttached) DebugName = (DebugName != "" ? DebugName + "," : "") + attributes.Current.Key;
                             }
-                            // Multiple accessors to same bufferview with same semantic. Will reuse the VertexBuffer:
-                            //while (loop && previousOffset == currentOffset && attributes.Current.Key == previousAttribute)
+
+                            if (!Accessors.ContainsKey(attributes.Current.Value) && !VertexBufferBindings.ContainsKey(bindingKey))
                             {
-                                if (!Accessors.ContainsKey(attributes.Current.Value) && !VertexBufferBindings.ContainsKey(bindingKey))
-                                {
-                                    Accessors.Add(attributes.Current.Value, attributes.Current.Key);
-                                }
-                                loop = attributes.MoveNext();
-                                semantic = GetVertexElementSemantic(attributes.Current.Key, out index);
-                                currentOffset = gltfFile.Accessors[attributes.Current.Value].ByteOffset;
+                                Accessors.Add(attributes.Current.Value, attributes.Current.Key);
                             }
+                            loop = attributes.MoveNext();
+                            semantic = GetVertexElementSemantic(attributes.Current.Key, out index);
+                            currentOffset = gltfFile.Accessors[attributes.Current.Value].ByteOffset;
                         }
                         while (loop && previousOffset < currentOffset && currentOffset < previousOffset + byteStride);
 
@@ -1422,8 +1419,8 @@ namespace Orts.Viewer3D
                 }
                 shapePrimitive.SetMaterial(materialIndex);
 
-                // FIXME: This structure cannot handle the situation when a material is used with different shaders, for e.g. both skinned and non-skinned primitives.
-                // This is valid in gltf, but here we cannot handle this, because the shader type is tied to the material, but shouldn't be.
+                // Note: This structure cannot handle the situation when a material is used with different shaders, for e.g. both skinned and non-skinned primitives.
+                // This is valid in gltf, but here we cannot handle this, because the shader type is tied to the material in the current Openrails code structure.
                 if (!shape.Materials.ContainsKey(materialIndex))
                     shape.Materials.Add(materialIndex, shapePrimitive.Material as PbrMaterial);
 
