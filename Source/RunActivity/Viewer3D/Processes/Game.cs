@@ -57,6 +57,11 @@ namespace Orts.Viewer3D.Processes
         public RenderProcess RenderProcess { get; private set; }
 
         /// <summary>
+        /// Owns the single connection resource manager for this Game.
+        /// </summary>
+        internal readonly Orts.Viewer3D.RollingStock.FlexibleConnectionLifetimeManager FlexibleConnections;
+
+        /// <summary>
         /// Exposes access to the <see cref="UpdaterProcess"/> for the game.
         /// </summary>
         public UpdaterProcess UpdaterProcess { get; private set; }
@@ -99,6 +104,10 @@ namespace Orts.Viewer3D.Processes
             Exiting += new System.EventHandler<System.EventArgs>(Game_Exiting);
             WatchdogProcess = new WatchdogProcess(this);
             RenderProcess = new RenderProcess(this);
+            // Seal resource registration before any worker starts.
+            FlexibleConnections = new Orts.Viewer3D.RollingStock.FlexibleConnectionLifetimeManager();
+            RenderProcess.Resources.Register(FlexibleConnections);
+            RenderProcess.Resources.SealRegistrations();
             UpdaterProcess = new UpdaterProcess(this);
             LoaderProcess = new LoaderProcess(this);
             SoundProcess = new SoundProcess(this);

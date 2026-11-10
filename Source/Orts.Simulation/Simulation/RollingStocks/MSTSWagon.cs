@@ -283,6 +283,11 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public MSTSDieselLocomotive DieselLocomotiveIdentification { get; private set; }
 
+        /// <summary>
+        /// Stores parsed connection definitions shared as read-only data by cached vehicle copies.
+        /// </summary>
+        public FlexibleConnectionConfig FlexibleConnections;
+
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string, List<ParticleEmitterData>>();
 
         protected void ParseEffects(string lowercasetoken, STFReader stf)
@@ -1302,6 +1307,9 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsreararticulation": RearArticulation = stf.ReadIntBlock(null); break;
                 case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsflexibleconnections":
+                    FlexibleConnections = new FlexibleConnectionConfig(stf);
+                    break;
                 case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortshorizontallengthairhose": CarAirHoseHorizontalLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcouplerface": CarCouplerFaceLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1882,6 +1890,9 @@ namespace Orts.Simulation.RollingStocks
             }
             LocomotiveAxles.Copy(copy.LocomotiveAxles);
             MoveParamsToAxle();
+
+            // Share parsed definitions; per-vehicle runtime state belongs to the viewer.
+            FlexibleConnections = copy.FlexibleConnections;
         }
 
         /// <summary>
