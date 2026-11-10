@@ -591,7 +591,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         int NumVertices;
         int NumIndices;
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
-        Matrix XNAMatrix;
+        int TargetNode;
         Viewer Viewer;
         MutableShapePrimitive shapePrimitive;
         public DistributedPowerInterfaceRenderer CVFR;
@@ -617,7 +617,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
             DPIStatus = CVFR.DPI.DPIStatus;
             Viewer = viewer;
             TrainCarShape = trainCarShape;
-            XNAMatrix = TrainCarShape.SharedShape.Matrices[iMatrix];
+            TargetNode = iMatrix;
             // 9 rows, 5 columns plus first one; first one has a couple of triangles for the whole string,
             // the other ones have a couple of triangles for each char, and there are max 7 chars per string;
             // this leads to 1944 vertices
@@ -983,10 +983,12 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                 return;
 
             Update3DDPITable();
-            Matrix mx = TrainCarShape.Location.XNAMatrix;
-            mx.M41 += (TrainCarShape.Location.TileX - Viewer.Camera.TileX) * 2048;
-            mx.M43 += (-TrainCarShape.Location.TileZ + Viewer.Camera.TileZ) * 2048;
-            Matrix m = XNAMatrix * mx;
+
+            var m = TrainCarShape.SharedShape.StoredResultMatrixes[TargetNode];
+            m.Decompose(out var scale, out var rotation, out var translation);
+            m = Matrix.CreateScale(scale) *
+                Matrix.CreateFromQuaternion(rotation) * TrainCarShape.SharedShape.ForwardZDirection *
+                Matrix.CreateTranslation(translation);
 
             // TODO: Make this use AddAutoPrimitive instead.
             frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
