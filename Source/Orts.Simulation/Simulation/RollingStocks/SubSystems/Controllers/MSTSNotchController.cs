@@ -148,6 +148,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 return savedValue;
             }
         }
+        public float InitialValue { get; set; }
         public float IntermediateValue;
         public float MinimumValue;
         public float MaximumValue = 1;
@@ -193,6 +194,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public MSTSNotchController(MSTSNotchController other)
         {
+            InitialValue = other.InitialValue;
             CurrentValue = other.CurrentValue;
             IntermediateValue = other.IntermediateValue;
             MinimumValue = other.MinimumValue;
@@ -234,7 +236,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             MinimumValue = stf.ReadFloat(STFReader.UNITS.None, null);
             MaximumValue = stf.ReadFloat(STFReader.UNITS.None, null);
             StepSize = stf.ReadFloat(STFReader.UNITS.None, null);
-            IntermediateValue = CurrentValue = stf.ReadFloat(STFReader.UNITS.None, null);
+            InitialValue = stf.ReadFloat(STFReader.UNITS.None, null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("numnotches", () =>{
                     stf.MustMatch("(");
@@ -267,7 +269,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     DelayTimeBeforeUpdating = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
                 }),
             });
-            SetValue(CurrentValue);
         }
 
         public int NotchCount()

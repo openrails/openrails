@@ -733,6 +733,21 @@ namespace Orts.Viewer3D
             graphicsDevice.BlendState = BlendState.Opaque;
         }
 
+        /// <summary>
+        /// Checks this material for stale textures and sets the stale data flag if any textures are stale
+        /// </summary>
+        /// <returns>bool indicating if this material changed from fresh to stale</returns>
+        public override bool CheckStale()
+        {
+            if (!StaleData)
+            {
+                StaleData = Texture.Tag is TextureTag tag && tag.StaleData;
+                return StaleData;
+            }
+            else
+                return false;
+        }
+
         public override void Mark()
         {
             Viewer.TextureManager.Mark(Texture);

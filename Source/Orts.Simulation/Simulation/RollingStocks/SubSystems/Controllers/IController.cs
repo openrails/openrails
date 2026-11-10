@@ -40,6 +40,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         float SetPercent(float percent);
 
         float UpdateValue { get; set; }
+        float InitialValue { get; set; }
         float CurrentValue { get; set; }
         int CurrentNotch { get; set; }
         double CommandStartTime { get; set; }
