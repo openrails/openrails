@@ -120,11 +120,9 @@ namespace Orts.Formats.Msts
                     Add(new TrackObj(subBlock, currentWatermark));
                     break;
                 case TokenID.CarSpawner:
-                case (TokenID)357:
                     Add(new CarSpawnerObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Siding:
-                case (TokenID)361:
                     Add(new SidingObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Platform:
@@ -137,24 +135,19 @@ namespace Orts.Formats.Msts
                     Add(new LevelCrossingObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Dyntrack:
-                case (TokenID)306:
                     Add(new DyntrackObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Transfer:
-                case (TokenID)363:
                     Add(new TransferObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Gantry:
-                case (TokenID)356:
                     // TODO: Add real handling for gantry objects.
                     Add(new BaseObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Pickup:
-                case (TokenID)359:
                     Add(new PickupObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Hazard:
-                    //case (TokenID)359:
                     Add(new HazardObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Signal:
