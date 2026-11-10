@@ -504,6 +504,7 @@ namespace Orts.Viewer3D
             SignalTypeDataManager = new SignalTypeDataManager(this);
 
             WindowManager = new WindowManager(this);
+            ThreeDimCabCamera.LoadCenterDot();
             MessagesWindow = new MessagesWindow(WindowManager);
             NoticeWindow = new NoticeWindow(WindowManager);
             PauseWindow = new PauseWindow(WindowManager);
@@ -910,6 +911,7 @@ namespace Orts.Viewer3D
 
             frame.PrepareFrame(this);
             Camera.PrepareFrame(frame, elapsedTime);
+            if (Camera == ThreeDimCabCamera) ThreeDimCabCamera.PrepareCenterDot(frame);
             frame.PrepareFrame(elapsedTime);
             World.PrepareFrame(frame, elapsedTime);
             InfoDisplay.PrepareFrame(frame, elapsedTime);
@@ -1542,7 +1544,8 @@ namespace Orts.Viewer3D
             Point mousePosition = new Point(UserInput.MouseX, UserInput.MouseY);
             bool inWindow = WindowManager.VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mousePosition)) != null;
 
-            RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime || !Game.IsActive || inWindow;
+            UserInput.MouseLocked = Camera == ThreeDimCabCamera && ThreeDimCabCamera.MouseLookActive;
+            RenderProcess.IsMouseVisible = (ForceMouseVisible || RealTime < MouseVisibleTillRealTime || !Game.IsActive || inWindow) && !UserInput.MouseLocked;
 
             UserInput.Handled();
         }
