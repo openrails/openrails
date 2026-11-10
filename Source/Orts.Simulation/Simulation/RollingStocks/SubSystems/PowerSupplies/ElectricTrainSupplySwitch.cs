@@ -50,13 +50,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 int count = 0;
                 foreach (var car in Locomotive.Train.Cars)
                 {
-                    if (car == null) continue;
-                    if (!(car is MSTSWagon wagon)) continue;
-                    if (wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)
-                    {
-                        ++count;
-                    }
-                    else if (car is MSTSLocomotive locomotive && locomotive.LocomotivePowerSupply is ScriptedControlCarPowerSupply control && control.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive))
+                    if (!(car is MSTSWagon wagon) || car.PowerSupply == null) continue;
+                    if (wagon.PowerSupply.ElectricTrainSupplySourceCars.Contains(Locomotive))
                     {
                         ++count;
                     }

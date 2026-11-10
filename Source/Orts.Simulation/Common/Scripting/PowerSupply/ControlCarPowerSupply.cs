@@ -46,7 +46,6 @@ namespace ORTS.Scripting.Api
             }
         }
         protected override void SetCurrentMainPowerSupplyState(PowerSupplyState state) {}
-        protected override void SetCurrentElectricTrainSupplyState(PowerSupplyState state) {}
         protected override void SetCurrentDynamicBrakeAvailability(bool avail) {}
         public override PowerSupplyState GetPowerStatus() => LpsHost.AuxiliaryPowerSupplyState;
         public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt)

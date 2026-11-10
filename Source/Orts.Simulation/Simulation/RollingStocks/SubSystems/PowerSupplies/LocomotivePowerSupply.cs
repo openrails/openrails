@@ -26,24 +26,17 @@ using ORTS.Scripting.Api;
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
 
-    public abstract class ScriptedLocomotivePowerSupply : ILocomotivePowerSupply
+    public abstract class ScriptedLocomotivePowerSupply : ScriptedPowerSupply, ILocomotivePowerSupply
     {
-        public TrainCar Car { get; protected set; }
+        public LocomotivePowerSupply LocomotiveScript => AbstractScript as LocomotivePowerSupply;
         public MSTSLocomotive Locomotive => Car as MSTSLocomotive;
-        protected Simulator Simulator => Locomotive.Simulator;
-        protected Train Train => Locomotive.Train;
-        protected int CarId = 0;
 
-        public Battery Battery {get; protected set; }
-        public BatterySwitch BatterySwitch => Battery.BatterySwitch;
-        public Pantographs Pantographs => Locomotive.Pantographs;
         public MasterKey MasterKey { get; protected set; }
         public ElectricTrainSupplySwitch ElectricTrainSupplySwitch { get; protected set; }
 
         public abstract PowerSupplyType Type { get; }
         protected string ScriptName = "Default";
         public string ParametersFileName { get; protected set; }
-        protected LocomotivePowerSupply AbstractScript;
 
         public PowerSupplyState MainPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool MainPowerSupplyOn => MainPowerSupplyState == PowerSupplyState.PowerOn;
@@ -55,58 +48,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float MaxThrottlePercent { get; set; } = 100;
         public float ThrottleReductionPercent { get; set; } = 0;
 
-        public PowerSupplyState AuxiliaryPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
-        public bool AuxiliaryPowerSupplyOn => AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn;
-
-        public virtual PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
-        public bool ElectricTrainSupplyOn => ElectricTrainSupplyState == PowerSupplyState.PowerOn;
-        public bool FrontElectricTrainSupplyCableConnected { get; set; }
-        public virtual float ElectricTrainSupplyPowerW
-        {
-            get
-            {
-                float result = 0;
-                foreach (var car in Train.Cars)
-                {
-                    if (car == null) continue;
-                    if (!(car is MSTSWagon wagon)) continue;
-                    if (wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)
-                    {
-                        result += wagon.PassengerCarPowerSupply.ElectricTrainSupplyPowerW / wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Count;
-                    }
-                    else if (wagon is MSTSLocomotive locomotive && locomotive.LocomotivePowerSupply is ScriptedControlCarPowerSupply control && control.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive))
-                    {
-                        result += control.ElectricTrainSupplyPowerW / control.ElectricTrainSupplyConnectedLocomotives.Count;
-                    }
-
-                }
-                return result;
-            }
-            set { }
-        }
-
-        public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
-        public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
-
-        public PowerSupplyState BatteryState
-        {
-            get
-            {
-                return Battery.State;
-            }
-            set
-            {
-                Battery.State = value;
-            }
-        }
-        public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
-        public float BatteryVoltageV => BatteryOn ? Battery.VoltageV : 0;
-
         public PowerSupplyState CabPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool CabPowerSupplyOn => CabPowerSupplyState == PowerSupplyState.PowerOn;
 
         public float PowerOnDelayS { get; protected set; } = 0f;
         public float AuxPowerOnDelayS { get; protected set; } = 0f;
+        public float AuxContinuousPowerW { get; protected set; } = 0f;
 
         public bool ServiceRetentionButton { get; set; } = false;
         public bool ServiceRetentionCancellationButton { get; set; } = false;
@@ -119,23 +66,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         // List of customized control strings;
         public Dictionary<int, string> CustomizedCabviewControlNames = new Dictionary<int, string>();
 
-        private bool firstUpdate = true;
-
-        protected ScriptedLocomotivePowerSupply(MSTSLocomotive locomotive)
+        protected ScriptedLocomotivePowerSupply(MSTSLocomotive locomotive) : base(locomotive)
         {
-            Car = locomotive;
+            ElectricTrainSupplyDirection = PowerSupplyDirection.Source;
 
-            Battery = new Battery(Locomotive);
             MasterKey = new MasterKey(Locomotive);
             ElectricTrainSupplySwitch = new ElectricTrainSupplySwitch(Locomotive);
-
-            MainPowerSupplyState = PowerSupplyState.PowerOff;
-            AuxiliaryPowerSupplyState = PowerSupplyState.PowerOff;
-            LowVoltagePowerSupplyState = PowerSupplyState.PowerOff;
-            CabPowerSupplyState = PowerSupplyState.PowerOff;
         }
 
-        public virtual void Parse(string lowercasetoken, STFReader stf)
+        public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
@@ -154,6 +93,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case "engine(ortsauxpowerondelay":
                     AuxPowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
                     break;
+                
+                case "engine(ortsauxcontinuouspower":
+                    AuxContinuousPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
+                    break;
 
                 case "engine(ortsbattery":
                     Battery.Parse(lowercasetoken, stf);
@@ -170,11 +113,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        public virtual void Copy(IPowerSupply other)
+        public override void Copy(IPowerSupply other)
         {
+            base.Copy(other);
             if (other is ScriptedLocomotivePowerSupply scriptedOther)
             {
-                Battery.Copy(scriptedOther.Battery);
                 MasterKey.Copy(scriptedOther.MasterKey);
                 ElectricTrainSupplySwitch.Copy(scriptedOther.ElectricTrainSupplySwitch);
 
@@ -183,12 +126,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 PowerOnDelayS = scriptedOther.PowerOnDelayS;
                 AuxPowerOnDelayS = scriptedOther.AuxPowerOnDelayS;
+                AuxContinuousPowerW = scriptedOther.AuxContinuousPowerW;
             }
         }
 
-        public virtual void Initialize()
+        public override void Initialize()
         {
-            Battery.Initialize();
+            base.Initialize();
             MasterKey.Initialize();
             ElectricTrainSupplySwitch.Initialize();
         }
@@ -196,153 +140,84 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Initialization when simulation starts with moving train
         /// <\summary>
-        public virtual void InitializeMoving()
+        public override void InitializeMoving()
         {
-            Battery.InitializeMoving();
             MasterKey.InitializeMoving();
             ElectricTrainSupplySwitch.InitializeMoving();
 
             MainPowerSupplyState = PowerSupplyState.PowerOn;
-            AuxiliaryPowerSupplyState = PowerSupplyState.PowerOn;
-            ElectricTrainSupplyState = PowerSupplyState.PowerOn;
-            LowVoltagePowerSupplyState = PowerSupplyState.PowerOn;
-            BatteryState = PowerSupplyState.PowerOn;
             if (Locomotive.IsLeadLocomotive())
             {
                 CabPowerSupplyState = PowerSupplyState.PowerOn;
             }
-
-            AbstractScript?.InitializeMoving();
+            base.InitializeMoving();
         }
 
-        public virtual void Save(BinaryWriter outf)
+        public override void Save(BinaryWriter outf)
         {
-            Battery.Save(outf);
+            base.Save(outf);
+
             MasterKey.Save(outf);
             ElectricTrainSupplySwitch.Save(outf);
-
-            outf.Write(FrontElectricTrainSupplyCableConnected);
-
+    
             outf.Write(MainPowerSupplyState.ToString());
-            outf.Write(AuxiliaryPowerSupplyState.ToString());
-            outf.Write(ElectricTrainSupplyState.ToString());
-            outf.Write(LowVoltagePowerSupplyState.ToString());
-            outf.Write(BatteryState.ToString());
             outf.Write(CabPowerSupplyState.ToString());
         }
 
-        public virtual void Restore(BinaryReader inf)
+        public override void Restore(BinaryReader inf)
         {
-            Battery.Restore(inf);
+            base.Restore(inf);
+
             MasterKey.Restore(inf);
             ElectricTrainSupplySwitch.Restore(inf);
 
-            FrontElectricTrainSupplyCableConnected = inf.ReadBoolean();
-
             MainPowerSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-            AuxiliaryPowerSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-            ElectricTrainSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-            LowVoltagePowerSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-            BatteryState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
             CabPowerSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-
-            firstUpdate = false;
         }
 
-        public virtual void Update(float elapsedClockSeconds)
+        public override void Update(float elapsedClockSeconds)
         {
-            CarId = Train?.Cars.IndexOf(Locomotive) ?? 0;
+            base.Update(elapsedClockSeconds);
 
-            if (firstUpdate)
-            {
-                firstUpdate = false;
-
-                TrainCar previousCar = CarId > 0 ? Train.Cars[CarId - 1] : null;
-
-                // Connect the power supply cable if the previous car is a locomotive or another passenger car
-                if (previousCar != null
-                    && (previousCar.WagonType == TrainCar.WagonTypes.Engine
-                        || previousCar.WagonType == TrainCar.WagonTypes.Passenger)
-                    )
-                {
-                    FrontElectricTrainSupplyCableConnected = true;
-                }
-            }
-
-            Battery.Update(elapsedClockSeconds);
             MasterKey.Update(elapsedClockSeconds);
             ElectricTrainSupplySwitch.Update(elapsedClockSeconds);
         }
 
-        public PowerSupplyState GetPowerStatus() => AbstractScript?.GetPowerStatus() ?? PowerSupplyState.Unavailable;
-
-        public void HandleEvent(PowerSupplyEvent evt)
-        {
-            AbstractScript?.HandleEvent(evt);
-        }
-
-        public void HandleEvent(PowerSupplyEvent evt, int id)
-        {
-            AbstractScript?.HandleEvent(evt, id);
-        }
+        public PowerSupplyState GetPowerStatus() => LocomotiveScript?.GetPowerStatus() ?? PowerSupplyState.Unavailable;
 
         public void HandleEventFromControlCar(PowerSupplyEvent evt)
         {
-            AbstractScript?.HandleEventFromControlCar(evt);
+            LocomotiveScript?.HandleEventFromControlCar(evt);
         }
 
         public void HandleEventFromControlCar(PowerSupplyEvent evt, int id)
         {
-            AbstractScript?.HandleEventFromControlCar(evt, id);
+            LocomotiveScript?.HandleEventFromControlCar(evt, id);
         }
 
         public void HandleEventFromTcs(PowerSupplyEvent evt)
         {
-            AbstractScript?.HandleEventFromTcs(evt);
+            LocomotiveScript?.HandleEventFromTcs(evt);
         }
 
         public void HandleEventFromTcs(PowerSupplyEvent evt, int id)
         {
-            AbstractScript?.HandleEventFromTcs(evt, id);
+            LocomotiveScript?.HandleEventFromTcs(evt, id);
         }
 
         public void HandleEventFromTcs(PowerSupplyEvent evt, string message)
         {
-            AbstractScript?.HandleEventFromTcs(evt, message);
-        }
-
-        public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
-        {
-            AbstractScript?.HandleEventFromLeadLocomotive(evt);
-        }
-
-        public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt, int id)
-        {
-            AbstractScript?.HandleEventFromLeadLocomotive(evt, id);
+            LocomotiveScript?.HandleEventFromTcs(evt, message);
         }
 
         public void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt)
         {
-            AbstractScript?.HandleEventFromOtherLocomotive(locoIndex, evt);
+            LocomotiveScript?.HandleEventFromOtherLocomotive(locoIndex, evt);
         }
 
         public void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt, int id)
         {
-            AbstractScript?.HandleEventFromOtherLocomotive(locoIndex, evt, id);
-        }
-
-        protected virtual void AssignScriptFunctions()
-        {
-            // AbstractScriptClass
-            AbstractScript.ClockTime = () => (float)Simulator.ClockTime;
-            AbstractScript.GameTime = () => (float)Simulator.GameTime;
-            AbstractScript.PreUpdate = () => Simulator.PreUpdate;
-            AbstractScript.DistanceM = () => Locomotive.DistanceM;
-            AbstractScript.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
-            AbstractScript.Confirm = Locomotive.Simulator.Confirmer.Confirm;
-            AbstractScript.Message = Locomotive.Simulator.Confirmer.Message;
-            AbstractScript.SignalEvent = Locomotive.SignalEvent;
-            AbstractScript.SignalEventToTrain = (evt) => Locomotive.Train?.SignalEvent(evt);
+            LocomotiveScript?.HandleEventFromOtherLocomotive(locoIndex, evt, id);
         }
         
         // Converts the generic string (e.g. ORTS_POWER_SUPPLY5) shown when browsing with the mouse on a PowerSupply control
