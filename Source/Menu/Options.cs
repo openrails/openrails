@@ -156,6 +156,9 @@ namespace Menu
             checkModelInstancing.Checked = Settings.ModelInstancing;
             checkWire.Checked = Settings.Wire;
             checkVerticalSync.Checked = Settings.VerticalSync;
+            checkVR.Checked = Settings.VR;
+            checkVRControllers.Checked = Settings.VRControllers;
+            checkVRHandTracking.Checked = Settings.VRHandTracking;
             numericViewingDistance.Value = Settings.ViewingDistance;
             checkDistantMountains.Checked = Settings.DistantMountains;
             labelDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
@@ -433,6 +436,9 @@ namespace Menu
             Settings.ModelInstancing = checkModelInstancing.Checked;
             Settings.Wire = checkWire.Checked;
             Settings.VerticalSync = checkVerticalSync.Checked;
+            Settings.VR = checkVR.Checked;
+            Settings.VRControllers = checkVRControllers.Checked;
+            Settings.VRHandTracking = checkVRHandTracking.Checked;
             Settings.ViewingDistance = (int)numericViewingDistance.Value;
             Settings.DistantMountains = checkDistantMountains.Checked;
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
@@ -800,6 +806,7 @@ namespace Menu
                 (pbDayAmbientLight, new Control[] { labelAmbientDaylightBrightness, trackDayAmbientLight }),
                 (pbModelInstancing, new[] { checkModelInstancing }),
                 (pbVerticalSync, new[] { checkVerticalSync }),
+                (pbVR, new[] { checkVR, checkVRControllers, checkVRHandTracking }),
                 (pbAntiAliasing, new Control[] { labelAntiAliasingValue, trackAntiAliasing }),
                 (pbWorldObjectDensity, new Control[] { labelWorldObjectDensity, numericWorldObjectDensity }),
                 (pbLODBias, new Control[] { labelLODBias, trackLODBias }),
@@ -954,6 +961,10 @@ namespace Menu
                 {
                     pbVerticalSync,
                     BaseDocumentationUrl + "/options.html#vertical-sync"
+                },
+                {
+                    pbVR,
+                    BaseDocumentationUrl + "/options.html#virtual-reality-headset-openxr"
                 },
                 {
                     pbAntiAliasing,

@@ -206,6 +206,14 @@ namespace Orts.Viewer3D.Processes
         }
 
         /// <summary>
+        /// Swaps in freshly loaded settings, for when the in-game menu has let the user change them before the run starts.
+        /// </summary>
+        internal void ReplaceSettings(UserSettings settings)
+        {
+            Settings = settings;
+        }
+
+        /// <summary>
         /// Updates the calling thread's <see cref="Thread.CurrentUICulture"/> to match the <see cref="Game"/>'s <see cref="Settings"/>.
         /// </summary>
         [CallOnThread("Render")]
