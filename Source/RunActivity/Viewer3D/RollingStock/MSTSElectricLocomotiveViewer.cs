@@ -110,7 +110,6 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-
             base.PrepareFrame(frame, elapsedTime);
         }
     }

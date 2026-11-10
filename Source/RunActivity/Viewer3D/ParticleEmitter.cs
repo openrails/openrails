@@ -27,6 +27,8 @@ using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.RollingStock;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Orts.Viewer3D
 {
@@ -242,6 +244,35 @@ namespace Orts.Viewer3D
                 (float)Viewer.Random.NextDouble() * 30000f,
                 (float)Viewer.Random.NextDouble() * 30000f,
             };
+
+            // Initialization step for emitter shape attachment
+            if (EmitterData.ShapeIndex != -1)
+            {
+                if (EmitterData.ShapeIndex < 0 || EmitterData.ShapeIndex >= CarViewer.TrainCarShape.ResultMatrices.Count())
+                {
+                    Trace.TraceWarning("Particle emitter in car {0} has invalid shape index defined, shape index {1} does not exist",
+                        (CarViewer.Car as MSTSWagon).WagFilePath, EmitterData.ShapeIndex);
+                    EmitterData.ShapeIndex = 0;
+                }
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(EmitterData.ShapeHierarchy))
+                {
+                    if (CarViewer.TrainCarShape.SharedShape.MatrixNames.Contains(EmitterData.ShapeHierarchy))
+                    {
+                        EmitterData.ShapeIndex = CarViewer.TrainCarShape.SharedShape.MatrixNames.IndexOf(EmitterData.ShapeHierarchy);
+                    }
+                    else
+                    {
+                        Trace.TraceWarning("Particle emitter in car {0} has invalid shape index defined, matrix name {1} does not exist",
+                            (CarViewer.Car as MSTSWagon).WagFilePath, EmitterData.ShapeHierarchy);
+                        EmitterData.ShapeIndex = 0;
+                    }
+                }
+                else
+                    EmitterData.ShapeIndex = 0;
+            }
         }
 
         void VertexBuffer_ContentLost()
@@ -365,13 +396,10 @@ namespace Orts.Viewer3D
                 {
                     Matrix transform = WorldPosition.XNAMatrix;
                     transform.Translation = Vector3.Zero; // Only want rotation data for this step
-                    // rotation = CarViewer.TrainCarShape.ResultMatrices[EmitterData.ShapeIndex] * rotation; // Future: ShapeHierarchy goes here
-
-                    Matrix rotation = transform;
-                    rotation.Translation = Vector3.Zero; // Last step needed translational effects, next step does not
+                    transform = CarViewer.TrainCarShape.ResultMatrices[EmitterData.ShapeIndex] * transform;
 
                     // Final velocity should rotate with the attached train car, but only about the Y axis
-                    rotation.Decompose(out _, out Quaternion rotY, out _);
+                    transform.Decompose(out _, out Quaternion rotY, out _);
                     rotY.X = 0;
                     rotY.Z = 0;
                     rotY.Normalize();
@@ -411,7 +439,7 @@ namespace Orts.Viewer3D
                         // Interpolate the position of the particle in-between frames
                         position -= carVelocity * (currentTime - emitTime);
 
-                        initialVelocity = Vector3.Transform(initialVelocity, rotation);
+                        initialVelocity = Vector3.TransformNormal(initialVelocity, transform);
                         finalVelocity = Vector3.Transform(finalVelocity, rotY);
 
                         // Add on velocity of attached train car
