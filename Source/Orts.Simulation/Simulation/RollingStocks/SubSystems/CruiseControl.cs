@@ -1316,7 +1316,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 if (a > 0 && a < targetThrottleAccelerationMpSS) targetThrottleAccelerationMpSS = a;
             }
             float maxThrottlePercent = 0;
-            if (tractionAllowed && Locomotive.TrainControlSystem.TractionAuthorization && DynamicBrakePID.Percent <= 0 && TrainBrakePID.Percent <= 0)
+            if (tractionAllowed && Locomotive.TrainControlSystem.TractionAuthorization && DynamicBrakePID.Percent <= 0 && TrainBrakePID.Percent <= 0
+                && ((ThrottlePID.Percent > 0 && deltaSpeedMpS > SpeedDeltaToStopAcceleratingMpS) || demandedAccelerationMpSS > 0 || SpeedDeltaToStopAcceleratingMpS >= SpeedDeltaToStartAcceleratingMpS))
             {
                 // Max throttle percent is determined by the force selector
                 maxThrottlePercent = SelectedMaxAccelerationStep > 0 && ForceStepsThrottleTable.Count >= SelectedMaxAccelerationStep && !SpeedRegulatorMaxForcePercentUnits ? ForceStepsThrottleTable[SelectedMaxAccelerationStep - 1] : SelectedMaxAccelerationPercent;
@@ -1333,7 +1334,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
             float minDynamicBrakePercent = 0;
             float maxDynamicBrakePercent = 0;
-            if (Locomotive.DynamicBrakeAvailable && UseDynBrake && ThrottlePID.Percent <= 0)
+            if (Locomotive.DynamicBrakeAvailable && UseDynBrake && ThrottlePID.Percent <= 0
+                && ((DynamicBrakePID.Percent > 0 && deltaSpeedMpS < SpeedDeltaToStopBrakingMpS) || demandedAccelerationMpSS < 0|| SpeedDeltaToStopBrakingMpS <= SpeedDeltaToStartBrakingMpS))
             {
                 // If train brake is active, we force dynamic brakes to stay active to give preference to brake release
                 minDynamicBrakePercent = CCIsUsingTrainBrake ? MinDynamicBrakePercentWhileUsingTrainBrake : 0;
