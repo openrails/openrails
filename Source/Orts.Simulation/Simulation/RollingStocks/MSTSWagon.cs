@@ -4817,8 +4817,6 @@ public void SetTensionStiffness(float a, float b)
         public float WindEffect = 1.0f;
         public int MaxParticles = 2500;
 
-        public bool ChaoticRandomization = false; // Changes the style of RNG used for particle motion
-
         public float Opacity = 1.0f;
         public string Graphic;
         public int AtlasWidth = 4;
