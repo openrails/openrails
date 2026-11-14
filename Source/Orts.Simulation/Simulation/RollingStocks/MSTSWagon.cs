@@ -4827,96 +4827,12 @@ public void SetTensionStiffness(float a, float b)
         public ParticleEmitterData(STFReader stf)
         {
             stf.MustMatch("(");
-            // See if the first value is a number, if it isn't then skip parsing MSTS syntax
-            if (float.TryParse(stf.ReadItem(), out _))
-            {
-                stf.StepBackOneItem();
-                PositionM = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                PositionM.Z *= -1; // Convert to MSTS coordinate system
-                InitialVelocityFactor = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                InitialVelocityFactor.Z *= -1; // Convert to MSTS coordinate system
-                NozzleDiameterM = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            }
-            else
-                stf.StepBackOneItem();
-            // Parse new parameters after all MSTS parameters, otherwise it's ambiguous which data is which
-            stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("ortsposition", ()=>{
-                    PositionM = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero);
-                    PositionM.Z *= -1; // Convert to MSTS coordinate system
-                }),
-                new STFReader.TokenProcessor("ortspositionvariation", ()=>{
-                    stf.MustMatch("(");
-                    PositionVariationM.X = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                    if (!stf.EndOfBlock()) // User has entered a 3-d vector
-                    {
-                        PositionVariationM.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                        PositionVariationM.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                        stf.SkipRestOfBlock();
-                    }
-                    else // User has entered a single value, set all vector components equal to this value
-                    {
-                        PositionVariationM.Z = PositionVariationM.Y = PositionVariationM.X;
-                    }
-                }),
-                new STFReader.TokenProcessor("ortsinitialvelocity", ()=>{
-                    InitialVelocityFactor = stf.ReadVector3Block(STFReader.UNITS.Speed, Vector3.Zero);
-                    InitialVelocityFactor.Z *= -1; // Convert to MSTS coordinate system
-                }),
-                new STFReader.TokenProcessor("ortsinitialvelocityvariation", ()=>{
-                    stf.MustMatch("(");
-                    InitialVelocityVariationFactor.X = stf.ReadFloat(STFReader.UNITS.None, 0);
-                    if (!stf.EndOfBlock()) // User has entered a 3-d vector
-                    {
-                        InitialVelocityVariationFactor.Y = stf.ReadFloat(STFReader.UNITS.None, 0);
-                        InitialVelocityVariationFactor.Z = stf.ReadFloat(STFReader.UNITS.None, 0);
-                        stf.SkipRestOfBlock();
-                    }
-                    else // User has entered a single value, set all vector components equal to this value
-                    {
-                        InitialVelocityVariationFactor.Z = InitialVelocityVariationFactor.Y = InitialVelocityVariationFactor.X;
-                    }
-                }),
-                new STFReader.TokenProcessor("ortsfinalvelocity", ()=>{
-                    FinalVelocityMpS = stf.ReadVector3Block(STFReader.UNITS.Speed, Vector3.Zero);
-                    FinalVelocityMpS.Z *= -1; // Convert to MSTS coordinate system
-                }),
-                new STFReader.TokenProcessor("ortsfinalvelocityvariation", ()=>{
-                    stf.MustMatch("(");
-                    FinalVelocityVariationMpS.X = stf.ReadFloat(STFReader.UNITS.Speed, 0);
-                    if (!stf.EndOfBlock()) // User has entered a 3-d vector
-                    {
-                        FinalVelocityVariationMpS.Y = stf.ReadFloat(STFReader.UNITS.Speed, 0);
-                        FinalVelocityVariationMpS.Z = stf.ReadFloat(STFReader.UNITS.Speed, 0);
-                        stf.SkipRestOfBlock();
-                    }
-                    else // User has entered a single value, set all vector components equal to this value
-                    {
-                        FinalVelocityVariationMpS.Z = FinalVelocityVariationMpS.Y = FinalVelocityVariationMpS.X;
-                    }
-                }),
-                new STFReader.TokenProcessor("ortsparticlediameter", ()=>{ NozzleDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-                new STFReader.TokenProcessor("ortslifespanmultiplier", ()=>{ LifetimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortslifespanvariation", ()=>{ LifetimeVariationFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsmomentummultiplier", ()=>{ SettlingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsmomentumvariation", ()=>{ SettlingVariationFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortswindmultiplier", ()=>{ WindEffect = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsinititalexpansion", ()=>{ InitialExpansionFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsexpansionspeed", ()=>{ ExpansionSpeed = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsrotationvariation", ()=>{ RotationVariation = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortspipearea", ()=>{ NozzleAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); }),
-                new STFReader.TokenProcessor("ortsmaxparticles", ()=>{ MaxParticles = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("ortsratemultiplier", ()=>{ RateFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsparticleopacity", ()=>{ Opacity = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsusechaoticrandomization", ()=>{ ChaoticRandomization = stf.ReadBoolBlock(true); }),
-                new STFReader.TokenProcessor("ortsgraphic", ()=>{ Graphic = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("ortsgraphicatlaslayout", ()=>{
-                    stf.MustMatch("(");
-                    AtlasWidth = Math.Max(stf.ReadInt(null), 1);
-                    AtlasHeight = Math.Max(stf.ReadInt(null), 1);
-                    stf.SkipRestOfBlock();
-                }),
-            });
+            PositionM = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+            PositionM.Z *= -1; // Convert to MSTS coordinate system
+            InitialVelocityFactor = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+            InitialVelocityFactor.Z *= -1; // Convert to MSTS coordinate system
+            NozzleDiameterM = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            stf.SkipRestOfBlock();
         }
     }
 }
