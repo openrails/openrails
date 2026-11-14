@@ -4840,11 +4840,11 @@ public void SetTensionStiffness(float a, float b)
         public ParticleEmitterData(STFReader stf)
         {
             stf.MustMatch("(");
-                PositionM = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                PositionM.Z *= -1; // Convert to MSTS coordinate system
-                InitialVelocityFactor = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                InitialVelocityFactor.Z *= -1; // Convert to MSTS coordinate system
-                NozzleDiameterM = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            PositionM = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+            PositionM.Z *= -1; // Convert to MSTS coordinate system
+            InitialVelocityFactor = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+            InitialVelocityFactor.Z *= -1; // Convert to MSTS coordinate system
+            NozzleDiameterM = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             stf.SkipRestOfBlock();
         }
     }

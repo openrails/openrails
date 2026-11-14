@@ -575,20 +575,20 @@ namespace Orts.Viewer3D
                         position.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.Y;
                         position.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.Z;
 
-                            // "Chaotic" randomization: Uses random output directly, making for sudden changes
-                            initialVelocity.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.X * initialSpeed;
-                            initialVelocity.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.Y * initialSpeed;
-                            initialVelocity.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.Z * initialSpeed;
+                        // "Chaotic" randomization: Uses random output directly, making for sudden changes
+                        initialVelocity.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.X * initialSpeed;
+                        initialVelocity.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.Y * initialSpeed;
+                        initialVelocity.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.Z * initialSpeed;
 
-                            finalVelocity.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.FinalVelocityVariationMpS.X;
-                            finalVelocity.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.FinalVelocityVariationMpS.Y;
-                            finalVelocity.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.FinalVelocityVariationMpS.Z;
+                        finalVelocity.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.FinalVelocityVariationMpS.X;
+                        finalVelocity.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.FinalVelocityVariationMpS.Y;
+                        finalVelocity.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.FinalVelocityVariationMpS.Z;
 
-                            rotSpeed *= ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f;
+                        rotSpeed *= ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f;
 
-                            duration *= 1 + ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.LifetimeVariationFactor;
+                        duration *= 1 + ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.LifetimeVariationFactor;
 
-                            settling += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.SettlingVariationFactor;
+                        settling += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.SettlingVariationFactor;
 
                         position = Vector3.Transform(position, transform) + WorldPosition.XNAMatrix.Translation;
 
