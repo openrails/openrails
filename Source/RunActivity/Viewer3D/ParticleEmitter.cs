@@ -339,9 +339,6 @@ namespace Orts.Viewer3D
         readonly DynamicVertexBuffer VertexBuffer;
         readonly IndexBuffer IndexBuffer;
 
-        readonly float[] PerlinOffset;
-        readonly float[] PerlinFrequency;
-
         struct ParticleVertex
         {
             public Vector4 StartPosition_StartTime;
@@ -417,39 +414,6 @@ namespace Orts.Viewer3D
 
             // Initialize the particle accumulator to a random value to de-sync particle emitters from eachother
             AccumulatedParticles = -(float)Viewer.Random.NextDouble() * 5.0f;
-
-            // Pre-compute some randomization for the "smooth" randomness method
-            if (!EmitterData.ChaoticRandomization)
-            {
-                // Determine random, but fixed, time offsets for perlin noise generation
-                // Range from 0 to 30,000 seconds
-                PerlinOffset = new float[] {
-                    (float)Viewer.Random.NextDouble() * 30000f,
-                    (float)Viewer.Random.NextDouble() * 30000f,
-                    (float)Viewer.Random.NextDouble() * 30000f,
-                    (float)Viewer.Random.NextDouble() * 30000f,
-                    (float)Viewer.Random.NextDouble() * 30000f,
-                (float)Viewer.Random.NextDouble() * 30000f,
-                (float)Viewer.Random.NextDouble() * 30000f,
-                (float)Viewer.Random.NextDouble() * 30000f,
-                (float)Viewer.Random.NextDouble() * 30000f,
-            };
-
-                // Determine random, but fixed, speed multiplier for perlin noise generation
-                // This should make the noise feel less regular/repeatable
-                // Range from 0.90 to 1.1
-                PerlinFrequency = new float[] {
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                };
-            }
         }
 
         void VertexBuffer_ContentLost()
@@ -611,8 +575,6 @@ namespace Orts.Viewer3D
                         position.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.Y;
                         position.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.Z;
 
-                        if (EmitterData.ChaoticRandomization)
-                        {
                             // "Chaotic" randomization: Uses random output directly, making for sudden changes
                             initialVelocity.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.X * initialSpeed;
                             initialVelocity.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.Y * initialSpeed;
@@ -627,24 +589,6 @@ namespace Orts.Viewer3D
                             duration *= 1 + ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.LifetimeVariationFactor;
 
                             settling += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.SettlingVariationFactor;
-                        }
-                        else
-                        {
-                            // "Smoothed" randomization: Uses perlin noise for smooth changes in the random value
-                            initialVelocity.X += Noise.Generate(emitTime * PerlinFrequency[0] + PerlinOffset[0]) * EmitterData.InitialVelocityVariationFactor.X * initialSpeed;
-                            initialVelocity.Y += Noise.Generate(emitTime * PerlinFrequency[1] + PerlinOffset[1]) * EmitterData.InitialVelocityVariationFactor.Y * initialSpeed;
-                            initialVelocity.Z += Noise.Generate(emitTime * PerlinFrequency[2] + PerlinOffset[2]) * EmitterData.InitialVelocityVariationFactor.Z * initialSpeed;
-
-                            finalVelocity.X += Noise.Generate(emitTime * PerlinFrequency[3] + PerlinOffset[3]) * EmitterData.FinalVelocityVariationMpS.X;
-                            finalVelocity.Y += Noise.Generate(emitTime * PerlinFrequency[4] + PerlinOffset[4]) * EmitterData.FinalVelocityVariationMpS.Y;
-                            finalVelocity.Z += Noise.Generate(emitTime * PerlinFrequency[5] + PerlinOffset[5]) * EmitterData.FinalVelocityVariationMpS.Z;
-
-                            rotSpeed *= Noise.Generate(emitTime * PerlinFrequency[6] + PerlinOffset[6]);
-
-                            duration *= 1 + Noise.Generate(emitTime * PerlinFrequency[7] + PerlinOffset[7]) * EmitterData.LifetimeVariationFactor;
-
-                            settling += Noise.Generate(emitTime * PerlinFrequency[8] + PerlinOffset[8]) * EmitterData.SettlingVariationFactor;
-                        }
 
                         position = Vector3.Transform(position, transform) + WorldPosition.XNAMatrix.Translation;
 
