@@ -343,8 +343,7 @@ namespace Orts.Formats.Msts
                     return STFReader.UNITS.Speed;
                 case ControlType.BrakeCyl:
                 case ControlType.BackPressure:
-                case ControlType.SteamLocomotiveNormalisedMEP:
-                    // Brake cylinder, back pressure, and steam locomotive MEP are PSI
+                    // Brake cylinder, back pressure are PSI
                     return STFReader.UNITS.PressureDefaultPSI;
                 case ControlType.TractiveEffort:
                 case ControlType.CurveForce:
@@ -356,10 +355,11 @@ namespace Orts.Formats.Msts
                     return STFReader.UNITS.Power;
                 case ControlType.EngineRPM:
                 case ControlType.WheelRPM:
-                    // TODO: Currently there is no STF unit type for rotation speed
-                    return STFReader.UNITS.None;
                 case ControlType.DriveWheelRPM:
                     // TODO: Currently there is no STF unit type for rotation speed
+                    return STFReader.UNITS.None;
+                case ControlType.SteamLocomotiveNormalisedMEP:
+                    // TODO: Currently there is no STF unit type for normalised mean effective pressure
                     return STFReader.UNITS.None;
                 case ControlType.EngineTorque:
                     // TODO: Currently there is no STF unit type for torque
