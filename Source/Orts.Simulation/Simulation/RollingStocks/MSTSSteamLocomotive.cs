@@ -3382,7 +3382,7 @@ namespace Orts.Simulation.RollingStocks
 
             // calculate total back pressure from all exhausts
             BackPressurePSIG = BackPressuretoSteamOutput[pS.TopH(CylinderSteamUsageLBpH)];
-            SteamLocomotiveNormalisedMEPPSI = MeanEffectivePressurePSI / MaxBoilerPressurePSI;
+            SteamLocomotiveNormalisedMEP = MeanEffectivePressurePSI / MaxBoilerPressurePSI;
 
             UpdateTractiveForce(elapsedClockSeconds);
 
