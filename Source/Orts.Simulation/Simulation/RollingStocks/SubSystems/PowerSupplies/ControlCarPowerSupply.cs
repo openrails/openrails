@@ -25,48 +25,18 @@ using System.IO;
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
 
-    public class ScriptedControlCarPowerSupply : ScriptedLocomotivePowerSupply, ISubSystem<ScriptedControlCarPowerSupply>
+    public class ScriptedControlCarPowerSupply : ScriptedLocomotivePowerSupply
     {
         public MSTSControlTrailerCar ControlTrailer => Locomotive as MSTSControlTrailerCar;
 
         public override PowerSupplyType Type => PowerSupplyType.ControlCar;
 
-        protected int CarId = 0;
-
-
-        public List<MSTSLocomotive> ElectricTrainSupplyConnectedLocomotives = new List<MSTSLocomotive>();
-        public override PowerSupplyState ElectricTrainSupplyState { get; set; } = PowerSupplyState.PowerOff;
-        public override float ElectricTrainSupplyPowerW { get; set; } = 0f;
-
         private ControlCarPowerSupply Script => AbstractScript as ControlCarPowerSupply;
 
-        private bool IsFirstUpdate = true;
         public ScriptedControlCarPowerSupply(MSTSControlTrailerCar controlcar) :
         base(controlcar)
         {
-
-        }
-
-
-        public void Copy(ScriptedControlCarPowerSupply other)
-        {
-            base.Copy(other);
-        }
-        public override void Save(BinaryWriter outf)
-        {
-            base.Save(outf);
-
-            outf.Write(FrontElectricTrainSupplyCableConnected);
-            outf.Write(ElectricTrainSupplyState.ToString());
-        }
-        public override void Restore(BinaryReader inf)
-        {
-            base.Restore(inf);
-
-            FrontElectricTrainSupplyCableConnected = inf.ReadBoolean();
-            ElectricTrainSupplyState = (PowerSupplyState)Enum.Parse(typeof(PowerSupplyState), inf.ReadString());
-
-            IsFirstUpdate = false;
+            ElectricTrainSupplyDirection = PowerSupplyDirection.Sink;
         }
 
         public override void Initialize()
@@ -98,94 +68,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
-        //================================================================================================//
-        /// <summary>
-        /// Initialization when simulation starts with moving train
-        /// <\summary>
-        public override void InitializeMoving()
-        {
-            base.InitializeMoving();
-
-            Script?.InitializeMoving();
-        }
-
         public override void Update(float elapsedClockSeconds)
         {
-            CarId = Train?.Cars.IndexOf(Locomotive) ?? 0;
-
-            if (IsFirstUpdate)
-            {
-                IsFirstUpdate = false;
-
-                // At this point, we can expect Train to be initialized.
-                var previousCar = CarId > 0 ? Train.Cars[CarId - 1] : null;
-
-                // Connect the power supply cable if the previous car is a locomotive or another passenger car
-                if (previousCar != null
-                    && (previousCar is MSTSLocomotive locomotive && locomotive.LocomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable
-                        || previousCar.WagonSpecialType == TrainCar.WagonSpecialTypes.PowerVan
-                        || previousCar.WagonType == TrainCar.WagonTypes.Passenger && previousCar.PowerSupply is ScriptedPassengerCarPowerSupply)
-                    )
-                {
-                    FrontElectricTrainSupplyCableConnected = true;
-                }
-            }
-
-            ElectricTrainSupplyConnectedLocomotives.Clear();
-            foreach (TrainCar car in Train.Cars)
-            {
-                if (car is MSTSLocomotive locomotive)
-                {
-                    int locomotiveId = Train.Cars.IndexOf(locomotive);
-                    bool locomotiveInFront = locomotiveId < CarId;
-
-                    bool connectedToLocomotive = true;
-                    if (locomotiveInFront)
-                    {
-                        for (int i = locomotiveId; i < CarId; i++)
-                        {
-                            if (Train.Cars[i + 1].PowerSupply == null)
-                            {
-                                connectedToLocomotive = false;
-                                break;
-                            }
-                            if (!Train.Cars[i + 1].PowerSupply.FrontElectricTrainSupplyCableConnected)
-                            {
-                                connectedToLocomotive = false;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (int i = locomotiveId; i > CarId; i--)
-                        {
-                            if (Train.Cars[i].PowerSupply == null)
-                            {
-                                connectedToLocomotive = false;
-                                break;
-                            }
-                            if (!Train.Cars[i].PowerSupply.FrontElectricTrainSupplyCableConnected)
-                            {
-                                connectedToLocomotive = false;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (connectedToLocomotive && locomotive.LocomotivePowerSupply.Type != PowerSupplyType.ControlCar) ElectricTrainSupplyConnectedLocomotives.Add(locomotive);
-                }
-            }
-
-            ElectricTrainSupplyState = PowerSupplyState.PowerOff;
-            foreach (var locomotive in ElectricTrainSupplyConnectedLocomotives)
-            {
-                if (locomotive.LocomotivePowerSupply.ElectricTrainSupplyState > ElectricTrainSupplyState)
-                {
-                    ElectricTrainSupplyState = locomotive.LocomotivePowerSupply.ElectricTrainSupplyState;
-                }
-            }
-
             base.Update(elapsedClockSeconds);
 
             Script?.Update(elapsedClockSeconds);
@@ -194,10 +78,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public class DefaultControlCarPowerSupply : ControlCarPowerSupply
     {
         private Timer AuxPowerOnTimer;
+        PowerSupplyLoad AuxContinuousLoads = new PowerSupplyLoad(PowerSupplyLoadType.Other);
         public override void Initialize()
         {
             AuxPowerOnTimer = new Timer(this);
             AuxPowerOnTimer.Setup(AuxPowerOnDelayS());
+            AuxiliaryPowerSupplyLoads.Add(AuxContinuousLoads);
         }
         public override void Update(float elapsedClockSeconds)
         {
@@ -235,7 +121,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     break;
             }
-
+            AuxContinuousLoads.CurrentPowerW = CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn ? AuxContinuousPowerW() : 0;
+            ElectricTrainSupplyPowerW = AuxiliaryPowerSupplyPowerW;
         }
         public override void HandleEvent(PowerSupplyEvent evt)
         {

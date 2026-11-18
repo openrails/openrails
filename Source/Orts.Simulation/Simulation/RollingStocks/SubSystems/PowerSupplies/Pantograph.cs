@@ -32,11 +32,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public static readonly int MaxPantoID = 4; // maximum value of PantoID, applies to Pantograph 4
         readonly MSTSWagon Wagon;
 
+        bool LegacyPantographs = true;
+
         public List<Pantograph> List = new List<Pantograph>();
+
+        public ScriptedCircuitBreaker CircuitBreaker;
 
         public Pantographs(MSTSWagon wagon)
         {
             Wagon = wagon;
+            if (Wagon is MSTSLocomotive locomotive && !(locomotive is MSTSControlTrailerCar))
+            {
+                CircuitBreaker = new ScriptedCircuitBreaker(locomotive);
+            }
         }
 
         public void Parse(string lowercasetoken, STFReader stf)
@@ -44,6 +52,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (lowercasetoken)
             {
                 case "wagon(ortspantographs":
+                    LegacyPantographs = false;
                     List.Clear();
 
                     stf.MustMatch("(");
@@ -63,6 +72,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         throw new InvalidDataException("ORTSPantographs block with no pantographs");
 
                     break;
+
+                case "engine(ortscircuitbreaker":
+                case "engine(ortscircuitbreakerclosingdelay":
+                case "wagon(ortscircuitbreaker":
+                case "wagon(ortscircuitbreakerclosingdelay":
+                    if (CircuitBreaker == null) CircuitBreaker = new ScriptedCircuitBreaker(Wagon);
+                    CircuitBreaker.Parse(lowercasetoken, stf);
+                    break;
             }
         }
 
@@ -74,6 +91,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 List.Add(new Pantograph(Wagon));
                 List.Last().Copy(pantograph);
+            }
+            LegacyPantographs = pantographs.LegacyPantographs;
+            if (pantographs.CircuitBreaker != null)
+            {
+                CircuitBreaker = new ScriptedCircuitBreaker(Wagon);
+                CircuitBreaker.Copy(pantographs.CircuitBreaker);
             }
         }
 
@@ -88,19 +111,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 List[i].Restore(inf);
             }
+            CircuitBreaker?.Restore(inf);
         }
 
         public void Initialize()
         {
-            while (List.Count() < 2)
+            if (LegacyPantographs)
             {
                 Add(new Pantograph(Wagon));
+                Add(new Pantograph(Wagon));
+            }
+            else if (List.Count > 0 && CircuitBreaker == null)
+            {
+                CircuitBreaker = new ScriptedCircuitBreaker(Wagon);
             }
 
             foreach (Pantograph pantograph in List)
             {
                 pantograph.Initialize();
             }
+            CircuitBreaker?.Initialize();
         }
 
         public void InitializeMoving()
@@ -114,6 +144,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
                 }
             }
+            CircuitBreaker?.InitializeMoving();
         }
 
         public void Update(float elapsedClockSeconds)
@@ -122,6 +153,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 pantograph.Update(elapsedClockSeconds);
             }
+            CircuitBreaker?.Update(elapsedClockSeconds);
         }
 
         public void HandleEvent(PowerSupplyEvent evt)
@@ -153,6 +185,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 pantograph.Save(outf);
             }
+            if (CircuitBreaker != null) CircuitBreaker.Save(outf);
         }
 
         #region ListManipulation
@@ -181,7 +214,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                PantographState state = PantographState.Down;
+                if (CircuitBreaker == null) return PantographState.Unavailable;
+                PantographState state = PantographState.Unavailable;
 
                 foreach (Pantograph pantograph in List)
                 {

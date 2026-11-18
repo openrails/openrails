@@ -27,10 +27,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
     public class ScriptedCircuitBreaker : ITractionCutOffSubsystem
     {
-        public ILocomotivePowerSupply PowerSupply { get; protected set; }
-        public ScriptedLocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ScriptedLocomotivePowerSupply;
-        public MSTSLocomotive Locomotive => LocomotivePowerSupply.Locomotive;
-        public Simulator Simulator => Locomotive.Simulator;
+        TrainCar Car;
+        public IPowerSupply PowerSupply => Car.PowerSupply;
+        public MSTSWagon Wagon => Car as MSTSWagon;
+        public Simulator Simulator => Wagon.Simulator;
 
         public bool Activated = false;
         public string ScriptName { get; protected set; } = "Automatic";
@@ -46,7 +46,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                if (Locomotive.Train.LeadLocomotive is MSTSLocomotive locomotive)
+                if (Wagon.Train.LeadLocomotive is MSTSLocomotive locomotive)
                     return locomotive.TrainControlSystem.CircuitBreakerClosingOrder;
                 else
                     return false;
@@ -56,7 +56,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                if (Locomotive.Train.LeadLocomotive is MSTSLocomotive locomotive)
+                if (Wagon.Train.LeadLocomotive is MSTSLocomotive locomotive)
                     return locomotive.TrainControlSystem.CircuitBreakerOpeningOrder;
                 else
                     return false;
@@ -66,7 +66,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                if (Locomotive.Train.LeadLocomotive is MSTSLocomotive locomotive)
+                if (Wagon.Train.LeadLocomotive is MSTSLocomotive locomotive)
                     return locomotive.TrainControlSystem.PowerAuthorization;
                 else
                     return false;
@@ -74,9 +74,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
         public bool ClosingAuthorization { get; set; }
 
-        public ScriptedCircuitBreaker(ScriptedLocomotivePowerSupply powerSupply)
+        public ScriptedCircuitBreaker(TrainCar car)
         {
-            PowerSupply = powerSupply;
+            Car = car;
         }
 
         public void Copy(ITractionCutOffSubsystem other)
@@ -94,10 +94,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (lowercasetoken)
             {
                 case "engine(ortscircuitbreaker":
+                case "wagon(ortscircuitbreaker":
                     ScriptName = stf.ReadStringBlock(null);
                     break;
 
                 case "engine(ortscircuitbreakerclosingdelay":
+                case "wagon(ortscircuitbreakerclosingdelay":
                     DelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
                     break;
             }
@@ -128,7 +130,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             break;
 
                         default:
-                            var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
+                            var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Wagon.WagFilePath), "Script") };
                             Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as CircuitBreaker;
                             break;
                     }
@@ -145,23 +147,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Script.ClockTime = () => (float)Simulator.ClockTime;
                 Script.GameTime = () => (float)Simulator.GameTime;
                 Script.PreUpdate = () => Simulator.PreUpdate;
-                Script.DistanceM = () => Locomotive.DistanceM;
-                Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
-                Script.Confirm = Locomotive.Simulator.Confirmer.Confirm;
-                Script.Message = Locomotive.Simulator.Confirmer.Message;
+                Script.DistanceM = () => Wagon.DistanceM;
+                Script.SpeedMpS = () => Math.Abs(Wagon.SpeedMpS);
+                Script.Confirm = Wagon.Simulator.Confirmer.Confirm;
+                Script.Message = Wagon.Simulator.Confirmer.Message;
                 Script.SignalEvent = (evt) =>
                 {
-                    Locomotive.SignalEvent(evt);
-                    if (Locomotive.Train?.LeadLocomotive is MSTSControlTrailerCar control && control.ControlActiveLocomotive == Locomotive)
+                    Wagon.SignalEvent(evt);
+                    if (Wagon.Train?.LeadLocomotive is MSTSControlTrailerCar control && control.ControlActiveLocomotive == Wagon)
                     {
                         control.SignalEvent(evt);
                     }
                 };
                 Script.SignalEventToTrain = (evt) =>
                 {
-                    if (Locomotive.Train != null)
+                    if (Wagon.Train != null)
                     {
-                        Locomotive.Train.SignalEvent(evt);
+                        Wagon.Train.SignalEvent(evt);
                     }
                 };
 
@@ -179,8 +181,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Update(float elapsedSeconds)
         {
-            if (Locomotive.Train.TrainType == Train.TRAINTYPE.AI || Locomotive.Train.TrainType == Train.TRAINTYPE.AI_AUTOGENERATE
-                || Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Locomotive.Train.Autopilot)
+            if (Wagon.Train.TrainType == Train.TRAINTYPE.AI || Wagon.Train.TrainType == Train.TRAINTYPE.AI_AUTOGENERATE
+                || Wagon.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Wagon.Train.Autopilot)
             {
                 State = CircuitBreakerState.Closed;
             }

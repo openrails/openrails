@@ -26,7 +26,9 @@ namespace ORTS.Scripting.Api
     public abstract class TractionCutOffSubsystem : AbstractTrainScriptClass
     {
         internal ITractionCutOffSubsystem Host;
-        internal ScriptedLocomotivePowerSupply PowerSupply => Host.PowerSupply as ScriptedLocomotivePowerSupply;
+        internal IPowerSupply PowerSupply => Host.PowerSupply;
+        internal ScriptedLocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ScriptedLocomotivePowerSupply;
+        internal MSTSWagon Wagon => PowerSupply.Car as MSTSWagon;
         internal MSTSLocomotive Locomotive => PowerSupply.Car as MSTSLocomotive;
         internal MSTSDieselLocomotive DieselLocomotive => Locomotive as MSTSDieselLocomotive;
 
@@ -37,18 +39,18 @@ namespace ORTS.Scripting.Api
         internal void AttachToHost(ITractionCutOffSubsystem host)
         {
             Host = host;
-            Car = Locomotive;
+            Car = Wagon;
         }
 
         /// <summary>
         /// Locomotive's power supply type
         /// </summary>
-        protected PowerSupplyType SupplyType() => PowerSupply.Type;
+        protected PowerSupplyType SupplyType() => LocomotivePowerSupply?.Type ?? PowerSupplyType.Electric;
 
         /// <summary>
         /// Current state of the pantograph
         /// </summary>
-        protected PantographState CurrentPantographState() => Locomotive?.Pantographs.State ?? PantographState.Unavailable;
+        protected PantographState CurrentPantographState() => Wagon?.Pantographs.State ?? PantographState.Unavailable;
 
         /// <summary>
         /// Current state of the diesel engine
@@ -58,7 +60,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Current state of the power supply
         /// </summary>
-        protected PowerSupplyState CurrentPowerSupplyState() => PowerSupply.MainPowerSupplyState;
+        protected PowerSupplyState CurrentPowerSupplyState() => LocomotivePowerSupply?.MainPowerSupplyState ?? PowerSupplyState.Unavailable;
 
         /// <summary>
         /// Driver's circuit breaker closing order
@@ -93,7 +95,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// True if cab power supply is switched on.
         /// </summary>
-        protected bool IsCabPowerSupplyOn() => PowerSupply.CabPowerSupplyOn;
+        protected bool IsCabPowerSupplyOn() => LocomotivePowerSupply?.CabPowerSupplyOn ?? false;
 
         /// <summary>
         /// Delay before circuit breaker closing
@@ -105,7 +107,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected bool ServiceRetentionActive
         {
-            get => PowerSupply.ServiceRetentionActive;
+            get => LocomotivePowerSupply?.ServiceRetentionActive ?? (Wagon.Train.LeadLocomotive as MSTSLocomotive)?.LocomotivePowerSupply.ServiceRetentionActive ?? false;
         }
 
         /// <summary>
@@ -172,7 +174,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected void SetCabDisplayControl(int index, float value)
         {
-            PowerSupply.CabDisplayControls[index] = value;
+            if (LocomotivePowerSupply != null) LocomotivePowerSupply.CabDisplayControls[index] = value;
         }
 
         /// <summary>
@@ -180,7 +182,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected void SetCustomizedCabviewControlName(int index, string name)
         {
-            PowerSupply.CustomizedCabviewControlNames[index] = name;
+            if (LocomotivePowerSupply != null) LocomotivePowerSupply.CustomizedCabviewControlNames[index] = name;
         }
     }
 }

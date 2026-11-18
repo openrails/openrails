@@ -47,7 +47,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public ScriptedDualModePowerSupply(MSTSElectricLocomotive locomotive) :
             base(locomotive)
         {
-            CircuitBreaker = new ScriptedCircuitBreaker(this);
             TractionCutOffRelay = new ScriptedTractionCutOffRelay(this);
             VoltageSelector = new ScriptedVoltageSelector(this);
             PantographSelector = new ScriptedPantographSelector(this);
@@ -58,11 +57,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             switch (lowercasetoken)
             {
-                case "engine(ortscircuitbreaker":
-                case "engine(ortscircuitbreakerclosingdelay":
-                    CircuitBreaker.Parse(lowercasetoken, stf);
-                    break;
-
                 case "engine(ortstractioncutoffrelay":
                 case "engine(ortstractioncutoffrelayclosingdelay":
                     TractionCutOffRelay.Parse(lowercasetoken, stf);
@@ -92,7 +86,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (other is ScriptedDualModePowerSupply scriptedOther)
             {
-                CircuitBreaker.Copy(scriptedOther.CircuitBreaker);
                 TractionCutOffRelay.Copy(scriptedOther.TractionCutOffRelay);
                 VoltageSelector.Copy(scriptedOther.VoltageSelector);
                 PantographSelector.Copy(scriptedOther.PantographSelector);
@@ -129,7 +122,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Activated = true;
             }
 
-            CircuitBreaker.Initialize();
             TractionCutOffRelay.Initialize();
             VoltageSelector.Initialize();
             PantographSelector.Initialize();
@@ -143,7 +135,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             base.InitializeMoving();
 
-            CircuitBreaker.InitializeMoving();
             TractionCutOffRelay.InitializeMoving();
             VoltageSelector.InitializeMoving();
             PantographSelector.InitializeMoving();
@@ -153,7 +144,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public override void Save(BinaryWriter outf)
         {
             base.Save(outf);
-            CircuitBreaker.Save(outf);
             TractionCutOffRelay.Save(outf);
             VoltageSelector.Save(outf);
             PantographSelector.Save(outf);
@@ -163,7 +153,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public override void Restore(BinaryReader inf)
         {
             base.Restore(inf);
-            CircuitBreaker.Restore(inf);
             TractionCutOffRelay.Restore(inf);
             VoltageSelector.Restore(inf);
             PantographSelector.Restore(inf);
@@ -174,7 +163,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             base.Update(elapsedClockSeconds);
 
-            CircuitBreaker.Update(elapsedClockSeconds);
             TractionCutOffRelay.Update(elapsedClockSeconds);
             VoltageSelector.Update(elapsedClockSeconds);
             PantographSelector.Update( elapsedClockSeconds);
