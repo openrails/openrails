@@ -307,10 +307,8 @@ namespace Orts.Simulation.RollingStocks
         int NextPulse = 1;
 
         // state variables
-        SmoothedData BoilerHeatSmoothBTU = new SmoothedData(240); // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
-        float BoilerHeatSmoothedBTU;
-        float PreviousBoilerHeatSmoothedBTU;
         float BoilerHeatBTU;        // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
+        float PreviousBoilerHeatBTU;
         float MaxBoilerHeatBTU;   // Boiler heat at max rated output and pressure, etc
         float MaxBoilerSafetyPressHeatBTU;  // Boiler heat at boiler pressure for operation of safety valves
         float MaxBoilerHeatSafetyPressurePSI; // Boiler Pressure for calculating max boiler pressure, includes safety valve pressure
@@ -553,7 +551,7 @@ namespace Orts.Simulation.RollingStocks
         float WaterTempInK;              // Input to water Temp Integrator.
         float WaterTempNewK;            // Boiler Water Temp (Kelvin) - for testing purposes
         float BkW_Diff;                 // Net Energy into boiler after steam loads taken.
-        float WaterVolL;                // Actual volume of water in bolier (litres)
+        float WaterVolL;                // Actual volume of water in boiler (litres)
         float BoilerHeatOutBTUpS = 0.0f;// heat out of boiler in BTU
         /// <summary>
         /// Heat into boiler in BTU
@@ -1348,7 +1346,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             outf.Write(BoilerHeatOutBTUpS);
             outf.Write(BoilerHeatInBTUpS);
             outf.Write(PreviousBoilerHeatOutBTUpS);
-            outf.Write(PreviousBoilerHeatSmoothedBTU);
+            outf.Write(PreviousBoilerHeatBTU);
             outf.Write(BurnRateRawKGpS);
             outf.Write(TenderFuelMassKG);
             outf.Write(MaxTotalCombinedWaterVolumeUKG);
@@ -1400,7 +1398,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             ControllerFactory.Save(SmallEjectorController, outf);
             ControllerFactory.Save(LargeEjectorController, outf);
             outf.Write(FuelBurnRateSmoothedKGpS);
-            outf.Write(BoilerHeatSmoothedBTU);
             outf.Write(FuelFeedRateSmoothedKGpS);
             base.Save(outf);
         }
@@ -1414,7 +1411,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             BoilerHeatOutBTUpS = inf.ReadSingle();
             BoilerHeatInBTUpS = inf.ReadSingle();
             PreviousBoilerHeatOutBTUpS = inf.ReadSingle();
-            PreviousBoilerHeatSmoothedBTU = inf.ReadSingle();
+            PreviousBoilerHeatBTU = inf.ReadSingle();
             BurnRateRawKGpS = inf.ReadSingle();
             TenderFuelMassKG = inf.ReadSingle();
             MaxTotalCombinedWaterVolumeUKG = inf.ReadSingle();
@@ -1466,8 +1463,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             ControllerFactory.Restore(SmallEjectorController, inf);
             ControllerFactory.Restore(LargeEjectorController, inf);
             FuelBurnRateSmoothedKGpS = inf.ReadSingle();
-            BoilerHeatSmoothedBTU = inf.ReadSingle();
-            BoilerHeatSmoothBTU.ForceSmoothValue(BoilerHeatSmoothedBTU);
             FuelFeedRateSmoothedKGpS = inf.ReadSingle();
             if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
             {
@@ -4602,7 +4597,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 if (ShovelAnyway && BoilerHeatBTU < MaxBoilerHeatBTU) // will force fire burn rate to increase even though boiler heat seems excessive
                 {
                     // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output
-                    // ignores total bolier heat to allow burn rate to increase if boiler heat usage is exceeding input
+                    // ignores total boiler heat to allow burn rate to increase if boiler heat usage is exceeding input
                     BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG) * AIFiremanBurnFactorExceed;
                 }
                 else
@@ -4626,7 +4621,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 {
                     AIFireOverride = true; // Set whenever SetFireOn or SetFireOff are selected
                 }
-                else if (BoilerPressurePSI < MaxBoilerPressurePSI && BoilerHeatSmoothedBTU < MaxBoilerHeatBTU && BoilerHeatBTU < MaxBoilerSafetyPressHeatBTU)
+                else if (BoilerPressurePSI < MaxBoilerPressurePSI && BoilerHeatBTU < MaxBoilerHeatBTU && BoilerHeatBTU < MaxBoilerSafetyPressHeatBTU)
                 {
                     AIFireOverride = false; // Reset if pressure and heat back to "normal"
                 }
@@ -4641,9 +4636,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 // Check FireOff Override command - allows player to force fire low in preparation for a station stop
                 if (SetFireOff)
                 {
-                    if (BoilerPressurePSI < MaxBoilerPressurePSI - 20.0f || BoilerHeatSmoothedBTU < 0.90f || (absSpeedMpS < 0.01f && throttle < 0.01f))
+                    if (BoilerPressurePSI < MaxBoilerPressurePSI - 20.0f || BoilerHeatBTU < 0.90f * MaxBoilerHeatBTU || (absSpeedMpS < 0.01f && throttle < 0.01f))
                     {
-                        SetFireOff = false; // Disable FireOff if bolierpressure too low
+                        SetFireOff = false; // Disable FireOff if boilerpressure too low
                     }
 
                     BurnRateRawKGpS = 0.0035f;
@@ -4652,16 +4647,16 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 // Check FireOn Override command - allows player to force the fire up in preparation for a station departure
                 if (SetFireOn)
                 {
-                    if ((BoilerHeatSmoothedBTU > 0.995f * MaxBoilerHeatBTU && absSpeedMpS > 10.0f) || BoilerPressurePSI > MaxBoilerPressurePSI || absSpeedMpS <= 10.0f && (BoilerHeatSmoothedBTU > MaxBoilerHeatBTU || BoilerHeatBTU > 1.1f * MaxBoilerSafetyPressHeatBTU))
+                    if ((BoilerHeatBTU > 0.995f * MaxBoilerHeatBTU && absSpeedMpS > 10.0f) || BoilerPressurePSI > MaxBoilerPressurePSI || absSpeedMpS <= 10.0f && (BoilerHeatBTU > MaxBoilerHeatBTU || BoilerHeatBTU > 1.1f * MaxBoilerSafetyPressHeatBTU))
                     {
-                        SetFireOn = false; // Disable FireOn if bolierpressure and boilerheat back to "normal"
+                        SetFireOn = false; // Disable FireOn if boilerpressure and boilerheat back to "normal"
                     }
                     BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToFuelLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 100% of fire needed to maintain full boiler steam generation
                 }
             }
 
             float MinimumBurnRateKGpS = 0.0012626f; // Set minimum burn rate @ 10lb/hr
-            BurnRateRawKGpS = MathHelper.Clamp(BurnRateRawKGpS, MinimumBurnRateKGpS, BurnRateRawKGpS); // ensure burnrate never goes to zero, unless the fire drops to an unacceptable level, or a fusible plug blows
+            BurnRateRawKGpS = Math.Max(BurnRateRawKGpS, MinimumBurnRateKGpS); // ensure burnrate never goes to zero, unless the fire drops to an unacceptable level, or a fusible plug blows
 
             FuelFeedRateKGpS = BurnRateRawKGpS;
             float MinimumFireLevelfactor = 0.05f; // factor representing the how low firemass has got compared to ideal firemass
@@ -4744,12 +4739,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
             else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
             {
-                BurnRateWoodSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
+                BurnRateWoodSmoothKGpS.Update(elapsedClockSeconds, Math.Min(BurnRateRawKGpS, MaxFuelBurnGrateKGpS));
                 FuelBurnRateSmoothedKGpS = BurnRateWoodSmoothKGpS.SmoothedValue;
             }
             else
             {
-                BurnRateCoalSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
+                BurnRateCoalSmoothKGpS.Update(elapsedClockSeconds, Math.Min(BurnRateRawKGpS, MaxFuelBurnGrateKGpS));
                 FuelBurnRateSmoothedKGpS = BurnRateCoalSmoothKGpS.SmoothedValue;
             }
 
@@ -5006,10 +5001,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             #endregion
 
-            if (FiringIsManual) // Operate safety valves if manual firing or AI Fire Override is active
-            {
-
-                #region Safety Valve - Manual Firing
+            #region Safety Valve
 
                 // Safety Valve
                 if (BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)
@@ -5130,44 +5122,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 #endregion
 
-            }
-
-            else
-            {
-                #region Safety Valve - AI Firing
-                // turn safety valves on if boiler heat is excessive, and fireman is not trying to raise steam for rising gradient by using the AI fire override
-                if (AIFireOverride && BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)
-                {
-                    SignalEvent(Event.SteamSafetyValveOn);
-                    SafetyIsOn = true;
-                }
-
-                // turn safety vales off if boiler heat has returned to "normal", fitreman is no longer in override mode
-                else if (!AIFireOverride && BoilerPressurePSI < MaxBoilerPressurePSI - SafetyValveDropPSI)
-                {
-                    SignalEvent(Event.SteamSafetyValveOff);
-                    SafetyIsOn = false;
-                }
-
-                if (SafetyIsOn)
-                {
-                    TotalSafetyValveUsageLBpS = MaxSafetyValveDischargeLbspS;   // For the AI fireman use the maximum possible safety valve steam volume
-                    BoilerMassLB -= elapsedClockSeconds * TotalSafetyValveUsageLBpS;
-                    BoilerHeatBTU -= elapsedClockSeconds * TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
-                    TotalSteamUsageLBpS += TotalSafetyValveUsageLBpS;
-                    BoilerHeatOutBTUpS += TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
-                    BoilerHeatOutSVAIBTUpS = TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Use this value to adjust the burn rate in AI mode if safety valves operate, main usage value used for display values
-                    SafetyValveBoilerHeatOutBTUpS = TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
-                }
-                else
-                {
-                    TotalSafetyValveUsageLBpS = 0.0f; // if safety valve closed, then zero discharge rate
-                }
-
-                #endregion
-
-            }
-
             // Update details for blowdown vlave
             if (BlowdownValveOpen)
             {
@@ -5242,7 +5196,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         FullBoilerHeatRatio = 1.0f; // if boiler pressure close to normal set pressure ratio to normal
                         FullMaxPressBoilerHeat = false; // Rest flag
                     }
-                    else if (BoilerHeatBTU > MaxBoilerHeatBTU && BoilerHeatBTU <= MaxBoilerSafetyPressHeatBTU && !FullMaxPressBoilerHeat && BoilerHeatSmoothedBTU > (MaxBoilerHeatBTU * 0.995))
+                    else if (BoilerHeatBTU > MaxBoilerHeatBTU && BoilerHeatBTU <= MaxBoilerSafetyPressHeatBTU && !FullMaxPressBoilerHeat && BoilerHeatBTU > (MaxBoilerHeatBTU * 0.995))
                     // If boiler heat exceeds full boiler heat, but is less then the MaxPressHeat, and is not coming down from having exceeded the safety valve heat then set to variable value which tries to reduce the heat level
                     {
                         FullBoilerHeatRatio = (FullBoilerHeatRatioGrad * (BoilerHeatBTU - MaxBoilerHeatBTU)) + 1.0f;
@@ -5317,7 +5271,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
 
             BoilerHeatInBTUpS = W.ToBTUpS(W.FromKW(FireHeatTxfKW) * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateSmoothedKGpS)) / Me2.ToFt2(GrateAreaM2))]);
-            BoilerHeatBTU += elapsedClockSeconds * W.ToBTUpS(W.FromKW(FireHeatTxfKW) * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateSmoothedKGpS)) / Me2.ToFt2(GrateAreaM2))]);
+            BoilerHeatBTU += elapsedClockSeconds * BoilerHeatInBTUpS;
 
             // This section calculates heat radiation loss from the boiler. This section is based upon the description provided in "The Thermal Insulation of the Steam Locomotive" (Paper 501) published in the
             // which was published in the March 1, 1951 Journal of the Institution of Locomotive Engineers.
@@ -5383,26 +5337,22 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Based on formula - BoilerCapacity (btu/h) = (SteamEnthalpy (btu/lb) - EnthalpyCondensate (btu/lb) ) x SteamEvaporated (lb/h) ?????
             // EnthalpyWater (btu/lb) = BoilerCapacity (btu/h) / SteamEvaporated (lb/h) + Enthalpysteam (btu/lb)  ?????
 
-            BoilerHeatSmoothBTU.Update(elapsedClockSeconds, BoilerHeatBTU);
-
-            BoilerHeatSmoothedBTU = MathHelper.Clamp(BoilerHeatSmoothBTU.SmoothedValue, 0.0f, (MaxBoilerSafetyPressHeatBTU * 1.05f));
-
-            WaterHeatBTUpFT3 = (BoilerHeatSmoothedBTU / BoilerVolumeFT3 - (1 - BoilerWaterFractionAbs) * BoilerSteamDensityLBpFT3 * BoilerSteamHeatBTUpLB) / (BoilerWaterFractionAbs * BoilerWaterDensityLBpFT3);
+            WaterHeatBTUpFT3 = (BoilerHeatBTU / BoilerVolumeFT3 - (1 - BoilerWaterFractionAbs) * BoilerSteamDensityLBpFT3 * BoilerSteamHeatBTUpLB) / (BoilerWaterFractionAbs * BoilerWaterDensityLBpFT3);
 
             #region Boiler Pressure calculation
             // works on the principle that boiler pressure will go up or down based on the change in water temperature, which is impacted by the heat gain or loss to the boiler
             WaterVolL = BoilerWaterFractionAbs * BoilerVolumeFT3 * 28.31f;   // idealy should be equal to water flow in and out. 1ft3 = 28.31 litres of water
             // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
-            if (PreviousBoilerHeatSmoothedBTU != 0.0)
+            if (PreviousBoilerHeatBTU != 0.0)
             {
-                BkW_Diff = (pS.TopH((BoilerHeatSmoothedBTU - PreviousBoilerHeatSmoothedBTU)) * 0.0002931f);            // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
+                BkW_Diff = (pS.TopH((BoilerHeatBTU - PreviousBoilerHeatBTU)) * 0.0002931f);            // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
             }
             SpecificHeatWaterKJpKGpC = SpecificHeatKtoKJpKGpK[WaterTempNewK] * WaterVolL;  // Spec Heat = kj/kg, litres = kgs of water
             WaterTempInK = BkW_Diff / SpecificHeatWaterKJpKGpC;   // calculate water temp variation
             WaterTempNewK += WaterTempInK; // Calculate new water temp
             WaterTempNewK = MathHelper.Clamp(WaterTempNewK, 274.0f, 496.0f);
 
-            PreviousBoilerHeatSmoothedBTU = BoilerHeatSmoothedBTU;
+            PreviousBoilerHeatBTU = BoilerHeatBTU;
 
             if (FusiblePlugIsBlown)
             {
@@ -5445,21 +5395,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             }
             #endregion
-
-            // Cap Boiler pressure under certain circumstances
-
-            // Ai Fireman
-            if (!FiringIsManual && BoilerPressurePSI > MaxBoilerPressurePSI) // For AI fireman stop excessive pressure
-            {
-                if (!AIFireOverride)
-                {
-                    BoilerPressurePSI = MaxBoilerPressurePSI;  // Check for AI firing
-                }
-            }
-
-            // Manual Fireman - clamp pressure at pressure just over top safety valve
-
-            BoilerPressurePSI = MathHelper.Clamp(BoilerPressurePSI, 0.000f, (MaxBoilerPressurePSI + 7.0f)); // Clamp Boiler pressure to maximum safety valve pressure
 
             ApplyBoilerPressure();
 
@@ -8828,7 +8763,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 FormatStrings.h,
                 BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateSmoothedKGpS)) / Me2.ToFt2(GrateAreaM2))]);
 
-            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6}\t\t{7}\t{8}\t\t{9}\t{10}\t\t{11}\t{12}\t\t{13}\t{14}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6}\t\t{7}\t{8}\t\t{9}\t{10}\t\t{11}\t{12}\n",
                 Simulator.Catalog.GetString("Heat:"),
                 Simulator.Catalog.GetString("In"),
                 FormatStrings.FormatPower(W.FromBTUpS(BoilerHeatInBTUpS), IsMetric, false, true),
@@ -8837,13 +8772,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 Simulator.Catalog.GetString("Rad"),
                 FormatStrings.FormatPower(W.FromBTUpS(pS.FrompH(BoilerHeatRadiationLossBTU)), IsMetric, false, true),
                 Simulator.Catalog.GetString("Stored"),
-                FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatSmoothedBTU), IsMetric),
+                FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatBTU), IsMetric),
                 Simulator.Catalog.GetString("Max"),
                 FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerHeatBTU), IsMetric),
                 Simulator.Catalog.GetString("Safety"),
-                FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerSafetyPressHeatBTU), IsMetric),
-                Simulator.Catalog.GetString("Raw"),
-                FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatBTU), IsMetric)
+                FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerSafetyPressHeatBTU), IsMetric)
                 );
 
             // calculate values for display, so that display value doesn't go negative
