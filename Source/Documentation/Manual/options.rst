@@ -644,7 +644,7 @@ A *Logging interval* of 0 (zero) dumps data for each frame (i.e. logs at the fra
 This is intended for analyzing system and graphics performance.
 Larger intervals are better for looking at train performance.
 
-For physics data only, the data logger uses the units configured in the
+The data logger uses the units configured in the
 :ref:`general options <options-general>`,
 for example km/h for metric and mph for imperial units.
 This conversion can be disabled by checking the box *Use internal units*,
