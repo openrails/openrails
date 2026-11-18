@@ -718,15 +718,14 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// Provides the theoretical tractive force that can be achieved at current speed
+        /// Provides the tractive force that can be achieved at current speed
         /// Takes into account number of available engines and power limitation effects from the power supply.
-        /// This method does not take into account transient effects that temporary limit tractive force
-        /// (e.g. diesel engine still revving up)
         /// </summary>
         /// <param name="t">Throttle position (0-1)</param>
         /// <param name="limit">True (default false) if the force returned should be the absolute limit on force</param>
+        /// <param name="theoretical">True (default false) if the force returned should ignore instantaneous power limits</param>
         /// <returns>Tractive effort currently available at the given throttle setting</returns>
-        public override float GetAvailableTractionForceN(float t, bool limit = false)
+        public override float GetAvailableTractionForceN(float t, bool limit = false, bool theoretical = false)
         {
             if (t <= 0) return 0;
             float forceN = float.MaxValue;
@@ -734,7 +733,7 @@ namespace Orts.Simulation.RollingStocks
             if (DieselEngines.HasGearBox && (TractiveForceCurves == null || DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic))
             {
                 // Mechanical transmissions use force produced by the gearbox directly
-                if (!limit)
+                if (!limit && !theoretical)
                     forceN = DieselEngines.TractiveForceN;
                 
                 forceN = Math.Min(forceN, DieselEngines.MaxTractiveForceN);
@@ -742,7 +741,7 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 // Electric/hydraulic transmissions use force produced by tractive force curves
-                forceN = base.GetAvailableTractionForceN(t, limit);
+                forceN = base.GetAvailableTractionForceN(t, limit, theoretical);
 
                 // Tractive force curves do not consider disabled engines, proportionally reduce force target if some are shut down
                 if (DieselEngines.Count > 1)
