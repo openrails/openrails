@@ -95,6 +95,43 @@ namespace Orts.Viewer3D.Common
             return GetTextureFile(simulator, Helpers.TextureFlags.Snow, simulator.RoutePath + @"\TerrTex", textureName);
         }
 
+        /// <summary>
+        /// Resolves a procedural terrain texture without changing the established
+        /// season policy for ordinary MSTS terrain. Spring and autumn use their
+        /// matching selector directories, while the existing Open Rails snow
+        /// rule continues to cover winter and snowy spring/autumn. Missing
+        /// seasonal files fall back individually to the base TERRTEX file.
+        /// </summary>
+        public static string GetProceduralTerrainTextureFile(Simulator simulator, string textureName)
+        {
+            string texturePath = Path.Combine(simulator.RoutePath, "TerrTex");
+            string selector = null;
+            if (IsSnow(simulator))
+                selector = "Snow";
+            else if (simulator.Season == SeasonType.Spring)
+                selector = "Spring";
+            else if (simulator.Season == SeasonType.Autumn)
+                selector = "Autumn";
+
+            if (selector != null)
+            {
+                string seasonalPath = Path.Combine(texturePath, selector, textureName);
+                if (GameTextureExists(seasonalPath))
+                    return seasonalPath;
+            }
+            return Path.Combine(texturePath, textureName);
+        }
+
+        static bool GameTextureExists(string path)
+        {
+            string extension = Path.GetExtension(path);
+            if (String.Equals(extension, ".ace", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(extension, ".dds", StringComparison.OrdinalIgnoreCase))
+                return File.Exists(Path.ChangeExtension(path, ".dds")) ||
+                    File.Exists(Path.ChangeExtension(path, ".ace"));
+            return File.Exists(path);
+        }
+
         public static string GetTextureFile(Simulator simulator, TextureFlags textureFlags, string texturePath, string textureName)
         {
             var alternativePath = @"\";
