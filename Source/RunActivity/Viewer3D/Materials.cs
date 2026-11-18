@@ -381,6 +381,10 @@ namespace Orts.Viewer3D
                     case "TerrainSharedDistantMountain":
                         Materials[materialKey] = new TerrainSharedDistantMountain(Viewer, textureName);
                         break;
+                    case "TelepoleWire":
+                        Materials[materialKey] = new SolidColorMaterial(
+                            Viewer, 1.0f, 0.12f, 0.12f, 0.12f);
+                        break;
                     case "Transfer":
                         Materials[materialKey] = new TransferMaterial(Viewer, textureName);
                         break;
