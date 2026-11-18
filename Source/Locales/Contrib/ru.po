@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-12-16 11:02:39+0300\n"
-"PO-Revision-Date: 2024-09-20 12:46+0300\n"
+"PO-Revision-Date: 2026-08-12 15:21+0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.9\n"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:17
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:89
@@ -41,7 +41,7 @@ msgstr "Утилита предназначена для создания сце
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:111
 msgid "&OK"
-msgstr "&Ясно"
+msgstr "&OK"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:148
 msgid "Version 0.1"
@@ -71,7 +71,7 @@ msgstr "Продолжительность"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:85
 msgid "Pre-delay :"
-msgstr "Предварительная задержка :"
+msgstr "Предварительная задержка:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:100
 msgid "ControlStartProperties"
@@ -106,7 +106,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:55
 msgid "Delay :"
-msgstr "Задержка :"
+msgstr "Задержка:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/HornProperties.Designer.cs:72
 msgid "Required Trigger Distance :"
@@ -154,24 +154,24 @@ msgstr "Описание"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:283
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:422
 msgid "Consist :"
-msgstr "Состав :"
+msgstr "Состав:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:212
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:329
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:439
 msgid "Description :"
-msgstr "Описание :"
+msgstr "Описание:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:228
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:320
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:455
 msgid "Activity Name : "
-msgstr "Название сценария : "
+msgstr "Название сценария: "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:238
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:249
 msgid "Traffic Description"
-msgstr "Описание движения"
+msgstr "Описание траффика"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:464
 msgid "StartActivity"
@@ -179,7 +179,7 @@ msgstr "Начать сценарий"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:67
 msgid "Give your description :"
-msgstr "Введите описание :"
+msgstr "Введите описание:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:76
 msgid "Environment"
@@ -187,7 +187,7 @@ msgstr "Окружение"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:105
 msgid "Place Name : "
-msgstr "Название места : "
+msgstr "Название места: "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/WaitActivity.Designer.cs:115
 msgid "WAIT Activity Description"
@@ -222,7 +222,7 @@ msgstr "Сценарий"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:142
 msgid "Traffic"
-msgstr "Движение"
+msgstr "Траффик"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:153
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:70
@@ -300,7 +300,7 @@ msgstr "Параметры станции"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:388
 msgid "Add Tag"
-msgstr "Добавить метку"
+msgstr "Добавить тег"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:398
 msgid "Add Station"
@@ -336,7 +336,7 @@ msgstr "Точка действия"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:506
 msgid "Action Check"
-msgstr "Проверить взаимодействие"
+msgstr "Проверить действие"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:516
 msgid "toolStripButton10"
@@ -344,15 +344,15 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:135
 msgid "Click to start new Activity Description (not ready)"
-msgstr "Создать описание сценария (not ready)"
+msgstr "Создать описание сценария (пока нельзя)"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:143
 msgid "Click to create new Traffic description (not ready)"
-msgstr "Создать описания движения (not ready)"
+msgstr "Создать описания движения (пока нельзя)"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:176
 msgid "Click to load an existing OR Activity (not ready)"
-msgstr "Закрузить существующий сценарий ОРТС (not ready)"
+msgstr "Закрузить существующий сценарий ОРТС (пока нельзя)"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:184
 msgid "Click to Edit Metadata for a specified route"
@@ -378,7 +378,7 @@ msgstr "x"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2041
 msgid "Tag"
-msgstr "Метка"
+msgstr "Тег"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2107
 msgid "Station"
@@ -398,15 +398,15 @@ msgstr "Показывать маркеры платформ"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:190
 msgid "Zoom level :"
-msgstr "Степень увеличения :"
+msgstr "Уровень масштаба:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:200
 msgid "Size of snap circle :"
-msgstr "Размер круга привязки :"
+msgstr "Размер зоны привязки:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:209
 msgid "Show Snap circle"
-msgstr "Показать круг привязки"
+msgstr "Показать зону привязки"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:220
 msgid "Show all Signal"
@@ -439,11 +439,11 @@ msgstr "Искать"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:342
 msgid "MSTS Path :"
-msgstr "Путь к MSTS:"
+msgstr "Путь к сборке MSTS:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:358
 msgid "Debug Options"
-msgstr "Параметры Отладки"
+msgstr "Параметры отладки"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:368
 msgid "Show Snap Track Info"
@@ -498,11 +498,11 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:73
 msgid "Buffer Label : "
-msgstr ""
+msgstr "Имя буфера: "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:93
 msgid "Buffer Direction : "
-msgstr ""
+msgstr "Направление буфера: "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:128
 msgid "BufferInterface"
@@ -514,15 +514,15 @@ msgstr "Ещё не реализовано"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:67
 msgid "Connection Direction : "
-msgstr ""
+msgstr "Направление соединения: "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:87
 msgid "Connection Label : "
-msgstr ""
+msgstr "Имя соединения: "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:130
 msgid "Station Route Interface"
-msgstr ""
+msgstr "Интерфейс станции"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:39
 msgid "Please Load Paths:"
@@ -558,7 +558,7 @@ msgstr "Предельная длина платформ"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:196
 msgid "Max. Siding Length"
-msgstr "Предельная длина ст.путей"
+msgstr "Предельная длина ст. путей"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:207
 msgid "Number of Platform"
@@ -574,7 +574,7 @@ msgstr "Предельная длина путей разъезда"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:248
 msgid "Load Paths"
-msgstr "Загружаю маршруты"
+msgstr "Загрузить маршруты"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:260
 msgid "label7"
@@ -582,7 +582,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:60
 msgid "Segment Label : "
-msgstr ""
+msgstr "Имя сегмента: "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:71
 msgid "TrackSegmentInterface"
@@ -590,7 +590,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:96
 msgid "Activity Editor: Create new activity"
-msgstr "Редактор сценариев: Создать новый сценарий"
+msgstr "Редактор сценариев: создать новый сценарий"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:106
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:69
@@ -603,15 +603,15 @@ msgstr "Название сценария"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:48
 msgid "Route Configuration: Select Route"
-msgstr "Конфигурация полигона: Выберите полигон"
+msgstr "Конфигурация полигона: выберите полигон"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:175
 msgid "Activity Editor: Specify Train Info"
-msgstr "Редактор сценариев: Введите информацию о поезде"
+msgstr "Редактор сценариев: введите информацию о поезде"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:194
 msgid "Select Train Consist"
-msgstr "Выберите сотав поезда"
+msgstr "Выберите состав поезда"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:211
 msgid "Train Name (Opt.)"
@@ -641,7 +641,7 @@ msgstr "Загрузка..."
 
 #: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:115
 msgid "Open Rails Content Manager"
-msgstr "Организатор наполнения"
+msgstr "Менеджер контента OR"
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:629
 msgid "The path you are working on has un-saved changes.\n"
@@ -657,7 +657,7 @@ msgid ""
 "Route cannot be loaded.\n"
 "Extension {0} is not supported"
 msgstr ""
-"Полигон не загрузить.\n"
+"Ошибка загрузки полигона.\n"
 "Расширение {0} не поддерживается"
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:741
@@ -666,7 +666,7 @@ msgid ""
 "Route cannot be loaded.\n"
 "{0} does not exist"
 msgstr ""
-"Полигон не загрузить.\n"
+"Ошибка загрузки полигона.\n"
 "{0} не существует"
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:747
@@ -676,7 +676,7 @@ msgid ""
 "While trying to open {0} the folder {1} was inferred as (MSTS or similar) "
 "install folder but does not contain expected files"
 msgstr ""
-"Полигон не удалось загрузить.\n"
+"Ошибка загрузки полигона.\n"
 "При открытии {0} папки {1}, где подразумевалось наличие МСТС-контента, не "
 "обнаружены соответствующие файлы"
 
@@ -686,7 +686,7 @@ msgid ""
 "Route cannot be loaded.\n"
 "{0} somehow could not be translated into a loadable route"
 msgstr ""
-"Полигон не удалось загрузить.\n"
+"Ошибка загрузки полигона.\n"
 "{0} не удалось преобразовать в загружаемый маршрут"
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:813
@@ -695,7 +695,7 @@ msgid ""
 "The install directory needs to contain ROUTES, GLOBAL, ..."
 msgstr ""
 "Директория некорректна.\n"
-"Директория сборки должна содржать субдиректории ROUTES, GLOBAL, ..."
+"Директория сборки должна содержать папки ROUTES, GLOBAL и т.д."
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:887
 msgid "Loading route..."
@@ -736,7 +736,7 @@ msgid ""
 "broken nodes, and save the modified path. "
 msgstr ""
 "Сейчас будут загружены все *.pat-файлы данного полигона, чтобы попытаться "
-"исправить все битые точки, а затем-сохранить изменённые маршруты. "
+"исправить все битые точки, а затем сохранить изменённые маршруты. "
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:1103
 msgid "Potentially it will therefore change all .pat files on disc."
@@ -764,11 +764,11 @@ msgstr "Цвет маршрута (боковой путь)"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:140
 msgid "Select color for multi-colored straight tracks"
-msgstr "Окраска цветных рельсов-прямые участки"
+msgstr "Цвет цветных путей - прямые участки"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:141
 msgid "Select color for multi-colored curved tracks"
-msgstr "Окраска цветных рельсов-криволинейные участки"
+msgstr "Цвет цветных путей - кривые участки"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:142
 msgid "Select color for mono-colored tracks"
@@ -776,23 +776,23 @@ msgstr "Цвет одноцветных путей"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:143
 msgid "Select color for tracks on terrain"
-msgstr "Цвет путей на грунте"
+msgstr "Цвет путей на поверхности"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:145
 msgid "Select color for multi-colored straight roads"
-msgstr "Окраска цветных дорог-прямые участки"
+msgstr "Цвет цветных дорог - прямые участки"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:146
 msgid "Select color for multi-colored curved roads"
-msgstr "Окраска цветных дорог-криволинейные участки"
+msgstr "Цвет цветных дорог - кривые участки"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:147
 msgid "Select color for mono-colored roads"
-msgstr "Цвет дорог"
+msgstr "Цвет одноцветных дорог"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:148
 msgid "Select color for roads on terrain"
-msgstr "Цвет дорог на грунте"
+msgstr "Цвет дорог на поверхности"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:156
 msgid "Select background color"
@@ -832,7 +832,7 @@ msgstr "Цвет ограничений скорости"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:218
 msgid "Select event color"
-msgstr "Выберите цвет для события"
+msgstr "Цвет событий"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:297
 msgid "Select other-paths color"
@@ -841,7 +841,7 @@ msgstr "Цвет прочих маршрутов"
 #: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:625
 #, csharp-format
 msgid "Loading terrain ace-files {0}-{1} (scaled down with a factor {2})"
-msgstr "Загружаются текстуры грунта {0}-{1} (уменьшено на коэфициент {2})"
+msgstr "Загружаются текстуры поверхности {0}-{1} (уменьшено в {2} раз)"
 
 #: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:651
 msgid "Rescaling previously loaded ace-files"
@@ -857,7 +857,7 @@ msgstr "Загрузка базы путей *.tdb ..."
 
 #: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:73
 msgid "Loading tsection.dat ..."
-msgstr "Загрузка базы звеньев (файл tsection.dat) ..."
+msgstr "Загрузка секций пути (tsection.dat) ..."
 
 #: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:87
 msgid "Loading road track database .rdb ..."
@@ -865,27 +865,27 @@ msgstr "Загрузка базы дорог *.rdb ..."
 
 #: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:366
 msgid "Finding the angles to draw signals, endnodes, ..."
-msgstr "Отрисовка сигналов, тупиков..."
+msgstr "Отрисовка сигналов и тупиков..."
 
 #: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:266
 msgid "The .json file could not be read properly."
-msgstr "*.json-файл не удалось прочитать корректно."
+msgstr "Файл .json не удалось прочитать корректно."
 
 #: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:278
 msgid "Some labels could not be read properly."
-msgstr "Часть бирок не удалось прочитать корректно."
+msgstr "Часть меток не удалось прочитать корректно."
 
 #: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:285
 msgid "None of the labels could be read properly"
-msgstr "Ни одной бирки не удалось прочитать корректно"
+msgstr "Ни одной метки не удалось прочитать корректно"
 
 #: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:289
 msgid "There were no labels read"
-msgstr "Бирок не обнаружено"
+msgstr "Меток не обнаружено"
 
 #: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml.cs:76
 msgid "Processing .pat file "
-msgstr "Обработка *.pat-файлаe "
+msgstr "Обработка *.pat-файла "
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:180
 msgid "Place start point"
@@ -905,11 +905,11 @@ msgstr "Изменить направление"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:295
 msgid "Place end point"
-msgstr "Задать точку финша"
+msgstr "Задать конец маршрута"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:334
 msgid "Remove end point"
-msgstr "Убрать точку финиша"
+msgstr "Убрать конец маршрута"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:360
 msgid "Place reversal point"
@@ -958,15 +958,15 @@ msgstr "Очистить продолжение маршрута"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:951
 msgid "Cut path here and store its tail"
-msgstr "Разделить маршрут на части в этой точке"
+msgstr "Разделить маршрут и сохранить конечную часть"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1005
 msgid "Auto-fix broken points"
-msgstr "Авто-исправление битых точек"
+msgstr "Автоисправление битых точек"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1113
 msgid "Reconnect to tail"
-msgstr "Воссоединить с окончанием"
+msgstr "Присоединить окончание"
 
 #: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1174
 msgid "Reconnect passing path"
@@ -985,7 +985,7 @@ msgid ""
 "The selected path contains no or only 1 node. The current path was not "
 "extended."
 msgstr ""
-"Выбранный маршрут содержит менее двух узлов. Текуший маршрут невозможно "
+"Выбранный маршрут содержит менее двух узлов. Текущий маршрут невозможно "
 "продлить."
 
 #: ../../Contrib/TrackViewer/Editing/PathEditor.cs:800
@@ -997,20 +997,20 @@ msgid ""
 "The selected path has been added as tail. It was not possible to reconnect "
 "automatically."
 msgstr ""
-"Выбранный маршрут был добавлен в конец существующего но автоматическое "
+"Выбранный маршрут был добавлен в конец существующего, но автоматическое "
 "объединение не удалось."
 
 #: ../../Contrib/TrackViewer/Editing/PathEditor.cs:847
 msgid "Reversing broken paths is not supported"
-msgstr "Обращение битых маршрутов не поддерживается"
+msgstr "Реверс битых маршрутов не поддерживается"
 
 #: ../../Contrib/TrackViewer/Editing/PathEditor.cs:852
 msgid "Reversing a path without start node is not supported"
-msgstr "Обращение маршрута без стартовой точки не поддерживается"
+msgstr "Реверс маршрута без стартовой точки не поддерживается"
 
 #: ../../Contrib/TrackViewer/Editing/PathEditor.cs:857
 msgid "Reversing a path without end node is not supported"
-msgstr "Обращение маршрута без финишной точки не поддерживается"
+msgstr "Реверс маршрута без финишной точки не поддерживается"
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:84
 msgid ""
@@ -1026,7 +1026,7 @@ msgstr "* Не определена конечная точка маршрута
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:93
 msgid "* The path has a stored and not-yet reconnected tail"
-msgstr "* Маршрут имеет сохраненное, но еще не подключённое окончание"
+msgstr "* Маршрут имеет сохраненное, но еще не присоединенное окончание"
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:97
 msgid "The current path is not finished:"
@@ -1034,15 +1034,15 @@ msgstr "Текущий маршрут не завершён:"
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:110
 msgid "Saving broken paths might not always work correctly."
-msgstr "Сохранение битых маршрутов может не работать корректно."
+msgstr "Сохранение битых маршрутов может работать некорректно."
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:111
 msgid "The MSTS format for defining broken paths is not understood very well."
-msgstr "Формат описания битых путей в MSTS не очень хорошо понятен."
+msgstr "Способ описания битых маршрутов в MSTS известен не полностью."
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:112
 msgid "Reopening it in TrackViewer, however, is likely to work."
-msgstr "Возможно, повторное открытие в TrackViewer, будет результативно."
+msgstr "Возможно, повторное открытие в TrackViewer сработает."
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:270
 msgid "Set as invalid in .pat file"
@@ -1054,7 +1054,7 @@ msgstr "Ближайшая стрелка слишком далеко"
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:274
 msgid "Not able to place node on track"
-msgstr "Точка не принадлежит маршруту"
+msgstr "Невозможно добавить точку на путь"
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:276
 msgid "Dangling siding node"
@@ -1105,7 +1105,7 @@ msgstr "<Путь>"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:620
 msgid "ctrl-R\tReload the route\n"
-msgstr "ctrl-R\tПерезагрузить полигон\n"
+msgstr "ctrl+R\tПерезагрузить полигон\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:621
 msgid "Q\tQuit\n"
@@ -1117,7 +1117,7 @@ msgstr "=\tПриближать непрерывно\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:624
 msgid "shift-=\tZoom-in\n"
-msgstr "shift-=\tПриблизить на 1 шаг\n"
+msgstr "shift+=\tПриблизить на 1 шаг\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:625
 msgid "-\tZoom-out (and keep zooming)\n"
@@ -1125,7 +1125,7 @@ msgstr "-\tОтдалять непрерывно\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:626
 msgid "shift--\tZoom-out\n"
-msgstr "shift--\tОтдалить на 1 шаг\n"
+msgstr "shift+-\tОтдалить на 1 шаг\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:627
 msgid "Z\tZoom to tile\n"
@@ -1133,7 +1133,7 @@ msgstr "Z\tВместить тайл в экран\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:628
 msgid "M\tToggle zoom center\n"
-msgstr "M\tВыбор фокуса зумирования\n"
+msgstr "M\tИзменить центр масштабирования\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:629
 msgid "R\tZoom reset\n"
@@ -1141,11 +1141,11 @@ msgstr "R\tВместить полигон в экран\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:630
 msgid "L\tAdd label\n"
-msgstr "L\tСоздать бирку\n"
+msgstr "L\tСоздать метку\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:632
 msgid "shift-C\t\tShift center to current mouse location\n"
-msgstr "shift-C\tЦентрировать по курсору мыши\n"
+msgstr "shift+C\tЦентрировать по курсору мыши\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:633
 msgid "left arrow\tShift left\n"
@@ -1165,23 +1165,23 @@ msgstr "↑\tСдвиг вверх\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:638
 msgid "F5\tShow speed-limits\n"
-msgstr "F5\tПоказать огр.скорости\n"
+msgstr "F5\tПоказать ограничения скорости\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:639
 msgid "shift-F5\tShow mileposts\n"
-msgstr "shift-F5\tПоказать пикеты\n"
+msgstr "shift+F5\tПоказать пикеты\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:640
 msgid "F6\tShow terrain\n"
-msgstr "F6\tПоказать грунт\n"
+msgstr "F6\tПоказать поверхность\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:641
 msgid "ctrl-F6\tShow DM terrain\n"
-msgstr "ctrl-F6\tShow DM terrain\n"
+msgstr "ctrl+F6\tПоказать текстуры далёких гор\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:642
 msgid "shift-F6\tShow terrain patch lines\n"
-msgstr "shift-F6\tПоказать линии сшивки текстур грунта\n"
+msgstr "shift+F6\tПоказать линии сшивки текстур\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:643
 msgid "F7\tshow signals\n"
@@ -1193,7 +1193,7 @@ msgstr "F8\tПоказать платформы\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:645
 msgid "shift-F8\tShow platform-names\n"
-msgstr "shift-F8\tПоказать названия платформ\n"
+msgstr "shift+F8\tПоказать названия платформ\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:646
 msgid "F9\tShow sidings\n"
@@ -1201,7 +1201,7 @@ msgstr "F9\tПоказать боковые пути\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:647
 msgid "shift-F9\tShow siding-names\n"
-msgstr "shift-F9\tПоказать названия путей\n"
+msgstr "shift+F9\tПоказать названия путей\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:648
 msgid "F10\tHighlight tracks\n"
@@ -1209,7 +1209,7 @@ msgstr "F10\tПодсвечивать секции пути\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:649
 msgid "shift-F10\tHighlight items\n"
-msgstr "shift-F10\tПодсвечивать объекты\n"
+msgstr "shift+F10\tПодсвечивать объекты\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:650
 msgid "F11\tShow path\n"
@@ -1217,7 +1217,7 @@ msgstr "F11\tПоказывать маршруты\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:651
 msgid "shift-F11\tShow raw path\n"
-msgstr "shift-F11\tПоказывать схему маршрутов\n"
+msgstr "shift+F11\tПоказывать схему маршрутов\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:653
 msgid "C\t\tShift to center of current path node\n"
@@ -1233,11 +1233,11 @@ msgstr "PgDn\t\tСкрыть участок маршрута\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:656
 msgid "shift-PgUp\tShow the full path\n"
-msgstr "shift-PgUp\tОтображать весь маршрут\n"
+msgstr "shift+PgUp\tОтображать весь маршрут\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:657
 msgid "shift-PgDn\tShow only start point of path\n"
-msgstr "shift-PgDn\tОтображать только начало маршрута\n"
+msgstr "shift+PgDn\tОтображать только начало маршрута\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:658
 msgid "E\t\tPlace end-point\n"
@@ -1249,19 +1249,19 @@ msgstr "W\t\tЗадать точку ожидания\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:660
 msgid "ctrl-Z\t\tUndo in path editor\n"
-msgstr "ctrl-Z\t\tОтменить в редакторе маршрута\n"
+msgstr "ctrl+Z\t\tОтменить в редакторе маршрута\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:661
 msgid "ctrl-Y\t\tRedo in path editor\n"
-msgstr "ctrl-Y\t\tПрименить в редакторе маршрута\n"
+msgstr "ctrl+Y\t\tПовторить в редакторе маршрута\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:663
 msgid "alt-?\t\tVarious keys to open submenus\n"
-msgstr "alt-?\t\tКлавиши доступа в подменю\n"
+msgstr "alt+?\t\tКлавиши доступа в подменю\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:665
 msgid "mouse-right click\tOn event shows event message\n"
-msgstr "щелчок правой клавишей мыши\t по событию отобразит сообщение\n"
+msgstr "щелчок правой клавишей мыши\tпо событию отобразит сообщение\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:666
 msgid "Keyboard shortcuts"
@@ -1298,15 +1298,15 @@ msgstr "Документация"
 
 #: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:4
 msgid "Label"
-msgstr "Бирка"
+msgstr "Метка"
 
 #: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:14
 msgid "Delete label"
-msgstr "Удалить бирку"
+msgstr "Удалить метку"
 
 #: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:4
 msgid "Result of auto correcting all paths"
-msgstr "Результат авто-исправления всех маршрутов"
+msgstr "Результат автоисправления всех маршрутов"
 
 #: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:19
 msgid ""
@@ -1318,7 +1318,7 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:23
 msgid "directly"
-msgstr "полностью"
+msgstr "без подтверждения"
 
 #: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:24
 msgid "individually with confirmation"
@@ -1384,7 +1384,7 @@ msgstr "секунд"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:15
 msgid "Openrails advanced shunting options:"
-msgstr "Более сложные манёвры:"
+msgstr "Опции манёвров только для OR:"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:19
 msgid "Wait until:  "
@@ -1420,7 +1420,7 @@ msgstr "Сцепка и расцепка"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
 msgid "AI train request to pass red signal"
-msgstr "Другой поезд запросил проследование зпрещающего сигнала"
+msgstr "Другой поезд запросил проследование запрещающего сигнала"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:44
 msgid "Blow horn for"
@@ -1428,7 +1428,7 @@ msgstr "Подавать сигнал"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
 msgid "seconds.  11 = American horn sequence."
-msgstr "секунд.  11 = американская последовательность."
+msgstr "секунд.  11 = американская схема гудков."
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:50
 msgid "Wait time code as decimal ="
@@ -1440,7 +1440,7 @@ msgstr "00000"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:52
 msgid "hexadecimal ="
-msgstr "в шестнадцатиричном ="
+msgstr "в шестнадцатеричном ="
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
 msgid "0000"
@@ -1455,8 +1455,8 @@ msgid ""
 "Save the data of the chart in json format into a .js file.The saved data can "
 "then be used to show the chart on an HTML5 canvas."
 msgstr ""
-"Сохранить эту диаграмму в формате json (*.js-файл). Сохранённые данные "
-"возможно просматрвать в HTML5 canvas."
+"Сохранить диаграмму в формате json (*.js-файл). Сохранённые данные можно "
+"просматривать на HTML5 canvas."
 
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
 msgid "Save json"
@@ -1469,15 +1469,15 @@ msgstr "Сохранить профиль пути в формате json в *.j
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:67
 msgid "The saved data can then be used to show the chart on an HTML5 canvas."
 msgstr ""
-"Эти данные можно использовать для просмотра профиля пути в HTML5 canvas."
+"Эти данные можно использовать для просмотра профиля пути на HTML5 canvas."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
 msgid "_File"
-msgstr "_Файл"
+msgstr "Файл (F)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
 msgid "(Re)load route (ctrl-R)"
-msgstr "(Пере)загрузить полигон (ctrl-R)"
+msgstr "(Пере)загрузить полигон (ctrl+R)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:10
 msgid "Select install folder"
@@ -1517,7 +1517,7 @@ msgstr "Выйти (Q)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:23
 msgid "_View"
-msgstr "_Вид"
+msgstr "Вид (V)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:24
 msgid "Center around station"
@@ -1541,7 +1541,7 @@ msgstr "Выбраный маршрут (F11)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:36
 msgid "Show raw path from .pat file (shift-F11)"
-msgstr "Схема маршрута из .pat-файла (shift-F11)"
+msgstr "Схема маршрута из .pat-файла (shift+F11)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:38
 msgid "Track Coloring"
@@ -1573,31 +1573,31 @@ msgstr "Сетку"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:46
 msgid "Show scale ruler"
-msgstr "Линейный масштаб"
+msgstr "Линейку"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:47
 msgid "Show longitude/latitude"
-msgstr "Широту/долготу"
+msgstr "Широту и долготу"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:49
 msgid "Labels"
-msgstr "Бирки"
+msgstr "Метки"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:50
 msgid "Show labels"
-msgstr "Показать бирки"
+msgstr "Показать метки"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:50
 msgid "For adding a label, press L"
-msgstr "Чтобы добавить бирку, нажмите L"
+msgstr "Чтобы добавить метку, нажмите L"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:51
 msgid "Load labels"
-msgstr "Загрузить бирки"
+msgstr "Загрузить метки"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:52
 msgid "Save labels"
-msgstr "Сохранить бирки"
+msgstr "Сохранить метки"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:55
 msgid "Save current zoom"
@@ -1629,7 +1629,7 @@ msgstr "Сглаживание (нужна перезагрузка)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
 msgid "Track _items"
-msgstr "Объекты"
+msgstr "Объекты (I)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
 msgid "Show all items"
@@ -1641,11 +1641,11 @@ msgstr "Скрыть все объекты"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
 msgid "Highlight items (shift-F10)"
-msgstr "Подсвечивать объекты (shift-F10)"
+msgstr "Подсвечивать объекты (shift+F10)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
 msgid "Junctions/ends"
-msgstr "Сопряжения/концы путей"
+msgstr "Сопряжения и концы путей"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:70
 msgid "Show junctions"
@@ -1669,7 +1669,7 @@ msgstr "Отображать маркеры путей (F9)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:76
 msgid "Show siding names (shift-F9)"
-msgstr "Отображать названия путей (shift-F9)"
+msgstr "Отображать названия путей (shift+F9)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
 msgid "Platforms"
@@ -1681,15 +1681,15 @@ msgstr "Отображать маркеры платформ (F8)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:80
 msgid "Show platform names (shift-F8)"
-msgstr "Отображать названия платформ (shift-F8)"
+msgstr "Отображать названия платформ (shift+F8)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:81
 msgid "Show station names (shift-F8)"
-msgstr "Отображать имена станций (shift-F8)"
+msgstr "Отображать имена станций (shift+F8)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:83
 msgid "Interactives"
-msgstr "Объекты взаимодействия"
+msgstr "Взаимодействие с игроком"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:84
 msgid "Show signals (F7)"
@@ -1705,7 +1705,7 @@ msgstr "Отображать переезды"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:87
 msgid "Show hazards"
-msgstr "Отображать угрозы"
+msgstr "Отображать опасности"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:88
 msgid "Show fuel/pickups"
@@ -1734,7 +1734,7 @@ msgstr "Отображать ограничения скорости (F5)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:95
 msgid "Show mileposts (shift-F5)"
-msgstr "Отображать пикеты (shift-F5)"
+msgstr "Отображать пикеты (shift+F5)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
 msgid "Roads"
@@ -1746,7 +1746,7 @@ msgstr "Отображать дороги"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:99
 msgid "Show car spawners"
-msgstr "Отображать генераторы движения"
+msgstr "Отображать точки генерации автомобилей"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
 msgid "Show road crossings"
@@ -1754,7 +1754,7 @@ msgstr "Отображать перекрёстки"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:103
 msgid "_Statusbar"
-msgstr "_Статус-строка"
+msgstr "Строка состояния (S)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
 msgid "Show vector section info"
@@ -1770,7 +1770,7 @@ msgstr "Сведения о маршруте"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:110
 msgid "Show terrain info"
-msgstr "Сведения о грунте"
+msgstr "Сведения о поверхности"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:112
 msgid "Show signal info"
@@ -1782,11 +1782,11 @@ msgstr "Названия платформ/станций"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:119
 msgid "_Preferences"
-msgstr "_Настройки"
+msgstr "Настройки (P)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:120
 msgid "Zooming is centered on mouse (M)"
-msgstr "Фокус зумирования центрируется мышью (M)"
+msgstr "Центр масштабирования под указателем мыши (M)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:122
 msgid "Use miles i.s.o. meters"
@@ -1794,7 +1794,7 @@ msgstr "Использовать мили вместо метров"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:123
 msgid "Select language"
-msgstr "Выбрать язык"
+msgstr "Set language / Выбрать язык"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:128
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:155
@@ -1818,7 +1818,7 @@ msgstr "Использовать Shift+PgUp для продления маршр
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:134
 msgid "Path-_Editor"
-msgstr "Работа_ с маршрутами"
+msgstr "Маршруты (E)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:135
 msgid "==Supporting MSTS paths only=="
@@ -1858,35 +1858,35 @@ msgstr "Редактировать метаданные маршрута"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:153
 msgid "Reverse path"
-msgstr "Обратить маршрут"
+msgstr "Развернуть маршрут"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:160
 msgid "Auto-fix all broken nodes"
-msgstr "Авто-исправление всех \"битых\" узлов"
+msgstr "Автоисправление всех \"битых\" узлов"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:161
 msgid "Auto-fix all broken paths"
-msgstr "Авто-исправление всех \"битых\" маршрутов"
+msgstr "Автоисправление всех \"битых\" маршрутов"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:163
 msgid "_Terrain"
-msgstr "_Ландшафт"
+msgstr "Ландшафт (T)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:164
 msgid "Show terrain textures (F6)"
-msgstr "Отображать текстуры грунта (F6)"
+msgstr "Отображать текстуры поверхности (F6)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:165
 msgid "Show DM terrain textures (ctrl-F6)"
-msgstr "Отображать текстуры грунта гор (ctrl-F6)"
+msgstr "Отображать текстуры далёких гор (ctrl+F6)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:166
 msgid "Show patch lines (shift-F6)"
-msgstr "Отображать линии сшивки текстур (shift-F6)"
+msgstr "Отображать линии сшивки текстур (shift+F6)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:168
 msgid "Memory reduction options"
-msgstr "Варианты экономии памяти"
+msgstr "Способы экономии памяти"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:169
 msgid "No reduction"
@@ -1898,23 +1898,23 @@ msgstr "Автоматически"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:171
 msgid "Reduce by linear factor 2"
-msgstr "Уменьшить на линейный коэффициент 2"
+msgstr "Уменьшить в 2 раза"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:172
 msgid "Reduce by linear factor 4"
-msgstr "Уменьшить на линейный коэффициент 4"
+msgstr "Уменьшить в 4 раза"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:173
 msgid "Reduce by linear factor 8"
-msgstr "Уменьшить на линейный коэффициент 8"
+msgstr "Уменьшить в 8 раз"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:174
 msgid "Reduce by linear factor 16"
-msgstr "Уменьшить на линейный коэффициент 16"
+msgstr "Уменьшить в 16 раз"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:177
 msgid "_Help"
-msgstr "_Инфо"
+msgstr "Справка (H)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:178
 msgid "Shortcuts"
@@ -1926,7 +1926,7 @@ msgstr "О программе"
 
 #: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:8
 msgid "Select paths to draw"
-msgstr "Выберите маршруты для отображения"
+msgstr "Выберите отображаемые маршруты"
 
 #: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:12
 msgid "Clear all"
@@ -1939,15 +1939,15 @@ msgstr "Поиск"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
 msgid "Shows tileX and tileZ of the world location at the mouse pointer"
-msgstr "Координаты квадрата под указателем мыши"
+msgstr "Координаты тайла под указателем мыши"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:41
 msgid "Shows X-coordinate (without tileX) at the mouse pointer"
-msgstr "Долгота точки под указателем мыши"
+msgstr "Координата X точки на тайле под указателем мыши"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:48
 msgid "Shows Z-coordinate (without tileZ) at the mouse pointer"
-msgstr "Широта точки под указателем мыши"
+msgstr "Координата Y точки на тайле под указателем мыши"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:54
 msgid "Trackindex"
