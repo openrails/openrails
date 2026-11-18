@@ -3860,9 +3860,9 @@ namespace Orts.Simulation.RollingStocks
             var mpc = MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.Throttle).FirstOrDefault();
             if (mpc != null)
             {
-            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
-                && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
-                return;
+                if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
+                    && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
+                    return;
                 if (!mpc.StateChanged)
                 {
                     mpc.StateChanged = true;
@@ -4054,8 +4054,8 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-            Simulator.Confirmer.ConfirmWithPerCent(CabControl.Throttle, ThrottleController.CurrentValue * 100);
-        }
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.Throttle, ThrottleController.CurrentValue * 100);
+            }
         }
 
         public void SetThrottleValue(float value)
@@ -4087,17 +4087,17 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                Simulator.Confirmer.UpdateWithPerCent(
-                    this is MSTSSteamLocomotive ? CabControl.Regulator : CabControl.Throttle,
-                    oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease,
-                    controller.CurrentValue * 100);
-        }
+                    Simulator.Confirmer.UpdateWithPerCent(
+                        this is MSTSSteamLocomotive ? CabControl.Regulator : CabControl.Throttle,
+                        oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease,
+                        controller.CurrentValue * 100);
+                }
             }
         }
 
         public void SetThrottlePercent(float percent)
         {
-                ThrottleController.SetPercent(percent);
+            ThrottleController.SetPercent(percent);
         }
 
         public void SetThrottlePercentWithSound(float percent)
@@ -4195,7 +4195,7 @@ namespace Orts.Simulation.RollingStocks
             var brakesValue = intermediateValue ? TrainBrakeController?.IntermediateValue : TrainBrakeController?.CurrentValue;
 
             if (CombinedControlType == CombinedControl.ThrottleDynamic && throttleValue <= 0 && dynamicsValue > 0)
-                    return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (dynamicsValue ?? 0);
+                return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (dynamicsValue ?? 0);
             else if (CombinedControlType == CombinedControl.ThrottleAir && throttleValue <= 0 && brakesValue > 0)
                 return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (brakesValue ?? 0);
             else

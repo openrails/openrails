@@ -1965,7 +1965,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
 
             }
-
+                       
             if (Car is MSTSLocomotive) UpdateTractionCutoff();
                        
             // Record HUD display values for brake cylinders depending upon whether they are wagons or locomotives/tenders (which are subject to their own engine brakes)   

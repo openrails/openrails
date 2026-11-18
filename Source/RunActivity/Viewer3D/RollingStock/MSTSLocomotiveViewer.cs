@@ -2310,7 +2310,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_ACCELERATION_IN_TIME:
                     index = (int)data;
                     break;
-				case CABViewControlTypes.ORTS_CC_SPEED_DELTA:											  
+                case CABViewControlTypes.ORTS_CC_SPEED_DELTA:
                 case CABViewControlTypes.ORTS_CC_SPEED_0:
                 case CABViewControlTypes.ORTS_CC_SELECTED_SPEED:
                     index = ButtonState ? 1 : 0;
@@ -2778,15 +2778,15 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_CC_SPEED_0:
                     buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
                     if (!ButtonState && buttonState)
-                            Locomotive.CruiseControl.SetSpeed(0);
+                        Locomotive.CruiseControl.SetSpeed(0);
                     ButtonState = buttonState;
-                        break;
-					case CABViewControlTypes.ORTS_CC_SPEED_DELTA:
+                    break;
+				case CABViewControlTypes.ORTS_CC_SPEED_DELTA:
                     buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
                     if (!ButtonState && buttonState)
-                            Locomotive.CruiseControl.SetSpeed(Locomotive.CruiseControl.SetSpeedKpHOrMpH + Control.Parameter1);
+                        Locomotive.CruiseControl.SetSpeed(Locomotive.CruiseControl.SetSpeedKpHOrMpH + Control.Parameter1);
                     ButtonState = buttonState;
-                        break;
+                    break;
                 case CABViewControlTypes.ORTS_DP_MOVE_TO_FRONT:
                     buttonState = ChangedValue(ButtonState ? 1 : 0) > 0;
                     if (!ButtonState && buttonState)
