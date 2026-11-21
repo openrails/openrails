@@ -14,6 +14,7 @@
     <Copyright>Copyright © 2009 - 2022</Copyright>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
     <DefineConstants>TRACE;WINDOWS;NEW_ACTION;WITH_NEW_SAVE;ACTIVITY_EDITOR</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <DocumentationFile>..\..\Program\RunActivity.xml</DocumentationFile>
@@ -39,6 +40,10 @@
     </Content>
     <Content Include="..\3rdPartyLibs\openal-soft\Win64\OpenAL32.dll">
       <Link>Native\X64\OpenAL32.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\3rdPartyLibs\openxr\openxr_loader.dll">
+      <Link>Native\X64\openxr_loader.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\TrainForcesSprites.png">
@@ -604,6 +609,8 @@
     <Content Include="Viewer3D\WebServices\Web\TrackMonitor\index.js" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Orts.Menu\Orts.Menu.csproj" />
+    <ProjectReference Include="..\Menu\Menu.csproj" />
     <ProjectReference Include="..\Orts.Common\Orts.Common.csproj">
       <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>
       <Name>Orts.Common</Name>

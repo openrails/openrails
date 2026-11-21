@@ -506,6 +506,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DisplayTrainListWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Alt);
             Commands[(int)UserCommand.DisplayCarLabels] = new UserCommandModifiableKeyInput(0x41, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);
+            Commands[(int)UserCommand.GameVROverlay] = new UserCommandKeyInput(0x18, KeyModifiers.Alt);
             Commands[(int)UserCommand.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayHUD] = new UserCommandModifiableKeyInput(0x3F, KeyModifiers.Alt, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayTrainDrivingWindow] = new UserCommandModifiableKeyInput(0x3F, Commands[(int)UserCommand.DisplayNextWindowTab]);
@@ -527,6 +528,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.GameClearSignalForward] = new UserCommandKeyInput(0x0F);
             Commands[(int)UserCommand.GameExternalCabController] = new UserCommandKeyInput(0x29);
             Commands[(int)UserCommand.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
+            Commands[(int)UserCommand.GameVRRecenter] = new UserCommandKeyInput(0x2F, KeyModifiers.Alt);
+            Commands[(int)UserCommand.GameVRControllers] = new UserCommandKeyInput(0x21, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameMultiPlayerDispatcher] = new UserCommandKeyInput(0x0A, KeyModifiers.Control);
             Commands[(int)UserCommand.GameMultiPlayerTexting] = new UserCommandKeyInput(0x14, KeyModifiers.Alt);
             Commands[(int)UserCommand.GamePause] = new UserCommandKeyInput(Keys.Pause);
