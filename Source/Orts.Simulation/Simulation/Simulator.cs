@@ -19,6 +19,7 @@ using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Common.Scripting;
+using Orts.Content;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.MultiPlayer;
@@ -1314,7 +1315,7 @@ namespace Orts.Simulation
             // place rear of train on starting location of aiPath.
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
 
-            ConsistFile conFile = new ConsistFile(conFileName);
+            ConsistFile conFile = ConsistGenerator.IsConsistRecognized(conFileName) ? new ConsistFile(ConsistGenerator.GetConsist(conFileName), conFileName) : new ConsistFile(conFileName);
             CurveDurability = conFile.Train.TrainCfg.Durability;   // Finds curve durability of consist based upon the value in consist file
             train.TcsParametersFileName = conFile.Train.TrainCfg.TcsParametersFileName;
 
@@ -1331,7 +1332,7 @@ namespace Orts.Simulation
                     wagonFilePath = wagonFolder + @"\" + wagon.Name + ".eot";
                 }
 
-                if (!File.Exists(wagonFilePath))
+                if (!File.Exists(wagonFilePath) && !ConsistGenerator.IsWagonRecognized(wagonFilePath))
                 {
                     // First wagon is the player's loco and required, so issue a fatal error message
                     if (wagon == conFile.Train.TrainCfg.WagonList[0])

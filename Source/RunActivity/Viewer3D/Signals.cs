@@ -182,120 +182,107 @@ namespace Orts.Viewer3D
             readonly int Index;
 #endif
             readonly SignalHead SignalHead;
-            readonly List<int> MatrixIndices = new List<int>();
             readonly SignalTypeData SignalTypeData;
             readonly SoundSource Sound;
             float CumulativeTime;
-            float SemaphorePos;
-            float SemaphoreTarget;
-            float SemaphoreSpeed;
-            List<AnimatedPart> SemaphoreParts = new List<AnimatedPart>();
             int DisplayState = -1;
-
-            private readonly SignalLightState[] lightStates;
+            Matrix LightsBindMatrix = Matrix.Identity;
+            readonly AnimatedPart SemaphoreAnimatedPart;
+            readonly SignalLightState[] LightStates;
 
             public SignalShapeHead(Viewer viewer, SignalShape signalShape, int index, SignalHead signalHead,
                         SignalItem mstsSignalItem, Formats.Msts.SignalShape.SignalSubObj mstsSignalSubObj)
             {
                 Viewer = viewer;
                 SignalShape = signalShape;
+                SignalHead = signalHead;
 #if DEBUG_SIGNAL_SHAPES
                 Index = index;
 #endif
-                SignalHead = signalHead;
-                for (int mindex = 0; mindex <= signalShape.SharedShape.MatrixNames.Count - 1; mindex++)
+                var headMatrixIndex = int.MaxValue;
+                for (int mindex = 0; mindex < signalShape.SharedShape.MatrixNames.Count; mindex++)
                 {
-                    string MatrixName = signalShape.SharedShape.MatrixNames[mindex];
-                    if (String.Equals(MatrixName, mstsSignalSubObj.MatrixName))
-                        MatrixIndices.Add(mindex);
+                    if (string.Equals(signalShape.SharedShape.MatrixNames[mindex], mstsSignalSubObj.MatrixName))
+                    {
+                        var matrixIndex = SignalShape.SharedShape.GetAnimationTargetNode(mindex);
+                        Matrix.Multiply(ref LightsBindMatrix, ref SignalShape.XNAMatrices[matrixIndex], out LightsBindMatrix);
+                        headMatrixIndex = Math.Min(headMatrixIndex, matrixIndex);
+                    }
                 }
 
-
-                if (!viewer.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SignalSubSignalType))
+                if (!viewer.SIGCFG.SignalTypes.TryGetValue(mstsSignalSubObj.SignalSubSignalType, out var mstsSignalType))
                     return;
-
-                var mstsSignalType = viewer.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
 
                 SignalTypeData = viewer.SignalTypeDataManager.Get(mstsSignalType);
 
-                if (SignalTypeData.Semaphore)
-                {
-                    // Check whether we have to correct the Semaphore position indexes following the strange rule of MSTS
-                    // Such strange rule is that, if there are only two animation steps in the related .s file, MSTS behaves as follows:
-                    // a SemaphorePos (2) in sigcfg.dat is executed as SemaphorePos (1)
-                    // a SemaphorePos (1) in sigcfg.dat is executed as SemaphorePos (0)
-                    // a SemaphorePos (0) in sigcfg.dat is executed as SemaphorePos (0)
-                    // First we check if there are only two animation steps
-                    if (signalShape.SharedShape.Animations != null && signalShape.SharedShape.Animations.Count != 0 && MatrixIndices.Count > 0 &&
-                            signalShape.SharedShape.Animations[0].anim_nodes[MatrixIndices[0]].controllers.Count != 0 &&
-                            signalShape.SharedShape.Animations[0].anim_nodes[MatrixIndices[0]].controllers[0].Count == 2)
-                    {
-
-                        // OK, now we check if maximum SemaphorePos is 2 (we won't correct if there are only SemaphorePos 1 and 0,
-                        // because they would both be executed as SemaphorePos (0) accordingly to above law, therefore leading to a static semaphore)
-                        float maxIndex = float.MinValue;
-                        foreach (SignalAspectData drAsp in SignalTypeData.DrawAspects.Values)
-                        {
-                            if (drAsp.SemaphorePos > maxIndex) maxIndex = drAsp.SemaphorePos;
-                        }
-                        if (maxIndex == 2)
-                        {
-                            // in this case we modify the SemaphorePositions for compatibility with MSTS.
-                            foreach (SignalAspectData drAsp in SignalTypeData.DrawAspects.Values)
-                            {
-                                switch ((int)drAsp.SemaphorePos)
-                                {
-                                    case 2:
-                                        drAsp.SemaphorePos = 1;
-                                        break;
-                                    case 1:
-                                        drAsp.SemaphorePos = 0;
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                            if (!SignalTypeData.AreSemaphoresReindexed)
-                            {
-                                Trace.TraceInformation("Reindexing semaphore entries of signal type {0} for compatibility with MSTS", mstsSignalType.Name);
-                                SignalTypeData.AreSemaphoresReindexed = true;
-                            }
-                        }
-                    }
-
-                    foreach (int mindex in MatrixIndices)
-                    {
-                        if (mindex == 0 && (signalShape.SharedShape.Animations == null || signalShape.SharedShape.Animations.Count == 0 ||
-                            signalShape.SharedShape.Animations[0].anim_nodes[mindex].controllers.Count == 0))
-                            continue;
-                        AnimatedPart SemaphorePart = new AnimatedPart(signalShape);
-                        SemaphorePart.AddMatrix(mindex);
-                        SemaphoreParts.Add(SemaphorePart);
-                    }
-
-                    if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultSignalSMS != null)
-                    {
-                        var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultSignalSMS;
-                        try
-                        {
-                            Sound = new SoundSource(Viewer, SignalShape.Location.WorldLocation, Events.Source.MSTSSignal, soundPath);
-                            Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
-                        }
-                        catch (Exception error)
-                        {
-                            Trace.WriteLine(new FileLoadException(soundPath, error));
-                        }
-                    }
-                }
-
-                lightStates = new SignalLightState[SignalTypeData.Lights.Count];
+                LightStates = new SignalLightState[SignalTypeData.Lights.Count];
                 for (var i = 0; i < SignalTypeData.Lights.Count; i++)
-                    lightStates[i] = new SignalLightState(SignalTypeData.OnOffTimeS);
+                    LightStates[i] = new SignalLightState(SignalTypeData.OnOffTimeS);
 
 #if DEBUG_SIGNAL_SHAPES
                 Console.Write("  HEAD type={0,-8} lights={1,-2} sem={2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Semaphore);
 #endif
+
+                if (!SignalTypeData.Semaphore)
+                    return;
+
+                var speed = SignalTypeData.SemaphoreAnimationTime <= 0 ? float.MaxValue : 1.0f / SignalTypeData.SemaphoreAnimationTime;
+
+                SemaphoreAnimatedPart = new AnimatedPart(signalShape);
+                SemaphoreAnimatedPart.AddAnimation(mstsSignalSubObj.MatrixName);
+                SemaphoreAnimatedPart.SetMstsSpeed(speed);
+                SemaphoreAnimatedPart.SetGltfSpeed(speed);
+
+                if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultSignalSMS != null)
+                {
+                    var soundPath = Path.Combine(Viewer.Simulator.RoutePath, "sound", Viewer.Simulator.TRK.Tr_RouteFile.DefaultSignalSMS);
+                    try
+                    {
+                        Sound = new SoundSource(Viewer, SignalShape.Location.WorldLocation, Events.Source.MSTSSignal, soundPath);
+                        Viewer.SoundProcess.AddSoundSources(this, new List<SoundSourceBase>() { Sound });
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.WriteLine(new FileLoadException(soundPath, error));
+                    }
+                }
+
+                // Check whether we have to correct the Semaphore position indexes following the strange rule of MSTS
+                // Such strange rule is that, if there are only two animation steps in the related .s file, MSTS behaves as follows:
+                // a SemaphorePos (2) in sigcfg.dat is executed as SemaphorePos (1)
+                // a SemaphorePos (1) in sigcfg.dat is executed as SemaphorePos (0)
+                // a SemaphorePos (0) in sigcfg.dat is executed as SemaphorePos (0)
+                // First we check if there are only two animation steps
+                if (signalShape.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(headMatrixIndex)?.controllers?.FirstOrDefault()?.Count != 2)
+                    return;
+
+                // OK, now we check if maximum SemaphorePos is 2 (we won't correct if there are only SemaphorePos 1 and 0,
+                // because they would both be executed as SemaphorePos (0) accordingly to above law, therefore leading to a static semaphore)
+                float maxIndex = float.MinValue;
+                foreach (var drAsp in SignalTypeData.DrawAspects)
+                    if (drAsp.Value.SemaphorePos > maxIndex)
+                        maxIndex = drAsp.Value.SemaphorePos;
+
+                if (maxIndex != 2)
+                    return;
+
+                // in this case we modify the SemaphorePositions for compatibility with MSTS.
+                foreach (var drAsp in SignalTypeData.DrawAspects)
+                {
+                    switch ((int)drAsp.Value.SemaphorePos)
+                    {
+                        case 2: drAsp.Value.SemaphorePos = 1; break;
+                        case 1: drAsp.Value.SemaphorePos = 0; break;
+                        default: break;
+                    }
+                }
+                if (!SignalTypeData.AreSemaphoresReindexed)
+                {
+                    Trace.TraceInformation("Reindexing semaphore entries of signal type {0} for compatibility with MSTS", mstsSignalType.Name);
+                    SignalTypeData.AreSemaphoresReindexed = true;
+                }
             }
+
             [CallOnThread("Loader")]
             public void Unload()
             {
@@ -309,6 +296,8 @@ namespace Orts.Viewer3D
             public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Matrix xnaTileTranslation)
             {
                 var initialise = DisplayState == -1;
+                var aspectIsValid = SignalTypeData.DrawAspects.TryGetValue(SignalHead.draw_state, out var drawAspect);
+
                 if (DisplayState != SignalHead.draw_state)
                 {
 #if DEBUG_SIGNAL_SHAPES
@@ -317,91 +306,58 @@ namespace Orts.Viewer3D
                         SignalHead.draw_state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
 #endif
                     DisplayState = SignalHead.draw_state;
-                    if (SignalTypeData.DrawAspects.ContainsKey(DisplayState))
-                    {
-                        SemaphoreTarget = SignalTypeData.DrawAspects[DisplayState].SemaphorePos;
-                        SemaphoreSpeed = SignalTypeData.SemaphoreAnimationTime <= 0 ? 0 : (SemaphoreTarget > SemaphorePos ? +1 : -1) / SignalTypeData.SemaphoreAnimationTime;
-                        if (Sound != null) Sound.HandleEvent(Event.SemaphoreArm);
-                    }
+                    if (aspectIsValid)
+                        Sound?.HandleEvent(Event.SemaphoreArm);
                 }
 
-                CumulativeTime += elapsedTime.ClockSeconds;
-                while (CumulativeTime > SignalTypeData.FlashTimeTotal)
-                    CumulativeTime -= SignalTypeData.FlashTimeTotal;
-
-                if (DisplayState < 0 || !SignalTypeData.DrawAspects.ContainsKey(DisplayState))
+                if (DisplayState < 0 || !aspectIsValid)
                     return;
 
-                if (SignalTypeData.Semaphore)
-                {
-                    // We reset the animation matrix before preparing the lights, because they need to be positioned
-                    // based on the original matrix only.
-                    foreach (AnimatedPart SemaphorePart in SemaphoreParts)
-                    {
-                        SemaphorePart.SetFrameWrap(0);
-                    }
-                }
+                var targetState = SemaphoreAnimatedPart?.MaxFrame > 0 ? drawAspect.SemaphorePos / (SemaphoreAnimatedPart?.MaxFrame ?? 1) : 0;
+                if (initialise)
+                    SemaphoreAnimatedPart?.SetState(targetState);
+                else
+                    SemaphoreAnimatedPart?.UpdateState(targetState, elapsedTime);
+
+                if (SignalTypeData.Lights.Count == 0)
+                    return;
+
+                bool isDay = (Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection.Y : Viewer.World.Sky.SolarDirection.Y) > 0;
+                bool isPoorVisibility = Viewer.Simulator.Weather.VisibilityM < 200;
+                if (!SignalTypeData.DayLight && isDay && !isPoorVisibility)
+                    return;
+
+                var semaphoreTargetReached = (SemaphoreAnimatedPart?.AnimationKeyFraction() ?? targetState) == targetState;
+
+                CumulativeTime += elapsedTime.ClockSeconds;
+                CumulativeTime %= SignalTypeData.FlashTimeTotal;
+                var flashingDarkTime = CumulativeTime > SignalTypeData.FlashTimeOn;
+
+                Matrix lightsBindMatrix = default;
+                var isBindMatrixCalculated = false;
 
                 for (var i = 0; i < SignalTypeData.Lights.Count; i++)
                 {
-                    SignalLightState state = lightStates[i];
-                    bool semaphoreDark = SemaphorePos != SemaphoreTarget && SignalTypeData.LightsSemaphoreChange[i];
-                    bool constantDark = !SignalTypeData.DrawAspects[DisplayState].DrawLights[i];
-                    bool flashingDark = SignalTypeData.DrawAspects[DisplayState].FlashLights[i] && (CumulativeTime > SignalTypeData.FlashTimeOn);
+                    SignalLightState state = LightStates[i];
+                    bool semaphoreDark = !semaphoreTargetReached && SignalTypeData.LightsSemaphoreChange[i];
+                    bool constantDark = !drawAspect.DrawLights[i];
+                    bool flashingDark = drawAspect.FlashLights[i] && flashingDarkTime;
                     state.UpdateIntensity(semaphoreDark || constantDark || flashingDark ? 0 : 1, elapsedTime);
                     if (!state.IsIlluminated())
                         continue;
 
-                    bool isDay;
-                    if (Viewer.Settings.UseMSTSEnv == false)
-                        isDay = Viewer.World.Sky.SolarDirection.Y > 0;
-                    else
-                        isDay = Viewer.World.MSTSSky.mstsskysolarDirection.Y > 0;
-                    bool isPoorVisibility = Viewer.Simulator.Weather.VisibilityM < 200;
-                    if (!SignalTypeData.DayLight && isDay && !isPoorVisibility)
-                        continue;
-
                     var slp = SignalTypeData.Lights[i];
-                    var xnaMatrix = Matrix.CreateTranslation(slp.Position);
 
-                    foreach (int MatrixIndex in MatrixIndices)
+                    if (!isBindMatrixCalculated)
                     {
-                        Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
+                        Matrix.Multiply(ref LightsBindMatrix, ref xnaTileTranslation, out lightsBindMatrix);
+                        isBindMatrixCalculated = true;
                     }
-                    Matrix.Multiply(ref xnaMatrix, ref xnaTileTranslation, out xnaMatrix);
+                    var xnaMatrix = slp.Translation * lightsBindMatrix;
 
-                    void renderEffect(Material material)
-                    {
-                        frame.AddPrimitive(material, slp, RenderPrimitiveGroup.Lights, ref xnaMatrix, ShapeFlags.None, state);
-                    }
-                    renderEffect(slp.Material);
+                    frame.AddPrimitive(slp.Material, slp, RenderPrimitiveGroup.Lights, ref xnaMatrix, ShapeFlags.None, state);
                     if (Viewer.Settings.SignalLightGlow)
-                        renderEffect(SignalTypeData.GlowMaterial);
-                }
-
-                if (SignalTypeData.Semaphore)
-                {
-                    // Now we update and re-animate the semaphore arm.
-                    if (SignalTypeData.SemaphoreAnimationTime <= 0 || initialise)
-                    {
-                        // No timing (so instant switch) or we're initialising.
-                        SemaphorePos = SemaphoreTarget;
-                        SemaphoreSpeed = 0;
-                    }
-                    else
-                    {
-                        // Animate slowly to target position.
-                        SemaphorePos += SemaphoreSpeed * elapsedTime.ClockSeconds;
-                        if (SemaphorePos * Math.Sign(SemaphoreSpeed) > SemaphoreTarget * Math.Sign(SemaphoreSpeed))
-                        {
-                            SemaphorePos = SemaphoreTarget;
-                            SemaphoreSpeed = 0;
-                        }
-                    }
-                    foreach (AnimatedPart SemaphorePart in SemaphoreParts)
-                    {
-                        SemaphorePart.SetFrameCycle(SemaphorePos);
-                    }
+                        frame.AddPrimitive(SignalTypeData.GlowMaterial, slp, RenderPrimitiveGroup.Lights, ref xnaMatrix, ShapeFlags.None, state);
                 }
             }
 
@@ -657,7 +613,7 @@ namespace Orts.Viewer3D
 
     public class SignalLightPrimitive : RenderPrimitive
     {
-        internal readonly Vector3 Position;
+        internal readonly Matrix Translation;
         internal readonly float GlowIntensityDay;
         internal readonly float GlowIntensityNight;
         readonly VertexBuffer VertexBuffer;
@@ -665,7 +621,7 @@ namespace Orts.Viewer3D
 
         public SignalLightPrimitive(Viewer viewer, Vector3 position, float radius, Color color, float glowDay, float glowNight, float u0, float v0, float u1, float v1, Material material)
         {
-            Position = position;
+            Translation = Matrix.CreateTranslation(position);
             GlowIntensityDay = glowDay;
             GlowIntensityNight = glowNight;
 
@@ -698,31 +654,43 @@ namespace Orts.Viewer3D
     {
         readonly SceneryShader SceneryShader;
         readonly Texture2D Texture;
+        readonly EffectTechnique Technique;
+        readonly PixelShaderOptions PixelShaderOptions;
 
         public SignalLightMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
             SceneryShader = Viewer.MaterialManager.SceneryShader;
             Texture = Viewer.TextureManager.Get(textureName, true);
+            Technique = SceneryShader.Techniques["SignalLight"];
+            PixelShaderOptions |= PixelShaderOptions.HasNormals;
+
+            SetSortingEffectId(Technique);
+            SetSortingTextureId(Texture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            SceneryShader.CurrentTechnique = Viewer.MaterialManager.SceneryShader.Techniques["SignalLight"];
+            SceneryShader.CurrentTechnique = Technique;
             SceneryShader.ImageTexture = Texture;
+            SceneryShader.PixelShaderOptions = (uint)PixelShaderOptions;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearClamp;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            foreach (var pass in SceneryShader.CurrentTechnique.Passes)
+            var passes = SceneryShader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
                     SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                    pass.Apply();
+                    SceneryShader.SetMatrix(item.XNAMatrix);
+                    passes[i].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
@@ -744,6 +712,8 @@ namespace Orts.Viewer3D
     {
         readonly SceneryShader SceneryShader;
         readonly Texture2D Texture;
+        readonly EffectTechnique Technique;
+        readonly PixelShaderOptions PixelShaderOptions;
 
         float NightEffect;
 
@@ -752,14 +722,22 @@ namespace Orts.Viewer3D
         {
             SceneryShader = Viewer.MaterialManager.SceneryShader;
             Texture = SharedTextureManager.LoadInternal(Viewer.GraphicsDevice, Path.Combine(Viewer.ContentPath, "SignalLightGlow.png"));
+            Technique = SceneryShader.Techniques["SignalLightGlow"];
+            PixelShaderOptions |= PixelShaderOptions.HasNormals;
+
+            SetSortingEffectId(Technique);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            SceneryShader.CurrentTechnique = Viewer.MaterialManager.SceneryShader.Techniques["SignalLightGlow"];
+            SceneryShader.CurrentTechnique = Technique;
             SceneryShader.ImageTexture = Texture;
+            SceneryShader.PixelShaderOptions = (uint)PixelShaderOptions;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.SamplerStates[(int)SceneryShader.Samplers.BaseColor] = SamplerState.LinearClamp;
 
             // The following constants define the beginning and the end conditions of
             // the day-night transition. Values refer to the Y postion of LightVector.
@@ -772,15 +750,16 @@ namespace Orts.Viewer3D
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            foreach (var pass in SceneryShader.CurrentTechnique.Passes)
+            var passes = SceneryShader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
                     var slp = item.RenderPrimitive as SignalLightPrimitive;
                     SceneryShader.ZBias = MathHelper.Lerp(slp.GlowIntensityDay, slp.GlowIntensityNight, NightEffect);
                     SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
-                    SceneryShader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                    pass.Apply();
+                    SceneryShader.SetMatrix(item.XNAMatrix);
+                    passes[i].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }

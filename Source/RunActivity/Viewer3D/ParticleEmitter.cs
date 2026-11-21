@@ -504,14 +504,16 @@ namespace Orts.Viewer3D
     public class ParticleEmitterMaterial : Material
     {
         public Texture2D Texture;
-
-        IEnumerator<EffectPass> ShaderPasses;
+        readonly EffectTechnique Technique;
 
         public ParticleEmitterMaterial(Viewer viewer, string textureName)
             : base(viewer, null)
         {
             Texture = viewer.TextureManager.Get(textureName, true);
-            ShaderPasses = Viewer.MaterialManager.ParticleEmitterShader.Techniques["ParticleEmitterTechnique"].Passes.GetEnumerator();
+            Technique = Viewer.MaterialManager.ParticleEmitterShader.Techniques["ParticleEmitterTechnique"];
+            
+            SetSortingEffectId(Technique);
+            SetSortingTextureId(Texture);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -530,8 +532,8 @@ namespace Orts.Viewer3D
         {
             var shader = Viewer.MaterialManager.ParticleEmitterShader;
 
-            ShaderPasses.Reset();
-            while (ShaderPasses.MoveNext())
+            var passes = shader.CurrentTechnique.Passes;
+            for (int i = 0; i < passes.Count; i++)
             {
                 foreach (var item in renderItems)
                 {
@@ -543,7 +545,7 @@ namespace Orts.Viewer3D
                     shader.EmitSize = emitter.EmitSize;
                     shader.Texture = Texture;
                     shader.SetMatrix(Matrix.Identity, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                    ShaderPasses.Current.Apply();
+                    passes[i].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
             }
