@@ -16,6 +16,14 @@
     <DefineConstants>TRACE;WINDOWS;ACTIVITY_EDITOR</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="icon\signal.png" />
+    <None Remove="icon\signalBox.png" />
+    <None Remove="icon\signalOther.png" />
+    <None Remove="icon\signalRepeat.png" />
+    <None Remove="icon\signalShunt.png" />
+    <None Remove="icon\speedLimit.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Wizard\ActivityDescr.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -30,31 +38,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="icon\signal.png" />
+    <EmbeddedResource Include="icon\signalBox.png" />
+    <EmbeddedResource Include="icon\signalOther.png" />
+    <EmbeddedResource Include="icon\signalRepeat.png" />
+    <EmbeddedResource Include="icon\signalShunt.png" />
+    <EmbeddedResource Include="icon\speedLimit.png" />
     <EmbeddedResource Include="icon\tag.ico">
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="icon\signal.ico">
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="icon\signalOther.ico">
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="icon\signalRepeat.ico">
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="icon\signalShunt.ico">
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="icon\speedLimit.ico">
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="icon\SignalBox.ico" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="icon\StationConnector.ico">
