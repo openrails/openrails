@@ -625,14 +625,14 @@ namespace Orts.Viewer3D.Popups
             spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - TextHeight, offset.Y + Position.Y + Position.Height - TextHeight, TextHeight, TextHeight), new Rectangle(3 * 16, 0, 16, 16), Color.White);
 
             // Draw contents inside a scissor rectangle (so they're clipped to the client area).
-            WindowManager.Flush(spriteBatch);
+            spriteBatch.End();
             var oldScissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
             spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width, Position.Height - TextHeight);
-            spriteBatch.GraphicsDevice.RasterizerState = ScissorTestEnable;
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, rasterizerState: ScissorTestEnable);
             base.Draw(spriteBatch, offset);
-            WindowManager.Flush(spriteBatch);
+            spriteBatch.End();
             spriteBatch.GraphicsDevice.ScissorRectangle = oldScissorRectangle;
-            spriteBatch.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
         }
 
         internal override bool HandleUserInput(WindowMouseEvent e)
@@ -760,14 +760,14 @@ namespace Orts.Viewer3D.Popups
             spriteBatch.Draw(WindowManager.ScrollbarTexture, new Rectangle(offset.X + Position.X + Position.Width - TextHeight, offset.Y + Position.Y + Position.Height - TextHeight, TextHeight, TextHeight), new Rectangle(3 * 16, 0, 16, 16), Color.White, (float)Math.PI / 2, rotateOrigin, SpriteEffects.None, 0);
 
             // Draw contents inside a scissor rectangle (so they're clipped to the client area).
-            WindowManager.Flush(spriteBatch);
+            spriteBatch.End();
             var oldScissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
             spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width - TextHeight, Position.Height);
-            spriteBatch.GraphicsDevice.RasterizerState = ScissorTestEnable;
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, rasterizerState: ScissorTestEnable);
             base.Draw(spriteBatch, offset);
-            WindowManager.Flush(spriteBatch);
+            spriteBatch.End();
             spriteBatch.GraphicsDevice.ScissorRectangle = oldScissorRectangle;
-            spriteBatch.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
         }
 
         internal override bool HandleUserInput(WindowMouseEvent e)
