@@ -287,22 +287,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             Adhesion,
             Rack,            
         }
-        /// <summary>
-        /// Normalized position along cylinder stroke when intake valve opens during return stroke
-        /// </summary>
-        public float CylinderAdmissionOpenFactor = 0.05f;
-        /// <summary>
-        /// Normalized position along cylinder stroke when intake valve closes during power stroke
-        /// </summary>
-        public float Cutoff;
-        /// <summary>
-        /// Normalized position along cylinder stroke when exhaust valve opens during power stroke
-        /// </summary>
-        public float CylinderExhaustOpenFactor;
-        /// <summary>
-        /// Normalized position along cylinder stroke when exhaust valve closes and compression begins during return stroke
-        /// </summary>
-        public float CylinderCompressionCloseFactor;
 
         public AuxiliarySteamEngineTypes AuxiliarySteamEngineType;
 

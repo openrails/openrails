@@ -507,15 +507,15 @@ namespace ORTS.Common
     {
         /// <summary>Convert from degrees Fahrenheit to degrees Celcius</summary>
         public static float FromF(float fahrenheit) { return (fahrenheit - 32f) * (100f / 180f); }
-        /// <summary>Convert from degrees Celcius to degrees Fahrenheit</summary>
+        /// <summary>Convert from degrees Celsius to degrees Fahrenheit</summary>
         public static float ToF(float celcius) { return celcius * (180f / 100f) + 32f; }
-        /// <summary>Convert temperature difference from degrees Fahrenheit to degrees Celcius</summary>
+        /// <summary>Convert temperature difference from degrees Fahrenheit to degrees Celsius</summary>
         public static float FromDeltaF(float fahrenheit) { return fahrenheit * (100f / 180f); }
         /// <summary>Convert temperature difference from degrees Celcius to degrees Fahrenheit</summary>
         public static float ToDeltaF(float celcius) { return celcius * (180f / 100f); }
-        /// <summary>Convert from Kelving to degrees Celcius</summary>
+        /// <summary>Convert from Kelvin to degrees Celsius</summary>
         public static float FromK(float kelvin) { return kelvin - 273.15f; }
-        /// <summary>Convert from degress Celcius to Kelvin</summary>
+        /// <summary>Convert from degrees Celsius to Kelvin</summary>
         public static float ToK(float celcius) { return celcius + 273.15f; }
     }
 
