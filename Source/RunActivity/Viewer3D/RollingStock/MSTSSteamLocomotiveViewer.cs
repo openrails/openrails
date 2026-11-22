@@ -412,10 +412,10 @@ namespace Orts.Viewer3D.RollingStock
                 drawer.SetOutputVelocity(car.DrainpipeSteamVelocityMpS, car.DrainpipeParticleDurationS);
 
              foreach (var drawer in Injectors1)
-                drawer.SetOutputVelocity(car.Injector1SteamVelocityMpS, car.Injector1ParticleDurationS);
+                drawer.SetOutputVelocity(car.InjectorSteamVelocityMpS[0], car.InjectorParticleDurationS);
 
              foreach (var drawer in Injectors2)
-                 drawer.SetOutputVelocity(car.Injector2SteamVelocityMpS, car.Injector2ParticleDurationS);
+                drawer.SetOutputVelocity(car.InjectorSteamVelocityMpS[1], car.InjectorParticleDurationS);
 
             foreach (var drawer in SmallEjector)
                 drawer.SetOutputVelocity(car.SmallEjectorSteamVelocityMpS, car.SmallEjectorParticleDurationS);
@@ -424,10 +424,10 @@ namespace Orts.Viewer3D.RollingStock
                 drawer.SetOutputVelocity(car.LargeEjectorSteamVelocityMpS, car.LargeEjectorParticleDurationS);
 
             foreach (var drawer in CounterPressureBrake1)
-                drawer.SetOutputVolumetric(car.CounterPressureBrake1SteamVolumeM3pS, car.CounterPressureBrake1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.CounterPressureBrakeSteamVolumeM3pS, car.CounterPressureBrakeParticleDurationS);
 
             foreach (var drawer in CounterPressureBrake2)
-                drawer.SetOutputVolumetric(car.CounterPressureBrake2SteamVolumeM3pS, car.CounterPressureBrake2ParticleDurationS);
+                drawer.SetOutputVolumetric(car.CounterPressureBrakeSteamVolumeM3pS, car.CounterPressureBrakeParticleDurationS);
 
             foreach (var drawer in Compressor)
                 drawer.SetOutputVelocity(car.CompressorSteamVelocityMpS, car.CompressorParticleDurationS);
@@ -436,16 +436,16 @@ namespace Orts.Viewer3D.RollingStock
                 drawer.SetOutputVelocity(car.GeneratorSteamVelocityMpS, car.GeneratorParticleDurationS);
 
             foreach (var drawer in SafetyValves1)
-                drawer.SetOutputVolumetric(car.SafetyValves1SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
+                drawer.SetOutputVolumetric(car.SafetyValveSteamVolumeM3pS[0], car.SafetyValvesParticleDurationS);
 
             foreach (var drawer in SafetyValves2)
-                drawer.SetOutputVolumetric(car.SafetyValves2SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
+                drawer.SetOutputVolumetric(car.SafetyValveSteamVolumeM3pS[1], car.SafetyValvesParticleDurationS);
 
             foreach (var drawer in SafetyValves3)
-                drawer.SetOutputVolumetric(car.SafetyValves3SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
+                drawer.SetOutputVolumetric(car.SafetyValveSteamVolumeM3pS[2], car.SafetyValvesParticleDurationS);
 
             foreach (var drawer in SafetyValves4)
-                drawer.SetOutputVolumetric(car.SafetyValves4SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
+                drawer.SetOutputVolumetric(car.SafetyValveSteamVolumeM3pS[3], car.SafetyValvesParticleDurationS);
 
             foreach (var drawer in Stack)
             {

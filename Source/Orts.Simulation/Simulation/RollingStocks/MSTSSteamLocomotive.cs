@@ -69,22 +69,19 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using Orts.Simulation;
 using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
-using SharpDX.Direct3D9;
-using static Orts.Simulation.RollingStocks.MSTSSteamLocomotive;
 using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
 using Event = Orts.Common.Event;
 
@@ -725,10 +722,7 @@ namespace Orts.Simulation.RollingStocks
         float cutoff;
 
         // Safety Valve parameters
-        public bool SafetyIsOn;
-        bool Safety2IsOn = false; // Safety valve #2 is on and opertaing
-        bool Safety3IsOn = false; // Safety valve #3 is on and opertaing
-        bool Safety4IsOn = false; // Safety valve #4 is on and opertaing
+        bool[] SafetyIsOn; // Array indicating which safety valves are venting
         float SafetyValveDropPSI = 4.0f;      // Pressure drop before Safety valve turns off, normally around 4 psi - First safety valve normally operates between MaxBoilerPressure, and MaxBoilerPressure - 4, ie Max Boiler = 200, cutoff = 196.  
         float SafetyValveBoilerHeatOutBTUpS; // Heat removed by blowing of safety valves.
         float SafetyValveStartPSI = 0.1f;   // Set safety valve to just over max pressure - allows for safety valve not to operate in AI firing
@@ -736,10 +730,7 @@ namespace Orts.Simulation.RollingStocks
         float SafetyValveSizeIn;    // Size of the safety value - all will be the same size.
         float SafetyValveSizeDiaIn2; // Area of the safety valve - impacts steam discharge rate - is the space when the valve lifts
         float MaxSafetyValveDischargeLbspS; // Steam discharge rate of all safety valves combined.
-        float SafetyValveUsage1LBpS; // Usage rate for safety valve #1
-        float SafetyValveUsage2LBpS; // Usage rate for safety valve #2
-        float SafetyValveUsage3LBpS; // Usage rate for safety valve #3
-        float SafetyValveUsage4LBpS; // Usage rate for safety valve #4
+        float[] SafetyValveSteamUsageLBpS; // Array of steam consumption of each safety valve
         public float TotalSafetyValveUsageLBpS; // Total steam usage of safety valves
 
         // Geared Locomotive parameters
@@ -798,14 +789,12 @@ namespace Orts.Simulation.RollingStocks
         public float StackSteamVolumeM3pS;
         public float StackParticleDurationS;
         public float StackCount;
-        public float SafetyValves1SteamVolumeM3pS;
-        public float SafetyValves2SteamVolumeM3pS;
-        public float SafetyValves3SteamVolumeM3pS;
-        public float SafetyValves4SteamVolumeM3pS;
+        public float[] SafetyValveSteamVolumeM3pS;
+        public float SafetyValvesParticleDurationS;
 
         public float SanderSteamExhaustForwardVelocityMpS;
         public float SanderSteamExhaustReverseVelocityMpS;
-        public float SanderSteamExhaustParticleDurationS;
+        public float SanderSteamExhaustParticleDurationS = 1.0f;
         /// <summary>
         /// 2D array indicating the state of the steam valve
         /// on the front side of the cylinder
@@ -834,6 +823,7 @@ namespace Orts.Simulation.RollingStocks
         /// Second dimension is the index of the cylinder
         /// </summary>
         public float[,] RearCylinderCockSteamVolumeM3pS;
+        public float CylinderCockParticleDurationS = 1.0f;
         /// <summary>
         /// 2D array indicating how much steam each cylinder is exhausting (for the particle system)
         /// First dimension is the index of the steam engine
@@ -846,45 +836,35 @@ namespace Orts.Simulation.RollingStocks
         /// Second dimension is the index of the cylinder
         /// </summary>
         public float[,] CylinderSteamExhaustTimerS;
+        public float CylinderSteamExhaustParticleDurationS = 1.0f;
         public float CylinderSteamExhaustParticleChuffLengthS = 0.1f;
-
-        bool BoosterCylinderSteamExhaustOn = false;
-
-        public float CounterPressureBrake1SteamVolumeM3pS;
-        public float CounterPressureBrake1ParticleDurationS = 1.0f;
-
-        public float CounterPressureBrake2SteamVolumeM3pS;
-        public float CounterPressureBrake2ParticleDurationS = 1.0f;
+        public float CounterPressureBrakeSteamVolumeM3pS;
+        public float CounterPressureBrakeParticleDurationS = 1.0f;
 
         float BoosterSteamFraction;
         bool BoosterCylinderCocksOn = false;
 
         public float BlowdownSteamVolumeM3pS;
-        public float BlowdownParticleDurationS = 3.0f;
+        public float BlowdownParticleDurationS = 2.0f;
 
         public float DrainpipeSteamVelocityMpS;
-        public float Injector1SteamVelocityMpS;
-        public float Injector2SteamVelocityMpS;
+        public float DrainpipeParticleDurationS = 1.0f;
+        public float[] InjectorSteamVelocityMpS;
+        public float InjectorParticleDurationS;
 
         public float SmallEjectorSteamVelocityMpS;
-        public float SmallEjectorParticleDurationS = 3.0f;
+        public float SmallEjectorParticleDurationS;
 
         public float LargeEjectorSteamVelocityMpS;
-        public float LargeEjectorParticleDurationS = 3.0f;
+        public float LargeEjectorParticleDurationS;
 
         public float CompressorSteamVelocityMpS;
-        public float GeneratorSteamVelocityMpS;
-        public float WhistleSteamVelocityMpS;
+        public float CompressorParticleDurationS;
         public bool GeneratorSteamEffects = false;
-        public float CompressorParticleDurationS = 3.0f;
-        public float CylinderCockParticleDurationS = 1.0f;
-        public float CylinderSteamExhaustParticleDurationS = 1.0f;
-        public float WhistleParticleDurationS = 3.0f;
-        public float SafetyValvesParticleDurationS = 3.0f;
-        public float DrainpipeParticleDurationS = 3.0f;
-        public float Injector1ParticleDurationS = 3.0f;
-        public float Injector2ParticleDurationS = 3.0f;
-        public float GeneratorParticleDurationS = 3.0f;
+        public float GeneratorSteamVelocityMpS;
+        public float GeneratorParticleDurationS;
+        public float WhistleSteamVelocityMpS;
+        public float WhistleParticleDurationS;
 
         #endregion
 
@@ -2202,6 +2182,14 @@ namespace Orts.Simulation.RollingStocks
             CylinderSteamExhaustTimerS = new float[SteamEngines.Count, maxCylinderCount];
             CylinderSteamExhaustSteamVolumeM3pS = new float[SteamEngines.Count, maxCylinderCount];
 
+            // FUTURE: Allow for an arbitrary number of safety valves. For now, assume max of 4 safety valves
+            SafetyIsOn = new bool[4];
+            SafetyValveSteamUsageLBpS = new float[4];
+            SafetyValveSteamVolumeM3pS = new float[4];
+
+            // Assume max of 2 injectors
+            InjectorSteamVelocityMpS = new float[2];
+
             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
 
             // ******************  Test Boiler Type ********************* 
@@ -3156,7 +3144,6 @@ namespace Orts.Simulation.RollingStocks
                         SteamBoosterIdleMode = true;
                         BoosterGearsEngaged = false;
                         BoosterGearEngageTimerS = 0;
-                        BoosterCylinderSteamExhaustOn = true;
                         BoosterCylinderCocksOn = true;
                         BoosterSteamFraction = 0.5f;
                         enginethrottle = 0.0f;
@@ -3183,7 +3170,6 @@ namespace Orts.Simulation.RollingStocks
                         SteamBoosterIdleMode = false;
                         SteamBoosterRunMode = true;
 
-                        BoosterCylinderSteamExhaustOn = true;
                         BoosterCylinderCocksOn = true;
                         BoosterSteamFraction = 0.2f;
                         enginethrottle = 0;
@@ -3209,7 +3195,6 @@ namespace Orts.Simulation.RollingStocks
                         {
                             // Set values required for booster running
                             enginethrottle = throttle;
-                            BoosterCylinderSteamExhaustOn = true;
                             BoosterCylinderCocksOn = false;
                             BoosterSteamFraction = throttle;
                         }
@@ -3224,7 +3209,6 @@ namespace Orts.Simulation.RollingStocks
                     {
                         SteamBoosterRunMode = false;
                         SteamBoosterIdleMode = false;
-                        BoosterCylinderSteamExhaustOn = false;
                         BoosterCylinderCocksOn = false;
                         enginethrottle = 0;
                         BoosterIdleHeatingTimerReset = false;
@@ -3407,9 +3391,6 @@ namespace Orts.Simulation.RollingStocks
 
             // Cylinder cock and cylinder exhaust effects, calculated for each steam engine
 
-            CylinderCockParticleDurationS = 1.0f;
-            CylinderSteamExhaustParticleDurationS = 1.0f;
-
             for (int i = 0; i < SteamEngines.Count; i++)
             {
                 int totalNumberCylinders;
@@ -3512,16 +3493,13 @@ namespace Orts.Simulation.RollingStocks
 
             SanderSteamExhaustForwardVelocityMpS = Sanding && SandingSystemType == SandingSystemTypes.Steam && (Direction == Direction.Forward || Direction == Direction.N) ? (1.0f * SteamEffectsFactor) : 0.0f;
             SanderSteamExhaustReverseVelocityMpS = Sanding && SandingSystemType == SandingSystemTypes.Steam && Direction == Direction.Reverse ? (1.0f * SteamEffectsFactor) : 0.0f;
-            SanderSteamExhaustParticleDurationS = 1.0f;
 
             float WatertoSteamVolumeLbstoM3 = 0.759f; // 1lb of water = 0.759M of water @ 100 degC
             // Amount of water used has to be divided between steam cylinders, and converted to steam volume
             float CounterPressureBrakeWaterSteamExhaustM3pS = (CounterPressureBrakeWaterUsedLBpS / 2) * WatertoSteamVolumeLbstoM3;
             var CPFudgeFactor = 2.5f; // Purely a factor to make the steam visible in the Sim
 
-            CounterPressureBrake1SteamVolumeM3pS = CounterPressureBrakeOn ? Math.Abs(CPFudgeFactor * CounterPressureBrakeWaterSteamExhaustM3pS) : 0.0f;
-
-            CounterPressureBrake2SteamVolumeM3pS = CounterPressureBrakeOn ? Math.Abs(CPFudgeFactor * CounterPressureBrakeWaterSteamExhaustM3pS) : 0.0f;
+            CounterPressureBrakeSteamVolumeM3pS = CounterPressureBrakeOn ? Math.Abs(CPFudgeFactor * CounterPressureBrakeWaterSteamExhaustM3pS) : 0.0f;
 
 #if DEBUG_STEAM_EXHAUST_EVENTS
 
@@ -3555,22 +3533,18 @@ namespace Orts.Simulation.RollingStocks
 
             // Blowdown Steam Effects
             BlowdownSteamVolumeM3pS = (BlowdownValveOpen && BlowdownSteamUsageLBpS > 0.0) ? Kg.FromLb(BlowdownSteamUsageLBpS) * SaturatedSteam10BarSpecificVolM3pKG : 0;
-            BlowdownParticleDurationS = 2.0f;
 
             // Drainpipe Steam Effects
             DrainpipeSteamVelocityMpS = 0.0f;
-            DrainpipeParticleDurationS = 1.0f;
 
             // Generator Steam Effects
             GeneratorSteamVelocityMpS = 0.5f * SteamEffectsFactor;
             GeneratorParticleDurationS = MathHelper.Clamp(1.0f / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             // Injector Steam Effects
-            Injector1SteamVelocityMpS = (Injector1IsOn ? (0.1f * SteamEffectsFactor) : 0);
-            Injector1ParticleDurationS = MathHelper.Clamp(1.0f / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
-
-            Injector2SteamVelocityMpS = (Injector2IsOn ? (0.1f * SteamEffectsFactor) : 0);
-            Injector2ParticleDurationS = MathHelper.Clamp(1.0f / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
+            InjectorSteamVelocityMpS[0] = Injector1IsOn ? (0.1f * SteamEffectsFactor) : 0;
+            InjectorSteamVelocityMpS[1] = Injector2IsOn ? (0.1f * SteamEffectsFactor) : 0;
+            InjectorParticleDurationS = MathHelper.Clamp(1.0f / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             // Ejector Steam Effects
             SmallEjectorSteamVelocityMpS = (SmallSteamEjectorIsOn ? (0.1f * SteamEffectsFactor) : 0);
@@ -3592,10 +3566,10 @@ namespace Orts.Simulation.RollingStocks
             WhistleParticleDurationS = MathHelper.Clamp(3.0f / (AbsSpeedMpS / 4.0f), 0.1f, 3.0f);
 
             // Safety Valves Steam Effects
-            SafetyValves1SteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsage1LBpS) * SaturatedSteam10BarSpecificVolM3pKG : 0;
-            SafetyValves2SteamVolumeM3pS = Safety2IsOn ? Kg.FromLb(SafetyValveUsage2LBpS) * SaturatedSteam10BarSpecificVolM3pKG : 0;
-            SafetyValves3SteamVolumeM3pS = Safety3IsOn ? Kg.FromLb(SafetyValveUsage3LBpS) * SaturatedSteam10BarSpecificVolM3pKG : 0;
-            SafetyValves4SteamVolumeM3pS = Safety4IsOn ? Kg.FromLb(SafetyValveUsage4LBpS) * SaturatedSteam10BarSpecificVolM3pKG : 0;
+            for (int i = 0; i < SafetyValveSteamVolumeM3pS.Length; i++)
+            {
+                SafetyValveSteamVolumeM3pS[i] = Kg.FromLb(SafetyValveSteamUsageLBpS[i]) * SaturatedSteam10BarSpecificVolM3pKG;
+            }
             
             SafetyValvesParticleDurationS = MathHelper.Clamp(3.0f / (AbsSpeedMpS / 4.0f), 0.1f, 3.0f);
 
@@ -4477,51 +4451,51 @@ namespace Orts.Simulation.RollingStocks
                 // Safety Valve
                 if (BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)
                 {
-                    if (!SafetyIsOn)
+                    if (!SafetyIsOn[0])
                     {
                         SignalEvent(Event.SteamSafetyValveOn);
-                        SafetyIsOn = true;
+                        SafetyIsOn[0] = true;
                     }
                 }
                 else if (BoilerPressurePSI < MaxBoilerPressurePSI - SafetyValveDropPSI)
                 {
-                    if (SafetyIsOn)
+                    if (SafetyIsOn[0])
                     {
                         SignalEvent(Event.SteamSafetyValveOff);
-                        SafetyIsOn = false;
-                        SafetyValveUsage1LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                        SafetyIsOn[0] = false;
+                        SafetyValveSteamUsageLBpS[0] = 0.0f; // if safety valve closed, then zero discharge rate
                     }
                 }
-                if (SafetyIsOn)
+                if (SafetyIsOn[0])
                 {
                     // Determine how many safety valves are in operation and set Safety Valve discharge rate
                     TotalSafetyValveUsageLBpS = 0.0f;  // Set to zero initially
 
                     // Calculate rate for safety valve 1
-                    SafetyValveUsage1LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
+                    SafetyValveSteamUsageLBpS[0] = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
 
                     // Calculate rate for safety valve 2
                     if (BoilerPressurePSI > SafetyValveOpen2Psi)
                     {
-                        Safety2IsOn = true; // turn safey 2 on
-                        SafetyValveUsage2LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
+                        SafetyIsOn[1] = true; // turn safety 2 on
+                        SafetyValveSteamUsageLBpS[1] = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
                     }
                     else
                     {
                         if (BoilerPressurePSI < SafetyValveClose1Psi)
                         {
-                            Safety2IsOn = false; // turn safey 2 off
-                            SafetyValveUsage2LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                            SafetyIsOn[1] = false; // turn safety 2 off
+                            SafetyValveSteamUsageLBpS[1] = 0.0f; // if safety valve closed, then zero discharge rate
                         }
                         else
                         {
-                            if (Safety2IsOn)
+                            if (SafetyIsOn[1])
                             {
-                                SafetyValveUsage2LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
+                                SafetyValveSteamUsageLBpS[1] = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
                             }
                             else
                             {
-                                SafetyValveUsage2LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                                SafetyValveSteamUsageLBpS[1] = 0.0f; // if safety valve closed, then zero discharge rate
                             }
                         }
                     }
@@ -4529,25 +4503,25 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate rate for safety valve 3
                     if (BoilerPressurePSI > SafetyValveOpen3Psi)
                     {
-                        Safety3IsOn = true; // turn safey 3 on
-                        SafetyValveUsage3LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
+                        SafetyIsOn[2] = true; // turn safety 3 on
+                        SafetyValveSteamUsageLBpS[2] = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
                     }
                     else
                     {
                         if (BoilerPressurePSI < SafetyValveClose3Psi)
                         {
-                            Safety3IsOn = false; // turn safey 3 off
-                            SafetyValveUsage3LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                            SafetyIsOn[2] = false; // turn safety 3 off
+                            SafetyValveSteamUsageLBpS[2] = 0.0f; // if safety valve closed, then zero discharge rate
                         }
                         else
                         {
-                            if (Safety3IsOn)
+                            if (SafetyIsOn[2])
                             {
-                                SafetyValveUsage3LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
+                                SafetyValveSteamUsageLBpS[2] = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
                             }
                             else
                             {
-                                SafetyValveUsage3LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                                SafetyValveSteamUsageLBpS[2] = 0.0f; // if safety valve closed, then zero discharge rate
                             }
                         }
                     }
@@ -4556,30 +4530,30 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate rate for safety valve 4
                     if (BoilerPressurePSI > SafetyValveOpen4Psi)
                     {
-                        Safety4IsOn = true; // turn safey 4 on
-                        SafetyValveUsage4LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
+                        SafetyIsOn[3] = true; // turn safety 4 on
+                        SafetyValveSteamUsageLBpS[3] = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
                     }
                     else
                     {
                         if (BoilerPressurePSI < SafetyValveClose4Psi)
                         {
-                            Safety4IsOn = false; // turn safey 4 off
-                            SafetyValveUsage4LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                            SafetyIsOn[3] = false; // turn safety 4 off
+                            SafetyValveSteamUsageLBpS[3] = 0.0f; // if safety valve closed, then zero discharge rate
                         }
                         else
                         {
-                            if (Safety4IsOn)
+                            if (SafetyIsOn[3])
                             {
-                                SafetyValveUsage4LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
+                                SafetyValveSteamUsageLBpS[3] = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
                             }
                             else
                             {
-                                SafetyValveUsage4LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                                SafetyValveSteamUsageLBpS[3] = 0.0f; // if safety valve closed, then zero discharge rate
                             }
                         }
                     }
 
-                    TotalSafetyValveUsageLBpS = SafetyValveUsage1LBpS + SafetyValveUsage2LBpS + SafetyValveUsage3LBpS + SafetyValveUsage4LBpS;   // Sum all the safety valve discharge rates together
+                    TotalSafetyValveUsageLBpS = SafetyValveSteamUsageLBpS.Sum();   // Sum all the safety valve discharge rates together
                     BoilerMassLB -= elapsedClockSeconds * TotalSafetyValveUsageLBpS;
                     BoilerHeatBTU -= elapsedClockSeconds * TotalSafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
                     TotalSteamUsageLBpS += TotalSafetyValveUsageLBpS;
@@ -4602,17 +4576,17 @@ namespace Orts.Simulation.RollingStocks
                 if (AIFireOverride && BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)
                 {
                     SignalEvent(Event.SteamSafetyValveOn);
-                    SafetyIsOn = true;
+                    SafetyIsOn[0] = true;
                 }
 
                 // turn safety vales off if boiler heat has returned to "normal", fitreman is no longer in override mode
                 else if (!AIFireOverride && BoilerPressurePSI < MaxBoilerPressurePSI - SafetyValveDropPSI)
                 {
                     SignalEvent(Event.SteamSafetyValveOff);
-                    SafetyIsOn = false;
+                    SafetyIsOn[0] = false;
                 }
 
-                if (SafetyIsOn)
+                if (SafetyIsOn[0])
                 {
                     TotalSafetyValveUsageLBpS = MaxSafetyValveDischargeLbspS;   // For the AI fireman use the maximum possible safety valve steam volume
                     BoilerMassLB -= elapsedClockSeconds * TotalSafetyValveUsageLBpS;
@@ -8609,7 +8583,7 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
                 Simulator.Catalog.GetString("Status:"),
                 Simulator.Catalog.GetString("Safety"),
-                SafetyIsOn ? Simulator.Catalog.GetString("Open") : Simulator.Catalog.GetString("Closed"),
+                SafetyIsOn[0] ? Simulator.Catalog.GetString("Open") : Simulator.Catalog.GetString("Closed"),
                 Simulator.Catalog.GetString("Plug"),
                 FusiblePlugIsBlown ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 Simulator.Catalog.GetString("Prime"),
