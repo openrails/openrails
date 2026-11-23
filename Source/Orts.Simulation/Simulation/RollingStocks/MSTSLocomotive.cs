@@ -2401,25 +2401,6 @@ namespace Orts.Simulation.RollingStocks
             UpdateSoundVariables(elapsedClockSeconds);
             base.Update(elapsedClockSeconds);
 
-            // For audio purpose sound trigger needs to equal zero if the locomotive is a steam engine and the MEP is zero, otherwise it will be set to the drive wheel speed.
-            if (EngineType != EngineTypes.Steam)
-            {
-                AudioDriveWheelRPM = WheelSpeedMpS;
-            }
-            else
-            {
-                if (SteamLocomotiveNormalisedMEP <= 0.01)
-                {
-                    AudioDriveWheelRPM = 0.0f;
-                }
-                else
-                {
-                    AudioDriveWheelRPM = DriveWheelSpeedMpS / DriverWheelRadiusM * 60.0f / (float)Math.PI; // Update the drive wheel RPM for audio purposes
-                }
-
-            }
-            
-
 #if DEBUG_ADHESION
             // Timer to determine travel time - resets when locomotive stops
             if (AbsSpeedMpS > 0)
