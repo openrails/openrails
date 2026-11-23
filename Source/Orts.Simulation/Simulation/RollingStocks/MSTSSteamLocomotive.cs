@@ -1010,7 +1010,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginecontrollers(dampersfront": DamperController.Parse(stf); break;
                 case "engine(enginecontrollers(shovel": FiringRateController.Parse(stf); break;
                 case "engine(enginecontrollers(firedoor": FireboxDoorController.Parse(stf); break;
-                case "engine(effects(steamspecialeffects": ParseEffects(lowercasetoken, stf); break;
+                case "engine(effects(steamspecialeffects": ParseEffects(stf); break;
                 case "engine(ortsgratearea": GrateAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(superheater": SuperheaterFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(istenderrequired": IsTenderRequired = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -2172,9 +2172,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Set up arrays used by particle system
-            // TEMPORARY: Some systems assume max cylinder count of 4
-            maxCylinderCount = Math.Max(maxCylinderCount, 4);
-
             FrontCylinderValveState = new SteamValveState[SteamEngines.Count, maxCylinderCount];
             RearCylinderValveState = new SteamValveState[SteamEngines.Count, maxCylinderCount];
             FrontCylinderCockSteamVolumeM3pS = new float[SteamEngines.Count, maxCylinderCount];

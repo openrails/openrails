@@ -18,9 +18,6 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
@@ -33,27 +30,10 @@ namespace Orts.Viewer3D.RollingStock
     public class MSTSDieselLocomotiveViewer : MSTSLocomotiveViewer
     {
         MSTSDieselLocomotive DieselLocomotive => Car as MSTSDieselLocomotive;
-        List<ParticleEmitterViewer> Exhaust = new List<ParticleEmitterViewer>();
 
         public MSTSDieselLocomotiveViewer(Viewer viewer, MSTSDieselLocomotive car)
             : base(viewer, car)
         {
-            // Now all the particle drawers have been setup, assign them textures based
-            // on what emitters we know about.
-
-            string dieselTexture = "dieselsmoke.ace";
-
-
-            // Diesel Exhaust
-            foreach (var drawers in from drawer in ParticleDrawers
-                                    where drawer.Key.ToLowerInvariant().StartsWith("exhaust")
-                                    select drawer.Value)
-            {
-                Exhaust.AddRange(drawers);
-            }
-            foreach (var drawer in Exhaust)
-                drawer.Initialize(dieselTexture);
-
             if (car.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
                 ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
                 (car.Train.MUDirection != Direction.N && (car as MSTSDieselLocomotive).DieselEngines[0].State == DieselEngineState.Running))))
@@ -111,17 +91,16 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            var car = this.Car as MSTSDieselLocomotive;
-            
-            // Diesel exhaust
-            var exhaustParticles = car.Train != null && car.Train.TrainType == Train.TRAINTYPE.STATIC ? 0 : car.ExhaustParticles.SmoothedValue;
-            foreach (var drawer in Exhaust)
-            {
-                drawer.SetOutputRate(exhaustParticles, car.ExhaustMagnitude.SmoothedValue, new Color((byte)car.ExhaustColorR.SmoothedValue,
-                    (byte)car.ExhaustColorG.SmoothedValue, (byte)car.ExhaustColorB.SmoothedValue, (byte)car.ExhaustColorA.SmoothedValue));
-            }
-            
             base.PrepareFrame(frame, elapsedTime);
+        }
+
+        /// <summary>
+        /// Iterate through the list of particle emitters to update output and color
+        /// </summary>
+        public override void UpdateParticleEmitters()
+        {
+            foreach (ParticleEmitterViewer drawer in ParticleDrawers)
+                drawer.UpdateOutput(this);
         }
     }
 }

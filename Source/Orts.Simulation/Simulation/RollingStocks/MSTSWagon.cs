@@ -276,19 +276,31 @@ namespace Orts.Simulation.RollingStocks
 
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string, List<ParticleEmitterData>>();
 
-        protected void ParseEffects(string lowercasetoken, STFReader stf)
+        protected void ParseEffects(STFReader stf)
         {
             stf.MustMatch("(");
             string s;
             
             while ((s = stf.ReadItem()) != ")")
             {
-                var data = new ParticleEmitterData(stf);
+                var data = ParticleEmitterData.NewParticleEmitterData(stf, s);
+                data.Parse(stf);
+
                 if (!EffectData.ContainsKey(s))
                     EffectData.Add(s, new List<ParticleEmitterData>());
                 EffectData[s].Add(data);
             }
 
+            // For duplicate particle emitter names, reduce the output of each particle emitter proportionally
+            foreach (string name in EffectData.Keys)
+            {
+                int count = EffectData[name].Count;
+
+                foreach (ParticleEmitterData data in EffectData[name])
+                {
+                    data.RateFactor /= count;
+                }
+            }
         }
 
 
@@ -561,6 +573,13 @@ namespace Orts.Simulation.RollingStocks
             {
                 CurrentCarSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
             }
+
+            // (For steam locomotives only) check for a generator particle emitter to see if a generator should be simulated
+            if (this is MSTSSteamLocomotive steamLoco)
+                foreach (List<ParticleEmitterData> emitters in EffectData.Values)
+                    foreach (ParticleEmitterData emitter in emitters)
+                        if (emitter.ParticleEmitterType == ParticleEmitterData.ParticleEmitterTypes.Generator)
+                            steamLoco.GeneratorSteamEffects = true;
 
             MassKG = InitialMassKG;
 
@@ -1418,7 +1437,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortstraillocomotiveresistancefactor": TrailLocoResistanceFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsstandstillfriction": StandstillFrictionN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsmergespeed": MergeSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, MergeSpeedMpS); break;
-                case "wagon(effects(specialeffects": ParseEffects(lowercasetoken, stf); break;
+                case "wagon(effects(specialeffects": ParseEffects(stf); break;
                 case "wagon(ortsbearingtype":
                     stf.MustMatch("(");
                     string bearingType = stf.ReadString().ToLower();
@@ -4788,49 +4807,5 @@ public void SetTensionStiffness(float a, float b)
     public class CarManager
     {
         public static Dictionary<string, MSTSWagon> LoadedCars = new Dictionary<string, MSTSWagon>();
-    }
-
-    public class ParticleEmitterData
-    {
-        public Vector3 PositionM;
-        public Vector3 PositionVariationM = Vector3.Zero;
-
-        public Vector3 InitialVelocityFactor; // Note: Not a measure of the initial velocity, actually just a multiplication factor
-        public Vector3 InitialVelocityVariationFactor = new Vector3(0.1f); // Randomization of initial velocity is relative to initial speed
-
-        public Vector3 FinalVelocityMpS = Vector3.Up; // Default final velocity is 1 m/s upward
-        public Vector3 FinalVelocityVariationMpS = new Vector3(0.75f);
-
-        public float NozzleDiameterM = 0.1f;
-        public float NozzleAreaM2 = -1; // If left at -1, will be initialized later
-
-        public float RateFactor = 1.0f;
-        public float LifetimeFactor = 1.0f;
-        public float LifetimeVariationFactor = 0.5f;
-        public float SettlingFactor = 1.0f;
-        public float SettlingVariationFactor = 0.1f;
-        public float ExpansionSpeed = 4.0f;
-        public float InitialExpansionFactor = 1.0f;
-
-        public float RotationVariation = 0.25f;
-
-        public float WindEffect = 1.0f;
-        public int MaxParticles = 2500;
-
-        public float Opacity = 1.0f;
-        public string Graphic;
-        public int AtlasWidth = 4;
-        public int AtlasHeight = 4;
-
-        public ParticleEmitterData(STFReader stf)
-        {
-            stf.MustMatch("(");
-            PositionM = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-            PositionM.Z *= -1; // Convert to MSTS coordinate system
-            InitialVelocityFactor = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-            InitialVelocityFactor.Z *= -1; // Convert to MSTS coordinate system
-            NozzleDiameterM = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            stf.SkipRestOfBlock();
-        }
     }
 }

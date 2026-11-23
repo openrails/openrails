@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using Orts.Common;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -377,18 +378,7 @@ namespace Orts.Formats.Msts
         /// or 0 if no such value could be found.</returns>
         public static int GetIndexInString(string main, string beginning, string end)
         {
-            // Replace the specified beginning and end strings inside the main string with empty space
-            // Resulting string should contain only the desired index, nothing else
-            string indexStr = main.ToLower();
-
-            if (!string.IsNullOrEmpty(beginning))
-                indexStr = indexStr.Replace(beginning.ToLower(), "");
-            if (!string.IsNullOrEmpty(end))
-                indexStr = indexStr.Replace(end.ToLower(), "");
-
-            // If index can't be determined, assume the user wanted the first thing
-            if (!int.TryParse(indexStr, out int index))
-                index = 1;
+            int index = StringHelper.ExtractInt(main, beginning, end, System.StringComparison.OrdinalIgnoreCase) ?? 1;
 
             index--; // User input will be 1-indexed, but code needs this value as a 0-index
 

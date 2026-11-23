@@ -892,6 +892,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Exhaust color when compressor blown failure has triggered
         /// </summary>
         public Color ExhaustCompressorBlownColor = Color.Gray;
+        // Exhaust values after smoothing, for use by the particle emitter system
+        public SmoothedData ExhaustParticlesSmoothed = new SmoothedData(1);
+        public SmoothedData ExhaustMagnitudeSmoothed = new SmoothedData(1);
+        public SmoothedData ExhaustColorR = new SmoothedData(1);
+        public SmoothedData ExhaustColorG = new SmoothedData(1);
+        public SmoothedData ExhaustColorB = new SmoothedData(1);
+        public SmoothedData ExhaustColorA = new SmoothedData(1);
 
         public bool DieselEngineConfigured = false; // flag to indicate that the user has configured a diesel engine prime mover code block in the ENG file
 
@@ -1170,6 +1177,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 ExhaustMagnitude *= ExhaustDecelReduction;
                 ExhaustColor = ExhaustDecelColor;
             }
+
+            ExhaustParticlesSmoothed.Update(elapsedClockSeconds, ExhaustParticles);
+            ExhaustMagnitudeSmoothed.Update(elapsedClockSeconds, ExhaustMagnitude);
+            ExhaustColorR.Update(elapsedClockSeconds, ExhaustColor.R);
+            ExhaustColorG.Update(elapsedClockSeconds, ExhaustColor.G);
+            ExhaustColorB.Update(elapsedClockSeconds, ExhaustColor.B);
+            ExhaustColorA.Update(elapsedClockSeconds, ExhaustColor.A);
 
             if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
             {

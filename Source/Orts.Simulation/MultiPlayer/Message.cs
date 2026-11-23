@@ -3745,8 +3745,8 @@ namespace Orts.MultiPlayer
         {
             if (items == null) items = new List<MSGExhaustItem>();
             MSTSDieselLocomotive l = t.Cars[c] as MSTSDieselLocomotive;
-            items.Add(new MSGExhaustItem(u, t.Number, c, l.ExhaustParticles.SmoothedValue, l.ExhaustMagnitude.SmoothedValue,
-                l.ExhaustColorR.SmoothedValue, l.ExhaustColorG.SmoothedValue, l.ExhaustColorB.SmoothedValue, l.ExhaustColorA.SmoothedValue));
+            items.Add(new MSGExhaustItem(u, t.Number, c, l.DieselEngines[0].ExhaustParticlesSmoothed.SmoothedValue, l.DieselEngines[0].ExhaustMagnitudeSmoothed.SmoothedValue,
+                l.DieselEngines[0].ExhaustColorR.SmoothedValue, l.DieselEngines[0].ExhaustColorG.SmoothedValue, l.DieselEngines[0].ExhaustColorB.SmoothedValue, l.DieselEngines[0].ExhaustColorA.SmoothedValue));
         }
 
         public bool OKtoSend()
