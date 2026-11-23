@@ -177,6 +177,7 @@ namespace Orts.Simulation.RollingStocks
         public float AdhesionK = 0.7f;   //slip characteristics slope
         public float AxleInertiaKgm2;    //axle inertia
         public float DriveWheelSpeedMpS; // wheel speed of steam loco drive wheels, allowing for drive wheels to spin different from idle wheels
+        public float AudioDriveWheelRPM; // sound trigger for drive wheel speed.
         public float SlipWarningThresholdPercent = 70;
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
 
