@@ -1298,9 +1298,9 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(size":
                     stf.MustMatch("(");
-                    CarWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    CarHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    CarLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    CarWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null, 1, 10);
+                    CarHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null, 1, 10);
+                    CarLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null, 1, 100);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsfrontarticulation": FrontArticulation = stf.ReadIntBlock(null); break;
