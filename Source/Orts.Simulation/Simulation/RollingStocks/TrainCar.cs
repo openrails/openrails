@@ -241,7 +241,6 @@ namespace Orts.Simulation.RollingStocks
         public float CarHeatPipeAreaM2;  // Area of surface of car pipe
         public float CarOutsideTempC;   // Ambient temperature outside of car
         public float InitialCarOutsideTempC;
-        public bool IsTrainHeatingBoilerInitialised { get { return Train.TrainHeatingBoilerInitialised; } set { Train.TrainHeatingBoilerInitialised = value; } }
         public float ConvectionFactor
         {
             get

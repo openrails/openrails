@@ -92,11 +92,6 @@ namespace Orts.Simulation.RollingStocks
         public bool TractiveForcePowerLimited = false;
 
         public float EngineRPM;
-        public SmoothedData ExhaustParticles = new SmoothedData(1);
-        public SmoothedData ExhaustMagnitude = new SmoothedData(1);
-        public SmoothedData ExhaustColorR = new SmoothedData(1);
-        public SmoothedData ExhaustColorG = new SmoothedData(1);
-        public SmoothedData ExhaustColorB = new SmoothedData(1);
 
         public float DieselOilPressurePSI = 0f;
         public float DieselMinOilPressurePSI;
@@ -163,7 +158,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdieselenginegovernorrpm": GovernorRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
                 case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsdieselenginemaxpower": MaximumDieselEnginePowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
-                case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
+                case "engine(effects(dieselspecialeffects": ParseEffects(stf); break;
                 case "engine(dieselsmokeeffectinitialsmokerate": InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectinitialmagnitude": InitialMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxsmokerate": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -652,12 +647,6 @@ namespace Orts.Simulation.RollingStocks
         public override void Update(float elapsedClockSeconds)
         {
             DieselEngines.Update(elapsedClockSeconds);
-
-            ExhaustParticles.Update(elapsedClockSeconds, DieselEngines[0].ExhaustParticles);
-            ExhaustMagnitude.Update(elapsedClockSeconds, DieselEngines[0].ExhaustMagnitude);
-            ExhaustColorR.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.R);
-            ExhaustColorG.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.G);
-            ExhaustColorB.Update(elapsedClockSeconds, DieselEngines[0].ExhaustColor.B);
 
             base.Update(elapsedClockSeconds);
 
@@ -1391,13 +1380,17 @@ namespace Orts.Simulation.RollingStocks
         }
 
         //used by remote diesels to update their exhaust
-        public void RemoteUpdate(float exhPart, float exhMag, float exhColorR, float exhColorG, float exhColorB)
+        public void RemoteUpdate(float exhPart, float exhMag, float exhColorR, float exhColorG, float exhColorB, float exhColorA)
         {
-            ExhaustParticles.ForceSmoothValue(exhPart);
-            ExhaustMagnitude.ForceSmoothValue(exhMag);
-            ExhaustColorR.ForceSmoothValue(exhColorR);
-            ExhaustColorG.ForceSmoothValue(exhColorG);
-            ExhaustColorB.ForceSmoothValue(exhColorB);
+            foreach (DieselEngine engine in DieselEngines)
+            {
+                engine.ExhaustParticlesSmoothed.ForceSmoothValue(exhPart);
+                engine.ExhaustMagnitudeSmoothed.ForceSmoothValue(exhMag);
+                engine.ExhaustColorR.ForceSmoothValue(exhColorR);
+                engine.ExhaustColorG.ForceSmoothValue(exhColorG);
+                engine.ExhaustColorB.ForceSmoothValue(exhColorB);
+                engine.ExhaustColorA.ForceSmoothValue(exhColorA);
+            }
         }
 
 

@@ -18,13 +18,8 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Microsoft.Xna.Framework;
 using Orts.Common;
-using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using ORTS.Common;
 using ORTS.Common.Input;
 
@@ -32,167 +27,13 @@ namespace Orts.Viewer3D.RollingStock
 {
     public class MSTSSteamLocomotiveViewer : MSTSLocomotiveViewer
     {
-        float Color_Value;
 
         MSTSSteamLocomotive SteamLocomotive { get { return (MSTSSteamLocomotive)Car; } }
-        List<ParticleEmitterViewer> Cylinders = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders2 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders11 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders12 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders21 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders22 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders31 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders32 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders41 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders42 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders2_11 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders2_12 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders2_21 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Cylinders2_22 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> CylinderSteamExhaust1 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> CylinderSteamExhaust2 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> CylinderSteamExhaust3 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> CylinderSteamExhaust4 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> CylinderSteamExhaust2_1 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> CylinderSteamExhaust2_2 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> SanderSteamExhaustForward = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> SanderSteamExhaustReverse = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> BoosterCylinderSteamExhaust01 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> BoosterCylinderSteamExhaust02 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> BoosterCylinders11 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> BoosterCylinders12 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> BoosterCylinders21 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> BoosterCylinders22 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Blowdown = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Drainpipe = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Injectors1 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Injectors2 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Compressor = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Generator = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> SafetyValves1 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> SafetyValves2 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> SafetyValves3 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> SafetyValves4 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Stack = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> Whistle = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> SmallEjector = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> LargeEjector = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> CounterPressureBrake1 = new List<ParticleEmitterViewer>();
-        List<ParticleEmitterViewer> CounterPressureBrake2 = new List<ParticleEmitterViewer>();
 
         public MSTSSteamLocomotiveViewer(Viewer viewer, MSTSSteamLocomotive car)
             : base(viewer, car)
         {
-            // Now all the particle drawers have been setup, assign them textures based
-            // on what emitters we know about.
-            string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
 
-            foreach (var emitter in ParticleDrawers)
-            {
-                if (emitter.Key.ToLowerInvariant() == "cylindersfx") // This parameter retained as legacy parameters only, ideally they should be removed eventually
-                    Cylinders.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders2fx") // This parameter retained as legacy parameters only, ideally they should be removed eventually
-                {
-                    Cylinders2.AddRange(emitter.Value);
-                    car.Cylinder2SteamEffects = true;
-                }
-                else if (emitter.Key.ToLowerInvariant() == "cylinders11fx")
-                {
-                    Cylinders11.AddRange(emitter.Value);
-                    car.CylinderAdvancedSteamEffects = true;
-                }
-                else if (emitter.Key.ToLowerInvariant() == "cylinders12fx")
-                    Cylinders12.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders21fx")
-                    Cylinders21.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders22fx")
-                    Cylinders22.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders31fx")
-                    Cylinders31.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders32fx")
-                    Cylinders32.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders41fx")
-                    Cylinders41.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders42fx")
-                    Cylinders42.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylindersteamexhaust1fx")
-                {
-                    CylinderSteamExhaust1.AddRange(emitter.Value);
-                    car.CylinderAdvancedSteamExhaustEffects = true;
-                }
-                else if (emitter.Key.ToLowerInvariant() == "cylindersteamexhaust2fx")
-                    CylinderSteamExhaust2.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylindersteamexhaust3fx")
-                    CylinderSteamExhaust3.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylindersteamexhaust4fx")
-                    CylinderSteamExhaust4.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "boostercylindersteamexhaust01fx")
-                    BoosterCylinderSteamExhaust01.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "boostercylindersteamexhaust02fx")
-                    BoosterCylinderSteamExhaust02.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylindersteamexhaust2_1fx")
-                    CylinderSteamExhaust2_1.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylindersteamexhaust2_2fx")
-                    CylinderSteamExhaust2_2.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "sandersteamexhaustforwardfx")
-                    SanderSteamExhaustForward.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "sandersteamexhaustreversefx")
-                    SanderSteamExhaustReverse.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "boostercylinders11fx")
-                    BoosterCylinders11.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "boostercylinders12fx")
-                    BoosterCylinders12.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "boostercylinders21fx")
-                    BoosterCylinders21.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "boostercylinders22fx")
-                    BoosterCylinders22.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders2_11fx")
-                    Cylinders2_11.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders2_12fx")
-                    Cylinders2_12.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders2_21fx")
-                    Cylinders2_21.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "cylinders2_22fx")
-                    Cylinders2_22.AddRange(emitter.Value);
-
-                else if (emitter.Key.ToLowerInvariant() == "blowdownfx")
-                    Blowdown.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "drainpipefx")        // Drainpipe was not used in MSTS, and has no control set up for it
-                    Drainpipe.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "injectors1fx")
-                    Injectors1.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "injectors2fx")
-                    Injectors2.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "smallejectorfx")
-                    SmallEjector.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "largeejectorfx")
-                    LargeEjector.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "counterpressurebrake1fx")
-                    CounterPressureBrake1.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "counterpressurebrake2fx")
-                    CounterPressureBrake2.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "compressorfx")
-                    Compressor.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "generatorfx")
-                {
-                    Generator.AddRange(emitter.Value);
-                    car.GeneratorSteamEffects = true;
-                }
-                else if (emitter.Key.ToLowerInvariant() == "safetyvalvesfx")
-                    SafetyValves1.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "safetyvalves2fx")
-                    SafetyValves2.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "safetyvalves3fx")
-                    SafetyValves3.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "safetyvalves4fx")
-                    SafetyValves4.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "stackfx")
-                    Stack.AddRange(emitter.Value);
-                else if (emitter.Key.ToLowerInvariant() == "whistlefx")
-                    Whistle.AddRange(emitter.Value);
-                foreach (var drawer in emitter.Value)
-                    drawer.Initialize(steamTexture);
-            }
         }
 
         /// <summary>
@@ -323,144 +164,16 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            var car = Car as MSTSSteamLocomotive;
-
-            car.StackCount = Stack.Count;
-
-            foreach (var drawer in Cylinders)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders1SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
-
-             foreach (var drawer in Cylinders2)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders2SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
-
-            foreach (var drawer in Cylinders11)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders11SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
-
-            foreach (var drawer in Cylinders12)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders12SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
-
-            foreach (var drawer in Cylinders21)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders21SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
-
-            foreach (var drawer in Cylinders22)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders22SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
-
-            foreach (var drawer in Cylinders31)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders31SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
-
-            foreach (var drawer in Cylinders32)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders32SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
-
-            foreach (var drawer in Cylinders41)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders41SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
-
-            foreach (var drawer in Cylinders42)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders42SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
-
-            foreach (var drawer in CylinderSteamExhaust1)
-                drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust1SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
-
-            foreach (var drawer in CylinderSteamExhaust2)
-                drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust2SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
-
-            foreach (var drawer in CylinderSteamExhaust3)
-                drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust3SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
-
-            foreach (var drawer in SanderSteamExhaustForward)
-                drawer.SetOutput(car.SanderSteamExhaustVelocityMpS, car.SanderSteamExhaustForwardVolumeM3pS, car.SanderSteamExhaustParticleDurationS);
-
-            foreach (var drawer in SanderSteamExhaustReverse)
-                drawer.SetOutput(car.SanderSteamExhaustVelocityMpS, car.SanderSteamExhaustReverseVolumeM3pS, car.SanderSteamExhaustParticleDurationS);
-
-            foreach (var drawer in BoosterCylinderSteamExhaust01)
-                drawer.SetOutput(car.BoosterCylinderSteamExhaust01SteamVelocityMpS, car.BoosterCylinderSteamExhaust01SteamVolumeM3pS, car.BoosterCylinderCockParticleDurationS);
-
-            foreach (var drawer in BoosterCylinderSteamExhaust02)
-                drawer.SetOutput(car.BoosterCylinderSteamExhaust02SteamVelocityMpS, car.BoosterCylinderSteamExhaust02SteamVolumeM3pS, car.BoosterCylinderCockParticleDurationS);
-                
-            foreach (var drawer in BoosterCylinders11)
-                drawer.SetOutput(car.BoosterCylinderCock11SteamVelocityMpS, car.BoosterCylinderCockSteam11VolumeMpS, car.BoosterCylinderCockParticleDurationS);
-
-            foreach (var drawer in BoosterCylinders12)
-                drawer.SetOutput(car.BoosterCylinderCock12SteamVelocityMpS, car.BoosterCylinderCockSteam12VolumeMpS, car.BoosterCylinderCockParticleDurationS);
-
-            foreach (var drawer in BoosterCylinders21)
-                drawer.SetOutput(car.BoosterCylinderCock21SteamVelocityMpS, car.BoosterCylinderCockSteam21VolumeMpS, car.BoosterCylinderCockParticleDurationS);
-
-            foreach (var drawer in BoosterCylinders22)
-                drawer.SetOutput(car.BoosterCylinderCock22SteamVelocityMpS, car.BoosterCylinderCockSteam22VolumeMpS, car.BoosterCylinderCockParticleDurationS);
-
-            foreach (var drawer in CylinderSteamExhaust2_1)
-                drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust2_1SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
-
-            foreach (var drawer in CylinderSteamExhaust2_2)
-                drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust2_2SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
-
-            foreach (var drawer in Cylinders2_11)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders2_11SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
-
-            foreach (var drawer in Cylinders2_12)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders2_12SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
-
-            foreach (var drawer in Cylinders2_21)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders2_21SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
-
-            foreach (var drawer in Cylinders2_22)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders2_22SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
-
-            foreach (var drawer in Blowdown)
-                drawer.SetOutput(car.BlowdownSteamVelocityMpS, car.BlowdownSteamVolumeM3pS, car.BlowdownParticleDurationS);
-            
-            // TODO: Drainpipe - Not used in either MSTS or OR - currently disabled by zero values set in SteamLocomotive file
-             foreach (var drawer in Drainpipe)
-                drawer.SetOutput(car.DrainpipeSteamVelocityMpS, car.DrainpipeSteamVolumeM3pS, car.DrainpipeParticleDurationS);
-
-             foreach (var drawer in Injectors1)
-                drawer.SetOutput(car.Injector1SteamVelocityMpS, car.Injector1SteamVolumeM3pS, car.Injector1ParticleDurationS);
-
-             foreach (var drawer in Injectors2)
-                 drawer.SetOutput(car.Injector2SteamVelocityMpS, car.Injector2SteamVolumeM3pS, car.Injector2ParticleDurationS);
-
-            foreach (var drawer in SmallEjector)
-                drawer.SetOutput(car.SmallEjectorSteamVelocityMpS, car.SmallEjectorSteamVolumeM3pS, car.SmallEjectorParticleDurationS);
-
-            foreach (var drawer in LargeEjector)
-                drawer.SetOutput(car.LargeEjectorSteamVelocityMpS, car.LargeEjectorSteamVolumeM3pS, car.LargeEjectorParticleDurationS);
-
-            foreach (var drawer in CounterPressureBrake1)
-                drawer.SetOutput(car.CounterPressureBrake1SteamVelocityMpS, car.CounterPressureBrake1SteamVolumeM3pS, car.CounterPressureBrake1ParticleDurationS);
-
-            foreach (var drawer in CounterPressureBrake2)
-                drawer.SetOutput(car.CounterPressureBrake2SteamVelocityMpS, car.CounterPressureBrake2SteamVolumeM3pS, car.CounterPressureBrake2ParticleDurationS);
-
-            foreach (var drawer in Compressor)
-                drawer.SetOutput(car.CompressorSteamVelocityMpS, car.CompressorSteamVolumeM3pS, car.CompressorParticleDurationS );
-
-            foreach (var drawer in Generator)
-                drawer.SetOutput(car.GeneratorSteamVelocityMpS, car.GeneratorSteamVolumeM3pS, car.GeneratorParticleDurationS);
-            
-            foreach (var drawer in SafetyValves1)
-                drawer.SetOutput(car.SafetyValves1SteamVelocityMpS, car.SafetyValves1SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
-
-            foreach (var drawer in SafetyValves2)
-                drawer.SetOutput(car.SafetyValves2SteamVelocityMpS, car.SafetyValves2SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
-
-            foreach (var drawer in SafetyValves3)
-                drawer.SetOutput(car.SafetyValves3SteamVelocityMpS, car.SafetyValves3SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
-
-            foreach (var drawer in SafetyValves4)
-                drawer.SetOutput(car.SafetyValves4SteamVelocityMpS, car.SafetyValves4SteamVolumeM3pS, car.SafetyValvesParticleDurationS);
-
-            foreach (var drawer in Stack)
-            {
-                Color_Value = car.SmokeColor.SmoothedValue;
-                drawer.SetOutput(car.StackSteamVelocityMpS.SmoothedValue, car.StackSteamVolumeM3pS, car.StackParticleDurationS, new Color(Color_Value, Color_Value, Color_Value));
-            }
-
-            foreach (var drawer in Whistle)
-                drawer.SetOutput(car.WhistleSteamVelocityMpS, car.WhistleSteamVolumeM3pS, car.WhistleParticleDurationS);
-
             base.PrepareFrame(frame, elapsedTime);
+        }
+
+        /// <summary>
+        /// Iterate through the list of particle emitters to update output and color
+        /// </summary>
+        public override void UpdateParticleEmitters()
+        {
+            foreach (ParticleEmitterViewer drawer in ParticleDrawers)
+                drawer.UpdateOutput(this);
         }
     }
 }

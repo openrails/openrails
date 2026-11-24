@@ -22,30 +22,28 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS.Common;
+using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.RollingStock;
+using ORTS.Common;
+using static Orts.Simulation.ParticleEmitterData;
 
 namespace Orts.Viewer3D
 {
     public class ParticleEmitterViewer
     {
-        public const float VolumeScale = 1f / 100;
-        public const float Rate = 0.1f;
-        public const float DecelerationTime = 0.2f;
-        public const float InitialSpreadRate = 1;
-        public const float SpreadRate = 0.75f;
-        public const float DurationVariation = 0.5f; // ActionDuration varies +/-50%
+        public ParticleEmitterData EmitterData;
 
-        public const float MaxParticlesPerSecond = 50f;
-        public const float MaxParticleDuration = 50f;
+        public readonly Viewer Viewer;
+        public readonly float EmissionHoleM2 = 0.01f;
+        public readonly float ParticleVolumeM3 = 0.001f;
+        public readonly ParticleEmitterPrimitive Emitter;
 
-        readonly Viewer Viewer;
-        readonly float EmissionHoleM2 = 1;
-        readonly ParticleEmitterPrimitive Emitter;
-
+        public string TexturePath;
         ParticleEmitterMaterial Material;
 
 #if DEBUG_EMITTER_INPUT
@@ -55,27 +53,120 @@ namespace Orts.Viewer3D
         int InputCycle;
 #endif
 
-        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, MSTSWagonViewer car, WorldPosition worldPosition)
+        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
         {
             Viewer = viewer;
-            EmissionHoleM2 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
-            Emitter = new ParticleEmitterPrimitive(viewer, data, car, worldPosition);
+            EmitterData = data;
+
+            if (EmitterData.NozzleAreaM2 <= 0)
+            {
+                // If area is undefined, assume emitter is circular, A = pi * (d/2)^2
+                // If position randomization is used, this calculation will not be accurate, in which case the user should adjust velocities accordingly
+                EmissionHoleM2 = MathHelper.Pi * ((EmitterData.NozzleDiameterM * EmitterData.NozzleDiameterM) / 4.0f);
+            }
+            else
+                EmissionHoleM2 = EmitterData.NozzleAreaM2;
+
+            // Assume particles are spheres, V = (4/3) * pi * (d/2)^3
+            // Particles expand over time, this is just the initial volume, useful for calculating initial velocity
+            ParticleVolumeM3 = 4.0f / 3.0f * MathHelper.Pi * ((EmitterData.NozzleDiameterM * EmitterData.NozzleDiameterM * EmitterData.NozzleDiameterM) / 8.0f);
+            Emitter = new ParticleEmitterPrimitive(this, data, worldPosition);
+
+            if (!String.IsNullOrEmpty(EmitterData.Graphic))
+                TexturePath = EmitterData.Graphic;
 #if DEBUG_EMITTER_INPUT
             EmitterID = ++EmitterIDIndex;
             InputCycle = Viewer.Random.Next(InputCycleLimit);
 #endif
+            }
+
+        /// <summary>
+        /// Sets up the material used by the particle emitter
+        /// </summary>
+        /// <param name="originalPath">File path to the first folder where textures should be searched from.</param>
+        public void Initialize(string originalPath)
+        {
+            string noExtension = Path.ChangeExtension(TexturePath, null);
+
+            string basePath = Path.Combine(Path.GetDirectoryName(originalPath), noExtension);
+            string globalPath = Path.Combine(Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\", noExtension);
+            string contentPath = Path.Combine(Viewer.ContentPath, noExtension);
+
+            // Texture location preference is eng/wag folder -> MSTS GLOBAL\TEXTURES folder -> OR CONTENT folder
+            // File type agnostic: We should detect a match if a .ace OR .dds is present, regardless of the specific file type requested
+            if (File.Exists(basePath + ".dds"))
+                TexturePath = basePath + ".dds";
+            else if (File.Exists(basePath + ".ace"))
+                TexturePath = basePath + ".ace";
+            else if (File.Exists(globalPath + ".dds"))
+                TexturePath = globalPath + ".dds";
+            else if (File.Exists(globalPath + ".ace"))
+                TexturePath = globalPath + ".ace";
+            else if (File.Exists(contentPath + ".dds"))
+                TexturePath = contentPath + ".dds";
+            else if (File.Exists(contentPath + ".ace"))
+                TexturePath = contentPath + ".ace";
+
+            Material = (ParticleEmitterMaterial)Viewer.MaterialManager.Load("ParticleEmitter", TexturePath);
         }
 
-        public void Initialize(string textureName)
+
+        /// <summary>
+        /// Sets up the material used by the particle emitter, and does some consistency checks to ensure
+        /// the particle emitter as configured will not cause crashes due to improper configuration.
+        /// </summary>
+        /// <param name="originalPath">File path to the first folder where textures should be searched from.</param>
+        /// <param name="wagon">The wagon to which this particle emitter is attached.</param>
+        public void Initialize(string originalPath, MSTSWagon wagon)
         {
-            Material = (ParticleEmitterMaterial)Viewer.MaterialManager.Load("ParticleEmitter", textureName);
+            Initialize(originalPath);
+
+            // Unreasonable settings in emitter data can cause crashes, particularly with index out of bounds,
+            // so ensure all indices are set to be within bounds
+            if (wagon is MSTSSteamLocomotive steamLoco)
+            {
+                if (EmitterData is SteamCylinderParticleEmitterData cylinderData)
+                {
+                    // For cylinder effects emitters, we have the index of the steam engine and the index of the steam cylinder to check
+                    // For booster effects specifically, the index of the steam engine is the index of the booster
+                    if (EmitterData.ParticleEmitterType == ParticleEmitterTypes.FrontBoosterCylinderCock ||
+                        EmitterData.ParticleEmitterType == ParticleEmitterTypes.RearBoosterCylinderCock ||
+                        EmitterData.ParticleEmitterType == ParticleEmitterTypes.BoosterCylinderSteamExhaust)
+                        cylinderData.SourceEngineIndex = steamLoco.BoosterEngineNumber;
+                    else
+                        cylinderData.SourceEngineIndex = MathHelper.Clamp(cylinderData.SourceEngineIndex, 0, steamLoco.SteamEngines.Count - 1);
+
+                    cylinderData.SourceCylinderIndex = MathHelper.Clamp(cylinderData.SourceCylinderIndex, 0,
+                        steamLoco.SteamEngines[cylinderData.SourceEngineIndex].NumberCylinders + steamLoco.SteamEngines[cylinderData.SourceEngineIndex].LPNumberCylinders - 1);
+                }
+                else if (EmitterData is SteamIndexableParticleEmitterData indexableData)
+                {
+                    // Other steam emitters only have one index to check
+                    if (EmitterData.ParticleEmitterType == ParticleEmitterTypes.Injector)
+                        indexableData.SourceIndex = MathHelper.Clamp(indexableData.SourceIndex, 0, steamLoco.InjectorSteamVelocityMpS.Length - 1);
+                    else if (EmitterData.ParticleEmitterType == ParticleEmitterTypes.SafetyValve)
+                        indexableData.SourceIndex = MathHelper.Clamp(indexableData.SourceIndex, 0, steamLoco.SafetyValveSteamVolumeM3pS.Length - 1);
+                }
+            }
+            else if (wagon is MSTSDieselLocomotive dieselLoco)
+            {
+                if (EmitterData is DieselEngineParticleEmitterData dieselData)
+                {
+                    // For diesel locomotives, the index of the diesel engine is the only thing to check for
+                    dieselData.SourceEngineIndex = MathHelper.Clamp(dieselData.SourceEngineIndex, 0, dieselLoco.DieselEngines.Count - 1);
+                }
+            }    
         }
 
-        public void SetOutput(float volumeM3pS)
+        /// <summary>
+        /// Sets the particle and velocity output of this particle emitter based on a given rate of particles per second.
+        /// The velocity of particles will be calculated from the particle rate and particle size.
+        /// </summary>
+        /// <param name="particlespS">The number of particles to emit every second.</param>
+        public void SetOutputRate(float particlespS)
         {
-            // TODO: The values here are out by a factor of 100 here it seems. The XNAInitialVelocity should need no multiplication or division factors.
-            Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * volumeM3pS / EmissionHoleM2 * VolumeScale;
-            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * Rate;
+            Emitter.ParticlesPerSecond = EmitterData.RateFactor * particlespS;
+            Emitter.XNAInitialVelocity = Emitter.EmitterData.InitialVelocityFactor * (ParticleVolumeM3 * particlespS / EmissionHoleM2);
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
@@ -83,12 +174,63 @@ namespace Orts.Viewer3D
 #endif
         }
 
-        // Called for diesel locomotive emissions
-        public void SetOutput(float volumeM3pS, float durationS, Color color)
+        /// <summary>
+        /// Sets the particle and velocity output of this particle emitter based on a given output flow rate.
+        /// The rate of particle emission will be calculated from the volumetric rate and particle size.
+        /// </summary>
+        /// <param name="volumeM3pS">The cubic meter volume of particles to emit every second.</param>
+        public void SetOutputVolumetric(float volumeM3pS)
         {
-            SetOutput(volumeM3pS);
-            Emitter.ParticleDuration = durationS;
+            Emitter.XNAInitialVelocity = Emitter.EmitterData.InitialVelocityFactor * volumeM3pS / EmissionHoleM2;
+            Emitter.ParticlesPerSecond = EmitterData.RateFactor * volumeM3pS / ParticleVolumeM3;
+
+#if DEBUG_EMITTER_INPUT
+            if (InputCycle == 0)
+                Trace.TraceInformation("Emitter{0}({1:F6}m^2) V={2,7:F3}m^3/s IV={3,7:F3}m/s P={4,7:F3}p/s (V)", EmitterID, EmissionHoleM2, volumeM3pS, Emitter.XNAInitialVelocity.Length(), Emitter.ParticlesPerSecond);
+#endif
+        }
+
+        /// <summary>
+        /// Sets the particle and velocity output of this particle emitter based on a given speed.
+        /// The rate of particle emission will be calculated from the speed and particle size.
+        /// </summary>
+        /// <param name="initialVelocityMpS">The meter per second speed particles should emit with.</param>
+        public void SetOutputVelocity(float initialVelocityMpS)
+        {
+            Emitter.XNAInitialVelocity = Emitter.EmitterData.InitialVelocityFactor * initialVelocityMpS;
+            Emitter.ParticlesPerSecond = EmitterData.RateFactor * initialVelocityMpS * EmissionHoleM2 / ParticleVolumeM3;
+        }
+
+        /// <summary>
+        /// Sets the particle and velocity output of this particle emitter based on a given rate of particles per second,
+        /// including the ability to change particle duration and color.
+        /// The velocity of particles will be calculated from the particle rate and particle size.
+        /// </summary>
+        /// <param name="particlespS">The number of particles to emit every second.</param>
+        /// <param name="durationS">The lifespan of each particle in seconds.</param>
+        /// <param name="color">A color struct giving the color of particles to emit.</param>
+        public void SetOutputRate(float particlespS, float durationS, Color color)
+        {
+            SetOutputRate(particlespS);
+            Emitter.ParticleDuration = durationS * EmitterData.LifetimeFactor;
             Emitter.ParticleColor = color;
+            Emitter.ParticleColor.A = (byte)(Emitter.ParticleColor.A * EmitterData.Opacity);
+        }
+
+        /// <summary>
+        /// Sets the particle and velocity output of this particle emitter based on a given output flow rate,
+        /// including the ability to change particle duration and color.
+        /// The rate of particle emission will be calculated from the volumetric rate and particle size.
+        /// </summary>
+        /// <param name="volumeM3pS">The cubic meter volume of particles to emit every second.</param>
+        /// <param name="durationS">The lifespan of each particle in seconds.</param>
+        /// <param name="color">A color struct giving the color of particles to emit.</param>
+        public void SetOutputVolumetric(float volumeM3pS, float durationS, Color color)
+        {
+            SetOutputVolumetric(volumeM3pS);
+            Emitter.ParticleDuration = durationS * EmitterData.LifetimeFactor;
+            Emitter.ParticleColor = color;
+            Emitter.ParticleColor.A = (byte)(Emitter.ParticleColor.A * EmitterData.Opacity);
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
@@ -96,12 +238,35 @@ namespace Orts.Viewer3D
 #endif
         }
 
-        // Called for steam locomotive emissions (non-main stack)
-        public void SetOutput(float initialVelocityMpS, float volumeM3pS, float durationS)
+        /// <summary>
+        /// Sets the particle and velocity output of this particle emitter based on a given output flow rate,
+        /// including the ability to change particle duration.
+        /// The rate of particle emission will be calculated from the volumetric rate and particle size.
+        /// </summary>
+        /// <param name="volumeM3pS">The cubic meter volume of particles to emit every second.</param>
+        /// <param name="durationS">The lifespan of each particle in seconds.</param>
+        public void SetOutputVolumetric(float volumeM3pS, float durationS)
         {
-            Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * initialVelocityMpS / 10; // FIXME: Temporary hack until we can improve the particle emitter's ability to cope with high-velocity, quick-deceleration emissions.
-            Emitter.ParticlesPerSecond = volumeM3pS / Rate * 0.2f;
-            Emitter.ParticleDuration = durationS;
+            SetOutputVolumetric(volumeM3pS);
+            Emitter.ParticleDuration = durationS * EmitterData.LifetimeFactor;
+
+#if DEBUG_EMITTER_INPUT
+            if (InputCycle == 0)
+                Trace.TraceInformation("Emitter{0}({1:F6}m^3) D={2,3}s C={3} (V, D, C)", EmitterID, EmissionHoleM2, durationS, color);
+#endif
+        }
+
+        /// <summary>
+        /// Sets the particle and velocity output of this particle emitter based on a given speed,
+        /// including the ability to change particle duration.
+        /// The rate of particle emission will be calculated from the speed and particle size.
+        /// </summary>
+        /// <param name="initialVelocityMpS">The meter per second speed particles should emit with.</param>
+        /// <param name="durationS">The lifespan of each particle in seconds.</param>
+        public void SetOutputVelocity(float initialVelocityMpS, float durationS)
+        {
+            SetOutputVelocity(initialVelocityMpS);
+            Emitter.ParticleDuration = EmitterData.LifetimeFactor * durationS;
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
@@ -109,18 +274,268 @@ namespace Orts.Viewer3D
 #endif
         }
 
-        // Called for steam locomotive emissions (main stack)
-        public void SetOutput(float initialVelocityMpS, float volumeM3pS, float durationS, Color color)
+        /// <summary>
+        /// Sets the particle and velocity output of this particle emitter based on a given speed,
+        /// including the ability to change particle duration and color.
+        /// The rate of particle emission will be calculated from the speed and particle size.
+        /// </summary>
+        /// <param name="initialVelocityMpS">The meter per second speed particles should emit with.</param>
+        /// <param name="durationS">The lifespan of each particle in seconds.</param>
+        /// <param name="color">A color struct giving the color of particles to emit.</param>
+        public void SetOutputVelocity(float initialVelocityMpS, float durationS, Color color)
         {
-            Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * initialVelocityMpS / 10; // FIXME: Temporary hack until we can improve the particle emitter's ability to cope with high-velocity, quick-deceleration emissions.
-            Emitter.ParticlesPerSecond = volumeM3pS / Rate * 0.2f;
-            Emitter.ParticleDuration = durationS;
+            SetOutputVelocity(initialVelocityMpS);
+            Emitter.ParticleDuration = EmitterData.LifetimeFactor * durationS;
             Emitter.ParticleColor = color;
+            Emitter.ParticleColor.A = (byte)(Emitter.ParticleColor.A * EmitterData.Opacity);
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
                 Trace.TraceInformation("Emitter{0}({1:F6}m^2) IV={2,7:F3}m/s V={3,7:F3}m^3/s P={4,7:F3}p/s D={5,3}s C={6} (IV, V, D, C)", EmitterID, EmissionHoleM2, initialVelocityMpS, volumeM3pS, Emitter.ParticlesPerSecond, durationS, color);
 #endif
+        }
+
+        /// <summary>
+        /// Sets the particle and velocity output of this particle emitter based on a given speed and emission rate,
+        /// including the ability to change particle duration.
+        /// Neither the speed nor emission rate will be automatically calculated, which may lead to displeasing results.
+        /// In most cases, other SetOutput methods will do better at matching particle speed and the number of particles.
+        /// </summary>
+        /// <param name="initialVelocityMpS">The meter per second speed particles should emit with.</param>
+        /// <param name="volumeM3pS">The cubic meter volume of particles to emit every second.</param>
+        /// <param name="durationS">The lifespan of each particle in seconds.</param>
+        public void SetOutputVelocity(float initialVelocityMpS, float volumeM3pS, float durationS)
+        {
+            Emitter.XNAInitialVelocity = Emitter.EmitterData.InitialVelocityFactor * initialVelocityMpS;
+            Emitter.ParticlesPerSecond = EmitterData.RateFactor * volumeM3pS / ParticleVolumeM3;
+            Emitter.ParticleDuration = EmitterData.LifetimeFactor * durationS;
+
+#if DEBUG_EMITTER_INPUT
+            if (InputCycle == 0)
+                Trace.TraceInformation("Emitter{0}({1:F6}m^2) IV={2,7:F3}m/s V={3,7:F3}m^3/s P={4,7:F3}p/s (IV, V)", EmitterID, EmissionHoleM2, initialVelocityMpS, volumeM3pS, Emitter.ParticlesPerSecond);
+#endif
+        }
+
+        /// <summary>
+        /// Sets the particle and velocity output of this particle emitter based on a given speed and emission rate,
+        /// including the ability to change particle duration and color.
+        /// Neither the speed nor emission rate will be automatically calculated, which may lead to displeasing results.
+        /// In most cases, other SetOutput methods will do better at matching particle speed and the number of particles.
+        /// </summary>
+        /// <param name="initialVelocityMpS">The meter per second speed particles should emit with.</param>
+        /// <param name="volumeM3pS">The cubic meter volume of particles to emit every second.</param>
+        /// <param name="durationS">The lifespan of each particle in seconds.</param>
+        /// <param name="color">A color struct giving the color of particles to emit.</param>
+        public void SetOutputVelocity(float initialVelocityMpS, float volumeM3pS, float durationS, Color color)
+        {
+            Emitter.XNAInitialVelocity = Emitter.EmitterData.InitialVelocityFactor * initialVelocityMpS;
+            Emitter.ParticlesPerSecond = EmitterData.RateFactor * volumeM3pS / ParticleVolumeM3;
+            Emitter.ParticleDuration = EmitterData.LifetimeFactor * durationS;
+            Emitter.ParticleColor = color;
+            Emitter.ParticleColor.A = (byte)(Emitter.ParticleColor.A * EmitterData.Opacity);
+
+#if DEBUG_EMITTER_INPUT
+            if (InputCycle == 0)
+                Trace.TraceInformation("Emitter{0}({1:F6}m^2) IV={2,7:F3}m/s V={3,7:F3}m^3/s P={4,7:F3}p/s D={5,3}s C={6} (IV, V, D, C)", EmitterID, EmissionHoleM2, initialVelocityMpS, volumeM3pS, Emitter.ParticlesPerSecond, durationS, color);
+#endif
+        }
+
+        /// <summary>
+        /// Updates the output of this particle emitter based on the type of emitter,
+        /// specifically for emitters that do not need to be attached to a train car
+        /// </summary>
+        public void UpdateOutput()
+        {
+            switch (EmitterData.ParticleEmitterType)
+            {
+                // FUTURE: Any emitters not driven by simulation variables can go here
+                case ParticleEmitterTypes.Unknown: // Default emitter: Assume 1 particle per second
+                    SetOutputRate(1.0f);
+                    break;
+                default: // Either the particle emitter type defined is not implemented (code mistake) or the type is invalid for the current content (content mistake)
+                    Trace.TraceWarning("Encountered unimplemented particle emitter type: " + EmitterData.ParticleEmitterType);
+                    EmitterData.ParticleEmitterType = ParticleEmitterTypes.Unknown;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Updates the output of this particle emitter based on the type of emitter,
+        /// specifically for emitters attached to a train car
+        /// </summary>
+        /// <param name="wagonViewer">A reference to the viewer of the wagon this particle emitter is attached to</param>
+        public void UpdateOutput(MSTSWagonViewer wagonViewer)
+        {
+            MSTSWagon wagon = wagonViewer.Car as MSTSWagon;
+
+            switch (EmitterData.ParticleEmitterType)
+            {
+                // Wagon type agnostic emitter types
+                case ParticleEmitterTypes.HeatingSteamBoiler:
+                    SetOutputVolumetric(wagon.HeatingSteamBoilerVolumeM3pS, wagon.HeatingSteamBoilerDurationS, wagon.HeatingSteamBoilerSteadyColor);
+                    break;
+                case ParticleEmitterTypes.HeatingHose:
+                    SetOutputVelocity(wagon.HeatingHoseSteamVelocityMpS, wagon.HeatingHoseParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.HeatingMainPipeSteamTrap:
+                    SetOutputVelocity(wagon.HeatingMainPipeSteamTrapVelocityMpS, wagon.HeatingMainPipeSteamTrapDurationS);
+                    break;
+                case ParticleEmitterTypes.HeatingCompartmentSteamTrap:
+                    SetOutputVelocity(wagon.HeatingCompartmentSteamTrapVelocityMpS, wagon.HeatingCompartmentSteamTrapParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.WagonGenerator:
+                    SetOutputVolumetric(wagon.WagonGeneratorVolumeM3pS, wagon.WagonGeneratorDurationS, wagon.WagonGeneratorSteadyColor);
+                    break;
+                case ParticleEmitterTypes.WagonSmoke:
+                    SetOutputVelocity(wagon.WagonSmokeVelocityMpS, wagon.WagonSmokeDurationS, wagon.WagonSmokeSteadyColor);
+                    break;
+                case ParticleEmitterTypes.BearingHotBox:
+                    SetOutputVelocity(wagon.BearingHotBoxSmokeVelocityMpS, wagon.BearingHotBoxSmokeDurationS, wagon.BearingHotBoxSmokeSteadyColor);
+                    break;
+                case ParticleEmitterTypes.WaterScoopForward:
+                    if (wagon.Direction == Direction.Forward)
+                        SetOutputVelocity(wagon.WaterScoopWaterVelocityMpS, wagon.WaterScoopParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.WaterScoopReverse:
+                    if (wagon.Direction == Direction.Reverse)
+                        SetOutputVelocity(wagon.WaterScoopWaterVelocityMpS, wagon.WaterScoopParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.TenderWaterOverflow:
+                    SetOutputVelocity(wagon.TenderWaterOverflowVelocityMpS, wagon.TenderWaterOverflowParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.SteamBrake:
+                    SetOutputVelocity(wagon.SteamBrakeLeaksVelocityMpS, wagon.SteamBrakeLeaksDurationS);
+                    break;
+                default: // This emitter type is not wagon-specific, but may still be a generic emitter type
+                    UpdateOutput();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Updates the output of this particle emitter based on the type of emitter,
+        /// specifically for emitters attached to a steam locomotive
+        /// </summary>
+        /// <param name="steamLocoViewer">A reference to the viewer of the steam locomotive this particle emitter is attached to</param>
+        public void UpdateOutput(MSTSSteamLocomotiveViewer steamLocoViewer)
+        {
+            MSTSSteamLocomotive steamLoco = steamLocoViewer.Car as MSTSSteamLocomotive;
+
+            switch (EmitterData.ParticleEmitterType)
+            {
+                case ParticleEmitterTypes.CylinderCocks:
+                case ParticleEmitterTypes.BoosterCylinderCocks:
+                    // EmitterData must be a SteamCylinderParticleEmitterData type for cylinder cocks emitters
+                    if (EmitterData is SteamCylinderParticleEmitterData bothCylinderCockData)
+                    {
+                        float maxCylinderCockSteamVolumeM3pS = Math.Max(steamLoco.FrontCylinderCockSteamVolumeM3pS[bothCylinderCockData.SourceEngineIndex, bothCylinderCockData.SourceCylinderIndex],
+                            steamLoco.RearCylinderCockSteamVolumeM3pS[bothCylinderCockData.SourceEngineIndex, bothCylinderCockData.SourceCylinderIndex]);
+                        SetOutputVolumetric(maxCylinderCockSteamVolumeM3pS, steamLoco.CylinderCockParticleDurationS);
+                    }
+                    break;
+                case ParticleEmitterTypes.FrontCylinderCock:
+                case ParticleEmitterTypes.FrontBoosterCylinderCock:
+                    // EmitterData must be a SteamCylinderParticleEmitterData type for cylinder cocks emitters
+                    if (EmitterData is SteamCylinderParticleEmitterData frontCylinderCockData)
+                        SetOutputVolumetric(steamLoco.FrontCylinderCockSteamVolumeM3pS[frontCylinderCockData.SourceEngineIndex, frontCylinderCockData.SourceCylinderIndex], steamLoco.CylinderCockParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.RearBoosterCylinderCock:
+                case ParticleEmitterTypes.RearCylinderCock:
+                    // EmitterData must be a SteamCylinderParticleEmitterData type for cylinder cocks emitters
+                    if (EmitterData is SteamCylinderParticleEmitterData rearCylinderCockData)
+                        SetOutputVolumetric(steamLoco.RearCylinderCockSteamVolumeM3pS[rearCylinderCockData.SourceEngineIndex, rearCylinderCockData.SourceCylinderIndex], steamLoco.CylinderCockParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.BoosterCylinderSteamExhaust:
+                case ParticleEmitterTypes.CylinderSteamExhaust:
+                    // EmitterData must be a SteamCylinderParticleEmitterData type for cylinder exhaust emitters
+                    if (EmitterData is SteamCylinderParticleEmitterData cylinderExhaustData)
+                        SetOutputVolumetric(steamLoco.CylinderSteamExhaustSteamVolumeM3pS[cylinderExhaustData.SourceEngineIndex, cylinderExhaustData.SourceCylinderIndex], steamLoco.CylinderCockParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.SanderSteamExhaustForward:
+                    SetOutputVelocity(steamLoco.SanderSteamExhaustForwardVelocityMpS, steamLoco.SanderSteamExhaustParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.SanderSteamExhaustReverse:
+                    SetOutputVelocity(steamLoco.SanderSteamExhaustReverseVelocityMpS, steamLoco.SanderSteamExhaustParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.Blowdown:
+                    SetOutputVolumetric(steamLoco.BlowdownSteamVolumeM3pS, steamLoco.BlowdownParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.Drainpipe:
+                    SetOutputVelocity(steamLoco.DrainpipeSteamVelocityMpS, steamLoco.DrainpipeParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.Injector:
+                    // EmitterData must be a SteamIndexableParticleEmitterData type for injector emitters
+                    if (EmitterData is SteamIndexableParticleEmitterData injectorData)
+                        SetOutputVelocity(steamLoco.InjectorSteamVelocityMpS[injectorData.SourceIndex], steamLoco.InjectorParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.SmallEjector:
+                    SetOutputVelocity(steamLoco.SmallEjectorSteamVelocityMpS, steamLoco.SmallEjectorParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.LargeEjector:
+                    SetOutputVelocity(steamLoco.LargeEjectorSteamVelocityMpS, steamLoco.LargeEjectorParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.CounterPressureBrake:
+                    SetOutputVolumetric(steamLoco.CounterPressureBrakeSteamVolumeM3pS, steamLoco.CounterPressureBrakeParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.Compressor:
+                    SetOutputVelocity(steamLoco.CompressorSteamVelocityMpS, steamLoco.CompressorParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.Generator:
+                    SetOutputVelocity(steamLoco.GeneratorSteamVelocityMpS, steamLoco.GeneratorParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.SafetyValve:
+                    // EmitterData must be a SteamIndexableParticleEmitterData type for safety valve emitters
+                    if (EmitterData is SteamIndexableParticleEmitterData safetyData)
+                        SetOutputVolumetric(steamLoco.SafetyValveSteamVolumeM3pS[safetyData.SourceIndex], steamLoco.SafetyValvesParticleDurationS);
+                    break;
+                case ParticleEmitterTypes.Stack:
+                    float colorIntensity = steamLoco.SmokeColor.SmoothedValue;
+                    SetOutputVolumetric(steamLoco.StackSteamVolumeM3pS, steamLoco.StackParticleDurationS, new Color(colorIntensity, colorIntensity, colorIntensity));
+                    break;
+                case ParticleEmitterTypes.Whistle:
+                    SetOutputVelocity(steamLoco.WhistleSteamVelocityMpS, steamLoco.WhistleParticleDurationS);
+                    break;
+                default: // This emitter type is not steam-locomotive specific, but may still be a wagon emitter type
+                    UpdateOutput(steamLocoViewer as MSTSWagonViewer);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Updates the output of this particle emitter based on the type of emitter,
+        /// specifically for emitters attached to a diesel locomotive
+        /// </summary>
+        /// <param name="dieselLocoViewer">A reference to the viewer of the diesel locomotive this particle emitter is attached to</param>
+        public void UpdateOutput(MSTSDieselLocomotiveViewer dieselLocoViewer)
+        {
+            MSTSDieselLocomotive dieselLoco = dieselLocoViewer.Car as MSTSDieselLocomotive;
+
+            switch (EmitterData.ParticleEmitterType)
+            {
+                case ParticleEmitterTypes.DieselExhaust:
+                    // EmitterData must be a DieselEngineParticleEmitterData type for engine exhaust emitters
+                    if (EmitterData is DieselEngineParticleEmitterData dieselEmitterData)
+                        SetOutputRate(dieselLoco.DieselEngines[dieselEmitterData.SourceEngineIndex].ExhaustParticlesSmoothed.SmoothedValue,
+                            dieselLoco.DieselEngines[dieselEmitterData.SourceEngineIndex].ExhaustMagnitudeSmoothed.SmoothedValue,
+                            new Color((byte)dieselLoco.DieselEngines[dieselEmitterData.SourceEngineIndex].ExhaustColorR.SmoothedValue,
+                                (byte)dieselLoco.DieselEngines[dieselEmitterData.SourceEngineIndex].ExhaustColorG.SmoothedValue,
+                                (byte)dieselLoco.DieselEngines[dieselEmitterData.SourceEngineIndex].ExhaustColorB.SmoothedValue,
+                                (byte)dieselLoco.DieselEngines[dieselEmitterData.SourceEngineIndex].ExhaustColorA.SmoothedValue));
+                    break;
+                default: // This emitter type is not diesel-locomotive specific, but may still be a wagon emitter type
+                    UpdateOutput(dieselLocoViewer as MSTSWagonViewer);
+                    break;
+            }
+        }
+
+        // Run this for all particle emitters attached to train cars instead of the usual PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        // If this is not run for train car particles, then the initial velocity will not update correctly and the particles won't behave properly
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, MSTSWagonViewer wagonViewer)
+        {
+            // Negate Z-value for consistency with MSTS coordinate system
+            Emitter.ParentVelocity = new Vector3(wagonViewer.Velocity[0], wagonViewer.Velocity[1], -wagonViewer.Velocity[2]);
+
+            PrepareFrame(frame, elapsedTime);
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -153,17 +568,14 @@ namespace Orts.Viewer3D
 
     public class ParticleEmitterPrimitive : RenderPrimitive
     {
-        const int IndiciesPerParticle = 6;
+        const int IndicesPerParticle = 6;
         const int VerticesPerParticle = 4;
         const int PrimitivesPerParticle = 2;
 
-        readonly int MaxParticles;
         readonly ParticleVertex[] Vertices;
         readonly VertexDeclaration VertexDeclaration;
         readonly DynamicVertexBuffer VertexBuffer;
         readonly IndexBuffer IndexBuffer;
-
-        readonly float[] PerlinStart;
 
         struct ParticleVertex
         {
@@ -171,29 +583,35 @@ namespace Orts.Viewer3D
             public Vector4 InitialVelocity_EndTime;
             public Vector4 TargetVelocity_TargetTime;
             public Vector4 TileXY_Vertex_ID;
-            public Color Color_Random;
+            public Vector4 Size_Rotation;
+            public Color Color;
 
             public static readonly VertexElement[] VertexElements =
             {
-                new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Position, 0),
-                new VertexElement(16, VertexElementFormat.Vector4, VertexElementUsage.Position, 1),
-                new VertexElement(16 + 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 2),
-                new VertexElement(16 + 16 + 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 3),
-                new VertexElement(16 + 16 + 16 + 16, VertexElementFormat.Color, VertexElementUsage.Position, 4)
+                new VertexElement(0 * 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 0),
+                new VertexElement(1 * 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 1),
+                new VertexElement(2 * 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 2),
+                new VertexElement(3 * 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 3),
+                new VertexElement(4 * 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 4),
+                new VertexElement(5 * 16, VertexElementFormat.Color, VertexElementUsage.Position, 5)
             };
 
-            public static int VertexStride = sizeof(float) * 12 + sizeof(float) * 4 + sizeof(float) * 4;
+            // Vector4 is 4 floats XYZW, Color is 4 bytes RGBA (bit-packed into a single int)
+            public static int VertexStride = sizeof(float) * 4 * 5 + sizeof(byte) * 4;
         }
 
         internal ParticleEmitterData EmitterData;
+
+        internal Vector3 ParentVelocity;
         internal Vector3 XNAInitialVelocity;
         internal Vector3 XNAFinalVelocity;
         internal float ParticlesPerSecond;
         internal float ParticleDuration;
         internal Color ParticleColor;
 
+        internal int SpriteCount;
+
         internal WorldPosition WorldPosition;
-        internal MSTSWagonViewer CarViewer;
 
         // Particle buffer goes like this:
         //   +--active>-----new>--+
@@ -208,40 +626,31 @@ namespace Orts.Viewer3D
         float AccumulatedParticles;
         int DrawCounter;
 
-        Viewer Viewer;
+        ParticleEmitterViewer ParticleViewer;
         GraphicsDevice GraphicsDevice;
 
-        public ParticleEmitterPrimitive(Viewer viewer, ParticleEmitterData data, MSTSWagonViewer car, WorldPosition worldPosition)
+        public ParticleEmitterPrimitive(ParticleEmitterViewer particleViewer, ParticleEmitterData data, WorldPosition worldPosition)
         {
-            this.Viewer = viewer;
-            this.GraphicsDevice = viewer.GraphicsDevice;
-
-            MaxParticles = (int)(ParticleEmitterViewer.MaxParticlesPerSecond * ParticleEmitterViewer.MaxParticleDuration);
-            Vertices = new ParticleVertex[MaxParticles * VerticesPerParticle];
-            VertexDeclaration = new VertexDeclaration(ParticleVertex.VertexStride, ParticleVertex.VertexElements);
-            VertexBuffer = new DynamicVertexBuffer(GraphicsDevice, VertexDeclaration, MaxParticles * VerticesPerParticle, BufferUsage.WriteOnly);
-            IndexBuffer = InitIndexBuffer(GraphicsDevice, MaxParticles * IndiciesPerParticle);
-
+            ParticleViewer = particleViewer;
             EmitterData = data;
-            XNAInitialVelocity = data.XNADirection;
-            XNAFinalVelocity = Vector3.Up;
+            GraphicsDevice = ParticleViewer.Viewer.GraphicsDevice;
+            Vertices = new ParticleVertex[EmitterData.MaxParticles * VerticesPerParticle];
+            VertexDeclaration = new VertexDeclaration(ParticleVertex.VertexStride, ParticleVertex.VertexElements);
+            VertexBuffer = new DynamicVertexBuffer(GraphicsDevice, VertexDeclaration, EmitterData.MaxParticles * VerticesPerParticle, BufferUsage.WriteOnly);
+            IndexBuffer = InitIndexBuffer(GraphicsDevice, EmitterData.MaxParticles * IndicesPerParticle);
+
+            XNAInitialVelocity = data.InitialVelocityFactor;
+            XNAFinalVelocity = data.FinalVelocityMpS;
             ParticlesPerSecond = 0;
             ParticleDuration = 3;
             ParticleColor = Color.White;
 
-            CarViewer = car;
+            SpriteCount = EmitterData.AtlasWidth * EmitterData.AtlasHeight;
 
             WorldPosition = worldPosition;
 
             // Initialize the particle accumulator to a random value to de-sync particle emitters from eachother
             AccumulatedParticles = -(float)Viewer.Random.NextDouble() * 5.0f;
-
-            PerlinStart = new float[] {
-                (float)Viewer.Random.NextDouble() * 30000f,
-                (float)Viewer.Random.NextDouble() * 30000f,
-                (float)Viewer.Random.NextDouble() * 30000f,
-                (float)Viewer.Random.NextDouble() * 30000f,
-            };
         }
 
         void VertexBuffer_ContentLost()
@@ -249,11 +658,11 @@ namespace Orts.Viewer3D
             VertexBuffer.SetData(0, Vertices, 0, Vertices.Length, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
         }
 
-        static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndicies)
+        static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndices)
         {
-            var indices = new ushort[numIndicies];
+            var indices = new ushort[numIndices];
             var index = 0;
-            for (var i = 0; i < numIndicies; i += IndiciesPerParticle)
+            for (var i = 0; i < numIndices; i += IndicesPerParticle)
             {
                 indices[i] = (ushort)index;
                 indices[i + 1] = (ushort)(index + 1);
@@ -265,22 +674,22 @@ namespace Orts.Viewer3D
 
                 index += VerticesPerParticle;
             }
-            var indexBuffer = new IndexBuffer(graphicsDevice, typeof(ushort), numIndicies, BufferUsage.WriteOnly);
+            var indexBuffer = new IndexBuffer(graphicsDevice, typeof(ushort), numIndices, BufferUsage.WriteOnly);
             indexBuffer.SetData(indices);
             return indexBuffer;
         }
 
         public float EmitSize
         {
-            get { return EmitterData.NozzleWidth; }
+            get { return EmitterData.NozzleDiameterM; }
         }
 
         void RetireActiveParticles(float currentTime)
         {
             while (FirstActiveParticle != FirstNewParticle)
             {
-                var vertex = FirstActiveParticle * VerticesPerParticle;
-                var expiry = Vertices[vertex].InitialVelocity_EndTime.W;
+                int vertex = FirstActiveParticle * VerticesPerParticle;
+                float expiry = Vertices[vertex].InitialVelocity_EndTime.W;
 
                 // Stop as soon as we find the first particle which hasn't expired.
                 if (expiry > currentTime)
@@ -288,7 +697,7 @@ namespace Orts.Viewer3D
 
                 // Expire particle.
                 Vertices[vertex].StartPosition_StartTime.W = (float)DrawCounter;
-                FirstActiveParticle = (FirstActiveParticle + 1) % MaxParticles;
+                FirstActiveParticle = (FirstActiveParticle + 1) % EmitterData.MaxParticles;
             }
         }
 
@@ -296,7 +705,7 @@ namespace Orts.Viewer3D
         {
             for (int i = 0; i < count; i++)
             {
-                int NextActiveParticle = (FirstActiveParticle + 1) % MaxParticles;
+                int NextActiveParticle = (FirstActiveParticle + 1) % EmitterData.MaxParticles;
 
                 // Don't try to clear so many particles that we start clearing the newest ones
                 if (NextActiveParticle == FirstNewParticle)
@@ -320,18 +729,18 @@ namespace Orts.Viewer3D
                 if (age < 2)
                     break;
 
-                FirstRetiredParticle = (FirstRetiredParticle + 1) % MaxParticles;
+                FirstRetiredParticle = (FirstRetiredParticle + 1) % EmitterData.MaxParticles;
             }
         }
 
         int GetCountFreeParticles()
         {
-            var nextFree = (FirstFreeParticle + 1) % MaxParticles;
+            var nextFree = (FirstFreeParticle + 1) % EmitterData.MaxParticles;
 
             if (nextFree <= FirstRetiredParticle)
                 return FirstRetiredParticle - nextFree;
 
-            return (MaxParticles - nextFree) + FirstRetiredParticle;
+            return (EmitterData.MaxParticles - nextFree) + FirstRetiredParticle;
         }
 
         public void Update(float currentTime, ElapsedTime elapsedTime)
@@ -340,7 +749,7 @@ namespace Orts.Viewer3D
             {
                 // Limit particle spawn rate to try and prevent overfilling the particle buffer
                 // This should only be needed when the particle spawn rate is visually excessive
-                float effectiveParticlesPerSecond = Math.Min(ParticlesPerSecond, (MaxParticles * 0.9f) / (ParticleDuration * (1.0f + ParticleEmitterViewer.DurationVariation)));
+                float effectiveParticlesPerSecond = Math.Min(ParticlesPerSecond, (EmitterData.MaxParticles * 0.9f) / (ParticleDuration * (1.0f + EmitterData.LifetimeVariationFactor)));
 
                 // Momentary Infinity/NaN values can occur, treat these as 0
                 if (!float.IsFinite(effectiveParticlesPerSecond))
@@ -348,7 +757,7 @@ namespace Orts.Viewer3D
 
                 AccumulatedParticles += elapsedTime.ClockSeconds * effectiveParticlesPerSecond;
 
-                int maxNewParticles = GetCountFreeParticles() - (int)(MaxParticles * 0.025f);
+                int maxNewParticles = GetCountFreeParticles() - (int)(EmitterData.MaxParticles * 0.025f);
 
                 // We are low on free particles, always try to leave a free buffer of about 2.5% of the total
                 if (AccumulatedParticles > maxNewParticles)
@@ -365,18 +774,14 @@ namespace Orts.Viewer3D
                 {
                     Matrix transform = WorldPosition.XNAMatrix;
                     transform.Translation = Vector3.Zero; // Only want rotation data for this step
-                    // rotation = CarViewer.TrainCarShape.ResultMatrices[EmitterData.ShapeIndex] * rotation; // Future: ShapeHierarchy goes here
-
-                    Matrix rotation = transform;
-                    rotation.Translation = Vector3.Zero; // Last step needed translational effects, next step does not
 
                     // Final velocity should rotate with the attached train car, but only about the Y axis
-                    rotation.Decompose(out _, out Quaternion rotY, out _);
+                    transform.Decompose(out _, out Quaternion rotY, out _);
                     rotY.X = 0;
                     rotY.Z = 0;
                     rotY.Normalize();
 
-                    Vector3 carVelocity = new Vector3(CarViewer.Velocity[0], CarViewer.Velocity[1], -CarViewer.Velocity[2]);
+                    float initialSpeed = XNAInitialVelocity.Length();
 
                     float emitTime = currentTime - elapsedTime.ClockSeconds;
 
@@ -386,48 +791,70 @@ namespace Orts.Viewer3D
                     {
                         emitTime += deltaTime;
 
-                        int nextFreeParticle = (FirstFreeParticle + 1) % MaxParticles;
+                        int nextFreeParticle = (FirstFreeParticle + 1) % EmitterData.MaxParticles;
                         int vertex = FirstFreeParticle * VerticesPerParticle;
-                        int texture = Viewer.Random.Next(16); // Randomizes emissions.
-                        Color color_Random = new Color(ParticleColor.R / 255f, ParticleColor.G / 255f, ParticleColor.B / 255f, (float)Viewer.Random.NextDouble());
+                        int texture = Viewer.Random.Next(SpriteCount); // Randomizes particle texture to any texture on the sheet.
 
-                        Vector3 position = EmitterData.XNALocation;
+                        Vector3 position = EmitterData.PositionM;
 
                         Vector3 initialVelocity = XNAInitialVelocity;
                         Vector3 finalVelocity = XNAFinalVelocity;
 
-                        initialVelocity.X += (float)(Viewer.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
-                        initialVelocity.Z += (float)(Viewer.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
+                        float initialRot = 2.0f * (float)(Viewer.Random.NextDouble() * Math.PI);
+                        float rotSpeed = EmitterData.RotationVariation;
 
-                        finalVelocity.X += Noise.Generate(emitTime + PerlinStart[0]) * ParticleEmitterViewer.SpreadRate;
-                        finalVelocity.Y += Noise.Generate(emitTime + PerlinStart[1]) * ParticleEmitterViewer.SpreadRate;
-                        finalVelocity.Z += Noise.Generate(emitTime + PerlinStart[2]) * ParticleEmitterViewer.SpreadRate;
+                        float duration = ParticleDuration;
 
-                        // Duration is variable too.
-                        float duration = ParticleDuration * (1 + Noise.Generate(emitTime + PerlinStart[3]) * ParticleEmitterViewer.DurationVariation);
+                        float settling = EmitterData.SettlingFactor;
+
+                        position.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.X;
+                        position.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.Y;
+                        position.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.Z;
+
+                        // "Chaotic" randomization: Uses random output directly, making for sudden changes
+                        initialVelocity.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.X * initialSpeed;
+                        initialVelocity.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.Y * initialSpeed;
+                        initialVelocity.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.Z * initialSpeed;
+
+                        finalVelocity.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.FinalVelocityVariationMpS.X;
+                        finalVelocity.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.FinalVelocityVariationMpS.Y;
+                        finalVelocity.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.FinalVelocityVariationMpS.Z;
+
+                        rotSpeed *= ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f;
+
+                        duration *= 1 + ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.LifetimeVariationFactor;
+
+                        settling += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.SettlingVariationFactor;
 
                         position = Vector3.Transform(position, transform) + WorldPosition.XNAMatrix.Translation;
 
                         // Interpolate the position of the particle in-between frames
-                        position -= carVelocity * (currentTime - emitTime);
+                        position -= ParentVelocity * (currentTime - emitTime);
 
-                        initialVelocity = Vector3.Transform(initialVelocity, rotation);
+                        initialVelocity = Vector3.TransformNormal(initialVelocity, transform);
                         finalVelocity = Vector3.Transform(finalVelocity, rotY);
 
                         // Add on velocity of attached train car
-                        initialVelocity += carVelocity;
+                        initialVelocity += ParentVelocity;
 
                         // Add wind speed (not randomized here)
-                        finalVelocity.X += Viewer.Simulator.Weather.WindInstantaneousSpeedMpS * Viewer.Simulator.Weather.WindInstantaneousDirection.X;
-                        finalVelocity.Z += Viewer.Simulator.Weather.WindInstantaneousSpeedMpS * Viewer.Simulator.Weather.WindInstantaneousDirection.Y;
+                        finalVelocity.X += ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS * ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousDirection.X * EmitterData.WindEffect;
+                        finalVelocity.Z += ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS * ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousDirection.Y * EmitterData.WindEffect;
 
-                        for (int j = 0; j < VerticesPerParticle; j++)
+                        // Amount by which particles initially expand depends on particle speed; faster particles expand more due to 'high pressure' at exhaust
+                        float speedIntensity = (float)Math.Sqrt(initialSpeed);
+                        float initialExpansion = speedIntensity * EmitterData.InitialExpansionFactor;
+                        // Speed at which particles slow down depends on change in particle speed; faster particles slow down faster due to 'drag' from speed difference
+                        settling /= speedIntensity / 5.0f + 1.0f; // Note: The / 5 is largely arbitrary, chosen to give results that look good
+
+                        for (var j = 0; j < VerticesPerParticle; j++)
                         {
                             Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, emitTime);
                             Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, emitTime + duration);
-                            Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(finalVelocity, ParticleEmitterViewer.DecelerationTime);
+                            Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(finalVelocity, settling);
                             Vertices[vertex + j].TileXY_Vertex_ID = new Vector4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
-                            Vertices[vertex + j].Color_Random = color_Random;
+                            Vertices[vertex + j].Size_Rotation = new Vector4(initialExpansion, EmitterData.ExpansionSpeed, initialRot, rotSpeed);
+                            Vertices[vertex + j].Color = ParticleColor;
                         }
 
                         FirstFreeParticle = nextFreeParticle;
@@ -453,7 +880,7 @@ namespace Orts.Viewer3D
             }
             else
             {
-                var numParticlesToAddAtEnd = MaxParticles - FirstNewParticle;
+                var numParticlesToAddAtEnd = EmitterData.MaxParticles - FirstNewParticle;
                 VertexBuffer.SetData(FirstNewParticle * ParticleVertex.VertexStride * VerticesPerParticle, Vertices, FirstNewParticle * VerticesPerParticle, numParticlesToAddAtEnd * VerticesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
                 if (FirstFreeParticle > 0)
                     VertexBuffer.SetData(0, Vertices, 0, FirstFreeParticle * VerticesPerParticle, ParticleVertex.VertexStride, SetDataOptions.NoOverwrite);
@@ -485,13 +912,13 @@ namespace Orts.Viewer3D
                     var numParticles = FirstFreeParticle - FirstActiveParticle;
                     // thread safe clause
                     if (numParticles > 0)
-                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: FirstActiveParticle * IndiciesPerParticle, primitiveCount: numParticles * PrimitivesPerParticle);
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: FirstActiveParticle * IndicesPerParticle, primitiveCount: numParticles * PrimitivesPerParticle);
                 }
                 else
                 {
-                    var numParticlesAtEnd = MaxParticles - FirstActiveParticle;
+                    var numParticlesAtEnd = EmitterData.MaxParticles - FirstActiveParticle;
                     if (numParticlesAtEnd > 0)
-                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: FirstActiveParticle * IndiciesPerParticle, primitiveCount: numParticlesAtEnd * PrimitivesPerParticle);
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: FirstActiveParticle * IndicesPerParticle, primitiveCount: numParticlesAtEnd * PrimitivesPerParticle);
                     if (FirstFreeParticle > 0)
                         graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, primitiveCount: FirstFreeParticle * PrimitivesPerParticle);
                 }
@@ -542,6 +969,7 @@ namespace Orts.Viewer3D
                     var emitter = (ParticleEmitterPrimitive)item.RenderPrimitive;
                     shader.EmitSize = emitter.EmitSize;
                     shader.Texture = Texture;
+                    shader.TextureAtlasSizeXY = new Vector2(emitter.EmitterData.AtlasWidth, emitter.EmitterData.AtlasHeight);
                     shader.SetMatrix(Matrix.Identity, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     ShaderPasses.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
