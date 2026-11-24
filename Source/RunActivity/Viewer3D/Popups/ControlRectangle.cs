@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Common;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.RollingStock;
 using SpriteBatch = Microsoft.Xna.Framework.Graphics.SpriteBatch;
@@ -106,6 +107,44 @@ namespace Orts.Viewer3D.Popups
                     }
                 }
                 IsOverRectangle = false;
+            }
+
+            if (Viewer.Camera is ThreeDimCabCamera && (Viewer.PlayerLocomotiveViewer as MSTSLocomotiveViewer)._has3DCabRenderer)
+            {
+                var locoViewer = Viewer.PlayerLocomotiveViewer as MSTSLocomotiveViewer;
+                var trainCarShape = locoViewer.ThreeDimentionCabViewer.TrainCarShape;
+                var camera = Viewer.Camera as ThreeDimCabCamera;
+
+                foreach (var animatedPart in locoViewer.ThreeDimentionCabViewer.AnimateParts.Values)
+                {
+                    if (locoViewer.ThreeDimentionCabRenderer.ControlMap.TryGetValue(animatedPart.Key, out var controlRenderer)
+                        && controlRenderer is ICabViewMouseControlRenderer mouseRenderer
+                        && (controlRenderer.Control.Screens == null || controlRenderer.Control.Screens.Count == 0 || controlRenderer.Control.Screens[0] == "all" ||
+                            controlRenderer.Control.Screens.Contains(locoViewer.ThreeDimentionCabRenderer.ActiveScreen[controlRenderer.Control.Display])))
+                    {
+                        foreach (var targetNode in animatedPart.MatrixIndexes)
+                        {
+                            if (!trainCarShape.SharedShape.StoredResultMatrixes.TryGetValue(targetNode, out var matrix))
+                                continue;
+                            var matrixWorldLocation = trainCarShape.Location.WorldLocation;
+                            matrixWorldLocation.Location.X = matrix.Translation.X;
+                            matrixWorldLocation.Location.Y = matrix.Translation.Y;
+                            matrixWorldLocation.Location.Z = -matrix.Translation.Z;
+                            Vector3 xnaCenter = camera.XnaLocation(matrixWorldLocation);
+                            Vector3 position = Viewer.DefaultViewport.Project(xnaCenter, camera.XnaProjection, camera.XnaView, Matrix.CreateTranslation(0, 0, 0));
+                            Vector3 nearsource = new Vector3(position.X, position.Y, 0f);
+                            Vector3 farsource = new Vector3(position.X, position.Y, 1f);
+                            Matrix world = Matrix.CreateTranslation(0, 0, 0);
+                            Vector3 nearPoint = Viewer.DefaultViewport.Unproject(nearsource, camera.XnaProjection, camera.XnaView, world);
+                            Vector3 farPoint = Viewer.DefaultViewport.Unproject(farsource, camera.XnaProjection, camera.XnaView, world);
+                            float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, nearPoint, farPoint);
+                            if (d < 0.01f)
+                            {
+                                DrawRectangle(spriteBatch, (int)position.X, (int)position.Y, 10, 10, 5, Color.Yellow);
+                            }
+                        }
+                    }
+                }
             }
         }
 
