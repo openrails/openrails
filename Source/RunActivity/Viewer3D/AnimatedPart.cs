@@ -20,6 +20,7 @@ using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
 
 namespace Orts.Viewer3D
 {
@@ -31,14 +32,51 @@ namespace Orts.Viewer3D
         // Shape that we're animating.
         readonly PoseableShape PoseableShape;
 
-        // Maximum animation key-frame value used by this part. This is calculated from the matrices provided.
-        public int MaxFrame;
+        /// <summary>
+        /// shape format: maximum animation key-frame value used by this part. This is calculated from the matrices provided.
+        /// glTF format: the frames are measured in seconds, so the frame count is actually the total length of the animation clip in seconds.
+        /// </summary>
+        public float MaxFrame;
 
-        // Current frame of the animation.
+        /// <summary>
+        /// shape format: Current frame of the animation.
+        /// glTF format: The actual time in seconds within the animation clip.
+        /// </summary>
         float AnimationKey;
 
-        // List of the matrices we're animating for this part.
+        /// <summary>
+        /// Controls the speed of the animation.
+        /// </summary>
+        float Speed = 1.0f;
+
+        public float SlowDownFactor = 1.0f;
+
+        bool MstsChildrenAnimation = true;
+
+        /// <summary>
+        /// The saved direction of the loop update.
+        /// </summary>
+        float LoopSign = 1.0f;
+
+        /// <summary>
+        /// shape format: List of the matrices we're animating for this part.
+        /// glTF format: The animation clip's numbers we are playing for this part.
+        /// </summary>
         public List<int> MatrixIndexes = new List<int>();
+
+        [Flags]
+        public enum MstsOptions
+        {
+            None = 0,
+            MaxFrameFromFrameOne        = 1 << 0,
+            MaxFrameFromFrameRatePer30  = 1 << 1,
+            MaxFrameFromFrameCount      = 1 << 2,
+            MaxFrameIsOne               = 1 << 3,
+            MaxFrameIsFour              = 1 << 4,
+            SpeedFromFrameCount         = 1 << 5,
+            SpeedFromFrameRate          = 1 << 6,
+            SpeedFromFrameRatePer30     = 1 << 7,
+        }
 
         /// <summary>
         /// Construct with a link to the shape that contains the animated parts 
@@ -53,44 +91,117 @@ namespace Orts.Viewer3D
         /// </summary>
         public void AddMatrix(int matrix)
         {
-            if (matrix < 0) return;
-            MatrixIndexes.Add(matrix);
-            UpdateMaxFrame(matrix);
+            if (matrix < 0 || MatrixIndexes.Contains(matrix))
+                return;
+
+            if (PoseableShape.SharedShape.HasAnimation(matrix))
+            {
+                MatrixIndexes.Add(matrix);
+                MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.GetAnimationLength(matrix));
+            }
+
+            if (MstsChildrenAnimation && !(PoseableShape.SharedShape is GltfShape))
+                for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
+                    if (PoseableShape.Hierarchy[i] == matrix)
+                        AddMatrix(i);
         }
 
-        void UpdateMaxFrame(int matrix)
+        public void AddAnimations(bool mstsChildrenAnimation = true) => AddAnimation(null, mstsChildrenAnimation);
+        public void AddAnimation(string pattern, bool mstsChildrenAnimation = true)
         {
-            if (PoseableShape.SharedShape.Animations != null
-                && PoseableShape.SharedShape.Animations.Count > 0
-                && PoseableShape.SharedShape.Animations[0].anim_nodes.Count > matrix
-                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0
-                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].Count > 0)
-            {
-                MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].ToArray().Cast<KeyPosition>().Last().Frame);
-                // Sometimes there are more frames in the second controller than in the first
-                if (PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 1
-                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].Count > 0)
-                    MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].ToArray().Cast<KeyPosition>().Last().Frame);
-            }
-            for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
-                if (PoseableShape.Hierarchy[i] == matrix)
-                    UpdateMaxFrame(i);
+            MstsChildrenAnimation = !(PoseableShape.SharedShape is GltfShape) && mstsChildrenAnimation;
+
+            var animationsCount = PoseableShape.SharedShape.GetAnimationNamesCount();
+            for (var i = 0; i < animationsCount; i++)
+                if (IsNameMatches(PoseableShape.SharedShape.MatrixNames[i], pattern))
+                    AddMatrix(i);
+        }
+
+        bool IsNameMatches(string name, string pattern)
+        {
+            if (string.IsNullOrEmpty(pattern) || pattern == "*")
+                return true;
+            else if (pattern.StartsWith("*") && pattern.EndsWith("*"))
+                return name.IndexOf(pattern.Replace("*", ""), StringComparison.OrdinalIgnoreCase) >= 0;
+            else if (pattern.StartsWith("*") && !(pattern.EndsWith("*")))
+                return name.EndsWith(pattern.Replace("*", ""), StringComparison.OrdinalIgnoreCase);
+            else if (!(pattern.StartsWith("*")) && pattern.EndsWith("*"))
+                return name.StartsWith(pattern.Replace("*", ""), StringComparison.OrdinalIgnoreCase);
+            else
+                return name.Equals(pattern.Replace("*", ""), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Sets the speed only in case of shape format.
+        /// </summary>
+        public void SetMstsSpeed(float mstsSpeed, MstsOptions mstsOptions = MstsOptions.None)
+        {
+            if (PoseableShape?.SharedShape is GltfShape)
+                return;
+
+            Speed *= mstsSpeed;
+            SetMstsAnimationOptions(mstsOptions);
+        }
+
+        /// <summary>
+        /// Sets the special animation options for various MSTS shape usages.
+        /// </summary>
+        /// <param name="options"></param>
+        public void SetMstsAnimationOptions(MstsOptions options)
+        {
+            if (PoseableShape?.SharedShape is GltfShape)
+                return;
+
+            if ((options & MstsOptions.MaxFrameFromFrameOne) != 0)
+                MaxFrame = PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(MatrixIndexes.FirstOrDefault())?
+                    .controllers?.FirstOrDefault()?.ElementAtOrDefault(1)?.Frame ?? MaxFrame;
+            if ((options & MstsOptions.MaxFrameFromFrameRatePer30) != 0
+                && PoseableShape?.SharedShape.Animations?.FirstOrDefault()?.FrameRate is int frameRate)
+                MaxFrame = frameRate / 30.0f;
+            if ((options & MstsOptions.MaxFrameIsOne) != 0)
+                MaxFrame = 1.0f;
+            if ((options & MstsOptions.MaxFrameIsFour) != 0)
+                MaxFrame = 4.0f;
+            if ((options & MstsOptions.SpeedFromFrameCount) != 0)
+                Speed *= PoseableShape?.SharedShape?.Animations?.FirstOrDefault()?.FrameCount ?? 1;
+            if ((options & MstsOptions.SpeedFromFrameRate) != 0)
+                Speed *= PoseableShape?.SharedShape?.Animations?.FirstOrDefault()?.FrameRate ?? 30f;
+            if ((options & MstsOptions.SpeedFromFrameRatePer30) != 0)
+                Speed *= (PoseableShape?.SharedShape?.Animations?.FirstOrDefault()?.FrameRate ?? 30f) / 30f;
+        }
+
+        /// <summary>
+        /// Sets the speed only in case of glTF format.
+        /// </summary>
+        public void SetGltfSpeed(float speed)
+        {
+            if (PoseableShape?.SharedShape is GltfShape)
+                Speed *= speed;
+        }
+
+        public int GetFirstTargetNode()
+        {
+            return PoseableShape.SharedShape.GetAnimationTargetNode(MatrixIndexes.FirstOrDefault());
         }
 
         /// <summary>
         /// Ensure the shape file contained parts of this type 
         /// and those parts have an animation section.
         /// </summary>
-        public bool Empty()
+        public bool IsAnimated()
         {
-            return MatrixIndexes.Count == 0;
+            return MatrixIndexes.Count > 0;
         }
 
         void SetFrame(float frame)
         {
+            if (frame == AnimationKey)
+                return;
+
             AnimationKey = frame;
+
             foreach (var matrix in MatrixIndexes)
-                PoseableShape.AnimateMatrix(matrix, AnimationKey);
+                PoseableShape.SharedShape.Animate(matrix, AnimationKey, PoseableShape.XNAMatrices);
         }
 
         /// <summary>
@@ -98,29 +209,15 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetFrameClamp(float frame)
         {
-            if (frame > MaxFrame) frame = MaxFrame;
-            if (frame < 0) frame = 0;
-            SetFrame(frame);
-        }
-
-        /// <summary>
-        /// Smoothly changes the animation to a particular frame whilst clamping it to the frame count range,
-        /// with adjustable animation speed (default 1 animation frame/sec).
-        /// </summary>
-        public void UpdateFrameClamp(float frame, ElapsedTime elapsedTime, float fps = 1.0f)
-        {
-            if (Math.Abs(frame - AnimationKey) > elapsedTime.ClockSeconds * fps)
-                SetFrameClamp(AnimationKey + Math.Sign(frame - AnimationKey) * elapsedTime.ClockSeconds * fps);
-            else
-                SetFrameClamp(frame);
+            SetFrame(MathHelper.Clamp(frame, 0, MaxFrame));
         }
 
         /// <summary>
         /// Sets the animation to a particular frame whilst cycling back to the start as input goes beyond the last frame.
+        /// Animates from 0-MaxFrame then MaxFrame-0 for values within [0 .. 2*MaxFrame].
         /// </summary>
         public void SetFrameCycle(float frame)
         {
-            // Animates from 0-MaxFrame then MaxFrame-0 for values of 0>=frame<=2*MaxFrame.
             SetFrameClamp(MaxFrame - Math.Abs(frame - MaxFrame));
         }
 
@@ -129,18 +226,33 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetFrameWrap(float frame)
         {
-            // Wrap the frame around 0-MaxFrame without hanging when MaxFrame=0.
-            if (MaxFrame > 0)
+            CalculateFrameWrap(ref frame, 0, MaxFrame);
+            SetFrame(frame);
+        }
+
+        /// <summary>
+        /// Pre-calculates the frame wrapping around the frame count range.
+        /// </summary>
+        bool CalculateFrameWrap(ref float frame, float minFrame, float maxFrame)
+        {
+            if (minFrame < 0) minFrame = 0;
+            if (maxFrame > MaxFrame) maxFrame = MaxFrame;
+
+            if (minFrame <= frame && frame <= MaxFrame)
+                return false;
+
+            if (maxFrame - minFrame != 0)
             {
-                frame %= MaxFrame;
+                frame = minFrame + (frame - minFrame) % (maxFrame - minFrame);
                 // If frame was negative (eg: animation run in reverse), it will still be negative
                 // and needs one additional offset by MaxFrame to be in the correct range
                 if (frame < 0)
-                    frame += MaxFrame;
+                    frame += maxFrame;
             }
-            else if (frame < 0)
-                frame = 0;
-            SetFrame(frame);
+            else
+                frame = minFrame;
+            
+            return true;
         }
 
         /// <summary>
@@ -152,22 +264,32 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Updates an animated part that toggles between two states (e.g. pantograph, doors, mirrors),
-        /// with adjustable animation speed (default 1 animation frame/sec).
+        /// Bypass the normal slow transition and jump the part immediately to this new state
         /// </summary>
-        public void UpdateState(bool state, ElapsedTime elapsedTime, float fps = 1.0f)
+        public void SetState(float state)
         {
-            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds * fps);
+            SetFrame(MathHelper.Clamp(state, 0f, 1f) * MaxFrame);
         }
 
         /// <summary>
-        /// Updates an animated part that toggles between two states with adjustable animation speed (default 1 animation frame/sec)
-        /// and returns relative value of animation key (between 0 and 1).
+        /// Smoothly changes the animation to a particular state between 0 and 1.
         /// </summary>
-        public float UpdateAndReturnState(bool state, ElapsedTime elapsedTime, float fps = 1.0f)
+        public void UpdateState(float state, ElapsedTime elapsedTime)
         {
-            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds * fps);
-            return AnimationKey / MaxFrame;
+            var desiredKey = state * MaxFrame;
+
+            if (Math.Abs(desiredKey - AnimationKey) > elapsedTime.ClockSeconds * Speed * SlowDownFactor)
+                SetFrameClamp(AnimationKey + Math.Sign(desiredKey - AnimationKey) * elapsedTime.ClockSeconds * Speed * SlowDownFactor);
+            else
+                SetFrameClamp(desiredKey);
+        }
+
+        /// <summary>
+        /// Updates an animated part that toggles between two states.
+        /// </summary>
+        public void UpdateState(bool state, ElapsedTime elapsedTime)
+        {
+            UpdateState(state ? 1f : 0f, elapsedTime);
         }
 
         /// <summary>
@@ -175,7 +297,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public float AnimationKeyFraction()
         {
-            return AnimationKey / MaxFrame;
+            return MaxFrame == 0 ? 0 : AnimationKey / MaxFrame;
         }
 
         /// <summary>
@@ -183,38 +305,35 @@ namespace Orts.Viewer3D
         /// </summary>
         public void UpdateLoop(float change)
         {
-            if (PoseableShape.SharedShape.Animations == null || PoseableShape.SharedShape.Animations.Count == 0 || MaxFrame == 0)
-                return;
-
-            // The speed of rotation is set at 8 frames of animation per rotation at 30 FPS (so 16 frames = 60 FPS, etc.).
-            var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 8 / 30f;
-            SetFrameWrap(AnimationKey + change * frameRate);
+            SetFrameWrap(AnimationKey + change * Speed * SlowDownFactor);
         }
 
         /// <summary>
         /// Updates an animated part that loops only when enabled (e.g. wipers).
         /// </summary>
-        public void UpdateLoop(bool running, ElapsedTime elapsedTime, float frameRateMultiplier = 1.5f)
+        /// <param name="runningSign">1 for forward, -1 for reverse, 0 for stopped</param>
+        /// <param name="elapsedTime">The elapsed time since the last update</param>
+        public void UpdateLoop(float runningSign, ElapsedTime elapsedTime, float targetKey = 0, float minFrame = 0, float maxFrame = float.MaxValue)
         {
-            if (PoseableShape.SharedShape.Animations == null || PoseableShape.SharedShape.Animations.Count == 0 || MaxFrame == 0)
+            if (runningSign == 0 && AnimationKey == targetKey)
                 return;
 
-            // The speed of cycling is as default 1.5 frames of animation per second at 30 FPS.
-            var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * frameRateMultiplier / 30f;
-            if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds * frameRate < MaxFrame))
-                SetFrameWrap(AnimationKey + elapsedTime.ClockSeconds * frameRate);
-            else
-                SetFrame(0);
-        }
+            if (runningSign != 0)
+                LoopSign = Math.Sign(runningSign);
 
-        /// <summary>
-        /// Swap the pointers around.
-        /// </summary>
-        public static void Swap(ref AnimatedPart a, ref AnimatedPart b)
-        {
-            AnimatedPart temp = a;
-            a = b;
-            b = temp;
+            var resultKey = AnimationKey + elapsedTime.ClockSeconds * Speed * SlowDownFactor * LoopSign;
+            var wrapped = CalculateFrameWrap(ref resultKey, minFrame, maxFrame);
+
+            bool targetReached = LoopSign < 0
+                ? (wrapped ? (AnimationKey > targetKey || targetKey >= resultKey)
+                           : (AnimationKey > targetKey && targetKey >= resultKey))
+                : (wrapped ? (AnimationKey < targetKey || targetKey <= resultKey)
+                           : (AnimationKey < targetKey && targetKey <= resultKey));
+
+            if (runningSign == 0 && targetReached)
+                SetFrame(targetKey);
+            else
+                SetFrameWrap(resultKey);
         }
     }
 }

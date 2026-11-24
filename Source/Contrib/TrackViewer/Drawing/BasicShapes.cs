@@ -314,7 +314,7 @@ namespace ORTS.TrackViewer.Drawing
                     try
                     {
                         if (Path.GetExtension(path) == ".dds")
-                            DDSLib.DDSFromFile(path, graphicsDevice, true, out texture);
+                            DDSLib.DDSFromFile(path, graphicsDevice, true, out texture, false);
                         else if (Path.GetExtension(path) == ".ace")
                             texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
                         else

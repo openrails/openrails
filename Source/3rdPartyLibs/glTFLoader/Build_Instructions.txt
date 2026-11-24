@@ -1,0 +1,10 @@
+1. git clone the glTF schema repository to any directory: https://github.com/KhronosGroup/glTF
+2. Replace the glTF\specification\2.0\schema\extras.schema.json file with the one provided here by the OpenRails project.
+3. Replace the glTF\specification\2.0\schema\animation.channel.target.schema.json file with the one provided here by the OpenRails project.
+4. Copy the glTF\extensions\2.0\Khronos\KHR_animation_pointer\schema\animation.channel.target.KHR_animation_pointer.schema.json file in to the glTF\specification\2.0\schema\ folder.
+5. git clone the gltfLoader repository to the same base directory: https://github.com/KhronosGroup/glTF-CSharp-Loader
+6. Open the glTF-CSharp-Loader\CSharp.sln
+7. Bump the version of Newtonsoft.Json in the gltfLoader project to match with that one used in OpenRails (11.0.2 as of writing this).
+8. Build the Generator project.
+9. Build the gltfLoader project.
+10. Copy the resulting glTF-CSharp-Loader\glTFLoader\bin\Debug\netstandard1.3\glTFLoader.dll to this directory.
