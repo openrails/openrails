@@ -96,6 +96,7 @@ namespace Orts.Simulation
         public Vector2 WindInstantaneousDirection;
         public float WindAverageSpeedMpS;
         public float WindInstantaneousSpeedMpS;
+        public int BeaufortScale;
 
         public float OverallDimmingFactor { get; private set; }
         public float AmbientLightingIntensity { get; private set; }
