@@ -1,4 +1,4 @@
-// COPYRIGHT 2009 - 2023 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -24,14 +24,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Common;
-using ORTS.Common;
-using ORTS.Common.Input;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.MultiPlayer;
 using Orts.Simulation;
+using Orts.Viewer3D;
+using ORTS.Common;
+using ORTS.Common.Input;
 using Events = Orts.Common.Events;
 
 namespace Orts.Viewer3D
@@ -41,10 +43,16 @@ namespace Orts.Viewer3D
     {
         public readonly Viewer Viewer;
         public readonly Weather Weather;
+        // Parameters for weather sounds
+        readonly object WindExSoundOwner = new object();
+        readonly object WindInSoundOwner = new object();
+        private bool windExRegistered = false;
+        private bool windInRegistered = false;
 
         public readonly List<SoundSourceBase> ClearSound;
         public readonly List<SoundSourceBase> RainSound;
         public readonly List<SoundSourceBase> SnowSound;
+        public readonly List<SoundSourceBase> WindSound;
         public readonly List<SoundSourceBase> WeatherSounds = new List<SoundSourceBase>();
 
         public Vector4 CloudScalePosition { get => new Vector4(CloudScale.X, CloudScale.Y, CloudPositionM.X / SkyPrimitive.RadiusM, CloudPositionM.Y / SkyPrimitive.RadiusM); }
@@ -65,16 +73,42 @@ namespace Orts.Viewer3D
         public int DaylightOffset = 0;
 
         // Variables used for wind calculations
-        const int WindSpeedBeaufort = 6;
         const float WindInstantaneousDirectionLimitRad = (float)(45 * Math.PI / 180);
-        static readonly float WindInstantaneousSpeedLimit = WeatherConstants.WindSpeedGustMpS[(int)WeatherConstants.Condition.Light];
+        float WindInstantaneousSpeedLimit;
         const float WindNoiseScale = 10;
         readonly float WindInstantaneousDirectionNoiseStart = (float)Viewer.Random.NextDouble() * WindNoiseScale;
         readonly float WindInstantaneousSpeedNoiseStart = (float)Viewer.Random.NextDouble() * WindNoiseScale;
         const float WindGustUpdateTimeS = 0.25f;
         float WindUpdateTimer = 0.0f;
 
-        public WeatherControl(Viewer viewer)
+        static readonly float[,] WindCloudCoverRanges =
+        {
+            { 0.00f, 0.10f }, { 0.05f, 0.20f }, { 0.15f, 0.30f }, { 0.25f, 0.45f },
+            { 0.40f, 0.60f }, { 0.55f, 0.75f }, { 0.70f, 0.85f }, { 0.80f, 0.92f },
+            { 0.88f, 0.96f }, { 0.92f, 0.98f }, { 0.95f, 1.00f }, { 0.98f, 1.00f },
+            { 1.00f, 1.00f },
+        };
+        static readonly float[,] WindVisibilityRangesM =
+        {
+            { 20000, 20000 }, { 18000, 20000 }, { 16000, 19000 }, { 14000, 17000 },
+            { 11000, 15000 }, { 8000, 12000 }, { 5000, 9000 }, { 3000, 6000 },
+            { 1500, 3500 }, { 800, 2000 }, { 300, 1000 }, { 100, 400 }, { 0, 150 },
+        };
+        static readonly float[,] WindPrecipitationRangesPPSPM2 =
+        {
+            { 0.0000f, 0.0000f }, { 0.0000f, 0.0000f }, { 0.0000f, 0.0000f },
+            { 0.0000f, 0.0005f }, { 0.0005f, 0.0015f }, { 0.0015f, 0.0030f },
+            { 0.0030f, 0.0050f }, { 0.0050f, 0.0075f }, { 0.0075f, 0.0100f },
+            { 0.0100f, 0.0120f }, { 0.0120f, 0.0135f }, { 0.0135f, 0.0145f },
+            { 0.0145f, 0.0150f },
+        };
+        static readonly float[] WindMeanSpeedByBeaufortMpS =
+        {
+            0.25f, 1.0f, 2.45f, 4.45f, 6.7f, 9.35f, 12.3f,
+            15.5f, 18.95f, 22.6f, 26.45f, 30.55f, 32.7f,
+        };
+
+public WeatherControl(Viewer viewer)
         {
             Viewer = viewer;
             Weather = Viewer.Simulator.Weather;
@@ -100,10 +134,16 @@ namespace Orts.Viewer3D
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_in.sms"), false),
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_ex.sms"), false),
             };
+            WindSound = new List<SoundSourceBase>
+            {
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "wind_in.sms"), false),
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "wind_ex.sms"), false),
+            };
 
             WeatherSounds.AddRange(ClearSound);
             WeatherSounds.AddRange(RainSound);
             WeatherSounds.AddRange(SnowSound);
+            WeatherSounds.AddRange(WindSound);
 
             SetInitialWeatherParameters();
             UpdateWeatherParameters();
@@ -129,6 +169,44 @@ namespace Orts.Viewer3D
                 SetInitialWeatherParameters();
                 UpdateWeatherParameters();
             };
+        }
+
+        // add this method inside WeatherControl
+        void ManageWindSounds()
+        {
+            // filter to concrete SoundSource before accessing SMSFileName
+            var windEx = WindSound.OfType<SoundSource>().FirstOrDefault(s => !string.IsNullOrEmpty(s.SMSFileName) && s.SMSFileName.EndsWith("wind_ex.sms", StringComparison.OrdinalIgnoreCase));
+            var windIn = WindSound.OfType<SoundSource>().FirstOrDefault(s => !string.IsNullOrEmpty(s.SMSFileName) &&s.SMSFileName.EndsWith("wind_in.sms", StringComparison.OrdinalIgnoreCase));
+
+            if (windEx != null)
+            {
+                bool shouldRegisterEx = Viewer?.Camera?.Style == Camera.Styles.External;
+                if (shouldRegisterEx && !windExRegistered)
+                {
+                    Viewer.SoundProcess.AddSoundSource(WindExSoundOwner, windEx);
+                    windExRegistered = true;
+                }
+                else if (!shouldRegisterEx && windExRegistered)
+                {
+                    Viewer.SoundProcess.RemoveSoundSources(WindExSoundOwner);
+                    windExRegistered = false;
+                }
+            }
+
+            if (windIn != null)
+            {
+                bool shouldRegisterIn = Viewer?.Camera?.Style == Camera.Styles.Cab || Viewer?.Camera?.Style == Camera.Styles.Passenger;
+                if (shouldRegisterIn && !windInRegistered)
+                {
+                    Viewer.SoundProcess.AddSoundSource(WindInSoundOwner, windIn);
+                    windInRegistered = true;
+                }
+                else if (!shouldRegisterIn && windInRegistered)
+                {
+                    Viewer.SoundProcess.RemoveSoundSources(WindInSoundOwner);
+                    windInRegistered = false;
+                }
+            }
         }
 
         public virtual void SaveWeatherParameters(BinaryWriter outf)
@@ -195,11 +273,108 @@ namespace Orts.Viewer3D
             }
 
             Weather.WindAverageDirectionRad = (float)Viewer.Random.NextDouble() * MathHelper.TwoPi;
-            Weather.WindAverageSpeedMpS = (float)Viewer.Random.NextDouble() * WeatherConstants.WindSpeedBeaufortMpS[WindSpeedBeaufort];
+            UpdateWindSpeedFromConditions();
             CloudScale = new Vector2(4, 4);
         }
 
-        void UpdateSoundSources()
+        /// <summary>
+        /// Estimates a Beaufort force from the current cloud cover, visibility, and precipitation values,
+        /// then updates the average wind speed and gust limit from the corresponding Beaufort tables.
+        /// The weather input values are read-only to this calculation.
+        /// </summary>
+        /// <remarks>
+        /// This is a heuristic, not a meteorological derivation: weather conditions do not uniquely determine
+        /// wind speed. The force-selection weights and visibility override are modeling assumptions and have
+        /// not been validated against observed wind data.
+        /// </remarks>
+        void UpdateWindSpeedFromConditions()
+        {
+            // Read the current weather values; this calculation does not change them.
+            var beaufortForce = GetClosestBeaufortForce();
+            Weather.BeaufortScale = (int)beaufortForce;
+            var lowerForce = (int)beaufortForce;
+            Weather.WindAverageSpeedMpS = lowerForce >= WindMeanSpeedByBeaufortMpS.Length - 1
+                ? WindMeanSpeedByBeaufortMpS[WindMeanSpeedByBeaufortMpS.Length - 1]
+                : MathHelper.Lerp(
+                    WindMeanSpeedByBeaufortMpS[lowerForce],
+                    WindMeanSpeedByBeaufortMpS[lowerForce + 1],
+                    beaufortForce - lowerForce);
+
+            var gustForce = (int)Math.Round((double)beaufortForce, MidpointRounding.AwayFromZero);
+            if (gustForce <= 3)
+            {
+                WindInstantaneousSpeedLimit = 0;
+            }
+            else if (gustForce <= 6)
+            {
+                WindInstantaneousSpeedLimit = WeatherConstants.WindSpeedGustMpS[(int)WeatherConstants.Condition.Light];
+            }
+            else if (gustForce <= 8)
+            {
+                WindInstantaneousSpeedLimit = WeatherConstants.WindSpeedGustMpS[(int)WeatherConstants.Condition.Moderate];
+            }
+            else
+            {
+                WindInstantaneousSpeedLimit = WeatherConstants.WindSpeedGustMpS[(int)WeatherConstants.Condition.Heavy];
+            }
+        }
+
+        /// <summary>
+        /// Selects the Beaufort row with the lowest weighted score for the current weather values.
+        /// Cloud cover and visibility are compared with each row's range midpoint; precipitation is
+        /// compared with the row's range using a normalized distance outside that range.
+        /// Equal scores resolve to the lower force.
+        /// </summary>
+        /// <remarks>
+        /// The scoring weights are 55% precipitation, 30% visibility, and 15% cloud cover. Visibility is
+        /// excluded when precipitation intensity is at or below 0.0005 PPSPM2, an assumed fog override intended
+        /// to prevent low visibility alone from selecting a high force. The precipitation distance is normalized
+        /// by each row's range width, with 0.0005 PPSPM2 as the floor for zero-width ranges. These weights,
+        /// normalization choices, and the override threshold are heuristic assumptions, not empirically calibrated.
+        /// </remarks>
+        int GetClosestBeaufortForce()
+        {
+            var closestForce = 0;
+            var closestDistance = float.PositiveInfinity;
+            const float PrecipitationWeight = 0.55f;
+            const float VisibilityWeight = 0.30f;
+            const float CloudCoverWeight = 0.15f;
+            const float PrecipitationRangeNormalizationFloorPPSPM2 = 0.0005f;
+            var maximumVisibilityM = WindVisibilityRangesM[0, 1];
+            var maximumCloudCoverFactor = WindCloudCoverRanges[WindCloudCoverRanges.GetLength(0) - 1, 1];
+
+            var visibilityWeight = Weather.PrecipitationIntensityPPSPM2 <= 0.0005f ? 0 : VisibilityWeight;
+
+            for (var force = 0; force < WindMeanSpeedByBeaufortMpS.Length; force++)
+            {
+                var cloudCoverMidpoint = (WindCloudCoverRanges[force, 0] + WindCloudCoverRanges[force, 1]) / 2;
+                var visibilityMidpoint = (WindVisibilityRangesM[force, 0] + WindVisibilityRangesM[force, 1]) / 2;
+                var precipitationMinimum = WindPrecipitationRangesPPSPM2[force, 0];
+                var precipitationMaximum = WindPrecipitationRangesPPSPM2[force, 1];
+                var precipitationRange = precipitationMaximum - precipitationMinimum;
+                var precipitationScale = Math.Max(precipitationRange, PrecipitationRangeNormalizationFloorPPSPM2);
+                var precipitationDistance = Weather.PrecipitationIntensityPPSPM2 < precipitationMinimum
+                                    ? precipitationMinimum - Weather.PrecipitationIntensityPPSPM2
+                                    : Weather.PrecipitationIntensityPPSPM2 > precipitationMaximum
+                                        ? Weather.PrecipitationIntensityPPSPM2 - precipitationMaximum
+                                        : 0;
+                var cloudCoverError = (Weather.CloudCoverFactor - cloudCoverMidpoint) / maximumCloudCoverFactor;
+                var visibilityError = (Weather.VisibilityM - visibilityMidpoint) / maximumVisibilityM;
+                var precipitationError = precipitationDistance / precipitationScale;
+                var distance = CloudCoverWeight * cloudCoverError * cloudCoverError + visibilityWeight * visibilityError * visibilityError + PrecipitationWeight * precipitationError * precipitationError;
+
+                // Strict comparison makes equal-score ties resolve to the lower force.
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestForce = force;
+                }
+            }
+
+            return closestForce;
+        }
+
+void UpdateSoundSources()
         {
             Viewer.SoundProcess.RemoveSoundSources(this);
             switch (Viewer.Simulator.WeatherType)
@@ -619,6 +794,10 @@ namespace Orts.Viewer3D
                 Viewer.Simulator.WeatherType = Weather.PrecipitationLiquidity > DynamicWeather.RainSnowLiquidityThreshold ? WeatherType.Rain : WeatherType.Snow;
                 UpdateWeatherParameters();
             }
+
+            UpdateWindSpeedFromConditions();
+            // Update wind sounds based on camera style
+            ManageWindSounds();
         }
 
         public class DynamicWeather
