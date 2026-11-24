@@ -278,17 +278,19 @@ public WeatherControl(Viewer viewer)
         }
 
         /// <summary>
-        /// Reads the current cloud cover, visibility, and precipitation values to estimate a Beaufort force.
-        /// Averages the force selected for each value, then updates the average wind speed and gust limit.
-        /// Weather inputs are not modified; ties between equally close ranges resolve to the lower force.
+        /// Estimates a Beaufort force from the current cloud cover, visibility, and precipitation values,
+        /// then updates the average wind speed and gust limit from the corresponding Beaufort tables.
+        /// The weather input values are read-only to this calculation.
         /// </summary>
+        /// <remarks>
+        /// This is a heuristic, not a meteorological derivation: weather conditions do not uniquely determine
+        /// wind speed. The force-selection weights and visibility override are modeling assumptions and have
+        /// not been validated against observed wind data.
+        /// </remarks>
         void UpdateWindSpeedFromConditions()
         {
             // Read the current weather values; this calculation does not change them.
-            var cloudForce = GetClosestBeaufortForce(Weather.CloudCoverFactor, WindCloudCoverRanges);
-            var visibilityForce = GetClosestBeaufortForce(Weather.VisibilityM, WindVisibilityRangesM);
-            var precipitationForce = GetClosestBeaufortForce(Weather.PrecipitationIntensityPPSPM2, WindPrecipitationRangesPPSPM2);
-            var beaufortForce = (cloudForce + visibilityForce + precipitationForce) / 3f;
+            var beaufortForce = GetClosestBeaufortForce();
             Weather.BeaufortScale = (int)beaufortForce;
             var lowerForce = (int)beaufortForce;
             Weather.WindAverageSpeedMpS = lowerForce >= WindMeanSpeedByBeaufortMpS.Length - 1
@@ -298,7 +300,7 @@ public WeatherControl(Viewer viewer)
                     WindMeanSpeedByBeaufortMpS[lowerForce + 1],
                     beaufortForce - lowerForce);
 
-            var gustForce = (int)Math.Round(beaufortForce, MidpointRounding.AwayFromZero);
+            var gustForce = (int)Math.Round((double)beaufortForce, MidpointRounding.AwayFromZero);
             if (gustForce <= 3)
             {
                 WindInstantaneousSpeedLimit = 0;
@@ -318,21 +320,50 @@ public WeatherControl(Viewer viewer)
         }
 
         /// <summary>
-        /// Returns the Beaufort force whose inclusive range is closest to the supplied value.
-        /// Values within a range have zero distance; ties resolve to the lower force.
+        /// Selects the Beaufort row with the lowest weighted score for the current weather values.
+        /// Cloud cover and visibility are compared with each row's range midpoint; precipitation is
+        /// compared with the row's range using a normalized distance outside that range.
+        /// Equal scores resolve to the lower force.
         /// </summary>
-        static int GetClosestBeaufortForce(float value, float[,] ranges)
+        /// <remarks>
+        /// The scoring weights are 55% precipitation, 30% visibility, and 15% cloud cover. Visibility is
+        /// excluded when precipitation intensity is at or below 0.0005 PPSPM2, an assumed fog override intended
+        /// to prevent low visibility alone from selecting a high force. The precipitation distance is normalized
+        /// by each row's range width, with 0.0005 PPSPM2 as the floor for zero-width ranges. These weights,
+        /// normalization choices, and the override threshold are heuristic assumptions, not empirically calibrated.
+        /// </remarks>
+        int GetClosestBeaufortForce()
         {
             var closestForce = 0;
             var closestDistance = float.PositiveInfinity;
+            const float PrecipitationWeight = 0.55f;
+            const float VisibilityWeight = 0.30f;
+            const float CloudCoverWeight = 0.15f;
+            const float PrecipitationRangeNormalizationFloorPPSPM2 = 0.0005f;
+            var maximumVisibilityM = WindVisibilityRangesM[0, 1];
+            var maximumCloudCoverFactor = WindCloudCoverRanges[WindCloudCoverRanges.GetLength(0) - 1, 1];
 
-            for (var force = 0; force < ranges.GetLength(0); force++)
+            var visibilityWeight = Weather.PrecipitationIntensityPPSPM2 <= 0.0005f ? 0 : VisibilityWeight;
+
+            for (var force = 0; force < WindMeanSpeedByBeaufortMpS.Length; force++)
             {
-                var minimum = ranges[force, 0];
-                var maximum = ranges[force, 1];
-                var distance = value < minimum ? minimum - value : value > maximum ? value - maximum : 0;
+                var cloudCoverMidpoint = (WindCloudCoverRanges[force, 0] + WindCloudCoverRanges[force, 1]) / 2;
+                var visibilityMidpoint = (WindVisibilityRangesM[force, 0] + WindVisibilityRangesM[force, 1]) / 2;
+                var precipitationMinimum = WindPrecipitationRangesPPSPM2[force, 0];
+                var precipitationMaximum = WindPrecipitationRangesPPSPM2[force, 1];
+                var precipitationRange = precipitationMaximum - precipitationMinimum;
+                var precipitationScale = Math.Max(precipitationRange, PrecipitationRangeNormalizationFloorPPSPM2);
+                var precipitationDistance = Weather.PrecipitationIntensityPPSPM2 < precipitationMinimum
+                                    ? precipitationMinimum - Weather.PrecipitationIntensityPPSPM2
+                                    : Weather.PrecipitationIntensityPPSPM2 > precipitationMaximum
+                                        ? Weather.PrecipitationIntensityPPSPM2 - precipitationMaximum
+                                        : 0;
+                var cloudCoverError = (Weather.CloudCoverFactor - cloudCoverMidpoint) / maximumCloudCoverFactor;
+                var visibilityError = (Weather.VisibilityM - visibilityMidpoint) / maximumVisibilityM;
+                var precipitationError = precipitationDistance / precipitationScale;
+                var distance = CloudCoverWeight * cloudCoverError * cloudCoverError + visibilityWeight * visibilityError * visibilityError + PrecipitationWeight * precipitationError * precipitationError;
 
-                // Strict comparison makes overlapping-range ties resolve to the lower force.
+                // Strict comparison makes equal-score ties resolve to the lower force.
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
