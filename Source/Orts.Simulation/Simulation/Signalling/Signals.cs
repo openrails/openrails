@@ -5112,6 +5112,16 @@ namespace Orts.Simulation.Signalling
                 switchSet = false;
             }
 
+            else if (MPManager.IsClient())
+            {
+                TrackNode thisNode = trackDB.TrackNodes[switchSection.OriginalIndex];
+                // Aider selects and throws the switch, but need to confirm by the dispatcher
+                MPManager.Notify(new MSGSwitch(MPManager.GetUserName(),
+                    thisNode.UiD.WorldTileX, thisNode.UiD.WorldTileZ, thisNode.UiD.WorldId, switchSection.JunctionLastRoute == 0 ? 1 : 0, true).ToString());
+                Simulator.Confirmer.Information(Simulator.Catalog.GetString("Switching Request Sent to the Server"));
+                switchSet = true;
+            }
+
             else if (!switchSection.CircuitState.HasTrainsOccupying() && thisTrain == null)
             {
                 switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;

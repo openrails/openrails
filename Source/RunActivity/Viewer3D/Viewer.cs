@@ -1781,26 +1781,12 @@ namespace Orts.Viewer3D
         }
         public void ToggleSwitchAhead()
         {
-            if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
-            {
-                PlayerTrain.ProcessRequestManualSetSwitch(Direction.Forward);
-            }
-            else if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
-            {
-                PlayerTrain.ProcessRequestExplorerSetSwitch(Direction.Forward);
-            }
+            Simulation.Signalling.Signals.RequestSetSwitch(PlayerTrain, Direction.Forward);
         }
 
         public void ToggleSwitchBehind()
         {
-            if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
-            {
-                PlayerTrain.ProcessRequestManualSetSwitch(Direction.Reverse);
-            }
-            else if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
-            {
-                PlayerTrain.ProcessRequestExplorerSetSwitch(Direction.Reverse);
-            }
+            Simulation.Signalling.Signals.RequestSetSwitch(PlayerTrain, Direction.Reverse);
         }
 
         internal void UncoupleBehind(int carPosition)
