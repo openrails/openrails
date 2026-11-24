@@ -547,7 +547,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file.</returns>
-        public int ReadInt(int? defaultValue)
+        public int ReadInt(int? defaultValue, float? minimum = null, float? maximum = null)
         {
             string item = ReadItem();
 
@@ -560,7 +560,12 @@ namespace Orts.Parsers.Msts
             int val;
             if (item.Length == 0) return 0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (int.TryParse(item, parseNum, parseNFI, out val)) return val;
+            if (int.TryParse(item, parseNum, parseNFI, out val))
+            {
+                if (minimum != null && val < minimum) STFException.TraceWarning(this, $"Integer value is below expected minimum of {minimum}; got {val}");
+                if (maximum != null && val > maximum) STFException.TraceWarning(this, $"Integer value is above expected maximum of {maximum}; got {val}");
+                return val;
+            }
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
@@ -569,7 +574,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file.</returns>
-        public uint ReadUInt(uint? defaultValue)
+        public uint ReadUInt(uint? defaultValue, float? minimum = null, float? maximum = null)
         {
             string item = ReadItem();
 
@@ -583,8 +588,12 @@ namespace Orts.Parsers.Msts
             uint val;
             if (item.Length == 0) return 0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (uint.TryParse(item, parseNum, parseNFI, out val)) return val;
-
+            if (uint.TryParse(item, parseNum, parseNFI, out val))
+            {
+                if (minimum != null && val < minimum) STFException.TraceWarning(this, $"Unsigned integer value is below expected minimum of {minimum}; got {val}");
+                if (maximum != null && val > maximum) STFException.TraceWarning(this, $"Unsigned integer value is above expected maximum of {maximum}; got {val}");
+                return val;
+            }
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
@@ -594,7 +603,7 @@ namespace Orts.Parsers.Msts
         /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
-        public float ReadFloat(UNITS validUnits, float? defaultValue)
+        public float ReadFloat(UNITS validUnits, float? defaultValue, float? minimum = null, float? maximum = null)
         {
             string item = ReadItem();
 
@@ -613,7 +622,13 @@ namespace Orts.Parsers.Msts
             double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0.0f;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (float.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
+            if (float.TryParse(item, parseNum, parseNFI, out val))
+            {
+                if (scale != 1) val = (float)(scale * val);
+                if (minimum != null && val < minimum) STFException.TraceWarning(this, $"Floating point value is below expected minimum of {minimum}; got {val}");
+                if (maximum != null && val > maximum) STFException.TraceWarning(this, $"Floating point value is above expected maximum of {maximum}; got {val}");
+                return val;
+            }
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
@@ -623,7 +638,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file.</returns>
-        public double ReadDouble(double? defaultValue)
+        public double ReadDouble(double? defaultValue, float? minimum = null, float? maximum = null)
         {
             string item = ReadItem();
 
@@ -637,7 +652,12 @@ namespace Orts.Parsers.Msts
             double val;
             if (item.Length == 0) return 0.0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (double.TryParse(item, parseNum, parseNFI, out val)) return val;
+            if (double.TryParse(item, parseNum, parseNFI, out val))
+            {
+                if (minimum != null && val < minimum) STFException.TraceWarning(this, $"Double floating point value is below expected minimum of {minimum}; got {val}");
+                if (maximum != null && val > maximum) STFException.TraceWarning(this, $"Double floating point value is above expected maximum of {maximum}; got {val}");
+                return val;
+            }
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
@@ -1283,7 +1303,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a integer.</returns>
-        public int ReadIntBlock(int? defaultValue)
+        public int ReadIntBlock(int? defaultValue, float? minimum = null, float? maximum = null)
         {
             if (Eof)
             {
@@ -1298,7 +1318,7 @@ namespace Orts.Parsers.Msts
             }
             if (s == "(")
             {
-                int result = ReadInt(defaultValue);
+                int result = ReadInt(defaultValue, minimum, maximum);
                 SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
                 return result;
             }
@@ -1310,7 +1330,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a unsigned integer.</returns>
-        public uint ReadUIntBlock(uint? defaultValue)
+        public uint ReadUIntBlock(uint? defaultValue, float? minimum = null, float? maximum = null)
         {
             if (Eof)
             {
@@ -1325,7 +1345,7 @@ namespace Orts.Parsers.Msts
             }
             if (s == "(")
             {
-                uint result = ReadUInt(defaultValue);
+                uint result = ReadUInt(defaultValue, minimum, maximum);
                 SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
                 return result;
             }
@@ -1338,7 +1358,7 @@ namespace Orts.Parsers.Msts
         /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a single precision constant.</returns>
-        public float ReadFloatBlock(UNITS validUnits, float? defaultValue)
+        public float ReadFloatBlock(UNITS validUnits, float? defaultValue, float? minimum = null, float? maximum = null)
         {
             if (Eof)
             {
@@ -1353,7 +1373,7 @@ namespace Orts.Parsers.Msts
             }
             if (s == "(")
             {
-                float result = ReadFloat(validUnits, defaultValue);
+                float result = ReadFloat(validUnits, defaultValue, minimum, maximum);
                 SkipRestOfBlock(); // e.g. to ignore everything after the "30" in
                 // SignalAspect ( APPROACH_1 "Approach" SpeedMPH ( 30 SignalFlags ( ASAP ) ) )
                 return result;
@@ -1366,7 +1386,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a double precision value.</returns>
-        public double ReadDoubleBlock(double? defaultValue)
+        public double ReadDoubleBlock(double? defaultValue, float? minimum = null, float? maximum = null)
         {
             if (Eof)
             {
@@ -1381,7 +1401,7 @@ namespace Orts.Parsers.Msts
             }
             if (s == "(")
             {
-                double result = ReadDouble(defaultValue);
+                double result = ReadDouble(defaultValue, minimum, maximum);
                 SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
                 return result;
             }

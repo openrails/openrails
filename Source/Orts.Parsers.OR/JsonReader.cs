@@ -1,4 +1,4 @@
-// COPYRIGHT 2018 by the Open Rails project.
+﻿// COPYRIGHT 2018 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Orts.Parsers.OR
@@ -197,30 +196,29 @@ namespace Orts.Parsers.OR
             }
         }
 
-        public float AsFloat(float defaultValue)
+        public float AsFloat(float defaultValue, float? minimum = null, float? maximum = null)
         {
-            switch (_reader.TokenType)
+            var value = _reader.TokenType switch
             {
-                case JsonToken.Float:
-                    return (float)(double)_reader.Value;
-                case JsonToken.Integer:
-                    return (long)_reader.Value;
-                default:
-                    TraceWarning($"Expected floating point value in {FullPath}; got {_reader.TokenType}");
-                    return defaultValue;
-            }
+                JsonToken.Float => (float)(double)_reader.Value,
+                JsonToken.Integer => (long)_reader.Value,
+                _ => TraceWarning($"Expected floating point value in {FullPath}; got {_reader.TokenType}", defaultValue),
+            };
+            if (minimum != null && value < minimum) TraceWarning($"Floating point value in {FullPath} is below expected minimum of {minimum}; got {value}");
+            if (maximum != null && value > maximum) TraceWarning($"Floating point value in {FullPath} is above expected maximum of {maximum}; got {value}");
+            return value;
         }
 
-        public int AsInteger(int defaultValue)
+        public int AsInteger(int defaultValue, float? minimum = null, float? maximum = null)
         {
-            switch (_reader.TokenType)
+            var value = _reader.TokenType switch
             {
-                case JsonToken.Integer:
-                    return (int)(long)_reader.Value;
-                default:
-                    TraceWarning($"Expected integer value in {FullPath}; got {_reader.TokenType}");
-                    return defaultValue;
-            }
+                JsonToken.Integer => (int)(long)_reader.Value,
+                _ => TraceWarning($"Expected integer value in {FullPath}; got {_reader.TokenType}", defaultValue),
+            };
+            if (minimum != null && value < minimum) TraceWarning($"Integer value in {FullPath} is below expected minimum of {minimum}; got {value}");
+            if (maximum != null && value > maximum) TraceWarning($"Integer value in {FullPath} is above expected maximum of {maximum}; got {value}");
+            return value;
         }
 
         public bool AsBoolean(bool defaultValue)
@@ -291,6 +289,12 @@ namespace Orts.Parsers.OR
         {
             Trace.TraceWarning("{2} in {0}:line {1}", _fileName, _reader.LineNumber, message);
             _countWarnings++;
+        }
+
+        public T TraceWarning<T>(string message, T value)
+        {
+            TraceWarning(message);
+            return value;
         }
 
         public void TraceInformation(string message)
