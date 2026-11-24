@@ -78,6 +78,7 @@
             this.pbWorldObjectDensity = new System.Windows.Forms.PictureBox();
             this.pbAntiAliasing = new System.Windows.Forms.PictureBox();
             this.pbVerticalSync = new System.Windows.Forms.PictureBox();
+            this.pbVR = new System.Windows.Forms.PictureBox();
             this.pbModelInstancing = new System.Windows.Forms.PictureBox();
             this.pbDayAmbientLight = new System.Windows.Forms.PictureBox();
             this.pbSignalLightGlow = new System.Windows.Forms.PictureBox();
@@ -102,6 +103,9 @@
             this.checkModelInstancing = new System.Windows.Forms.CheckBox();
             this.trackDayAmbientLight = new System.Windows.Forms.TrackBar();
             this.checkVerticalSync = new System.Windows.Forms.CheckBox();
+            this.checkVR = new System.Windows.Forms.CheckBox();
+            this.checkVRControllers = new System.Windows.Forms.CheckBox();
+            this.checkVRHandTracking = new System.Windows.Forms.CheckBox();
             this.labelDistantMountainsViewingDistance = new System.Windows.Forms.Label();
             this.numericDistantMountainsViewingDistance = new System.Windows.Forms.NumericUpDown();
             this.checkDistantMountains = new System.Windows.Forms.CheckBox();
@@ -259,6 +263,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAntiAliasing)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbVerticalSync)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbVR)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbModelInstancing)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDayAmbientLight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbSignalLightGlow)).BeginInit();
@@ -898,6 +903,7 @@
             this.tabPageVideo.Controls.Add(this.pbWorldObjectDensity);
             this.tabPageVideo.Controls.Add(this.pbAntiAliasing);
             this.tabPageVideo.Controls.Add(this.pbVerticalSync);
+            this.tabPageVideo.Controls.Add(this.pbVR);
             this.tabPageVideo.Controls.Add(this.pbModelInstancing);
             this.tabPageVideo.Controls.Add(this.pbDayAmbientLight);
             this.tabPageVideo.Controls.Add(this.pbSignalLightGlow);
@@ -922,6 +928,9 @@
             this.tabPageVideo.Controls.Add(this.checkModelInstancing);
             this.tabPageVideo.Controls.Add(this.trackDayAmbientLight);
             this.tabPageVideo.Controls.Add(this.checkVerticalSync);
+            this.tabPageVideo.Controls.Add(this.checkVR);
+            this.tabPageVideo.Controls.Add(this.checkVRControllers);
+            this.tabPageVideo.Controls.Add(this.checkVRHandTracking);
             this.tabPageVideo.Controls.Add(this.labelDistantMountainsViewingDistance);
             this.tabPageVideo.Controls.Add(this.numericDistantMountainsViewingDistance);
             this.tabPageVideo.Controls.Add(this.checkDistantMountains);
@@ -1011,6 +1020,18 @@
             this.pbVerticalSync.Click += new System.EventHandler(this.HelpIcon_Click);
             this.pbVerticalSync.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbVerticalSync.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbVR
+            // 
+            this.pbVR.Image = global::Menu.Properties.Resources.info_18;
+            this.pbVR.Location = new System.Drawing.Point(312, 297);
+            this.pbVR.Name = "pbVR";
+            this.pbVR.Size = new System.Drawing.Size(18, 18);
+            this.pbVR.TabIndex = 50;
+            this.pbVR.TabStop = false;
+            this.pbVR.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbVR.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbVR.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbModelInstancing
             // 
@@ -1305,6 +1326,39 @@
             this.checkVerticalSync.UseVisualStyleBackColor = true;
             this.checkVerticalSync.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.checkVerticalSync.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // checkVR
+            // 
+            this.checkVR.Location = new System.Drawing.Point(336, 297);
+            this.checkVR.Name = "checkVR";
+            this.checkVR.Size = new System.Drawing.Size(266, 16);
+            this.checkVR.TabIndex = 51;
+            this.checkVR.Text = "Virtual reality headset (OpenXR)";
+            this.checkVR.UseVisualStyleBackColor = true;
+            this.checkVR.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkVR.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // checkVRControllers
+            // 
+            this.checkVRControllers.Location = new System.Drawing.Point(352, 319);
+            this.checkVRControllers.Name = "checkVRControllers";
+            this.checkVRControllers.Size = new System.Drawing.Size(250, 16);
+            this.checkVRControllers.TabIndex = 52;
+            this.checkVRControllers.Text = "VR hand controllers";
+            this.checkVRControllers.UseVisualStyleBackColor = true;
+            this.checkVRControllers.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkVRControllers.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // checkVRHandTracking
+            // 
+            this.checkVRHandTracking.Location = new System.Drawing.Point(352, 341);
+            this.checkVRHandTracking.Name = "checkVRHandTracking";
+            this.checkVRHandTracking.Size = new System.Drawing.Size(250, 16);
+            this.checkVRHandTracking.TabIndex = 53;
+            this.checkVRHandTracking.Text = "VR hand tracking";
+            this.checkVRHandTracking.UseVisualStyleBackColor = true;
+            this.checkVRHandTracking.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.checkVRHandTracking.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // labelDistantMountainsViewingDistance
             // 
@@ -3076,6 +3130,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbWorldObjectDensity)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAntiAliasing)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbVerticalSync)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbVR)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbModelInstancing)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDayAmbientLight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbSignalLightGlow)).EndInit();
@@ -3232,6 +3287,9 @@
         private System.Windows.Forms.CheckBox checkBoilerPreheated;
         private System.Windows.Forms.CheckBox checkSimpleControlsPhysics;
         private System.Windows.Forms.CheckBox checkVerticalSync;
+        private System.Windows.Forms.CheckBox checkVR;
+        private System.Windows.Forms.CheckBox checkVRControllers;
+        private System.Windows.Forms.CheckBox checkVRHandTracking;
         private System.Windows.Forms.ComboBox comboPressureUnit;
         private System.Windows.Forms.Label labelPressureUnit;
         private System.Windows.Forms.TabPage tabPageSystem;
@@ -3328,6 +3386,7 @@
         private System.Windows.Forms.PictureBox pbWorldObjectDensity;
         private System.Windows.Forms.PictureBox pbAntiAliasing;
         private System.Windows.Forms.PictureBox pbVerticalSync;
+        private System.Windows.Forms.PictureBox pbVR;
         private System.Windows.Forms.PictureBox pbModelInstancing;
         private System.Windows.Forms.Label labelDefaultDetail;
         private System.Windows.Forms.PictureBox pbViewingFOV;

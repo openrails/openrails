@@ -50,6 +50,12 @@ namespace Orts.Viewer3D
         static bool MouseButtonsSwapped;
         public static int MouseSpeedX;
         public static int MouseSpeedY;
+        /// <summary>
+        /// Something other than the real mouse driving the mouse state (a headset controller pointing
+        /// at the cab): asked once per update with the previous state and, when it answers, its answer
+        /// replaces the real mouse for that update.
+        /// </summary>
+        public static Func<MouseState, MouseState?> VirtualMouse;
         public static RailDriverState RDState;
         public static ExternalDeviceState WebDeviceState = new ExternalDeviceState();
 
@@ -73,6 +79,9 @@ namespace Orts.Viewer3D
             // Make sure we have an "idle" (everything released) keyboard and mouse state if the window isn't active.
             KeyboardState = game.IsActive ? new KeyboardState(GetKeysWithPrintScreenFix(Keyboard.GetState())) : new KeyboardState();
             MouseState = game.IsActive ? Mouse.GetState() : new MouseState(0, 0, LastMouseState.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+            var virtualMouse = VirtualMouse?.Invoke(LastMouseState);
+            if (virtualMouse != null)
+                MouseState = virtualMouse.Value;
             MouseButtonsSwapped = System.Windows.Forms.SystemInformation.MouseButtonsSwapped;
 
             MouseSpeedX = Math.Abs(MouseState.X - LastMouseState.X);
@@ -176,6 +185,9 @@ namespace Orts.Viewer3D
             return setting.IsKeyDown(KeyboardState);
         }
 
+        /// <summary>True on the update in which <paramref name="key"/> went down (for menus that take raw keys).</summary>
+        public static bool IsKeyPressed(Keys key) { return KeyboardState.IsKeyDown(key) && !LastKeyboardState.IsKeyDown(key); }
+        public static bool IsKeyDown(Keys key) { return KeyboardState.IsKeyDown(key); }
         public static Keys[] GetPressedKeys() { return KeyboardState.GetPressedKeys(); }
         public static Keys[] GetPreviousPressedKeys() { return LastKeyboardState.GetPressedKeys(); }
 

@@ -55,18 +55,47 @@ namespace Orts.Viewer3D
         protected int MouseScrollValue;
         protected internal float FieldOfView;
 
+        // The view a camera computes is the "seat": where the driver's head is parked. With a headset,
+        // the tracked head pose is applied on top of it for culling, sound and the flat window, and the
+        // RenderFrame applies each eye's pose in the same way for the headset itself.
         protected Matrix xnaView;
-        public Matrix XnaView { get { return xnaView; } }
+        Matrix xnaViewHead;
+        public Matrix XnaView { get { return xnaViewHead; } }
+        /// <summary>The view without the headset's head pose; the frame it is tracked from.</summary>
+        public Matrix XnaSeatView { get { return xnaView; } }
+
+        // While an eye is being drawn the render thread swaps the projections for that eye's; the
+        // updater thread (picking, labels) keeps seeing the camera's own.
+        [ThreadStatic] static Matrix? renderProjection;
+        [ThreadStatic] static Matrix? renderSkyProjection;
+        [ThreadStatic] static Matrix? renderDistantMountainProjection;
 
         Matrix xnaProjection;
-        public Matrix XnaProjection { get { return xnaProjection; } }
-        public static Matrix XnaDistantMountainProjection;
+        public Matrix XnaProjection { get { return renderProjection ?? xnaProjection; } }
+        static Matrix xnaDistantMountainProjection;
+        public static Matrix XnaDistantMountainProjection { get { return renderDistantMountainProjection ?? xnaDistantMountainProjection; } }
         Vector3 frustumRightProjected;
         Vector3 frustumLeft;
         Vector3 frustumRight;
+        float screenChangedVRFov;
 
         // This sucks. It's really not camera-related at all.
-        public static Matrix XNASkyProjection;
+        static Matrix xnaSkyProjection;
+        public static Matrix XNASkyProjection { get { return renderSkyProjection ?? xnaSkyProjection; } }
+
+        [CallOnThread("Render")]
+        public static void SetRenderProjections(Matrix projection, Matrix skyProjection, Matrix distantMountainProjection)
+        {
+            renderProjection = projection;
+            renderSkyProjection = skyProjection;
+            renderDistantMountainProjection = distantMountainProjection;
+        }
+
+        [CallOnThread("Render")]
+        public static void ClearRenderProjections()
+        {
+            renderProjection = renderSkyProjection = renderDistantMountainProjection = null;
+        }
 
         // The following group of properties are used by other code to vary
         // behavior by camera; e.g. Style is used for activating sounds,
@@ -139,6 +168,7 @@ namespace Orts.Viewer3D
             Viewer.Simulator.PlayerIsInCab = Style == Styles.Cab || Style == Styles.ThreeDimCab;
             Update(ElapsedTime.Zero);
             xnaView = GetCameraView();
+            ApplyHeadPose();
             SoundBaseTile = new Point(cameraLocation.TileX, cameraLocation.TileZ);
         }
 
@@ -178,12 +208,33 @@ namespace Orts.Viewer3D
             var aspectRatio = (float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y;
             var farPlaneDistance = SkyPrimitive.RadiusM + 100;  // so far the sky is the biggest object in view
             var fovWidthRadians = MathHelper.ToRadians(FieldOfView);
+            var frustumHalfAngle = fovWidthRadians / 2 * aspectRatio;
+            var vr = Viewer.VR;
+            screenChangedVRFov = vr != null ? vr.VerticalFovRadians : 0;
+            if (vr != null && vr.VerticalFovRadians > 0)
+            {
+                // The headset decides the field of view. The eyes get their own off-centre projections
+                // when drawn; this symmetric one serves picking, labels and the light glows, and the
+                // culling frustum is opened to the headset's width with a margin for head turns.
+                aspectRatio = vr.EyeAspectRatio;
+                fovWidthRadians = vr.VerticalFovRadians;
+                frustumHalfAngle = vr.CullHalfAngleRadians;
+            }
             if (Viewer.Settings.DistantMountains)
-                XnaDistantMountainProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, MathHelper.Clamp(Viewer.Settings.ViewingDistance - 500, 500, 1500), Viewer.Settings.DistantMountainsViewingDistance);
+                xnaDistantMountainProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, MathHelper.Clamp(Viewer.Settings.ViewingDistance - 500, 500, 1500), Viewer.Settings.DistantMountainsViewingDistance);
             xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, Viewer.Settings.ViewingDistance);
-            XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, farPlaneDistance);    // TODO remove? 
-            frustumRightProjected.X = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // Precompute the right edge of the view frustrum.
-            frustumRightProjected.Z = (float)Math.Sin(fovWidthRadians / 2 * aspectRatio);
+            xnaSkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, farPlaneDistance);    // TODO remove?
+            frustumRightProjected.X = (float)Math.Cos(frustumHalfAngle);  // Precompute the right edge of the view frustrum.
+            frustumRightProjected.Z = (float)Math.Sin(frustumHalfAngle);
+        }
+
+        /// <summary>
+        /// Puts the headset's head pose on top of the seat view, or copies the seat view when there is no headset.
+        /// </summary>
+        void ApplyHeadPose()
+        {
+            var vr = Viewer.VR;
+            xnaViewHead = vr != null ? xnaView * Matrix.Invert(vr.HeadPose) : xnaView;
         }
 
         /// <summary>
@@ -193,15 +244,19 @@ namespace Orts.Viewer3D
         /// <param name="elapsedTime"></param>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var vr = Viewer.VR;
+            if ((vr != null ? vr.VerticalFovRadians : 0) != screenChangedVRFov)
+                ScreenChanged(); // the headset's field of view only becomes known once it is tracking
             xnaView = GetCameraView();
+            ApplyHeadPose();
             frame.SetCamera(this);
-            frustumLeft.X = -xnaView.M11 * frustumRightProjected.X + xnaView.M13 * frustumRightProjected.Z;
-            frustumLeft.Y = -xnaView.M21 * frustumRightProjected.X + xnaView.M23 * frustumRightProjected.Z;
-            frustumLeft.Z = -xnaView.M31 * frustumRightProjected.X + xnaView.M33 * frustumRightProjected.Z;
+            frustumLeft.X = -xnaViewHead.M11 * frustumRightProjected.X + xnaViewHead.M13 * frustumRightProjected.Z;
+            frustumLeft.Y = -xnaViewHead.M21 * frustumRightProjected.X + xnaViewHead.M23 * frustumRightProjected.Z;
+            frustumLeft.Z = -xnaViewHead.M31 * frustumRightProjected.X + xnaViewHead.M33 * frustumRightProjected.Z;
             frustumLeft.Normalize();
-            frustumRight.X = xnaView.M11 * frustumRightProjected.X + xnaView.M13 * frustumRightProjected.Z;
-            frustumRight.Y = xnaView.M21 * frustumRightProjected.X + xnaView.M23 * frustumRightProjected.Z;
-            frustumRight.Z = xnaView.M31 * frustumRightProjected.X + xnaView.M33 * frustumRightProjected.Z;
+            frustumRight.X = xnaViewHead.M11 * frustumRightProjected.X + xnaViewHead.M13 * frustumRightProjected.Z;
+            frustumRight.Y = xnaViewHead.M21 * frustumRightProjected.X + xnaViewHead.M23 * frustumRightProjected.Z;
+            frustumRight.Z = xnaViewHead.M31 * frustumRightProjected.X + xnaViewHead.M33 * frustumRightProjected.Z;
             frustumRight.Normalize();
         }
 
@@ -425,7 +480,7 @@ namespace Orts.Viewer3D
             if (previousCamera != null)
             {
                 float h, a, b;
-                ORTSMath.MatrixToAngles(previousCamera.XnaView, out h, out a, out b);
+                ORTSMath.MatrixToAngles(previousCamera.XnaSeatView, out h, out a, out b);
                 RotationXRadians = -b;
                 RotationYRadians = -h;
             }
