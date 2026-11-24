@@ -278,6 +278,40 @@ namespace Tests.Orts.Parsers.Msts
         }
 
         [Fact]
+        public static void BlockNumericRanges()
+        {
+            AssertWarnings.NotExpected();
+            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("(0 ignored) (1 ignored) (2 ignored) (3 ignored)")), "", Encoding.Unicode, false))
+            {
+                AssertWarnings.Matching("below expected minimum", () => Assert.Equal(0, reader.ReadDoubleBlock(-1, 1, 2)));
+                Assert.Equal(1, reader.ReadDoubleBlock(-1, 1, 2));
+                Assert.Equal(2, reader.ReadDoubleBlock(-1, 1, 2));
+                AssertWarnings.Matching("above expected maximum", () => Assert.Equal(3, reader.ReadDoubleBlock(-1, 1, 2)));
+            }
+            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("(0 ignored) (1 ignored) (2 ignored) (3 ignored)")), "", Encoding.Unicode, false))
+            {
+                AssertWarnings.Matching("below expected minimum", () => Assert.Equal(0, reader.ReadFloatBlock(STFReader.UNITS.None, -1, 1, 2)));
+                Assert.Equal(1, reader.ReadFloatBlock(STFReader.UNITS.None, -1, 1, 2));
+                Assert.Equal(2, reader.ReadFloatBlock(STFReader.UNITS.None, -1, 1, 2));
+                AssertWarnings.Matching("above expected maximum", () => Assert.Equal(3, reader.ReadFloatBlock(STFReader.UNITS.None, -1, 1, 2)));
+            }
+            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("(0 ignored) (1 ignored) (2 ignored) (3 ignored)")), "", Encoding.Unicode, false))
+            {
+                AssertWarnings.Matching("below expected minimum", () => Assert.Equal(0, reader.ReadIntBlock(-1, 1, 2)));
+                Assert.Equal(1, reader.ReadIntBlock(-1, 1, 2));
+                Assert.Equal(2, reader.ReadIntBlock(-1, 1, 2));
+                AssertWarnings.Matching("above expected maximum", () => Assert.Equal(3, reader.ReadIntBlock(-1, 1, 2)));
+            }
+            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("(0 ignored) (1 ignored) (2 ignored) (3 ignored)")), "", Encoding.Unicode, false))
+            {
+                AssertWarnings.Matching("below expected minimum", () => Assert.Equal(0U, reader.ReadUIntBlock(1000, 1, 2)));
+                Assert.Equal(1U, reader.ReadUIntBlock(1000, 1, 2));
+                Assert.Equal(2U, reader.ReadUIntBlock(1000, 1, 2));
+                AssertWarnings.Matching("above expected maximum", () => Assert.Equal(3U, reader.ReadUIntBlock(1000, 1, 2)));
+            }
+        }
+
+        [Fact]
         public static void BlockStringFormats()
         {
             using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("(String1 ignored) (\"String2\" ignored) (\"String\" + \"3\" ignored)")), "", Encoding.Unicode, false))
