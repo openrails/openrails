@@ -289,7 +289,7 @@ public WeatherControl(Viewer viewer)
             var visibilityForce = GetClosestBeaufortForce(Weather.VisibilityM, WindVisibilityRangesM);
             var precipitationForce = GetClosestBeaufortForce(Weather.PrecipitationIntensityPPSPM2, WindPrecipitationRangesPPSPM2);
             var beaufortForce = (cloudForce + visibilityForce + precipitationForce) / 3f;
-
+            Weather.BeaufortScale = (int)beaufortForce;
             var lowerForce = (int)beaufortForce;
             Weather.WindAverageSpeedMpS = lowerForce >= WindMeanSpeedByBeaufortMpS.Length - 1
                 ? WindMeanSpeedByBeaufortMpS[WindMeanSpeedByBeaufortMpS.Length - 1]
