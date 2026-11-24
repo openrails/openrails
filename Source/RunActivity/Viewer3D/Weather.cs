@@ -73,16 +73,42 @@ namespace Orts.Viewer3D
         public int DaylightOffset = 0;
 
         // Variables used for wind calculations
-        const int WindSpeedBeaufort = 6;
         const float WindInstantaneousDirectionLimitRad = (float)(45 * Math.PI / 180);
-        static readonly float WindInstantaneousSpeedLimit = WeatherConstants.WindSpeedGustMpS[(int)WeatherConstants.Condition.Light];
+        float WindInstantaneousSpeedLimit;
         const float WindNoiseScale = 10;
         readonly float WindInstantaneousDirectionNoiseStart = (float)Viewer.Random.NextDouble() * WindNoiseScale;
         readonly float WindInstantaneousSpeedNoiseStart = (float)Viewer.Random.NextDouble() * WindNoiseScale;
         const float WindGustUpdateTimeS = 0.25f;
         float WindUpdateTimer = 0.0f;
 
-        public WeatherControl(Viewer viewer)
+        static readonly float[,] WindCloudCoverRanges =
+        {
+            { 0.00f, 0.10f }, { 0.05f, 0.20f }, { 0.15f, 0.30f }, { 0.25f, 0.45f },
+            { 0.40f, 0.60f }, { 0.55f, 0.75f }, { 0.70f, 0.85f }, { 0.80f, 0.92f },
+            { 0.88f, 0.96f }, { 0.92f, 0.98f }, { 0.95f, 1.00f }, { 0.98f, 1.00f },
+            { 1.00f, 1.00f },
+        };
+        static readonly float[,] WindVisibilityRangesM =
+        {
+            { 20000, 20000 }, { 18000, 20000 }, { 16000, 19000 }, { 14000, 17000 },
+            { 11000, 15000 }, { 8000, 12000 }, { 5000, 9000 }, { 3000, 6000 },
+            { 1500, 3500 }, { 800, 2000 }, { 300, 1000 }, { 100, 400 }, { 0, 150 },
+        };
+        static readonly float[,] WindPrecipitationRangesPPSPM2 =
+        {
+            { 0.0000f, 0.0000f }, { 0.0000f, 0.0000f }, { 0.0000f, 0.0000f },
+            { 0.0000f, 0.0005f }, { 0.0005f, 0.0015f }, { 0.0015f, 0.0030f },
+            { 0.0030f, 0.0050f }, { 0.0050f, 0.0075f }, { 0.0075f, 0.0100f },
+            { 0.0100f, 0.0120f }, { 0.0120f, 0.0135f }, { 0.0135f, 0.0145f },
+            { 0.0145f, 0.0150f },
+        };
+        static readonly float[] WindMeanSpeedByBeaufortMpS =
+        {
+            0.25f, 1.0f, 2.45f, 4.45f, 6.7f, 9.35f, 12.3f,
+            15.5f, 18.95f, 22.6f, 26.45f, 30.55f, 32.7f,
+        };
+
+public WeatherControl(Viewer viewer)
         {
             Viewer = viewer;
             Weather = Viewer.Simulator.Weather;
@@ -247,11 +273,77 @@ namespace Orts.Viewer3D
             }
 
             Weather.WindAverageDirectionRad = (float)Viewer.Random.NextDouble() * MathHelper.TwoPi;
-            Weather.WindAverageSpeedMpS = (float)Viewer.Random.NextDouble() * WeatherConstants.WindSpeedBeaufortMpS[WindSpeedBeaufort];
+            UpdateWindSpeedFromConditions();
             CloudScale = new Vector2(4, 4);
         }
 
-        void UpdateSoundSources()
+        /// <summary>
+        /// Reads the current cloud cover, visibility, and precipitation values to estimate a Beaufort force.
+        /// Averages the force selected for each value, then updates the average wind speed and gust limit.
+        /// Weather inputs are not modified; ties between equally close ranges resolve to the lower force.
+        /// </summary>
+        void UpdateWindSpeedFromConditions()
+        {
+            // Read the current weather values; this calculation does not change them.
+            var cloudForce = GetClosestBeaufortForce(Weather.CloudCoverFactor, WindCloudCoverRanges);
+            var visibilityForce = GetClosestBeaufortForce(Weather.VisibilityM, WindVisibilityRangesM);
+            var precipitationForce = GetClosestBeaufortForce(Weather.PrecipitationIntensityPPSPM2, WindPrecipitationRangesPPSPM2);
+            var beaufortForce = (cloudForce + visibilityForce + precipitationForce) / 3f;
+
+            var lowerForce = (int)beaufortForce;
+            Weather.WindAverageSpeedMpS = lowerForce >= WindMeanSpeedByBeaufortMpS.Length - 1
+                ? WindMeanSpeedByBeaufortMpS[WindMeanSpeedByBeaufortMpS.Length - 1]
+                : MathHelper.Lerp(
+                    WindMeanSpeedByBeaufortMpS[lowerForce],
+                    WindMeanSpeedByBeaufortMpS[lowerForce + 1],
+                    beaufortForce - lowerForce);
+
+            var gustForce = (int)Math.Round(beaufortForce, MidpointRounding.AwayFromZero);
+            if (gustForce <= 3)
+            {
+                WindInstantaneousSpeedLimit = 0;
+            }
+            else if (gustForce <= 6)
+            {
+                WindInstantaneousSpeedLimit = WeatherConstants.WindSpeedGustMpS[(int)WeatherConstants.Condition.Light];
+            }
+            else if (gustForce <= 8)
+            {
+                WindInstantaneousSpeedLimit = WeatherConstants.WindSpeedGustMpS[(int)WeatherConstants.Condition.Moderate];
+            }
+            else
+            {
+                WindInstantaneousSpeedLimit = WeatherConstants.WindSpeedGustMpS[(int)WeatherConstants.Condition.Heavy];
+            }
+        }
+
+        /// <summary>
+        /// Returns the Beaufort force whose inclusive range is closest to the supplied value.
+        /// Values within a range have zero distance; ties resolve to the lower force.
+        /// </summary>
+        static int GetClosestBeaufortForce(float value, float[,] ranges)
+        {
+            var closestForce = 0;
+            var closestDistance = float.PositiveInfinity;
+
+            for (var force = 0; force < ranges.GetLength(0); force++)
+            {
+                var minimum = ranges[force, 0];
+                var maximum = ranges[force, 1];
+                var distance = value < minimum ? minimum - value : value > maximum ? value - maximum : 0;
+
+                // Strict comparison makes overlapping-range ties resolve to the lower force.
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestForce = force;
+                }
+            }
+
+            return closestForce;
+        }
+
+void UpdateSoundSources()
         {
             Viewer.SoundProcess.RemoveSoundSources(this);
             switch (Viewer.Simulator.WeatherType)
@@ -672,8 +764,9 @@ namespace Orts.Viewer3D
                 UpdateWeatherParameters();
             }
 
-           // Update wind sounds based on camera style
-                ManageWindSounds();
+            UpdateWindSpeedFromConditions();
+            // Update wind sounds based on camera style
+            ManageWindSounds();
         }
 
         public class DynamicWeather
