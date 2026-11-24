@@ -1,4 +1,4 @@
-// COPYRIGHT 2022 by the Open Rails project.
+﻿// COPYRIGHT 2022 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -241,6 +241,47 @@ namespace Tests.Orts.Parsers.OR
                 }
                 return true;
             }, expectedWarning: 7, expectedInformation: 2);
+        }
+
+        [Fact]
+        public static void ParsePropertiesWithRange()
+        {
+            ReadJsonText(@"{
+                ""float0"": 0,
+                ""float1"": 1,
+                ""float2"": 2,
+                ""float3"": 3,
+            }", item =>
+            {
+                switch (item.Path)
+                {
+                    case "": break;
+                    case "float0": Assert.Equal(0, item.AsFloat(-1, 1, 2)); break;
+                    case "float1": Assert.Equal(1, item.AsFloat(-1, 1, 2)); break;
+                    case "float2": Assert.Equal(2, item.AsFloat(-1, 1, 2)); break;
+                    case "float3": Assert.Equal(3, item.AsFloat(-1, 1, 2)); break;
+                    default: return false;
+                }
+                return true;
+            }, expectedWarning: 2);
+            ReadJsonText(@"{
+                ""integer0"": 0,
+                ""integer1"": 1,
+                ""integer2"": 2,
+                ""integer3"": 3,
+            }", item =>
+            {
+                switch (item.Path)
+                {
+                    case "": break;
+                    case "integer0": Assert.Equal(0, item.AsInteger(-1, 1, 2)); break;
+                    case "integer1": Assert.Equal(1, item.AsInteger(-1, 1, 2)); break;
+                    case "integer2": Assert.Equal(2, item.AsInteger(-1, 1, 2)); break;
+                    case "integer3": Assert.Equal(3, item.AsInteger(-1, 1, 2)); break;
+                    default: return false;
+                }
+                return true;
+            }, expectedWarning: 2);
         }
 
         [Fact]
