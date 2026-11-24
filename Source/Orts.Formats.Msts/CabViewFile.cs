@@ -34,6 +34,8 @@ namespace Orts.Formats.Msts
         public List<string> TwoDViews = new List<string>();     // 2D CAB Views - by GeorgeS
         public List<string> NightViews = new List<string>();    // Night CAB Views - by GeorgeS
         public List<string> LightViews = new List<string>();    // Light CAB Views - by GeorgeS
+        public List<int> ShapeIndices = new List<int>();        // Shape object indices to attach cab viewpoints to
+        public List<string> ShapeHierarchies = new List<string>(); // Shape object names to attach cab viewpoints to
         public CabViewControls CabViewControls;                 // Controls in CAB - by GeorgeS
 
         public CabViewFile(string filePath, string basePath)
@@ -60,6 +62,8 @@ namespace Orts.Formats.Msts
                             NightViews.Add(Path.Combine(path, Path.Combine("NIGHT", name)));
                             LightViews.Add(Path.Combine(path, Path.Combine("CABLIGHT", name)));
                         }),
+                        new STFReader.TokenProcessor("ortsshapeindex", ()=>{ ShapeIndices.Add(stf.ReadIntBlock(null)); }),
+                        new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ ShapeHierarchies.Add(stf.ReadStringBlock(null)); }),
                         new STFReader.TokenProcessor("cabviewcontrols", ()=>{ CabViewControls = new CabViewControls(stf, basePath); }),
                         new STFReader.TokenProcessor("ortscabviewcontrols", ()=>{ 
                             if (CabViewControls == null) CabViewControls = new CabViewControls(stf, basePath);
