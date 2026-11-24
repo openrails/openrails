@@ -202,6 +202,40 @@ namespace Tests.Orts.Parsers.Msts
         }
 
         [Fact]
+        public static void NumericRanges()
+        {
+            AssertWarnings.NotExpected();
+            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("0 1 2 3")), "", Encoding.Unicode, false))
+            {
+                AssertWarnings.Matching("below expected minimum", () => Assert.Equal(0, reader.ReadDouble(-1, 1, 2)));
+                Assert.Equal(1, reader.ReadDouble(-1, 1, 2));
+                Assert.Equal(2, reader.ReadDouble(-1, 1, 2));
+                AssertWarnings.Matching("above expected maximum", () => Assert.Equal(3, reader.ReadDouble(-1, 1, 2)));
+            }
+            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("0 1 2 3")), "", Encoding.Unicode, false))
+            {
+                AssertWarnings.Matching("below expected minimum", () => Assert.Equal(0, reader.ReadFloat(STFReader.UNITS.None, -1, 1, 2)));
+                Assert.Equal(1, reader.ReadFloat(STFReader.UNITS.None, -1, 1, 2));
+                Assert.Equal(2, reader.ReadFloat(STFReader.UNITS.None, -1, 1, 2));
+                AssertWarnings.Matching("above expected maximum", () => Assert.Equal(3, reader.ReadFloat(STFReader.UNITS.None, -1, 1, 2)));
+            }
+            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("0 1 2 3")), "", Encoding.Unicode, false))
+            {
+                AssertWarnings.Matching("below expected minimum", () => Assert.Equal(0, reader.ReadInt(-1, 1, 2)));
+                Assert.Equal(1, reader.ReadInt(-1, 1, 2));
+                Assert.Equal(2, reader.ReadInt(-1, 1, 2));
+                AssertWarnings.Matching("above expected maximum", () => Assert.Equal(3, reader.ReadInt(-1, 1, 2)));
+            }
+            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("0 1 2 3")), "", Encoding.Unicode, false))
+            {
+                AssertWarnings.Matching("below expected minimum", () => Assert.Equal(0U, reader.ReadUInt(1000, 1, 2)));
+                Assert.Equal(1U, reader.ReadUInt(1000, 1, 2));
+                Assert.Equal(2U, reader.ReadUInt(1000, 1, 2));
+                AssertWarnings.Matching("above expected maximum", () => Assert.Equal(3U, reader.ReadUInt(1000, 1, 2)));
+            }
+        }
+
+        [Fact]
         public static void StringFormats()
         {
             using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("Item1 \"Item2\" \"Item\" + \"3\" String1 \"String2\" \"String\" + \"3\"")), "", Encoding.Unicode, false))

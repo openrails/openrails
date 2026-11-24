@@ -547,7 +547,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file.</returns>
-        public int ReadInt(int? defaultValue)
+        public int ReadInt(int? defaultValue, float? minimum = null, float? maximum = null)
         {
             string item = ReadItem();
 
@@ -560,7 +560,12 @@ namespace Orts.Parsers.Msts
             int val;
             if (item.Length == 0) return 0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (int.TryParse(item, parseNum, parseNFI, out val)) return val;
+            if (int.TryParse(item, parseNum, parseNFI, out val))
+            {
+                if (minimum != null && val < minimum) STFException.TraceWarning(this, $"Integer value is below expected minimum of {minimum}; got {val}");
+                if (maximum != null && val > maximum) STFException.TraceWarning(this, $"Integer value is above expected maximum of {maximum}; got {val}");
+                return val;
+            }
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
@@ -569,7 +574,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file.</returns>
-        public uint ReadUInt(uint? defaultValue)
+        public uint ReadUInt(uint? defaultValue, float? minimum = null, float? maximum = null)
         {
             string item = ReadItem();
 
@@ -583,8 +588,12 @@ namespace Orts.Parsers.Msts
             uint val;
             if (item.Length == 0) return 0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (uint.TryParse(item, parseNum, parseNFI, out val)) return val;
-
+            if (uint.TryParse(item, parseNum, parseNFI, out val))
+            {
+                if (minimum != null && val < minimum) STFException.TraceWarning(this, $"Unsigned integer value is below expected minimum of {minimum}; got {val}");
+                if (maximum != null && val > maximum) STFException.TraceWarning(this, $"Unsigned integer value is above expected maximum of {maximum}; got {val}");
+                return val;
+            }
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
@@ -594,7 +603,7 @@ namespace Orts.Parsers.Msts
         /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
-        public float ReadFloat(UNITS validUnits, float? defaultValue)
+        public float ReadFloat(UNITS validUnits, float? defaultValue, float? minimum = null, float? maximum = null)
         {
             string item = ReadItem();
 
@@ -613,7 +622,13 @@ namespace Orts.Parsers.Msts
             double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0.0f;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (float.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
+            if (float.TryParse(item, parseNum, parseNFI, out val))
+            {
+                if (scale != 1) val = (float)(scale * val);
+                if (minimum != null && val < minimum) STFException.TraceWarning(this, $"Floating point value is below expected minimum of {minimum}; got {val}");
+                if (maximum != null && val > maximum) STFException.TraceWarning(this, $"Floating point value is above expected maximum of {maximum}; got {val}");
+                return val;
+            }
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
@@ -623,7 +638,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file.</returns>
-        public double ReadDouble(double? defaultValue)
+        public double ReadDouble(double? defaultValue, float? minimum = null, float? maximum = null)
         {
             string item = ReadItem();
 
@@ -637,7 +652,12 @@ namespace Orts.Parsers.Msts
             double val;
             if (item.Length == 0) return 0.0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (double.TryParse(item, parseNum, parseNFI, out val)) return val;
+            if (double.TryParse(item, parseNum, parseNFI, out val))
+            {
+                if (minimum != null && val < minimum) STFException.TraceWarning(this, $"Double floating point value is below expected minimum of {minimum}; got {val}");
+                if (maximum != null && val > maximum) STFException.TraceWarning(this, $"Double floating point value is above expected maximum of {maximum}; got {val}");
+                return val;
+            }
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
