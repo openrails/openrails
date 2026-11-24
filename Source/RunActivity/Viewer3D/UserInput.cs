@@ -52,6 +52,10 @@ namespace Orts.Viewer3D
         public static int MouseSpeedY;
         public static RailDriverState RDState;
         public static ExternalDeviceState WebDeviceState = new ExternalDeviceState();
+        // When set, the cursor is held at the window center and only its movement is reported (3D cab free look).
+        // Set by the Updater thread and read by the Render thread; a volatile bool needs no further synchronization.
+        public static volatile bool MouseLocked;
+        static bool MouseWasLocked;
 
         static InputSettings InputSettings;
 
@@ -74,6 +78,10 @@ namespace Orts.Viewer3D
             KeyboardState = game.IsActive ? new KeyboardState(GetKeysWithPrintScreenFix(Keyboard.GetState())) : new KeyboardState();
             MouseState = game.IsActive ? Mouse.GetState() : new MouseState(0, 0, LastMouseState.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
             MouseButtonsSwapped = System.Windows.Forms.SystemInformation.MouseButtonsSwapped;
+
+            if (MouseLocked && game.IsActive)
+                LockMouseToCenter(game);
+            MouseWasLocked = MouseLocked && game.IsActive;
 
             MouseSpeedX = Math.Abs(MouseState.X - LastMouseState.X);
             MouseSpeedY = Math.Abs(MouseState.Y - LastMouseState.Y);
@@ -128,6 +136,20 @@ namespace Orts.Viewer3D
                     Console.WriteLine("Released {0} - {1}", command, InputSettings.Commands[(int)command]);
             }
 #endif
+        }
+
+        /// <summary>
+        /// Reports the cursor at the window center, with its movement since the last frame, and returns it to the center.
+        /// </summary>
+        static void LockMouseToCenter(Game game)
+        {
+            var x = game.RenderProcess.DisplaySize.X / 2;
+            var y = game.RenderProcess.DisplaySize.Y / 2;
+            var lastX = MouseWasLocked ? x - (MouseState.X - x) : x;
+            var lastY = MouseWasLocked ? y - (MouseState.Y - y) : y;
+            MouseState = new MouseState(x, y, MouseState.ScrollWheelValue, MouseState.LeftButton, MouseState.MiddleButton, MouseState.RightButton, MouseState.XButton1, MouseState.XButton2);
+            LastMouseState = new MouseState(lastX, lastY, LastMouseState.ScrollWheelValue, LastMouseState.LeftButton, LastMouseState.MiddleButton, LastMouseState.RightButton, LastMouseState.XButton1, LastMouseState.XButton2);
+            Mouse.SetPosition(x, y);
         }
 
         static Keys[] GetKeysWithPrintScreenFix(KeyboardState keyboardState)
