@@ -57,6 +57,7 @@
 #define COLOR_SAVE_TO_ARGB 
 
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Formats.Msts;
 using System;
 using System.IO;
 
@@ -905,7 +906,7 @@ namespace Orts.Viewer3D
             SurfaceFormat surfaceFormat = SurfaceFormatFromLoadFormat(loadSurfaceFormat, compressionFormat, pixelFlags, rgbBitCount);
 
             Texture2D tx = new Texture2D(device, width, height, hasMipMaps, surfaceFormat);
-            tx.Tag = new Orts.Formats.Msts.AceInfo() { AlphaBits = XNATextureNumAlphaBits(tx) };
+            tx.Tag = new TextureTag(XNATextureNumAlphaBits(tx));
 
             if (tx.Format != surfaceFormat)
             {

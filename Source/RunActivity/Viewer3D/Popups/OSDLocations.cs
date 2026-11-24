@@ -149,9 +149,9 @@ namespace Orts.Viewer3D.Popups
                 var cameraLocation = Owner.Viewer.Camera.CameraWorldLocation;
                 foreach (var worldFile in worldFiles)
                 {
-                    if ((State & DisplayState.Platforms) != 0 && worldFile.platforms != null)
+                    if ((State & DisplayState.Platforms) != 0 && worldFile.Platforms != null)
                     {
-                        foreach (var platform in worldFile.platforms)
+                        foreach (var platform in worldFile.Platforms)
                         {
                             if (State == DisplayState.Auto && Platforms != null && (!Platforms.ContainsKey(platform.ItemName) || !Platforms[platform.ItemName]))
                                 continue;
@@ -172,9 +172,9 @@ namespace Orts.Viewer3D.Popups
                         }
                     }
 
-                    if ((State & DisplayState.Sidings) != 0 && worldFile.sidings != null)
+                    if ((State & DisplayState.Sidings) != 0 && worldFile.Sidings != null)
                     {
-                        foreach (var siding in worldFile.sidings)
+                        foreach (var siding in worldFile.Sidings)
                         {
                             if (State == DisplayState.Auto && Sidings != null && (!Sidings.ContainsKey(siding.ItemName) || !Sidings[siding.ItemName]))
                                 continue;
