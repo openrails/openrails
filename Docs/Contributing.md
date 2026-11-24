@@ -38,7 +38,7 @@ There are no additional requirements for the pull request.
 
 ### Refactoring process
 
-If you'd like to refactor the existing code you can get started immediately, but please have a look at our [architecture requirements](#architecture-requirements). We welcome architectural discussions in [our Developing Features forum on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/256-developing-features/).
+If you'd like to refactor the existing code you can get started immediately, but please have a look at our [architecture requirements](#architecture-requirements). We welcome architectural discussions in [our forums on Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/).
 
 There are no additional requirements for the pull request.
 
@@ -74,7 +74,7 @@ flowchart
 All new features must result in the following three things existing:
 
 1. A road-map card in [Trello](https://trello.com/b/DS2h3Pxc/open-rails-roadmap)
-2. A forum discussion in [Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/256-developing-features/) more than one week old with all issues resolved
+2. A forum discussion in [Elvas Tower](https://www.elvastower.com/forums/index.php?/forum/192-or-general-feedback/) more than one week old with all issues resolved
 3. A pull request
 
 These things must be done in the required order:
@@ -179,13 +179,13 @@ A member of [our developer team](https://launchpad.net/~ordevs/+members) will ma
 
 ### Road-map cards
 
-We require that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically allow at least a week for discussion and identification of any issues.
+We require that a [forum discussion is created](https://www.elvastower.com/forums/index.php?/forum/192-or-general-feedback/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically allow at least a week for discussion and identification of any issues.
 
 A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, classify it by type (using labels), and place it into an appropriate list in Trello. In the rare event that we do not agree with the feature being added to Open Rails, it will be placed in the "Not planned at this time" list and a comment added explaining why.
 
 ### Blueprints
 
-We require that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically allow at least a week for discussion and identification of any issues.
+We require that a [forum discussion is created](https://www.elvastower.com/forums/index.php?/forum/192-or-general-feedback/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically allow at least a week for discussion and identification of any issues.
 
 A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, and approve its direction if appropriate.
 
