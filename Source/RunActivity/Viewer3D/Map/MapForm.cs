@@ -255,7 +255,7 @@ namespace Orts.Viewer3D.Debugging
 
                     StartPosition = FormStartPosition.Manual;
                     this.Location = new System.Drawing.Point(
-                        ((int[])property.GetValue(Viewer.Settings, null))[0], 
+                        ((int[])property.GetValue(Viewer.Settings, null))[0],
                         ((int[])property.GetValue(Viewer.Settings, null))[1]);
 
                     mapViewer.Resize += c_ControlChanged;
@@ -1370,7 +1370,7 @@ namespace Orts.Viewer3D.Debugging
         }
 
         private bool mapBehindGameForm()
-        {        
+        {
             int mapX0 = Bounds.X;
             int mapY0 = Bounds.Y;
             int mapX1 = mapX0 + Size.Width;
@@ -2020,6 +2020,13 @@ namespace Orts.Viewer3D.Debugging
         private void preferGreenCheckbox_CheckedChanged(object sender, EventArgs e)
         {
             MPManager.PreferGreen = preferGreenCheckbox.Checked;
+        }
+
+        private void chkAllowUserSwitch_CheckedChanged(object sender, EventArgs e)
+        {
+            MPManager.AllowedManualSwitch = chkAllowUserSwitch.Checked;
+            if (chkAllowUserSwitch.Checked == true) { MPManager.BroadCast(new MSGMessage("All", "SwitchOK", "OK to switch").ToString()); }
+            else { MPManager.BroadCast(new MSGMessage("All", "SwitchWarning", "Cannot switch").ToString()); }
         }
 
         public bool AddNewMessage(double _, string msg)
