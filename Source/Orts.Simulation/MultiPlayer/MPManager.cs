@@ -77,7 +77,7 @@ namespace Orts.MultiPlayer
 
         public double lastPlayerAddedTime;
         public int MPUpdateInterval = 10;
-        static public bool AllowedManualSwitch = true;
+        static public bool AllowedManualSwitch = false;
         public bool TrySwitch = true;
         public bool AllowNewPlayer = true;
         public bool ComposingText = false;
