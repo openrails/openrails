@@ -77,7 +77,7 @@ namespace Orts.MultiPlayer
 
         public double lastPlayerAddedTime;
         public int MPUpdateInterval = 10;
-        static public bool AllowedManualSwitch = true;
+        static public bool AllowedManualSwitch = false;
         public bool TrySwitch = true;
         public bool AllowNewPlayer = true;
         public bool ComposingText = false;
@@ -389,12 +389,11 @@ namespace Orts.MultiPlayer
             if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) return false;
             return true; 
         }
-        //check if it is in the server mode && they are players && not allow autoswitch
+        //check if it is in the server mode && they are players
         public static bool NoAutoSwitch()
         {
             if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) return false;
-            //if (MPManager.IsClient()) return true;
-            return !MPManager.AllowedManualSwitch; //aloow manual switch or not
+            return true;
         }
         //user name
         static public string GetUserName()

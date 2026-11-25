@@ -8974,6 +8974,15 @@ namespace Orts.Simulation.Physics
 
             if (reqSwitch != null)
             {
+                if (MPManager.IsClient())
+                {
+                    TrackNode thisNode = Simulator.Signals.trackDB.TrackNodes[reqSwitch.OriginalIndex];
+                    // Aider selects and throws the switch, but need to confirm by the dispatcher
+                    MPManager.Notify(new MSGSwitch(MPManager.GetUserName(),
+                        thisNode.UiD.WorldTileX, thisNode.UiD.WorldTileZ, thisNode.UiD.WorldId, reqSwitch.JunctionLastRoute == 0 ? 1 : 0, true).ToString());
+                    Simulator.Confirmer.Information(Simulator.Catalog.GetString("Switching Request Sent to the Server"));
+                    return true;
+                }
                 // check if switch is clear
                 if (!reqSwitch.CircuitState.HasTrainsOccupying() && reqSwitch.CircuitState.TrainReserved == null && reqSwitch.CircuitState.SignalReserved < 0)
                 {
@@ -10123,6 +10132,15 @@ namespace Orts.Simulation.Physics
 
             if (reqSwitch != null)
             {
+                if (MPManager.IsClient())
+                {
+                    TrackNode thisNode = Simulator.Signals.trackDB.TrackNodes[reqSwitch.OriginalIndex];
+                    // Aider selects and throws the switch, but need to confirm by the dispatcher
+                    MPManager.Notify(new MSGSwitch(MPManager.GetUserName(),
+                        thisNode.UiD.WorldTileX, thisNode.UiD.WorldTileZ, thisNode.UiD.WorldId, reqSwitch.JunctionLastRoute == 0 ? 1 : 0, true).ToString());
+                    Simulator.Confirmer.Information(Simulator.Catalog.GetString("Switching Request Sent to the Server"));
+                    return true;
+                }
                 // check if switch is clear
                 if (!reqSwitch.CircuitState.HasTrainsOccupying() && reqSwitch.CircuitState.TrainReserved == null && reqSwitch.CircuitState.SignalReserved < 0)
                 {

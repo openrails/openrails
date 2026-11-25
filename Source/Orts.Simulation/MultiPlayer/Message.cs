@@ -920,30 +920,12 @@ namespace Orts.MultiPlayer
             else
             {
                 TrJunctionNode trj = MPManager.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
-                SetSwitch(trj.TN, Selection);
-                //trj.SelectedRoute = Selection; //although the new signal system request Signals.RequestSetSwitch, client may just change
+                MPManager.Simulator.Signals.RequestSetSwitch(trj.TN, Selection);
                 if (user == MPManager.GetUserName() && HandThrown == true)//got the message with my name, will confirm with the player
                 {
                     MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetStringFmt("Switched, current route is {0}",
                         Selection == 0 ? MPManager.Catalog.GetString("main route") : MPManager.Catalog.GetString("side route")));
                     return;
-                }
-            }
-        }
-
-        public static void SetSwitch(TrackNode switchNode, int desiredState)
-        {
-            TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
-            MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
-            switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
-
-            // update linked signals
-            if (switchSection.LinkedSignals != null)
-            {
-                foreach (int thisSignalIndex in switchSection.LinkedSignals)
-                {
-                    SignalObject thisSignal = MPManager.Simulator.Signals.SignalObjects[thisSignalIndex];
-                    thisSignal.Update();
                 }
             }
         }
@@ -1042,29 +1024,11 @@ namespace Orts.MultiPlayer
                 state = (int)switchStatesArray[i];
                 if (t.Value.SelectedRoute != state)
                 {
-                    SetSwitch(t.Value.TN, state);
-                    //t.Value.SelectedRoute = state;
+                    MPManager.Simulator.Signals.RequestSetSwitch(t.Value.TN, state);
                 }
                 i++;
             }
 
-        }
-
-        public static void SetSwitch(TrackNode switchNode, int desiredState)
-        {
-            TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
-            MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
-            switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
-
-            // update linked signals
-            if (switchSection.LinkedSignals != null)
-            {
-                foreach (int thisSignalIndex in switchSection.LinkedSignals)
-                {
-                    SignalObject thisSignal = MPManager.Simulator.Signals.SignalObjects[thisSignalIndex];
-                    thisSignal.Update();
-                }
-            }
         }
 
         public override string ToString()
@@ -1170,50 +1134,11 @@ namespace Orts.MultiPlayer
                 state = (int)switchStatesArray[i];
                 if (t.Value.SelectedRoute != state)
                 {
-                    if (!SwitchOccupiedByPlayerTrain(t.Value))
-                    {
-                        SetSwitch(t.Value.TN, state);
-                        //t.Value.SelectedRoute = state;
-                    }
+                    MPManager.Simulator.Signals.RequestSetSwitch(t.Value.TN, state);
                 }
                 i++;
             }
 
-        }
-
-        public static void SetSwitch(TrackNode switchNode, int desiredState)
-        {
-            TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
-            MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
-            switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
-
-            // update linked signals
-            if (switchSection.LinkedSignals != null)
-            {
-                foreach (int thisSignalIndex in switchSection.LinkedSignals)
-                {
-                    SignalObject thisSignal = MPManager.Simulator.Signals.SignalObjects[thisSignalIndex];
-                    thisSignal.Update();
-                }
-            }
-        }
-
-        static bool SwitchOccupiedByPlayerTrain(TrJunctionNode junctionNode)
-        {
-            if (MPManager.Simulator.PlayerLocomotive == null) return false;
-            Train train = MPManager.Simulator.PlayerLocomotive.Train;
-            if (train == null) return false;
-            if (train.FrontTDBTraveller.TrackNodeIndex == train.RearTDBTraveller.TrackNodeIndex)
-                return false;
-            Traveller traveller = new Traveller(train.RearTDBTraveller);
-            while (traveller.NextSection())
-            {
-                if (traveller.TrackNodeIndex == train.FrontTDBTraveller.TrackNodeIndex)
-                    break;
-                if (traveller.TN.TrJunctionNode == junctionNode)
-                    return true;
-            }
-            return false;
         }
 
         public override string ToString()
