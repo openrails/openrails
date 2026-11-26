@@ -64,7 +64,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                 ChargeVoltageCurve = new Interpolator(stf);
                                 break;
                             case "chargerdieselengine":
-                                ChargerDieselEngine = stf.ReadInt(0);
+                                ChargerDieselEngine = stf.ReadIntBlock(0)-1;
                                 break;
                             case "mode":
                             case "delay":
@@ -94,7 +94,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 if (Car is MSTSDieselLocomotive diesel)
                 {
-                    diesel.DieselEngines[ChargerDieselEngine].MechanicalAuxiliaryLoads.Add(BatteryCharger);
+                    if (ChargerDieselEngine < diesel.DieselEngines.Count)
+                    {
+                        diesel.DieselEngines[ChargerDieselEngine].MechanicalAuxiliaryLoads.Add(BatteryCharger);
+                    }
+                    else
+                    {
+                        ChargerDieselEngine = -1;
+                        Trace.TraceWarning("Battery can only be charged from an invalid diesel engine number");
+                    }
                 }
                 else
                 {
