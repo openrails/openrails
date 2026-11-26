@@ -349,9 +349,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.PantographCount = () => Locomotive.Pantographs.Count;
                 Script.GetPantographState = (pantoID) =>
                 {
-                    if (pantoID >= Pantographs.MinPantoID && pantoID <= Pantographs.MaxPantoID)
+                    var panto = Locomotive.Pantographs[pantoID];
+                    if (panto != null)
                     {
-                        return Locomotive.Pantographs[pantoID].State;
+                        return panto.State;
                     }
                     else
                     {
@@ -440,20 +441,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 };
                 Script.SetPantographUp = (pantoID) =>
                 {
-                    if (pantoID < Pantographs.MinPantoID || pantoID > Pantographs.MaxPantoID)
-                    {
-                        Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
-                        return;
-                    }
                     Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.RaisePantograph, pantoID);
                 };               
                 Script.SetPantographDown = (pantoID) =>
                 {
-                    if (pantoID < Pantographs.MinPantoID || pantoID > Pantographs.MaxPantoID)
-                    {
-                        Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
-                        return;
-                    }
                     Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.LowerPantograph, pantoID);
                 };
                 Script.SetPowerAuthorization = (value) => PowerAuthorization = value;
