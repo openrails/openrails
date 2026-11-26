@@ -5610,7 +5610,7 @@ parameters. The performance of the battery charger, which is powered by the powe
 adjusted using the ``ChargerPower`` and ``ChargerVoltage`` parameters.
 
 Instead of being charged by the auxiliary power supply, the battery can be charged directly from a
-diesel engine by using ``ChargerDieselEngine`` to set the index of the engine that powers the charger.
+diesel engine by using ``ChargerDieselEngine`` to set the index (starting from 1) of the engine that powers the charger.
 
 Optionally, it is possible to define a capacity-voltage curve such that voltage becomes
 lower when the battery is discharged, using ``ChargeVoltageCurve``. Battery discharge is not implemented yet.
